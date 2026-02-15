@@ -1,0 +1,28 @@
+services:
+  website-agence3terres:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    expose:
+      - 80
+    restart: always
+    environment:
+      - NODE_ENV=production
+    security_opt:
+      - no-new-privileges:true
+    read_only: true
+    tmpfs:
+      - /tmp
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    mem_limit: 256m
+    cpus: 0.5
+  networks:
+    - pangolin
+
+networks:
+  pangolin:
+    external: true
