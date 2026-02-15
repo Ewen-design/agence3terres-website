@@ -11,6 +11,7 @@ services:
     read_only: true
     tmpfs:
       - /tmp
+      - /var/cache/nginx
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost"]
       interval: 30s
@@ -20,6 +21,8 @@ services:
     cpus: 0.5
     networks:
       - pangolin
+    labels:
+      com.centurylinklabs.watchtower.enable: true
 
 networks:
   pangolin:
