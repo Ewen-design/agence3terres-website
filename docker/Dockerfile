@@ -1,42 +1,32 @@
-# Robust, secure Dockerfile for Svelte (Vite) production build
-# Use official Node image for build stage
+# Secure Dockerfile for Svelte (Vite) static site served by Caddy
+# ── Build stage ──────────────────────────────────────────────────
 FROM node:20-alpine AS builder
 
 WORKDIR /app
 
-
-# Install dependencies (including devDependencies for build)
+# Install dependencies first (layer cache)
 COPY website/package.json website/package-lock.json ./website/
 WORKDIR /app/website
 RUN npm ci
 
-# Copy source code
+# Copy source and build
 COPY website .
-
-# Build the app
 RUN npm run build
 
-# Use a minimal web server for static files
-FROM nginx:1.25-alpine AS production
+# ── Production stage ─────────────────────────────────────────────
+FROM caddy:2-alpine AS production
 
-# Remove default nginx config for security
-RUN rm /etc/nginx/conf.d/default.conf
+# Copy Caddyfile
+COPY docker/Caddyfile /etc/caddy/Caddyfile
 
-# Create custom main nginx.conf with pid and cache paths in /tmp for non-root user
-RUN printf 'pid /tmp/nginx.pid;\ninclude /etc/nginx/modules-enabled/*.conf;\nevents { worker_connections 1024; }\nhttp { client_body_temp_path /tmp/client_body; proxy_temp_path /tmp/proxy; fastcgi_temp_path /tmp/fastcgi; uwsgi_temp_path /tmp/uwsgi; scgi_temp_path /tmp/scgi; include /etc/nginx/mime.types; default_type application/octet-stream; include /etc/nginx/conf.d/*.conf; }' > /etc/nginx/nginx.conf
+# Copy built static files
+COPY --from=builder /app/website/dist /srv
 
-# Copy custom nginx config
-COPY docker/nginx.conf /etc/nginx/conf.d/svelte.conf
-
-# Copy built files
-COPY --from=builder /app/website/dist /usr/share/nginx/html
-
-# Set permissions for security
-RUN chmod -R 755 /usr/share/nginx/html
+# Caddy stores data/config in /data and /config — both writable by default
+# Static files are read-only
+RUN chmod -R 755 /srv
 
 EXPOSE 80
 
-# Use non-root user for nginx
-USER 101
-
-CMD ["nginx", "-g", "daemon off;"]
+# Caddy runs as non-root (UID 1000) by default in the official image
+CMD ["caddy", "run", "--config", "/etc/caddy/Caddyfile", "--adapter", "caddyfile"]

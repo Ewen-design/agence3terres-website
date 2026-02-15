@@ -11,9 +11,10 @@ services:
     read_only: true
     tmpfs:
       - /tmp
-      - /var/cache/nginx
+      - /data
+      - /config
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost"]
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost"]
       interval: 30s
       timeout: 10s
       retries: 3

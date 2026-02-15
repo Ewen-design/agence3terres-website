@@ -1,0 +1,64 @@
+# Caddyfile — static SPA serving for agence3terres
+# Caddy listens on :80 by default; TLS is handled by your reverse proxy (Pangolin)
+:80 {
+	# Serve static files from /srv
+	root * /srv
+
+	# SPA fallback: try the exact file, then fall back to index.html
+	try_files {path} /index.html
+	file_server
+
+	# ── Security headers ────────────────────────────────────────
+	header {
+		# Prevent clickjacking
+		X-Frame-Options "SAMEORIGIN"
+
+		# Prevent MIME-type sniffing
+		X-Content-Type-Options "nosniff"
+
+		# Control referrer information
+		Referrer-Policy "strict-origin-when-cross-origin"
+
+		# Permissions policy — disable unnecessary browser features
+		Permissions-Policy "camera=(), microphone=(), geolocation=(), payment=()"
+
+		# CSP — tailored to this app's actual requirements:
+		#   - style-src 'unsafe-inline': GSAP sets inline styles (transform, opacity, filter)
+		#     on every animated element. This is GSAP's core mechanism — no workaround exists.
+		#     Svelte also injects <style> tags and uses style= attributes.
+		#   - fonts.googleapis.com / fonts.gstatic.com: Google Fonts loaded via @import in components
+		#   - images.unsplash.com / cdn.prod.website-files.com: external images used in galleries
+		#   - script-src 'self': no eval/Function usage found, strict is safe
+		#   - No unsafe-eval needed
+		Content-Security-Policy "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https://images.unsplash.com https://cdn.prod.website-files.com; connect-src 'self' https://fonts.googleapis.com https://fonts.gstatic.com"
+
+		# Remove server identity header
+		-Server
+	}
+
+	# ── Caching ─────────────────────────────────────────────────
+	# Hashed assets (JS/CSS bundles from Vite) — immutable, long cache
+	@hashed path /assets/*
+	header @hashed Cache-Control "public, max-age=31536000, immutable"
+
+	# Images — cache for 7 days
+	@images path /images/*
+	header @images Cache-Control "public, max-age=604800"
+
+	# HTML — never cache (ensures users get fresh SPA shell)
+	@html path /
+	header @html Cache-Control "no-cache, no-store, must-revalidate"
+
+	# ── Block hidden files ──────────────────────────────────────
+	@hidden path /.*
+	respond @hidden 404
+
+	# ── Compression ─────────────────────────────────────────────
+	encode gzip zstd
+
+	# ── Logging ─────────────────────────────────────────────────
+	log {
+		output stdout
+		format console
+	}
+}
