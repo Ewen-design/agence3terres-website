@@ -18,8 +18,8 @@ services:
       retries: 3
     mem_limit: 256m
     cpus: 0.5
-  networks:
-    - pangolin
+    networks:
+      - pangolin
 
 networks:
   pangolin:
