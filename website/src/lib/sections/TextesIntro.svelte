@@ -1,5 +1,5 @@
 <script>
-	import { onMount } from "svelte";
+	import { onMount, onDestroy } from "svelte";
 	import gsap from "gsap";
 	import ScrollTrigger from "gsap/ScrollTrigger";
 
@@ -8,8 +8,10 @@
 	let leftWrapper;
 	let rightWrapper;
 	let bgText;
+	let ctx;
 
 	onMount(() => {
+		ctx = gsap.context(() => {
 
 		// Fade titre fond
 		gsap.fromTo(
@@ -67,6 +69,12 @@
 				scrub: 1
 			}
 		});
+
+		}); // end gsap.context
+	});
+
+	onDestroy(() => {
+		ctx?.revert();
 	});
 </script>
 
@@ -108,7 +116,6 @@
 </section>
 
 <style>
-@import url("https://fonts.googleapis.com/css2?family=Aboreto&family=Playfair+Display:ital,wght@0,400;1,400&display=swap");
 
 .creative-section {
 	position: relative;

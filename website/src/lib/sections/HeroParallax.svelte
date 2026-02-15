@@ -285,7 +285,6 @@ La montagne est exigence et grandeur : elle nous rappelle que le succès se cons
 </div>
 
 <style>
-@import url("https://fonts.googleapis.com/css2?family=Aboreto&family=Playfair+Display:wght@300;400;500&display=swap");
 
 .fullbleed {
 	width: 100vw;

@@ -72,15 +72,13 @@
   <div class="image-container">
     <img
       class="zoom-img"
-      src="public/images/grotte2.png"
+      src="/images/grotte2.png"
       alt=""
     />
   </div>
 </section>
 
 <style>
-  @import url("https://fonts.googleapis.com/css2?family=Aboreto&display=swap");
-
   .hero-wrapper {
     position: relative;
     height: 100vh;
@@ -93,7 +91,7 @@
   .hero-bg {
     position: absolute;
     inset: 0;
-    background: url("public/images/imageterres.jpg") center / cover no-repeat;
+    background: url("/images/imageterres.jpg") center / cover no-repeat;
     z-index: 1;
     opacity: 1;
 

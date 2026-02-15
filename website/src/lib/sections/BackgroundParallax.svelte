@@ -3,6 +3,7 @@
   import { registerParallax, unregisterParallax } from "../scrollEngine.js";
 
   let sections = [];
+  let container;
 
   function splitText(el) {
     const text = el.innerText;
@@ -55,8 +56,8 @@
   }
 
   onMount(() => {
-    sections = Array.from(document.querySelectorAll(".parallax-section"));
-    document.querySelectorAll(".text").forEach(splitText);
+    sections = Array.from(container.querySelectorAll(".parallax-section"));
+    container.querySelectorAll(".text").forEach(splitText);
 
     registerParallax(updateParallax);
   });
@@ -66,19 +67,21 @@
   });
 </script>
 
-<section class="parallax-section">
-  <div class="bg" style="background-image:url('/images/carte-copie.jpg')"></div>
-  <div class="content left">
-    <h2 class="text">UNE VISION STRATÉGIQUE</h2>
-  </div>
-</section>
+<div bind:this={container}>
+  <section class="parallax-section">
+    <div class="bg" style="background-image:url('/images/carte-copie.jpg')"></div>
+    <div class="content left">
+      <h2 class="text">UNE VISION STRATÉGIQUE</h2>
+    </div>
+  </section>
 
-<section class="parallax-section">
-  <div class="bg" style="background-image:url('/images/livre.png')"></div>
-  <div class="content right">
-    <h2 class="text">UNE IDENTITÉ FORTE</h2>
-  </div>
-</section>
+  <section class="parallax-section">
+    <div class="bg" style="background-image:url('/images/livre.png')"></div>
+    <div class="content right">
+      <h2 class="text">UNE IDENTITÉ FORTE</h2>
+    </div>
+  </section>
+</div>
 
 <style>
 .parallax-section {
@@ -115,7 +118,7 @@
 .left { margin-left: 8vw; text-align: left; }
 .right { margin-left: auto; margin-right: 8vw; text-align: right; }
 
-.text span {
+.text :global(span) {
   opacity: 0;
   display: inline-block;
   transition: opacity 0.35s ease;

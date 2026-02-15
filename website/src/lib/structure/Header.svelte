@@ -41,6 +41,7 @@
   $: compact = scrollingDown && !userExpanded;
 </script>
 
+<!-- svelte-ignore a11y_no_static_element_interactions -->
 <header
   class="nav-wrapper {compact ? 'compact' : ''} {menuOpen ? 'menu-open' : ''}"
   on:mousemove={handleMove}
@@ -51,13 +52,14 @@
     <div class="nav-btn logo" data-cursor="button">Agence 3 Terres</div>
 
     <div class="links">
-      <a href="#" class="nav-btn fade" data-cursor="button">Travail</a>
-      <a href="#" class="nav-btn fade" data-cursor="button">À propos</a>
-      <a href="#" class="nav-btn fade" data-cursor="button">Services</a>
-      <a href="#" class="nav-btn fade" data-cursor="button">Contact</a>
+      <a href="/" class="nav-btn fade" data-cursor="button">Travail</a>
+      <a href="/" class="nav-btn fade" data-cursor="button">À propos</a>
+      <a href="/" class="nav-btn fade" data-cursor="button">Services</a>
+      <a href="/" class="nav-btn fade" data-cursor="button">Contact</a>
     </div>
 
-    <div class="nav-btn more" on:click={() => menuOpen = true} data-cursor="button">
+    <!-- svelte-ignore a11y_no_static_element_interactions a11y_click_events_have_key_events -->
+    <div class="nav-btn more" on:click={() => menuOpen = true} data-cursor="button" role="button" tabindex="0" on:keydown={(e) => e.key === 'Enter' && (menuOpen = true)}>
       <span></span>
       <span></span>
       <span></span>

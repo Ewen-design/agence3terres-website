@@ -48,27 +48,27 @@
       </p>
 
       <div class="socials links-group">
-        <a data-cursor="view" href="#">Instagram</a>
-        <a data-cursor="view" href="#">Behance</a>
-        <a data-cursor="view" href="#">LinkedIn</a>
-        <a data-cursor="view" href="#">Pinterest</a>
+        <a data-cursor="view" href="/">Instagram</a>
+        <a data-cursor="view" href="/">Behance</a>
+        <a data-cursor="view" href="/">LinkedIn</a>
+        <a data-cursor="view" href="/">Pinterest</a>
       </div>
     </div>
 
     <div class="nav links-group">
       <div>
         <h4>Navigation</h4>
-        <a data-cursor="view" href="#">Accueil</a>
-        <a data-cursor="view" href="#">Projets</a>
-        <a data-cursor="view" href="#">À propos</a>
-        <a data-cursor="view" href="#">Services</a>
+        <a data-cursor="view" href="/">Accueil</a>
+        <a data-cursor="view" href="/">Projets</a>
+        <a data-cursor="view" href="/">À propos</a>
+        <a data-cursor="view" href="/">Services</a>
       </div>
 
       <div>
         <h4>Infos</h4>
-        <a data-cursor="view" href="#">Contact</a>
-        <a data-cursor="view" href="#">Mentions légales</a>
-        <a data-cursor="view" href="#">Confidentialité</a>
+        <a data-cursor="view" href="/">Contact</a>
+        <a data-cursor="view" href="/">Mentions légales</a>
+        <a data-cursor="view" href="/">Confidentialité</a>
       </div>
     </div>
 

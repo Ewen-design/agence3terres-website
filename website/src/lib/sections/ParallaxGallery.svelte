@@ -6,6 +6,7 @@
   let cards = [];
   let metrics = [];
   let selected = null;
+  let gallerySection;
 
   const items = [
     { title: "Création de logo", date: "2024", desc: "Refonte complète de l'identité visuelle et création d'un système graphique minimaliste." },
@@ -61,7 +62,7 @@
   }
 
   onMount(() => {
-    cards = [...document.querySelectorAll(".card")];
+    cards = [...gallerySection.querySelectorAll(".card")];
 
     measure();
     window.addEventListener("resize", measure);
@@ -77,12 +78,13 @@
   });
 </script>
 
-<section class="gallery">
+<section class="gallery" bind:this={gallerySection}>
   <div class="gallery-grid">
     {#each items as item}
-      <div class="card" data-cursor="view" on:click={() => openProject(item)}>
+      <!-- svelte-ignore a11y_no_static_element_interactions a11y_click_events_have_key_events -->
+      <div class="card" data-cursor="view" role="button" tabindex="0" on:click={() => openProject(item)} on:keydown={(e) => e.key === 'Enter' && openProject(item)}>
         <div class="card-image-wrapper">
-          <img src="/images/parfum.jpg" alt="" />
+          <img src="/images/parfum.jpg" alt="{item.title}" />
         </div>
 
         <div class="info">

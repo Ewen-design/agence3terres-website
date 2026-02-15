@@ -65,7 +65,7 @@
   <div class="split">
     <div class="visual">
       <div class="parallax-wrapper">
-        <img src="https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?q=80&w=1600&auto=format&fit=crop" />
+        <img src="https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?q=80&w=1600&auto=format&fit=crop" alt="Creative vision" />
       </div>
     </div>
 
@@ -78,7 +78,7 @@
   <div class="split reverse">
     <div class="visual">
       <div class="parallax-wrapper">
-        <img src="https://images.unsplash.com/photo-1604014237800-1c9102c219da?q=80&w=1600&auto=format&fit=crop" />
+        <img src="https://images.unsplash.com/photo-1604014237800-1c9102c219da?q=80&w=1600&auto=format&fit=crop" alt="Artistic depth" />
       </div>
     </div>
 
@@ -91,7 +91,7 @@
   <div class="split">
     <div class="visual">
       <div class="parallax-wrapper">
-        <img src="https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=1600&auto=format&fit=crop" />
+        <img src="https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=1600&auto=format&fit=crop" alt="Emotional impact" />
       </div>
     </div>
 
@@ -104,8 +104,6 @@
 </section>
 
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Aboreto&display=swap');
-
   .home-showcase {
     width: 100vw;
     margin-left: 50%;

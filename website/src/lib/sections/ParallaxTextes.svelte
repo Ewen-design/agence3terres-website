@@ -93,7 +93,7 @@
   .bg-image {
     position: absolute;
     inset: 0;
-    background: url("public/images/aigleciel.jpg") center / cover no-repeat;
+    background: url("/images/aigleciel.jpg") center / cover no-repeat;
     filter: blur(26px) brightness(0.55);
     opacity: 0;
     z-index: 2;

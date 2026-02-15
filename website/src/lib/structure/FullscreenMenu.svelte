@@ -29,7 +29,8 @@
     </div>
 
     <!-- ❌ CROIX = FERMER -->
-    <div class="top-block close-block" on:click={close} data-cursor="close">
+    <!-- svelte-ignore a11y_no_static_element_interactions a11y_click_events_have_key_events -->
+    <div class="top-block close-block" on:click={close} on:keydown={(e) => e.key === 'Enter' && close()} data-cursor="close" role="button" tabindex="0">
       <div class="inner">
         <div class="close-icon">✕</div>
       </div>
@@ -39,21 +40,21 @@
 
   <div class="menu-body">
     <div class="left-links">
-      <a style="--i:0" data-cursor="button">Home</a>
-      <a style="--i:1" data-cursor="button">Travail</a>
-      <a style="--i:2" data-cursor="button">À propos</a>
-      <a style="--i:3" data-cursor="button">Services</a>
-      <a style="--i:4" data-cursor="button">Contact</a>
+      <a href="/" style="--i:0" data-cursor="button">Home</a>
+      <a href="/" style="--i:1" data-cursor="button">Travail</a>
+      <a href="/" style="--i:2" data-cursor="button">À propos</a>
+      <a href="/" style="--i:3" data-cursor="button">Services</a>
+      <a href="/" style="--i:4" data-cursor="button">Contact</a>
     </div>
 
     <div class="right-info">
       <div class="info-group">
         <h4>Réseaux sociaux</h4>
         <div class="info-links">
-          <a href="https://www.instagram.com/agence_3terres/" target="_blank">Instagram</a>
-          <a>LinkedIn</a>
-          <a>Behance</a>
-          <a>Facebook</a>
+          <a href="https://www.instagram.com/agence_3terres/" target="_blank" rel="noopener noreferrer">Instagram</a>
+          <a href="/">LinkedIn</a>
+          <a href="/">Behance</a>
+          <a href="/">Facebook</a>
         </div>
       </div>
 
@@ -69,7 +70,6 @@
 {/if}
 
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Aboreto&display=swap');
 
 .menu-overlay {
   position: fixed;

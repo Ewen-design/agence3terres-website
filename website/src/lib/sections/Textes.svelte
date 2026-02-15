@@ -156,7 +156,6 @@
 </div>
 
 <style>
-@import url("https://fonts.googleapis.com/css2?family=Geist+Mono:wght@100..900&family=Manrope:wght@200..800&display=swap");
 
 /* wrapper qui casse la contrainte du parent */
 .fullwidth-wrapper {
@@ -169,15 +168,6 @@
   margin: 0;
   padding: 0;
   box-sizing: border-box;
-}
-
-::-webkit-scrollbar {
-  display: none;
-}
-
-:global(body) {
-  font-family: "Manrope", sans-serif;
-  color: #fff;
 }
 
 img {
