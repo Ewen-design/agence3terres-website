@@ -4,10 +4,11 @@ FROM node:20-alpine AS builder
 
 WORKDIR /app
 
-# Install dependencies securely
+
+# Install dependencies (including devDependencies for build)
 COPY website/package.json website/package-lock.json ./website/
 WORKDIR /app/website
-RUN npm ci --omit=dev
+RUN npm ci
 
 # Copy source code
 COPY website .
