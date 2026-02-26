@@ -6,17 +6,15 @@
   let cards = [];
   let metrics = [];
 
-  function clamp(v, min, max) {
-    return Math.max(min, Math.min(v, max));
-  }
+  // 🔒 Clamp pour limiter les valeurs
+  const clamp = (v, min, max) => Math.max(min, Math.min(v, max));
 
-  // 📏 Mesure robuste (UNE FOIS)
+  // 📏 Mesure des positions et wrappers
   function measure() {
     const scrollY = window.scrollY;
 
     metrics = cards.map(card => {
       const rect = card.getBoundingClientRect();
-
       return {
         top: rect.top + scrollY,
         height: rect.height,
@@ -25,16 +23,13 @@
     });
   }
 
-  // 🚀 appelé par le moteur global
+  // 🚀 Fonction appelée par le moteur global
   function updateParallax(scrollY) {
     const winH = window.innerHeight;
 
     metrics.forEach(m => {
-      const relativeTop = m.top - scrollY;
-      const center = relativeTop + m.height / 2;
-
+      const center = (m.top - scrollY) + m.height / 2;
       const progress = clamp((center - winH / 2) / winH, -1, 1);
-
       const speed = -200;
       const offset = progress * speed;
 
@@ -45,9 +40,9 @@
   onMount(() => {
     cards = [...section.querySelectorAll(".visual")];
 
-    measure();
+    measure(); // mesures initiales
     window.addEventListener("resize", measure);
-    window.addEventListener("load", measure); // important images
+    window.addEventListener("load", measure); // images chargées
 
     registerParallax(updateParallax);
   });
@@ -59,48 +54,24 @@
   });
 </script>
 
-
 <section class="home-showcase" bind:this={section}>
-
-  <div class="split">
-    <div class="visual">
-      <div class="parallax-wrapper">
-        <img src="https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?q=80&w=1600&auto=format&fit=crop" alt="Creative vision" />
+  {#each [
+    { img: "https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?q=80&w=1600&auto=format&fit=crop", alt: "Creative vision", title: "Discover our creative VISION", text: "We shape visual universes where form, texture and motion create immersive brand experiences.", reverse: false },
+    { img: "https://images.unsplash.com/photo-1604014237800-1c9102c219da?q=80&w=1600&auto=format&fit=crop", alt: "Artistic depth", title: "Crafted interactions with artistic DEPTH", text: "Every motion, contrast and transition is designed to create rhythm and harmony.", reverse: true },
+    { img: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=1600&auto=format&fit=crop", alt: "Emotional impact", title: "Where design meets emotional IMPACT", text: "We blend minimalism, sculpture-like compositions and cinematic pacing.", reverse: false }
+  ] as sectionData}
+    <div class="split {sectionData.reverse ? 'reverse' : ''}">
+      <div class="visual">
+        <div class="parallax-wrapper">
+          <img src={sectionData.img} alt={sectionData.alt} />
+        </div>
+      </div>
+      <div class="content">
+        <h2>{sectionData.title}</h2>
+        <p>{sectionData.text}</p>
       </div>
     </div>
-
-    <div class="content">
-      <h2>Discover our creative VISION</h2>
-      <p>We shape visual universes where form, texture and motion create immersive brand experiences.</p>
-    </div>
-  </div>
-
-  <div class="split reverse">
-    <div class="visual">
-      <div class="parallax-wrapper">
-        <img src="https://images.unsplash.com/photo-1604014237800-1c9102c219da?q=80&w=1600&auto=format&fit=crop" alt="Artistic depth" />
-      </div>
-    </div>
-
-    <div class="content">
-      <h2>Crafted interactions with artistic DEPTH</h2>
-      <p>Every motion, contrast and transition is designed to create rhythm and harmony.</p>
-    </div>
-  </div>
-
-  <div class="split">
-    <div class="visual">
-      <div class="parallax-wrapper">
-        <img src="https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=1600&auto=format&fit=crop" alt="Emotional impact" />
-      </div>
-    </div>
-
-    <div class="content">
-      <h2>Where design meets emotional IMPACT</h2>
-      <p>We blend minimalism, sculpture-like compositions and cinematic pacing.</p>
-    </div>
-  </div>
-
+  {/each}
 </section>
 
 <style>

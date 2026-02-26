@@ -1,143 +1,147 @@
 <script>
-  import { onMount } from "svelte";
+  import { onMount, onDestroy } from "svelte";
   import gsap from "gsap";
   import { ScrollTrigger } from "gsap/ScrollTrigger";
 
   gsap.registerPlugin(ScrollTrigger);
 
   let wrapper;
+  let ctx;
+
+  const textsContent = [
+    "Nous façonnons des expériences de marque avec une attention rare au SENS",
+    "Chaque projet naît d’une vision créative pensée pour générer de l’ÉMOTION",
+    "Nous construisons des récits puissants capables d’engager durablement votre AUDIENCE",
+    "Des expériences esthétiques qui transforment votre image en véritable SIGNATURE"
+  ];
 
   onMount(() => {
-    const ctx = gsap.context(() => {
+    ctx = gsap.context(() => {
+
+      const texts = gsap.utils.toArray(".scroll-text");
+
+      // Split mots
+      texts.forEach(text => {
+        const words = text.innerText.split(" ");
+        text.innerHTML = words.map(word => `<span class="word">${word}</span>`).join(" ");
+      });
+
+      gsap.set(".word", { opacity: 0.25, color: "#888" });
+      gsap.set(".bg-image", { opacity: 0 });
 
       const tl = gsap.timeline({
         scrollTrigger: {
           trigger: wrapper,
           start: "top top",
-          end: "+=320%",
-          scrub: true,
+          end: "+=800%",
+          scrub: 1,
           pin: true,
+          pinSpacing: true,
+          anticipatePin: 1,
+          invalidateOnRefresh: true
         }
       });
 
-      tl.to(".intro-text", { opacity: 0, duration: 1.4 })
-        .to(".bg-image", { opacity: 1, duration: 2.2 }, "<")
+      texts.forEach((text, index) => {
+        const words = text.querySelectorAll(".word");
 
-        .to(".t1", { opacity: 1, duration: 1.2 })
-        .to(".t1", { opacity: 0, duration: 1.2 })
+        tl.set(text, { opacity: 1 });
 
-        .to(".t2", { opacity: 1, duration: 1.2 })
-        .to(".t2", { opacity: 0, duration: 1.2 })
-
-        .to(".t3", { opacity: 1, duration: 1.2 })
-        .to(".t3", { opacity: 0, duration: 1.2 })
-
-        // 🤍 BLANC FINAL — PLUS LENT & FLUIDE
-        .to(".white-fade", {
+        // Révélation mot par mot
+        tl.to(words, {
           opacity: 1,
-          duration: 2.2,           // plus long
-          ease: "power3.inOut"     // beaucoup plus smooth
+          color: "#fff",
+          stagger: 0.08,
+          ease: "none",
+          duration: 2
         });
+
+        // Pause pour respiration
+        tl.to({}, { duration: 0.8 });
+
+        // Transition fond + disparition texte
+        if (index === 0) {
+          tl.to(".bg-image", { opacity: 1, duration: 2, ease: "none" }, "<");
+        }
+
+        if (index < texts.length - 1) {
+          tl.to(text, { opacity: 0, duration: 1.2, ease: "none" });
+        }
+      });
 
     }, wrapper);
 
-    return () => ctx.revert();
+    window.addEventListener("load", () => ScrollTrigger.refresh());
+
+    onDestroy(() => {
+      ctx.revert();
+    });
   });
 </script>
 
 <section class="narrative-wrapper" bind:this={wrapper}>
   <div class="bg-black"></div>
   <div class="bg-image"></div>
-  <div class="white-fade"></div>
 
   <div class="text-layer">
-    <h1 class="intro-text">
-      Nous façonnons des expériences de marque avec une attention rare au
-      <span class="gold">SENS</span>
-    </h1>
-
-    <h1 class="scroll-text t1">
-      Chaque projet naît d’une vision créative pensée pour générer de
-      l’<span class="gold">ÉMOTION</span>
-    </h1>
-
-    <h1 class="scroll-text t2">
-      Nous construisons des récits puissants capables d’engager durablement
-      votre <span class="gold">AUDIENCE</span>
-    </h1>
-
-    <h1 class="scroll-text t3">
-      Des expériences esthétiques qui transforment votre image en véritable
-      <span class="gold">SIGNATURE</span>
-    </h1>
+    {#each textsContent as text}
+      <h1 class="scroll-text">{text}</h1>
+    {/each}
   </div>
 </section>
 
 <style>
-  .narrative-wrapper {
-    position: relative;
-    height: 100vh;
-    width: 100vw;
-    margin-left: calc(50% - 50vw);
-    overflow: hidden;
-    background: #111;
-  }
+.narrative-wrapper {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  margin-left: calc(50% - 50vw);
+  overflow: hidden;
+  background: #111;
+}
 
-  .bg-black {
-    position: absolute;
-    inset: 0;
-    background: #111;
-    z-index: 1;
-  }
+.bg-black {
+  position: absolute;
+  inset: 0;
+  background: #111;
+  z-index: 1;
+}
 
-  .bg-image {
-    position: absolute;
-    inset: 0;
-    background: url("/images/aigleciel.jpg") center / cover no-repeat;
-    filter: blur(26px) brightness(0.55);
-    opacity: 0;
-    z-index: 2;
-    transform: scale(1.12);
-  }
+.bg-image {
+  position: absolute;
+  inset: 0;
+  background: url("/images/aigleciel.jpg") center / cover no-repeat;
+  filter: blur(25px) brightness(0.6);
+  z-index: 2;
+  opacity: 0;
+  transform: scale3d(1.1, 1.1, 1);
+  will-change: opacity, transform;
+}
 
-  .white-fade {
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(
-		to bottom,
-		#111 0%,
-		black 100%
-	);
-    opacity: 0;
-    z-index: 4;
-    pointer-events: none;
-  }
+.text-layer {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 3;
+  pointer-events: none;
+}
 
-  .text-layer {
-    position: absolute;
-    inset: 0;
-    z-index: 3;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
+h1 {
+  position: absolute;
+  max-width: 900px;
+  text-align: center;
+  font-family: "Aboreto", serif;
+  font-size: clamp(2rem, 4vw, 3.5rem);
+  line-height: 1.3;
+  color: #fff;
+  opacity: 0;
+  will-change: opacity;
+}
 
-  h1 {
-    position: absolute;
-    max-width: 920px;
-    text-align: center;
-    color: white;
-    font-family: "Aboreto", serif;
-    font-size: clamp(2.1rem, 4vw, 3.8rem);
-  }
-
-  .intro-text { opacity: 1; }
-  .scroll-text { opacity: 0; }
-
-  .gold {
-    font-style: italic;
-    background: linear-gradient(90deg,#f4ead1,#c79b3a);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-  }
+.word {
+  display: inline-block;
+  will-change: opacity, color;
+}
 </style>

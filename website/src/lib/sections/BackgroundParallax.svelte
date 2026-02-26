@@ -8,8 +8,11 @@
   function splitText(el) {
     const text = el.innerText;
     el.innerHTML = text
-      .split("")
-      .map((l, i) => `<span style="transition-delay:${i * 25}ms">${l}</span>`)
+      .split("") // chaque caractère
+      .map((l, i) => {
+        if (l === " ") return " "; // <-- préserve les espaces
+        return `<span style="transition-delay:${i * 25}ms">${l}</span>`;
+      })
       .join("");
   }
 
@@ -17,7 +20,6 @@
     return Math.max(min, Math.min(v, max));
   }
 
-  // 🔥 appelé par le moteur global
   function updateParallax() {
     const winH = window.innerHeight;
 
@@ -27,9 +29,8 @@
       const rect = section.getBoundingClientRect();
       const center = rect.top + rect.height / 2;
 
-      /* ========= OPACITY CINÉ ========= */
+      // ==== Opacity cinématique ====
       const screenProgress = center / winH;
-
       let opacity;
 
       if (screenProgress > 0.85) {
@@ -42,13 +43,12 @@
 
       bg.style.opacity = clamp(opacity, 0, 1);
 
-      /* ========= PARALLAX STABLE ========= */
+      // ==== Parallax stable ====
       const speed = -4;
       const offset = rect.top * speed * 0.08;
-
       bg.style.transform = `translate3d(0, ${offset}px, 0)`;
 
-      /* ========= TEXTE ========= */
+      // ==== Texte ====
       if (opacity > 0.6) {
         textSpans.forEach(s => (s.style.opacity = 1));
       }
@@ -111,7 +111,7 @@
   z-index: 2;
   width: 40%;
   font-family: "Aboreto", serif;
-  font-size: 2.7rem;
+  font-size: clamp(2rem, 3.5vw, 2.7rem);
   color: white;
 }
 
@@ -122,5 +122,17 @@
   opacity: 0;
   display: inline-block;
   transition: opacity 0.35s ease;
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+  .content {
+    width: 80%;
+    font-size: clamp(1.5rem, 5vw, 2rem);
+  }
+  .left, .right {
+    margin: 0 auto;
+    text-align: center;
+  }
 }
 </style>

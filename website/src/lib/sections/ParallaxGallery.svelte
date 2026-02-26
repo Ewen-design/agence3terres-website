@@ -17,16 +17,13 @@
     { title: "Motion Concept", date: "2024", desc: "Concept motion design pour lancement de produit digital." }
   ];
 
-  function clamp(v, min, max) {
-    return Math.max(min, Math.min(v, max));
-  }
+  const clamp = (v, min, max) => Math.max(min, Math.min(v, max));
 
   function measure() {
     const scrollY = window.scrollY;
 
     metrics = cards.map(card => {
       const rect = card.getBoundingClientRect();
-
       return {
         top: rect.top + scrollY,
         height: rect.height,
@@ -37,16 +34,11 @@
 
   function updateParallax(scrollY) {
     const winH = window.innerHeight;
-
     metrics.forEach(m => {
-      const relativeTop = m.top - scrollY;
-      const center = relativeTop + m.height / 2;
-
+      const center = (m.top - scrollY) + m.height / 2;
       const progress = clamp((center - winH / 2) / winH, -1, 1);
-
       const speed = -150;
       const offset = progress * speed;
-
       m.wrapper.style.transform = `translate3d(0, ${offset}px, 0)`;
     });
   }
@@ -63,11 +55,9 @@
 
   onMount(() => {
     cards = [...gallerySection.querySelectorAll(".card")];
-
     measure();
     window.addEventListener("resize", measure);
     window.addEventListener("load", measure);
-
     registerParallax(updateParallax);
   });
 
@@ -81,10 +71,16 @@
 <section class="gallery" bind:this={gallerySection}>
   <div class="gallery-grid">
     {#each items as item}
-      <!-- svelte-ignore a11y_no_static_element_interactions a11y_click_events_have_key_events -->
-      <div class="card" data-cursor="view" role="button" tabindex="0" on:click={() => openProject(item)} on:keydown={(e) => e.key === 'Enter' && openProject(item)}>
+      <div
+        class="card"
+        data-cursor="view"
+        role="button"
+        tabindex="0"
+        on:click={() => openProject(item)}
+        on:keydown={(e) => e.key === 'Enter' && openProject(item)}
+      >
         <div class="card-image-wrapper">
-          <img src="/images/parfum.jpg" alt="{item.title}" />
+          <img src="/images/parfum.jpg" alt={item.title} />
         </div>
 
         <div class="info">
@@ -101,9 +97,9 @@
 <style>
 .gallery {
   position: relative;
-  left: 50%;
-  margin-left: -50vw;
   width: 100vw;
+  left: 50%;
+  transform: translateX(-50%);
   background: #111;
   padding: 8rem 0;
 }
@@ -112,7 +108,7 @@
   width: min(1500px, 92%);
   margin: 0 auto;
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(3, 1fr); /* Desktop : 3 colonnes */
   gap: 1rem;
 }
 
@@ -120,8 +116,9 @@
   aspect-ratio: 1/1;
   position: relative;
   overflow: hidden;
-  border-radius: 18px;
   cursor: pointer;
+  will-change: transform;
+  border-radius: 0; /* pas d’arrondi */
 }
 
 .card-image-wrapper {
@@ -150,18 +147,25 @@
   flex-direction: column;
   gap: 4px;
   padding: 10px 14px;
-  border-radius: 10px;
   backdrop-filter: blur(10px);
   background: rgba(255,255,255,0.15);
-  color: white;
+  color: #fff;
   font-size: 0.8rem;
   opacity: 0;
   transform: translateY(-10px);
-  transition: 0.4s ease;
+  transition: opacity 0.4s ease, transform 0.4s ease;
+  border-radius: 3px;
 }
 
 .card:hover .info {
   opacity: 1;
   transform: translateY(0);
+}
+
+/* Mobile : 1 colonne pour 6 cards */
+@media (max-width: 900px) {
+  .gallery-grid {
+    grid-template-columns: 1fr;
+  }
 }
 </style>
