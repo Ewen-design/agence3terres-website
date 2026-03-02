@@ -8,8 +8,10 @@
   let text = "";
   let mode = "dot"; // dot | button
   let isActive = false;
+  let isDesktop = false;
 
   function updateTransform() {
+    if (!cursor) return;
     cursor.style.transform = `translate3d(${x}px, ${y}px, 0) scale(${scale})`;
   }
 
@@ -65,6 +67,10 @@
   }
 
   onMount(() => {
+    // ✅ Desktop uniquement
+    isDesktop = window.matchMedia("(pointer: fine)").matches;
+    if (!isDesktop) return;
+
     window.addEventListener("mousemove", move);
     window.addEventListener("mouseover", handleHover);
     window.addEventListener("mousedown", down);
@@ -72,6 +78,8 @@
   });
 
   onDestroy(() => {
+    if (!isDesktop) return;
+
     window.removeEventListener("mousemove", move);
     window.removeEventListener("mouseover", handleHover);
     window.removeEventListener("mousedown", down);
@@ -79,17 +87,21 @@
   });
 </script>
 
-<div
-  bind:this={cursor}
-  class="cursor"
-  class:button={mode === "button"}
-  class:active={isActive}
->
-  <span>{text}</span>
-</div>
+{#if isDesktop}
+  <div
+    bind:this={cursor}
+    class="cursor"
+    class:button={mode === "button"}
+    class:active={isActive}
+  >
+    <span>{text}</span>
+  </div>
+{/if}
 
 <style>
-:global(body) { cursor: none; }
+:global(body) {
+  cursor: none;
+}
 
 .cursor {
   position: fixed;
@@ -102,13 +114,14 @@
   height: 26px;
   border-radius: 50%;
 
-  background: rgba(255, 255, 255, 0.5);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  /* ✅ Glass identique navbar */
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
 
-    box-shadow:
-      0 4px 20px rgba(0,0,0,0.25),
-      inset 0 0 0 1px rgba(255,255,255,0.8);
+  box-shadow:
+    0 8px 10px rgba(0, 0, 0, 0.06),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.3);
 
   display: flex;
   align-items: center;
@@ -126,18 +139,18 @@
     box-shadow 0.35s ease;
 }
 
-/* ✨ MODE BOUTON (header style) */
+/* Mode bouton */
 .cursor.button {
   width: auto;
   height: 42px;
   padding: 0 18px;
   border-radius: 12px;
 
-  backdrop-filter: blur(14px);
-  background: rgba(255,255,255,0.12);
-  border: 1px solid rgba(255,255,255,0.35);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
 
-  box-shadow: 0 0 24px rgba(255,255,255,0.25);
+  background: rgba(255,255,255,0.15);
+  border: 1px solid rgba(255,255,255,0.3);
 }
 
 /* Texte */
@@ -145,9 +158,11 @@
   pointer-events: none;
 }
 
-/* 🔥 CLIC */
+/* Click */
 .cursor.active {
   transform: scale(1.08);
-  box-shadow: 0 0 35px rgba(255,255,255,0.45);
+  box-shadow:
+    0 8px 14px rgba(0,0,0,0.1),
+    inset 0 0 0 1px rgba(255,255,255,0.4);
 }
 </style>

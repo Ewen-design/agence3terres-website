@@ -63,7 +63,7 @@
 
   <!-- Custom cursor toujours présent -->
   <CustomCursor />
-
+<IconeFleche />
   <!-- Preloader -->
   {#if isLoading}
     <IntroLoader />
@@ -74,7 +74,6 @@
   <div class="page-wrapper {isTransitioning ? 'blur-out' : ''}">
 
     {#if currentPage === "home"}
-      <IconeFleche />
       <HeroScroll />
       <TextesIntro />
       <HomePage />
