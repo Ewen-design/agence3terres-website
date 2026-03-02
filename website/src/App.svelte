@@ -6,6 +6,7 @@
   import Footer from "./lib/structure/Footer.svelte";
   import CustomCursor from "./lib/structure/CustomCursor.svelte";
   import IntroLoader from "./lib/structure/IntroLoader.svelte";
+  import SliderCustom from "./lib/sections/SliderCustom.svelte";
 
   // HOME
   import IconeFleche from "./lib/structure/IconeFleche.svelte";
@@ -86,6 +87,7 @@
     {:else if currentPage === "apropos"}
       <Apropos />
     {:else if currentPage === "services"}
+    <SliderCustom />
       <Services />
     {:else if currentPage === "contact"}
       <Contact />
