@@ -8,6 +8,8 @@
   let selected = null;
   let gallerySection;
 
+  let isMobile = false;
+
   // HEADER animation
   let headerEl;
   let lineEl;
@@ -40,15 +42,37 @@
     const winH = window.innerHeight;
 
     // PARALLAX CARDS (inchangé)
-    metrics.forEach(m => {
+    metrics.forEach((m, index) => {
       const center = (m.top - scrollY) + m.height / 2;
       const progress = clamp((center - winH / 2) / winH, -1, 1);
       const speed = -150;
       const offset = progress * speed;
       m.wrapper.style.transform = `translate3d(0, ${offset}px, 0)`;
+
+      // ✅ Ajout mobile uniquement
+      if (isMobile) {
+        const card = cards[index];
+        const info = card.querySelector(".info");
+        const img = card.querySelector("img");
+
+        const distanceFromCenter = Math.abs(center - winH / 2);
+        const threshold = m.height / 2;
+
+        if (distanceFromCenter < threshold) {
+          info.style.opacity = "1";
+          info.style.transform = "translateY(0)";
+          img.style.filter = "brightness(0.6)";
+          img.style.transform = "scale(1.05)";
+        } else {
+          info.style.opacity = "0";
+          info.style.transform = "translateY(-10px)";
+          img.style.filter = "";
+          img.style.transform = "";
+        }
+      }
     });
 
-    // HEADER ANIMATION (ajouté uniquement)
+    // HEADER ANIMATION (inchangé)
     if (headerEl && lineEl) {
       const rect = headerEl.getBoundingClientRect();
       const progress = clamp(1 - rect.top / winH, 0, 1);
@@ -71,6 +95,8 @@
   }
 
   onMount(() => {
+    isMobile = window.matchMedia("(max-width: 900px)").matches;
+
     cards = [...gallerySection.querySelectorAll(".card")];
     measure();
     window.addEventListener("resize", measure);
@@ -87,7 +113,6 @@
 
 <section class="gallery" bind:this={gallerySection}>
 
-  <!-- HEADER -->
   <div class="gallery-header" bind:this={headerEl}>
     <h2>Nos services</h2>
     <div class="line" bind:this={lineEl}></div>
@@ -139,7 +164,6 @@
   padding: 10rem 0;
 }
 
-/* HEADER */
 .gallery-header {
   width: min(900px, 90%);
   margin: 0 auto 6rem auto;
@@ -165,7 +189,6 @@
   line-height: 1.6;
 }
 
-/* Ligne animée */
 .line {
   width: 120px;
   height: 1px;
@@ -177,7 +200,6 @@
   transition: transform 0.6s ease;
 }
 
-/* Tout le reste inchangé */
 .gallery-grid {
   width: min(1500px, 92%);
   margin: 0 auto;
