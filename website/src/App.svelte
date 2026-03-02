@@ -1,5 +1,4 @@
 <script>
-import { fade, fly } from "svelte/transition";
   import { onMount } from "svelte";
   import { initScrollEngine } from "./lib/scrollEngine.js";
 
@@ -8,12 +7,13 @@ import { fade, fly } from "svelte/transition";
   import CustomCursor from "./lib/structure/CustomCursor.svelte";
   import IntroLoader from "./lib/structure/IntroLoader.svelte";
 
-  // PAGE HOME
+  // HOME
   import IconeFleche from "./lib/structure/IconeFleche.svelte";
   import HeroScroll from "./lib/sections/HeroScroll.svelte";
   import TextesIntro from "./lib/sections/TextesIntro.svelte";
   import HomePage from "./lib/sections/HomePage.svelte";
   import ParallaxGallery from "./lib/sections/ParallaxGallery.svelte";
+   import ProjetsHighlight from "./lib/sections/ProjetsHighlight.svelte";
   import ParallaxTextes from "./lib/sections/ParallaxTextes.svelte";
   import BackgroundParallax from "./lib/sections/BackgroundParallax.svelte";
 
@@ -24,57 +24,95 @@ import { fade, fly } from "svelte/transition";
   import Contact from "./lib/structure/Contact.svelte";
 
   let currentPage = "home";
+  let nextPage = null;
+
+  let isTransitioning = false;
+  let isLoading = true;
 
   function navigate(page) {
-    currentPage = page;
-    window.scrollTo(0, 0);
+    if (page === currentPage || isTransitioning) return;
+
+    nextPage = page;
+    isTransitioning = true;
+
+    // Blur + fade out
+    setTimeout(() => {
+      currentPage = nextPage;
+      window.scrollTo(0, 0);
+    }, 600);
+
+    // Fade in + unblur
+    setTimeout(() => {
+      isTransitioning = false;
+      nextPage = null;
+    }, 1300);
   }
 
   onMount(() => {
     initScrollEngine();
+
+    window.addEventListener("load", () => {
+      setTimeout(() => {
+        isLoading = false;
+      }, 1500);
+    });
   });
 </script>
 
 <main>
+
+  <!-- Custom cursor toujours présent -->
   <CustomCursor />
-  <IntroLoader />
+
+  <!-- Preloader -->
+  {#if isLoading}
+    <IntroLoader />
+  {/if}
 
   <Header {navigate} />
 
- {#key currentPage}
-  <div
-    in:fade={{ duration: 400 }}
-    out:fade={{ duration: 300 }}
-    
+  <div class="page-wrapper {isTransitioning ? 'blur-out' : ''}">
 
-  >
     {#if currentPage === "home"}
       <IconeFleche />
       <HeroScroll />
       <TextesIntro />
       <HomePage />
       <ParallaxGallery />
+      <ProjetsHighlight />
       <ParallaxTextes />
       <BackgroundParallax />
-    {/if}
-
-    {#if currentPage === "travail"}
+    {:else if currentPage === "travail"}
       <Travail />
-    {/if}
-
-    {#if currentPage === "apropos"}
+    {:else if currentPage === "apropos"}
       <Apropos />
-    {/if}
-
-    {#if currentPage === "services"}
+    {:else if currentPage === "services"}
       <Services />
-    {/if}
-
-    {#if currentPage === "contact"}
+    {:else if currentPage === "contact"}
       <Contact />
     {/if}
+
   </div>
-{/key}
 
   <Footer />
+
 </main>
+
+<style>
+main {
+  position: relative;
+  width: 100%;
+  overflow-x: hidden;
+}
+
+.page-wrapper {
+  transition:
+    filter 0.8s cubic-bezier(.22,.61,.36,1),
+    opacity 0.8s cubic-bezier(.22,.61,.36,1);
+}
+
+.blur-out {
+  filter: blur(18px);
+  opacity: 0;
+}
+</style>

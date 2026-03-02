@@ -1,4 +1,4 @@
-/* ── Global reset & base styles for agence3terres ── */
+/* ── Global Reset ── */
 *,
 *::before,
 *::after {
@@ -6,46 +6,45 @@
   padding: 0;
   box-sizing: border-box;
 }
-:root {
+
+/* ── Root setup ── */
+html {
+  scroll-behavior: auto;
+  scrollbar-width: none;
+}
+
+html::-webkit-scrollbar {
+  display: none;
+}
+
+body {
   font-family: "Manrope", system-ui, -apple-system, sans-serif;
-  line-height: 1.5;
-  font-weight: 400;
-
+  background: #111;
   color: #fff;
-    background-color: #111;
 
-  font-synthesis: italic;
-  text-rendering: optimizeLegibility;
+  min-height: 100vh;
+  overflow-x: hidden;
+
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-body {
-  margin: 0;
-  min-width: 320px;
+/* App wrapper */
+#app {
+  width: 100%;
   min-height: 100vh;
   overflow-x: hidden;
 }
 
-#app {
-  width: 100%;
-  overflow-x: hidden;
-}
-
+/* Links */
 a {
   color: inherit;
   text-decoration: none;
 }
 
+/* Images */
 img {
   display: block;
   max-width: 100%;
-}
-
-/* Hide scrollbar globally — matches your design intent */
-::-webkit-scrollbar {
-  display: none;
-}
-html {
-  scrollbar-width: none;
+  height: auto;
 }

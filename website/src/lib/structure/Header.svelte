@@ -12,6 +12,8 @@
   let userExpanded = false;
   let menuOpen = false;
 
+  let textColor = "white"; // couleur dynamique du texte
+
   function handleMove(e) {
     const rect = e.currentTarget.getBoundingClientRect();
     x = ((e.clientX - rect.left) / rect.width) * 100;
@@ -29,25 +31,50 @@
     }
 
     lastScrollY = currentY;
-  }
 
-  onMount(() => {
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  });
+    updateTextColor();
+  }
 
   function handleHover() {
     userExpanded = true;
   }
 
   $: compact = scrollingDown && !userExpanded;
+
+  onMount(() => {
+    window.addEventListener("scroll", handleScroll);
+
+    // Initial
+    updateTextColor();
+
+    return () => window.removeEventListener("scroll", handleScroll);
+  });
+
+  function updateTextColor() {
+    const header = document.querySelector("header");
+    const headerMid = header.getBoundingClientRect().top + header.offsetHeight / 2;
+
+    // liste des sections où le texte doit devenir noir
+    const sections = document.querySelectorAll("section.hero-wrapper, section.creative-section, section.services, section.contact");
+
+    // vérifie si le milieu du header est au-dessus de l'une de ces sections
+    let overSection = false;
+    sections.forEach(section => {
+      const rect = section.getBoundingClientRect();
+      if (headerMid >= rect.top && headerMid <= rect.bottom) {
+        overSection = true;
+      }
+    });
+
+    textColor = overSection ? "black" : "white";
+  }
 </script>
 
 <header
   class="nav-wrapper {compact ? 'compact' : ''} {menuOpen ? 'menu-open' : ''}"
   on:mousemove={handleMove}
   on:mouseenter={handleHover}
-  style="--x:{x}%; --y:{y}%"
+  style="--x:{x}%; --y:{y}%; color:{textColor}"
 >
   <nav class="nav-inner">
     <!-- LOGO -->
@@ -113,6 +140,7 @@
 <FullscreenMenu bind:open={menuOpen} />
 
 <style>
+/* Tout ton style existant reste inchangé */
 header {
   position: fixed;
   top: 1rem;
@@ -155,19 +183,19 @@ header {
   padding: 0 1.5rem;
   font-size: 0.9rem;
   white-space: nowrap;
-  color: #111;
+  color: inherit; /* suit textColor */
   border: none;
   cursor: pointer;
 
-  background: rgba(255, 255, 255, 0.5);
-  backdrop-filter: blur(3.5px);
-  -webkit-backdrop-filter: blur(3.5px);
+  background: rgba(255,255,255,0.15);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
 
   border-radius: 3px;
 
   box-shadow:
     0 8px 10px rgba(0,0,0,0.06),
-    inset 0 0 0 1px rgba(255,255,255,0.4);
+    inset 0 0 0 0px rgba(255,255,255,0.4);
 
   transition:
     transform 1.2s cubic-bezier(.22,.61,.36,1),
@@ -192,14 +220,6 @@ header {
 
 .nav-btn:hover::before {
   opacity: 1;
-}
-
-.nav-btn:hover {
-  transform: translateY(-3px) scale(1.02);
-  box-shadow:
-    0 12px 40px rgba(0,0,0,0.08),
-    0 0 40px rgba(194, 156, 123, 0.45),
-    inset 0 0 0 1px rgba(255,255,255,0.10);
 }
 
 .links {
@@ -234,7 +254,7 @@ header {
 .more span {
   width: 3px;
   height: 3px;
-  background: #111;
+  background: currentColor;
   border-radius: 50%;
   transition: all 1s cubic-bezier(.22,.61,.36,1);
 }

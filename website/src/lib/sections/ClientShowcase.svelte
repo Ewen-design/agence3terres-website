@@ -1,40 +1,20 @@
 <script>
-  import { onMount, onDestroy } from "svelte";
-  import { registerParallax, unregisterParallax } from "../scrollEngine.js";
-
   export let client;
   export let index;
 
-  let section;
-  let coverLayer;
-  let galleryItems = [];
   let offcanvas = false;
-
-  onMount(() => {
-    registerParallax(coverLayer, { speed: 0.1 });
-
-    galleryItems.forEach((item, i) => {
-      registerParallax(item, { speed: 0.1 + i * 0.05 });
-    });
-  });
-
-  onDestroy(() => {
-    unregisterParallax(coverLayer);
-    galleryItems.forEach((item) => unregisterParallax(item));
-  });
 
   function toggleOffcanvas() {
     offcanvas = !offcanvas;
   }
 </script>
 
-<section class="client-section" bind:this={section}>
+<section class="client-section">
 
-  <!-- COVER PARALLAX -->
+  <!-- COVER -->
   <div class="cover">
     <div
       class="cover-layer"
-      bind:this={coverLayer}
       style="background-image:url({client.cover})"
     ></div>
 
@@ -58,15 +38,12 @@
 
     <!-- GALLERY -->
     <div class="gallery">
-
-    {#each client.gallery as img, i}
-  <div
-    class="gallery-item {img.type}"
-    bind:this={galleryItems[i]}
-    style="background-image:url({img.src})"
-  ></div>
-{/each}
-
+      {#each client.gallery as img}
+        <div
+          class="gallery-item {img.type}"
+          style="background-image:url({img.src})"
+        ></div>
+      {/each}
     </div>
 
   </div>
@@ -76,8 +53,8 @@
 
   <!-- OFF CANVAS -->
   {#if offcanvas}
-    <div class="offcanvas">
-      <div class="offcanvas-inner">
+    <div class="offcanvas" on:click={toggleOffcanvas}>
+      <div class="offcanvas-inner" on:click|stopPropagation>
         <button class="close" on:click={toggleOffcanvas}>✕</button>
         <h2>{client.name}</h2>
         <p>Présentation complète du projet ici.</p>
@@ -108,11 +85,10 @@
 
 .cover-layer {
   position: absolute;
-  inset: -10%;
+  inset: 0;
   background-size: cover;
   background-position: center;
-  transform: scale(1.1);
-  will-change: transform;
+  transform: scale(1.05);
 }
 
 .cover-overlay {
@@ -160,6 +136,16 @@ h2 {
   margin: 20px 0;
 }
 
+h3 {
+  font-weight: 300;
+  opacity: 0.7;
+  margin-bottom: 20px;
+}
+
+p {
+  line-height: 1.6;
+}
+
 .cta {
   margin-top: 30px;
   padding: 14px 28px;
@@ -187,13 +173,12 @@ h2 {
 .gallery-item {
   background-size: cover;
   background-position: center;
-  transition: transform 1s cubic-bezier(.77,0,.18,1),
-              filter .6s ease;
-  will-change: transform;
+  transition: transform .8s cubic-bezier(.77,0,.18,1),
+              filter .5s ease;
 }
 
 .gallery-item:hover {
-  transform: scale(1.08);
+  transform: scale(1.05);
   filter: blur(2px);
 }
 
@@ -223,10 +208,11 @@ h2 {
   inset: 0;
   background: rgba(0,0,0,0.9);
   z-index: 9999;
-  animation: fadeIn .5s ease forwards;
+  animation: fadeIn .4s ease forwards;
 }
 
 .offcanvas-inner {
+  position: relative;
   max-width: 900px;
   margin: 100px auto;
   padding: 60px;
@@ -235,8 +221,8 @@ h2 {
 
 .close {
   position: absolute;
-  top: 40px;
-  right: 40px;
+  top: 30px;
+  right: 30px;
   background: none;
   border: none;
   color: white;

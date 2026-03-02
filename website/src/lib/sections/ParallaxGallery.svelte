@@ -8,6 +8,10 @@
   let selected = null;
   let gallerySection;
 
+  // HEADER animation
+  let headerEl;
+  let lineEl;
+
   const items = [
     { title: "Création de logo", date: "2024", desc: "Refonte complète de l'identité visuelle et création d'un système graphique minimaliste." },
     { title: "Brand Identity", date: "2023", desc: "Développement d'une plateforme de marque et direction artistique globale." },
@@ -34,6 +38,8 @@
 
   function updateParallax(scrollY) {
     const winH = window.innerHeight;
+
+    // PARALLAX CARDS (inchangé)
     metrics.forEach(m => {
       const center = (m.top - scrollY) + m.height / 2;
       const progress = clamp((center - winH / 2) / winH, -1, 1);
@@ -41,6 +47,17 @@
       const offset = progress * speed;
       m.wrapper.style.transform = `translate3d(0, ${offset}px, 0)`;
     });
+
+    // HEADER ANIMATION (ajouté uniquement)
+    if (headerEl && lineEl) {
+      const rect = headerEl.getBoundingClientRect();
+      const progress = clamp(1 - rect.top / winH, 0, 1);
+
+      headerEl.style.opacity = progress;
+      headerEl.style.transform = `translateY(${40 - progress * 40}px)`;
+
+      lineEl.style.transform = `scaleX(${progress})`;
+    }
   }
 
   function openProject(item) {
@@ -69,6 +86,17 @@
 </script>
 
 <section class="gallery" bind:this={gallerySection}>
+
+  <!-- HEADER -->
+  <div class="gallery-header" bind:this={headerEl}>
+    <h2>Nos services</h2>
+    <div class="line" bind:this={lineEl}></div>
+    <p>
+      Une approche stratégique et sensorielle pour construire des identités fortes,
+      des expériences digitales immersives et des univers visuels mémorables.
+    </p>
+  </div>
+
   <div class="gallery-grid">
     {#each items as item}
       <div
@@ -90,6 +118,13 @@
       </div>
     {/each}
   </div>
+
+  <div class="gallery-footer">
+    <a href="/services" class="services-btn">
+      Découvrir tous les services
+    </a>
+  </div>
+
 </section>
 
 <ProjectOffCanvas {selected} on:close={closeProject} />
@@ -101,14 +136,53 @@
   left: 50%;
   transform: translateX(-50%);
   background: #111;
-  padding: 8rem 0;
+  padding: 10rem 0;
 }
 
+/* HEADER */
+.gallery-header {
+  width: min(900px, 90%);
+  margin: 0 auto 6rem auto;
+  text-align: center;
+  color: #fff;
+
+  opacity: 0;
+  transform: translateY(40px);
+  transition: transform 0.6s ease, opacity 0.6s ease;
+}
+
+.gallery-header h2 {
+  font-family: "Aboreto", serif;
+  font-size: clamp(2.5rem, 4vw, 4rem);
+  letter-spacing: 0.2em;
+  margin-bottom: 1.5rem;
+}
+
+.gallery-header p {
+  font-family: "Manrope", sans-serif;
+  font-size: 1rem;
+  opacity: 0.65;
+  line-height: 1.6;
+}
+
+/* Ligne animée */
+.line {
+  width: 120px;
+  height: 1px;
+  background: #fff;
+  margin: 0 auto 2rem auto;
+
+  transform: scaleX(0);
+  transform-origin: center;
+  transition: transform 0.6s ease;
+}
+
+/* Tout le reste inchangé */
 .gallery-grid {
   width: min(1500px, 92%);
   margin: 0 auto;
   display: grid;
-  grid-template-columns: repeat(3, 1fr); /* Desktop : 3 colonnes */
+  grid-template-columns: repeat(3, 1fr);
   gap: 1rem;
 }
 
@@ -118,7 +192,6 @@
   overflow: hidden;
   cursor: pointer;
   will-change: transform;
-  border-radius: 0; /* pas d’arrondi */
 }
 
 .card-image-wrapper {
@@ -154,7 +227,6 @@
   opacity: 0;
   transform: translateY(-10px);
   transition: opacity 0.4s ease, transform 0.4s ease;
-  border-radius: 3px;
 }
 
 .card:hover .info {
@@ -162,7 +234,29 @@
   transform: translateY(0);
 }
 
-/* Mobile : 1 colonne pour 6 cards */
+.gallery-footer {
+  text-align: center;
+  margin-top: 6rem;
+}
+
+.services-btn {
+  display: inline-block;
+  padding: 14px 36px;
+  border: 1px solid #fff;
+  color: #fff;
+  text-decoration: none;
+  font-family: "Manrope", sans-serif;
+  font-size: 0.8rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  transition: all 0.4s ease;
+}
+
+.services-btn:hover {
+  background: #fff;
+  color: #111;
+}
+
 @media (max-width: 900px) {
   .gallery-grid {
     grid-template-columns: 1fr;
