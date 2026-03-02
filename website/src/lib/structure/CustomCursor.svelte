@@ -144,13 +144,13 @@
   width: auto;
   height: 42px;
   padding: 0 18px;
-  border-radius: 12px;
+  border-radius: 3px;
 
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
 
   background: rgba(255,255,255,0.15);
-  border: 1px solid rgba(255,255,255,0.3);
+  border: 0px solid rgba(255,255,255,0.3);
 }
 
 /* Texte */
