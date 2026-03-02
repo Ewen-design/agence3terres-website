@@ -119,7 +119,7 @@
   </nav>
 </header>
 
-<FullscreenMenu bind:open={menuOpen} />
+<FullscreenMenu bind:open={menuOpen} {navigate} />
 
 <style>
 header {
