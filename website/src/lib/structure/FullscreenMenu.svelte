@@ -235,7 +235,6 @@
   pointer-events: none;
 }
 
-
 /* reveal gauche → droite */
 @keyframes revealImage { from { clip-path: inset(0 100% 0 0); } to { clip-path: inset(0 0 0 0); } }
 /* zoom interne */
@@ -244,7 +243,7 @@
 /* --- RESPONSIVE --- */
 @media (max-width: 900px) {
   .menu { width: 100%; }
-  .menu-body { padding-left: 20px; }
-  .links { font-size: clamp(1.5rem, 5vw, 2.5rem); gap: 0.7rem; }
+  .menu-body { padding-left: 20px; align-items: center; }
+  .links { font-size: clamp(2.5rem, 6vw, 4rem); text-align: center; gap: 1.2rem; }
 }
 </style>
