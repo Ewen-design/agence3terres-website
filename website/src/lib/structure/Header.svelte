@@ -4,21 +4,11 @@
 
   export let navigate;
 
-  let x = 50;
-  let y = 50;
-
   let lastScrollY = 0;
   let scrollingDown = false;
   let userExpanded = false;
   let menuOpen = false;
-
-  let textColor = "white"; // couleur dynamique du texte
-
-  function handleMove(e) {
-    const rect = e.currentTarget.getBoundingClientRect();
-    x = ((e.clientX - rect.left) / rect.width) * 100;
-    y = ((e.clientY - rect.top) / rect.height) * 100;
-  }
+  let textColor = "white";
 
   function handleScroll() {
     const currentY = window.scrollY;
@@ -31,7 +21,6 @@
     }
 
     lastScrollY = currentY;
-
     updateTextColor();
   }
 
@@ -39,25 +28,14 @@
     userExpanded = true;
   }
 
-  $: compact = scrollingDown && !userExpanded;
-
-  onMount(() => {
-    window.addEventListener("scroll", handleScroll);
-
-    // Initial
-    updateTextColor();
-
-    return () => window.removeEventListener("scroll", handleScroll);
-  });
-
   function updateTextColor() {
     const header = document.querySelector("header");
     const headerMid = header.getBoundingClientRect().top + header.offsetHeight / 2;
 
-    // liste des sections où le texte doit devenir noir
-    const sections = document.querySelectorAll("section.hero-wrapper, section.creative-section, section.services, section.contact");
+    const sections = document.querySelectorAll(
+      "section.hero-wrapper, section.creative-section, section.services, section.contact"
+    );
 
-    // vérifie si le milieu du header est au-dessus de l'une de ces sections
     let overSection = false;
     sections.forEach(section => {
       const rect = section.getBoundingClientRect();
@@ -68,64 +46,67 @@
 
     textColor = overSection ? "black" : "white";
   }
+
+  // 🔥 Curseur par bouton (suivi réel)
+  function handleButtonMove(e) {
+    const btn = e.currentTarget;
+    const rect = btn.getBoundingClientRect();
+
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+
+    btn.style.setProperty("--mx", `${x}px`);
+    btn.style.setProperty("--my", `${y}px`);
+  }
+
+  $: compact = scrollingDown && !userExpanded;
+
+  onMount(() => {
+    window.addEventListener("scroll", handleScroll);
+    updateTextColor();
+    return () => window.removeEventListener("scroll", handleScroll);
+  });
 </script>
 
 <header
   class="nav-wrapper {compact ? 'compact' : ''} {menuOpen ? 'menu-open' : ''}"
-  on:mousemove={handleMove}
   on:mouseenter={handleHover}
-  style="--x:{x}%; --y:{y}%; color:{textColor}"
+  style="color:{textColor}"
 >
   <nav class="nav-inner">
-    <!-- LOGO -->
+
     <div
       class="nav-btn logo"
       data-cursor="button"
+      on:mousemove={handleButtonMove}
       on:click={() => navigate("home")}
     >
       Agence 3 Terres
     </div>
 
-    <!-- LIENS -->
     <div class="links">
-      <button
-        class="nav-btn fade"
-        data-cursor="button"
-        on:click={() => navigate("travail")}
-      >
+      <button class="nav-btn fade" data-cursor="button" on:mousemove={handleButtonMove} on:click={() => navigate("travail")}>
         Travail
       </button>
 
-      <button
-        class="nav-btn fade"
-        data-cursor="button"
-        on:click={() => navigate("apropos")}
-      >
+      <button class="nav-btn fade" data-cursor="button" on:mousemove={handleButtonMove} on:click={() => navigate("apropos")}>
         À propos
       </button>
 
-      <button
-        class="nav-btn fade"
-        data-cursor="button"
-        on:click={() => navigate("services")}
-      >
+      <button class="nav-btn fade" data-cursor="button" on:mousemove={handleButtonMove} on:click={() => navigate("services")}>
         Services
       </button>
 
-      <button
-        class="nav-btn fade"
-        data-cursor="button"
-        on:click={() => navigate("contact")}
-      >
+      <button class="nav-btn fade" data-cursor="button" on:mousemove={handleButtonMove} on:click={() => navigate("contact")}>
         Contact
       </button>
     </div>
 
-    <!-- MENU BURGER -->
     <div
       class="nav-btn more"
-      on:click={() => (menuOpen = true)}
       data-cursor="button"
+      on:mousemove={handleButtonMove}
+      on:click={() => (menuOpen = true)}
       role="button"
       tabindex="0"
       on:keydown={(e) => e.key === "Enter" && (menuOpen = true)}
@@ -134,13 +115,13 @@
       <span></span>
       <span></span>
     </div>
+
   </nav>
 </header>
 
 <FullscreenMenu bind:open={menuOpen} />
 
 <style>
-/* Tout ton style existant reste inchangé */
 header {
   position: fixed;
   top: 1rem;
@@ -179,11 +160,10 @@ header {
   display: flex;
   align-items: center;
   justify-content: center;
-
   padding: 0 1.5rem;
   font-size: 0.9rem;
   white-space: nowrap;
-  color: inherit; /* suit textColor */
+  color: inherit;
   border: none;
   cursor: pointer;
 
@@ -203,19 +183,33 @@ header {
     background 1.2s cubic-bezier(.22,.61,.36,1);
 }
 
+/* 🔥 Glow bordure localisé ultra premium */
 .nav-btn::before {
   content: "";
   position: absolute;
   inset: 0;
   border-radius: inherit;
-  background: radial-gradient(
-    200px circle at var(--x) var(--y),
-    rgba(255,255,255,0.35),
-    transparent 70%
-  );
+  padding: 1px;
+
+  background:
+    radial-gradient(
+      80px circle at var(--mx) var(--my),
+      rgba(212, 175, 55, 0.95),
+      rgba(212, 175, 55, 0.45) 40%,
+      transparent 75%
+    );
+
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+          mask-composite: exclude;
+
   opacity: 0;
-  transition: opacity 0.8s ease;
+  transition: opacity 0.25s ease;
   pointer-events: none;
+
+  filter: drop-shadow(0 0 3px rgba(212, 175, 55, 0.35));
 }
 
 .nav-btn:hover::before {

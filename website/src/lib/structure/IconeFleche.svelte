@@ -127,13 +127,13 @@
   border-radius: 50%;
   padding: 1px;
   background: conic-gradient(
-    #f8eacb calc(var(--progress) * 1%),
+    rgba(213, 184, 89, 0.95) calc(var(--progress) * 1%),
     rgba(255,255,255,0.06) 0%
   );
   -webkit-mask:
-    radial-gradient(farthest-side, transparent calc(100% - 2px), black 0);
+    radial-gradient(farthest-side, transparent calc(100% - 1.5px), black 0);
   mask:
-    radial-gradient(farthest-side, transparent calc(100% - 2px), black 0);
+    radial-gradient(farthest-side, transparent calc(100% - 1.5px), black 0);
 }
 
 .arrow {
