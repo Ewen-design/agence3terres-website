@@ -242,8 +242,8 @@
 
 /* --- RESPONSIVE --- */
 @media (max-width: 900px) {
-  .menu { width: 100%; }
-  .menu-body { padding-left: 20px; align-items: center; }
-  .links { font-size: clamp(2.5rem, 6vw, 4rem); text-align: center; gap: 1.2rem; }
+  .menu { width: 100%; height: 100%; }
+  .menu-body { padding-left: 0; justify-content: center; align-items: center; }
+  .links { font-size: clamp(2.5rem, 6vw, 4rem); text-align: center; gap: 1.5rem; align-items: center; }
 }
 </style>
