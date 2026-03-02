@@ -8,6 +8,7 @@
   let headerEl;
   let lineEl;
   let buttonEl;
+  let isMobile = false;
 
   const projects = [
     {
@@ -44,14 +45,36 @@
   function updateParallax(scrollY) {
     const winH = window.innerHeight;
 
-    metrics.forEach(m => {
+    metrics.forEach((m, index) => {
       const center = (m.top - scrollY) + m.height / 2;
       const progress = clamp((center - winH / 2) / winH, -1, 1);
       const offset = progress * -120;
       m.wrapper.style.transform = `translate3d(0, ${offset}px, 0)`;
+
+      // ✅ Responsive mobile (centre écran)
+      if (isMobile) {
+        const card = cards[index];
+        const overlay = card.querySelector(".overlay");
+        const img = card.querySelector("img");
+
+        const distanceFromCenter = Math.abs(center - winH / 2);
+        const threshold = m.height / 2;
+
+        if (distanceFromCenter < threshold) {
+          overlay.style.opacity = "1";
+          overlay.style.transform = "translateY(0)";
+          img.style.transform = "scale(1.08)";
+          img.style.filter = "brightness(0.6)";
+        } else {
+          overlay.style.opacity = "0";
+          overlay.style.transform = "translateY(20px)";
+          img.style.transform = "";
+          img.style.filter = "";
+        }
+      }
     });
 
-    // Micro animation titre
+    // Micro animation titre (inchangé)
     const rect = headerEl.getBoundingClientRect();
     const progress = clamp(1 - rect.top / winH, 0, 1);
 
@@ -60,7 +83,7 @@
 
     lineEl.style.transform = `scaleX(${progress})`;
 
-    // Bouton fade + slide
+    // Bouton fade + slide (inchangé)
     if (buttonEl) {
       buttonEl.style.opacity = progress;
       buttonEl.style.transform = `translateY(${30 - progress * 30}px)`;
@@ -68,6 +91,8 @@
   }
 
   onMount(() => {
+    isMobile = window.matchMedia("(max-width: 900px)").matches;
+
     cards = [...sectionEl.querySelectorAll(".card")];
     measure();
     window.addEventListener("resize", measure);
@@ -84,7 +109,6 @@
 
 <section class="projects" bind:this={sectionEl}>
 
-  <!-- HEADER -->
   <div class="projects-header" bind:this={headerEl}>
     <h2>Nos projets</h2>
     <div class="line" bind:this={lineEl}></div>
@@ -94,7 +118,6 @@
     </p>
   </div>
 
-  <!-- GRID -->
   <div class="projects-grid">
     {#each projects as project}
       <div class="card">
@@ -112,7 +135,6 @@
     {/each}
   </div>
 
-  <!-- BUTTON -->
   <div class="projects-footer">
     <a href="/travail" class="all-btn" bind:this={buttonEl}>
       Voir tous les projets
@@ -132,7 +154,6 @@
   color: white;
 }
 
-/* HEADER */
 .projects-header {
   width: min(900px, 90%);
   margin: 0 auto 6rem auto;
@@ -155,7 +176,6 @@
   line-height: 1.6;
 }
 
-/* LINE */
 .line {
   width: 120px;
   height: 1px;
@@ -166,7 +186,6 @@
   transition: transform 0.6s ease;
 }
 
-/* GRID */
 .projects-grid {
   width: min(1300px, 92%);
   margin: 0 auto;
@@ -175,7 +194,6 @@
   gap: 2rem;
 }
 
-/* CARD */
 .card {
   position: relative;
   aspect-ratio: 3/4;
@@ -201,7 +219,6 @@
   filter: brightness(0.6);
 }
 
-/* OVERLAY */
 .overlay {
   position: absolute;
   inset: 0;
@@ -244,7 +261,6 @@
   text-transform: uppercase;
 }
 
-/* FOOTER */
 .projects-footer {
   text-align: center;
   margin-top: 6rem;
@@ -270,7 +286,6 @@
   color: #111;
 }
 
-/* MOBILE */
 @media (max-width: 900px) {
   .projects-grid {
     grid-template-columns: 1fr;
