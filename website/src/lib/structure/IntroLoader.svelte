@@ -10,7 +10,7 @@
     // 600ms écran vide
     setTimeout(() => {
       state = "animating";
-    }, 600);
+    }, 800);
 
     // fin animation logo + barre
     setTimeout(() => {
@@ -80,8 +80,8 @@
 
 /* animation seulement quand state = animating */
 .preloader.animating .eagle path {
-  animation: draw 3.8s cubic-bezier(.7,0,.3,1) forwards,
-             fillReveal 1.2s ease forwards 3.8s;
+  animation: draw 4.8s cubic-bezier(.7,0,.3,1) forwards,
+             fillReveal 3.2s ease forwards 4.8s;
 }
 
 @keyframes draw {
