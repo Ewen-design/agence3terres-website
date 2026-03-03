@@ -92,7 +92,7 @@
 
     <div class="links">
       <button class="nav-btn fade" data-cursor="button" on:mousemove={handleButtonMove} on:click={() => navigate("travail")}>
-        Travail
+        Projets
       </button>
 
       <button class="nav-btn fade" data-cursor="button" on:mousemove={handleButtonMove} on:click={() => navigate("apropos")}>

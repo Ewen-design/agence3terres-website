@@ -6,8 +6,8 @@
   let hovered = null;
 
   const links = [
-    { label: "Home", page: "home", image: "https://images.unsplash.com/photo-1498579809087-ef1e558fd1da?q=80&w=2000" },
-    { label: "Travail", page: "travail", image: "https://images.unsplash.com/photo-1504674900247-0877df9cc836?q=80&w=2000" },
+    { label: "L'envol", page: "home", image: "https://images.unsplash.com/photo-1498579809087-ef1e558fd1da?q=80&w=2000" },
+    { label: "Projets", page: "travail", image: "https://images.unsplash.com/photo-1504674900247-0877df9cc836?q=80&w=2000" },
     { label: "À propos", page: "apropos", image: "https://images.unsplash.com/photo-1414235077428-338989a2e8c0?q=80&w=2000" },
     { label: "Services", page: "services", image: "https://images.unsplash.com/photo-1559339352-11d035aa65de?q=80&w=2000" },
     { label: "Contact", page: "contact", image: "https://images.unsplash.com/photo-1550966871-3ed3cdb5ed0c?q=80&w=2000" }

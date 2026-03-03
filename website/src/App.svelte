@@ -78,7 +78,7 @@
     window.addEventListener("load", () => {
       setTimeout(() => {
         isLoading = false;
-      }, 1500);
+      }, 15000);
     });
   });
 </script>
