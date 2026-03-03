@@ -13,10 +13,16 @@
 
   let current = 0;
   const angleStep = 360 / quotes.length;
-  const radius = 540;
+  let radius = 540;
 
   let sectionEl;
   let bgEl;
+
+  let isMobile = false;
+const radiusDesktop = radius;
+
+let startX = 0;
+let deltaX = 0;
 
   function next() {
     current = (current + 1) % quotes.length;
@@ -73,15 +79,49 @@
   }
 
   onMount(() => {
-    registerParallax(updateParallax);
-  });
+  const checkMobile = () => {
+    isMobile = window.innerWidth <= 768;
+    radius = isMobile ? 320 : radiusDesktop;
+  };
+
+  checkMobile();
+  window.addEventListener("resize", checkMobile);
+
+  registerParallax(updateParallax);
+});
 
   onDestroy(() => {
     unregisterParallax(updateParallax);
   });
+
+  function touchStart(e) {
+  if (!isMobile) return;
+  startX = e.touches[0].clientX;
+}
+
+function touchMove(e) {
+  if (!isMobile) return;
+  deltaX = e.touches[0].clientX - startX;
+}
+
+function touchEnd() {
+  if (!isMobile) return;
+
+  if (deltaX > 60) prev();
+  if (deltaX < -60) next();
+
+  deltaX = 0;
+}
+
 </script>
 
-<section class="vision-section" bind:this={sectionEl}>
+<section
+  class="vision-section"
+  bind:this={sectionEl}
+  on:touchstart={touchStart}
+  on:touchmove={touchMove}
+  on:touchend={touchEnd}
+>
 
   <!-- Background parallax -->
   <div
@@ -325,4 +365,30 @@
 .controls button:hover {
   transform: scale(1.1);
 }
+
+/* ===========================
+   RESPONSIVE TELEPHONE
+=========================== */
+
+@media (max-width: 768px) {
+
+  .carousel-wrapper {
+    height: 420px;
+  }
+
+  .card {
+    width: 80vw;
+    padding: 3rem;
+  }
+
+  .controls {
+    display: none;
+  }
+
+  /* Désactive le glow sur tactile */
+  .card::before {
+    display: none;
+  }
+}
+
 </style>
