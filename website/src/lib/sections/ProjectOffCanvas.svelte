@@ -59,7 +59,7 @@
   border: none;
   color: white;
   padding: 12px 16px;
-  border-radius: 10px;
+  border-radius: 3px;
   cursor: pointer;
   transition: background 0.5s ease, color 0.5s ease, transform 0.5s ease, opacity 0.5s ease;
 }

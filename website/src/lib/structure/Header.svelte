@@ -10,13 +10,19 @@
   let menuOpen = false;
   let textColor = "white";
 
+  const SCROLL_THRESHOLD = 10; // 👈 tolérance anti micro-mouvements
+
   function handleScroll() {
     const currentY = window.scrollY;
+    const delta = currentY - lastScrollY;
 
-    if (currentY > lastScrollY && currentY > 50) {
+    // Ignore les micro variations dues à Lenis
+    if (Math.abs(delta) < SCROLL_THRESHOLD) return;
+
+    if (delta > 0 && currentY > 80) {
       scrollingDown = true;
       userExpanded = false;
-    } else {
+    } else if (delta < 0) {
       scrollingDown = false;
     }
 
@@ -47,7 +53,6 @@
     textColor = overSection ? "black" : "white";
   }
 
-  // 🔥 Curseur par bouton (suivi réel)
   function handleButtonMove(e) {
     const btn = e.currentTarget;
     const rect = btn.getBoundingClientRect();
@@ -62,6 +67,7 @@
   $: compact = scrollingDown && !userExpanded;
 
   onMount(() => {
+    lastScrollY = window.scrollY;
     window.addEventListener("scroll", handleScroll);
     updateTextColor();
     return () => window.removeEventListener("scroll", handleScroll);
@@ -195,7 +201,7 @@ header {
     radial-gradient(
       80px circle at var(--mx) var(--my),
       rgba(212, 175, 55, 0.95),
-      rgba(212, 175, 55, 0.45) 40%,
+      rgba(212, 102, 55, 0.45) 40%,
       transparent 75%
     );
 

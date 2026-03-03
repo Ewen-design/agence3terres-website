@@ -1,6 +1,7 @@
 <script>
   import { onMount } from "svelte";
   import { initScrollEngine } from "./lib/scrollEngine.js";
+  import Lenis from "@studio-freight/lenis";
 
   import Header from "./lib/structure/Header.svelte";
   import Footer from "./lib/structure/Footer.svelte";
@@ -14,9 +15,10 @@
   import TextesIntro from "./lib/sections/TextesIntro.svelte";
   import HomePage from "./lib/sections/HomePage.svelte";
   import ParallaxGallery from "./lib/sections/ParallaxGallery.svelte";
-   import ProjetsHighlight from "./lib/sections/ProjetsHighlight.svelte";
+  import ProjetsHighlight from "./lib/sections/ProjetsHighlight.svelte";
   import ParallaxTextes from "./lib/sections/ParallaxTextes.svelte";
   import BackgroundParallax from "./lib/sections/BackgroundParallax.svelte";
+  import VisionSlider from "./lib/sections/VisionSlider.svelte";
 
   // AUTRES PAGES
   import Travail from "./lib/structure/Travail.svelte";
@@ -24,11 +26,17 @@
   import Services from "./lib/structure/Services.svelte";
   import Contact from "./lib/structure/Contact.svelte";
 
+  // PROJETS
+  import Projet1 from "./lib/structure/Projet1.svelte";
+  import Projet2 from "./lib/structure/Projet2.svelte";
+
   let currentPage = "home";
   let nextPage = null;
 
   let isTransitioning = false;
   let isLoading = true;
+
+  let lenis;
 
   function navigate(page) {
     if (page === currentPage || isTransitioning) return;
@@ -36,13 +44,11 @@
     nextPage = page;
     isTransitioning = true;
 
-    // Blur + fade out
     setTimeout(() => {
       currentPage = nextPage;
       window.scrollTo(0, 0);
     }, 600);
 
-    // Fade in + unblur
     setTimeout(() => {
       isTransitioning = false;
       nextPage = null;
@@ -51,6 +57,23 @@
 
   onMount(() => {
     initScrollEngine();
+
+    // LENIS SMOOTH SCROLL
+    lenis = new Lenis({
+      duration: 1.1,
+      easing: (t) => 1 - Math.pow(1 - t, 4),
+      smooth: true,
+      direction: "vertical",
+      gestureDirection: "vertical",
+      smoothTouch: false
+    });
+
+    function raf(time) {
+      lenis.raf(time);
+      requestAnimationFrame(raf);
+    }
+
+    requestAnimationFrame(raf);
 
     window.addEventListener("load", () => {
       setTimeout(() => {
@@ -62,14 +85,14 @@
 
 <main>
 
-  <!-- Custom cursor toujours présent -->
   <CustomCursor />
-<IconeFleche />
-  <!-- Preloader -->
+  <IconeFleche />
+
   {#if isLoading}
     <IntroLoader />
   {/if}
 
+  <!-- HEADER TOUJOURS VISIBLE -->
   <Header {navigate} />
 
   <div class="page-wrapper {isTransitioning ? 'blur-out' : ''}">
@@ -80,22 +103,36 @@
       <HomePage />
       <ParallaxGallery />
       <ProjetsHighlight />
+      <VisionSlider />
       <ParallaxTextes />
       <BackgroundParallax />
+
     {:else if currentPage === "travail"}
-      <Travail />
+      <Travail {navigate} />
+
     {:else if currentPage === "apropos"}
       <Apropos />
+
     {:else if currentPage === "services"}
-    <SliderCustom />
+      <SliderCustom />
       <Services />
+
     {:else if currentPage === "contact"}
       <Contact />
+
+    {:else if currentPage === "projet1"}
+      <Projet1 {navigate} />
+
+    {:else if currentPage === "projet2"}
+      <Projet2 {navigate} />
     {/if}
 
   </div>
 
-  <Footer />
+  <!-- FOOTER MASQUÉ SUR LES PAGES PROJET -->
+  {#if !["projet1", "projet2"].includes(currentPage)}
+    <Footer />
+  {/if}
 
 </main>
 

@@ -2,11 +2,18 @@
   import { onMount, onDestroy } from "svelte";
 
   let cursor;
+
+  // 🔥 position réelle souris
+  let targetX = 0;
+  let targetY = 0;
+
+  // 🔥 position affichée (avec inertie)
   let x = 0;
   let y = 0;
+
   let scale = 1;
   let text = "";
-  let mode = "dot"; // dot | button | slider
+  let mode = "dot";
   let isActive = false;
   let isDesktop = false;
 
@@ -16,33 +23,42 @@
   let currentSliderEl = null;
   let isLeaving = false;
 
+  let rafId;
+
+  const LERP = 0.15; // 👈 plus petit = plus flottant (0.12–0.18 idéal)
+
+  function animate() {
+    // interpolation douce
+    x += (targetX - x) * LERP;
+    y += (targetY - y) * LERP;
+
+    updateTransform();
+    rafId = requestAnimationFrame(animate);
+  }
+
   function updateTransform() {
     if (!cursor) return;
     cursor.style.transform = `translate3d(${x}px, ${y}px, 0) scale(${scale})`;
   }
 
   function move(e) {
-    x = e.clientX;
-    y = e.clientY;
-    updateTransform();
+    targetX = e.clientX;
+    targetY = e.clientY;
   }
 
   function handleHover(e) {
     const el = e.target.closest("[data-cursor]");
 
-    // 🔥 SORTIE PROPRE DU SLIDER
     if (!el) {
       if (mode === "slider" && !isLeaving) {
         isLeaving = true;
 
-        // on laisse la transition CSS faire l'animation inverse
         setTimeout(() => {
           mode = "dot";
           previewImage = "";
           currentSliderEl = null;
           isLeaving = false;
-          updateTransform();
-        }, 350); // durée identique à la transition CSS
+        }, 350);
       } else if (mode !== "slider") {
         scale = 1;
         text = "";
@@ -50,7 +66,6 @@
         previewImage = "";
         currentSliderEl = null;
       }
-
       return;
     }
 
@@ -84,8 +99,6 @@
       scale = 1;
       currentSliderEl = el;
     }
-
-    updateTransform();
   }
 
   function down() {
@@ -93,17 +106,14 @@
 
     if (mode !== "slider") {
       scale = 1.1;
-      updateTransform();
     }
   }
 
   function up() {
     isActive = false;
     scale = 1;
-    updateTransform();
   }
 
-  // 🔥 refresh automatique après changement d’index
   function refreshSliderPreview() {
     if (!currentSliderEl) return;
 
@@ -123,6 +133,8 @@
     window.addEventListener("mouseup", up);
 
     window.addEventListener("slider-index-changed", refreshSliderPreview);
+
+    animate(); // 🔥 démarre l’inertie
   });
 
   onDestroy(() => {
@@ -132,8 +144,9 @@
     window.removeEventListener("mouseover", handleHover);
     window.removeEventListener("mousedown", down);
     window.removeEventListener("mouseup", up);
-
     window.removeEventListener("slider-index-changed", refreshSliderPreview);
+
+    cancelAnimationFrame(rafId);
   });
 </script>
 

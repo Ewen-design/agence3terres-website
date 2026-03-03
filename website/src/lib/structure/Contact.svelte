@@ -6,7 +6,7 @@
   function handleSubmit(e) {
     e.preventDefault();
     console.log({ name, email, message });
-    alert("Message envoyé ✨");
+    alert("Message envoyé");
   }
 </script>
 
@@ -89,7 +89,7 @@
 /* GLOBAL */
 
 .contact {
-  background: linear-gradient(to bottom, #ffffff, #f2f2f2);
+  background: linear-gradient(to bottom, #ffffff, #f5f5f5);
   color: #111;
   padding: 0 10vw;
   overflow: hidden;

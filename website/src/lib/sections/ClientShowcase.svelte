@@ -1,12 +1,7 @@
 <script>
   export let client;
   export let index;
-
-  let offcanvas = false;
-
-  function toggleOffcanvas() {
-    offcanvas = !offcanvas;
-  }
+  export let navigate;
 </script>
 
 <section class="client-section">
@@ -31,7 +26,10 @@
       <h3>{client.role}</h3>
       <p>{client.description}</p>
 
-      <button class="cta" on:click={toggleOffcanvas}>
+      <button
+        class="cta"
+        on:click={() => navigate(client.page)}
+      >
         Voir le projet
       </button>
     </div>
@@ -48,21 +46,10 @@
 
   </div>
 
-  <!-- TRANSITION GRADIENT -->
   <div class="section-fade"></div>
 
-  <!-- OFF CANVAS -->
-  {#if offcanvas}
-    <div class="offcanvas" on:click={toggleOffcanvas}>
-      <div class="offcanvas-inner" on:click|stopPropagation>
-        <button class="close" on:click={toggleOffcanvas}>✕</button>
-        <h2>{client.name}</h2>
-        <p>Présentation complète du projet ici.</p>
-      </div>
-    </div>
-  {/if}
-
 </section>
+
 
 <style>
 

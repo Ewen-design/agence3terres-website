@@ -1,6 +1,8 @@
 <script>
   import ClientShowcase from "../sections/ClientShowcase.svelte";
 
+  export let navigate;
+
   const clients = [
     {
       name: "Maison Élixir",
@@ -8,6 +10,7 @@
       description:
         "Identité visuelle, site web, campagne social media et déclinaisons print.",
       cover: "/images/parfum.jpg",
+      page: "projet1",
       gallery: [
         { src: "/images/parfum.jpg", type: "square" },
         { src: "/images/parfum.jpg", type: "wide" },
@@ -21,6 +24,7 @@
       description:
         "Conception d’univers visuel, branding premium et storytelling.",
       cover: "/images/parfum.jpg",
+      page: "projet2",
       gallery: [
         { src: "/images/parfum.jpg", type: "square" },
         { src: "/images/parfum.jpg", type: "wide" },
@@ -33,7 +37,11 @@
 
 <section class="travail">
   {#each clients as client, i}
-    <ClientShowcase {client} index={i} />
+    <ClientShowcase
+      {client}
+      index={i}
+      {navigate}
+    />
   {/each}
 </section>
 
