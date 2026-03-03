@@ -48,3 +48,21 @@ img {
   max-width: 100%;
   height: auto;
 }
+
+html, body {
+  overscroll-behavior: none;
+}
+
+body {
+  overflow-x: hidden;
+}
+
+html {
+  height: 100%;
+}
+
+body {
+  min-height: 100%;
+  overscroll-behavior-y: none;
+  -webkit-overflow-scrolling: touch;
+}
