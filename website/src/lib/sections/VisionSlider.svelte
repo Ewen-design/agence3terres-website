@@ -81,7 +81,7 @@ let deltaX = 0;
   onMount(() => {
   const checkMobile = () => {
     isMobile = window.innerWidth <= 768;
-    radius = isMobile ? 270 : radiusDesktop;
+    radius = isMobile ? 260 : radiusDesktop;
   };
 
   checkMobile();
@@ -378,7 +378,7 @@ function touchEnd() {
 
   .card {
     width: 62vw;          /* moins large */
-    padding: 5.5rem 2.5rem;
+    padding: 6rem 2.5rem;
   }
 
   .quote p {
