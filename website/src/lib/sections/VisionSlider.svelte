@@ -81,7 +81,7 @@ let deltaX = 0;
   onMount(() => {
   const checkMobile = () => {
     isMobile = window.innerWidth <= 768;
-    radius = isMobile ? 320 : radiusDesktop;
+    radius = isMobile ? 260 : radiusDesktop;
   };
 
   checkMobile();
@@ -373,19 +373,22 @@ function touchEnd() {
 @media (max-width: 768px) {
 
   .carousel-wrapper {
-    height: 420px;
+    height: 520px; /* plus haut pour format vertical */
   }
 
   .card {
-    width: 80vw;
-    padding: 3rem;
+    width: 68vw;          /* moins large */
+    padding: 3.5rem 2.5rem;
+  }
+
+  .quote p {
+    font-size: 1.25rem;
   }
 
   .controls {
     display: none;
   }
 
-  /* Désactive le glow sur tactile */
   .card::before {
     display: none;
   }
