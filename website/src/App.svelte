@@ -104,14 +104,14 @@
       <ParallaxGallery />
       <ProjetsHighlight />
       <VisionSlider />
-      <ParallaxTextes />
-      <BackgroundParallax />
 
     {:else if currentPage === "travail"}
       <Travail {navigate} />
 
     {:else if currentPage === "apropos"}
       <Apropos />
+      <ParallaxTextes />
+      <BackgroundParallax />
 
     {:else if currentPage === "services"}
       <SliderCustom />

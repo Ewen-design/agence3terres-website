@@ -202,7 +202,11 @@ on:click={handleZoneClick}
   height: 140vh;
   width: 100vw;
   margin-left: calc(50% - 50vw);
-  background: black;
+  background: linear-gradient(
+  to top,
+  #000 0%,
+  #111 100%
+);
   overflow: hidden;
   display: flex;
   flex-direction: column;
@@ -222,12 +226,7 @@ on:click={handleZoneClick}
   z-index: 1;
 }
 
-.overlay {
-  position: absolute;
-  inset: 0;
-  background: rgba(0,0,0,0.65);
-  z-index: 2;
-}
+
 
 /* HEADER */
 .vision-header {
