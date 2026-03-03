@@ -20,15 +20,17 @@
   let previewImage = "";
   let direction = "next";
 
+  // ✅ ajout pour carousel
+  let carouselDirection = "next";
+
   let currentSliderEl = null;
   let isLeaving = false;
 
   let rafId;
 
-  const LERP = 0.15; // 👈 plus petit = plus flottant (0.12–0.18 idéal)
+  const LERP = 0.15;
 
   function animate() {
-    // interpolation douce
     x += (targetX - x) * LERP;
     y += (targetY - y) * LERP;
 
@@ -50,7 +52,7 @@
     const el = e.target.closest("[data-cursor]");
 
     if (!el) {
-      if (mode === "slider" && !isLeaving) {
+      if ((mode === "slider" || mode === "carousel") && !isLeaving) {
         isLeaving = true;
 
         setTimeout(() => {
@@ -59,7 +61,7 @@
           currentSliderEl = null;
           isLeaving = false;
         }, 350);
-      } else if (mode !== "slider") {
+      } else if (mode !== "slider" && mode !== "carousel") {
         scale = 1;
         text = "";
         mode = "dot";
@@ -99,12 +101,19 @@
       scale = 1;
       currentSliderEl = el;
     }
+
+    // ✅ nouveau mode carousel
+    else if (type === "carousel") {
+      mode = "carousel";
+      scale = 1;
+      currentSliderEl = null;
+    }
   }
 
   function down() {
     isActive = true;
 
-    if (mode !== "slider") {
+    if (mode !== "slider" && mode !== "carousel") {
       scale = 1.1;
     }
   }
@@ -123,6 +132,11 @@
     });
   }
 
+  // ✅ écoute direction envoyée par le slider
+  function updateCarouselDirection(e) {
+    carouselDirection = e.detail;
+  }
+
   onMount(() => {
     isDesktop = window.matchMedia("(pointer: fine)").matches;
     if (!isDesktop) return;
@@ -134,7 +148,10 @@
 
     window.addEventListener("slider-index-changed", refreshSliderPreview);
 
-    animate(); // 🔥 démarre l’inertie
+    // ✅ nouvel event
+    window.addEventListener("carousel-direction", updateCarouselDirection);
+
+    animate();
   });
 
   onDestroy(() => {
@@ -145,6 +162,7 @@
     window.removeEventListener("mousedown", down);
     window.removeEventListener("mouseup", up);
     window.removeEventListener("slider-index-changed", refreshSliderPreview);
+    window.removeEventListener("carousel-direction", updateCarouselDirection);
 
     cancelAnimationFrame(rafId);
   });
@@ -156,6 +174,7 @@
     class="cursor"
     class:button={mode === "button"}
     class:slider={mode === "slider"}
+    class:carousel={mode === "carousel"}
     class:active={isActive}
   >
     {#if mode === "slider"}
@@ -163,6 +182,13 @@
         <img src={previewImage} alt="" />
         <div class="arrow {direction}"></div>
       </div>
+    {:else if mode === "carousel"}
+      <div class="arrow {carouselDirection}">
+  <svg viewBox="0 0 60 20" fill="none">
+    <path d="M0 10H50" stroke="white" stroke-width="1.5"/>
+    <path d="M40 2L50 10L40 18" stroke="white" stroke-width="1.5"/>
+  </svg>
+</div>
     {:else}
       <span>{text}</span>
     {/if}
@@ -242,26 +268,28 @@
   filter: brightness(0.8);
 }
 
+/* ✅ carousel (flèche fine seule) */
+.cursor.carousel {
+  width: 60px;
+  height: 60px;
+  background: none;
+  backdrop-filter: none;
+  box-shadow: none;
+  border-radius: 0;
+}
+
 .arrow {
   position: absolute;
   top: 50%;
   left: 50%;
-  width: 42px;
-  height: 2px;
-  background: white;
+  width: 60px;
+  height: 20px;
   transform: translate(-50%, -50%);
 }
 
-.arrow::after {
-  content: "";
-  position: absolute;
-  right: -1px;
-  top: 50%;
-  width: 12px;
-  height: 12px;
-  border-top: 2px solid white;
-  border-right: 2px solid white;
-  transform: translateY(-50%) rotate(45deg);
+.arrow svg {
+  width: 100%;
+  height: 100%;
 }
 
 .arrow.prev {

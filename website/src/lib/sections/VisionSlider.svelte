@@ -113,11 +113,40 @@ function touchEnd() {
   deltaX = 0;
 }
 
+function handleZoneMove(e) {
+  if (isMobile) return;
+
+  const rect = sectionEl.getBoundingClientRect();
+  const x = e.clientX - rect.left;
+
+  const dir = x < rect.width / 2 ? "prev" : "next";
+
+  window.dispatchEvent(
+    new CustomEvent("carousel-direction", { detail: dir })
+  );
+}
+
+function handleZoneClick(e) {
+  if (isMobile) return;
+
+  const rect = sectionEl.getBoundingClientRect();
+  const x = e.clientX - rect.left;
+
+  if (x < rect.width / 2) {
+    prev();
+  } else {
+    next();
+  }
+}
+
 </script>
 
 <section
   class="vision-section"
   bind:this={sectionEl}
+  data-cursor="carousel"
+on:mousemove={handleZoneMove}
+on:click={handleZoneClick}
   on:touchstart={touchStart}
   on:touchmove={touchMove}
   on:touchend={touchEnd}
@@ -163,10 +192,7 @@ function touchEnd() {
     </div>
   </div>
 
-  <div class="controls">
-    <button on:click={prev}>←</button>
-    <button on:click={next}>→</button>
-  </div>
+
 
 </section>
 
