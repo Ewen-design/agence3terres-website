@@ -24,7 +24,7 @@
       }
     });
 
-    logoColor = overSection ? "black" : "white";
+    logoColor = overSection ? "#111" : "white";
   }
 
   onMount(() => {
@@ -183,7 +183,7 @@
   overflow: hidden;
 
   position: absolute;
-  bottom: 40%;
+  bottom: 35%;
 }
 
 .progress-bar {
