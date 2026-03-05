@@ -105,14 +105,14 @@
 /* déplacement vers coin */
 .eagle-container.move {
   top: -10px;          /* aligné hauteur header */
-  left: -10px;         /* plus collé au bord */
+  left: -40px;         /* plus collé au bord */
   transform: translate(0, 0) scale(0.32); /* plus petit */
 }
 
 /* position finale définitive */
 .eagle-container.done {
   top: -10px;
-  left: -10px;
+  left: -40px;
   transform: translate(0, 0) scale(0.32);
 }
 
