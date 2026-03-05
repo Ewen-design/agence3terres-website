@@ -59,14 +59,13 @@
     initScrollEngine();
 
     // LENIS SMOOTH SCROLL
-    lenis = new Lenis({
-      duration: 1.1,
-      easing: (t) => 1 - Math.pow(1 - t, 4),
-      smooth: true,
-      direction: "vertical",
-      gestureDirection: "vertical",
-      smoothTouch: false
-    });
+   lenis = new Lenis({
+  duration: 1.6,
+  easing: (t) => 1 - Math.pow(1 - t, 3.5),
+  smoothWheel: true,
+  smoothTouch: false,
+  wheelMultiplier: 1
+});
 
     function raf(time) {
       lenis.raf(time);
@@ -88,9 +87,9 @@
   <CustomCursor />
   <IconeFleche />
 
-  {#if isLoading}
+
     <IntroLoader />
-  {/if}
+ 
 
   <!-- HEADER TOUJOURS VISIBLE -->
   <Header {navigate} />

@@ -170,7 +170,7 @@
   bottom: 60px;
   left: 10%;
   width: 80%;
-  height: 4px;
+  height: 1px;
   background: rgba(255,255,255,0.3);
 }
 
