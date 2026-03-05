@@ -140,6 +140,9 @@
           <span class="date">{item.date}</span>
           <span class="title">{item.title}</span>
         </div>
+        <div class="card-plus">
+  +
+</div>
       </div>
     {/each}
   </div>
@@ -152,7 +155,11 @@
 
 </section>
 
-<ProjectOffCanvas {selected} on:close={closeProject} />
+<ProjectOffCanvas 
+  {selected} 
+  items={items}
+  on:close={closeProject} 
+/>
 
 <style>
 .gallery {
@@ -284,4 +291,29 @@
     grid-template-columns: 1fr;
   }
 }
+
+.card-plus {
+  position: absolute;
+  bottom: 16px;
+  left: 16px;
+  width: 42px;
+  height: 42px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  color: #fff;
+
+  backdrop-filter: blur(10px);
+  background: rgba(255,255,255,0.15);
+
+  transition: transform 0.4s ease, background 0.4s ease;
+}
+
+/* animation au hover de la carte */
+.card:hover .card-plus {
+  transform: scale(1.15);
+  background: rgba(255,255,255,0.25);
+}
+
 </style>
