@@ -92,7 +92,7 @@
 .wrapper {
   position: fixed;
   inset: 0;
-  z-index: 5000;
+  z-index: 9999;
   display: flex;
   pointer-events: all;
 }
