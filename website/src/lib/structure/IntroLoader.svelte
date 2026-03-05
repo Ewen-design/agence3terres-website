@@ -116,13 +116,13 @@
 .logo-wrapper.done .eagle-container {
 
   transform:
-    translate(calc(-50vw + 40px), calc(-50vh + 40px))
-    scale(0.32);
+    translate(calc(-50vw + 2rem), calc(-50vh + 2rem))
+    scale(0.28);
 
 }
 
 
-/* ================= MOVE MOBILE ================= */
+/* ================= MOBILE ================= */
 
 @media (max-width: 768px) {
 
@@ -130,8 +130,8 @@
   .logo-wrapper.done .eagle-container {
 
     transform:
-      translate(calc(-50vw + 40px), calc(50vh - 60px))
-      scale(0.32);
+      translate(calc(-50vw + 2rem), calc(50vh - 2rem))
+      scale(0.28);
 
   }
 
@@ -141,7 +141,7 @@
 /* ================= SVG ================= */
 
 .eagle {
-  width: 200px;
+  width: 250px;
 }
 
 .eagle path {
