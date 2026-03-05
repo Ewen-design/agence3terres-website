@@ -93,6 +93,7 @@
 
   top: 50%;
   left: 50%;
+
   transform: translate(-50%, -50%) scale(1);
 
   z-index: 9999;
@@ -101,57 +102,43 @@
   transition: 
     transform 1.4s cubic-bezier(.77,0,.18,1),
     top 1.4s cubic-bezier(.77,0,.18,1),
-    left 1.4s cubic-bezier(.77,0,.18,1),
-    bottom 1.4s cubic-bezier(.77,0,.18,1);
+    left 1.4s cubic-bezier(.77,0,.18,1);
 }
+
 
 /* ================= DESKTOP ================= */
 
 .eagle-container.move {
-  top: 10px;
-  left: 10px;
+  top: 12px;
+  left: 12px;
   transform: translate(0,0) scale(0.32);
 }
 
 .eagle-container.done {
-  top: 10px;
-  left: 10px;
+  top: 12px;
+  left: 12px;
   transform: translate(0,0) scale(0.32);
 }
+
 
 /* ================= MOBILE ================= */
 
 @media (max-width: 768px) {
 
   .eagle-container.move {
-    top: auto;
-    bottom: 14px;
-    left: 14px;
+    top: calc(100vh - 60px);
+    left: 12px;
     transform: translate(0,0) scale(0.32);
   }
 
   .eagle-container.done {
-    top: auto;
-    bottom: 14px;
-    left: 14px;
+    top: calc(100vh - 60px);
+    left: 12px;
     transform: translate(0,0) scale(0.32);
   }
 
 }
 
-/* déplacement vers coin */
-.eagle-container.move {
-  top: -10px;          /* aligné hauteur header */
-  left: -40px;         /* plus collé au bord */
-  transform: translate(0, 0) scale(0.32); /* plus petit */
-}
-
-/* position finale définitive */
-.eagle-container.done {
-  top: -10px;
-  left: -40px;
-  transform: translate(0, 0) scale(0.32);
-}
 
 /* ================= SVG DRAW ================= */
 
