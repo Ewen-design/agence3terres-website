@@ -116,7 +116,7 @@
 .logo-wrapper.done .eagle-container {
 
   transform:
-    translate(calc(-50vw + 2rem), calc(-50vh + 2rem))
+    translate(calc(-50vw + -3rem), calc(-50vh + -1.5rem))
     scale(0.28);
 
 }
@@ -130,7 +130,7 @@
   .logo-wrapper.done .eagle-container {
 
     transform:
-      translate(calc(-50vw + 2rem), calc(50vh - 2rem))
+      translate(calc(-50vw + -3rem), calc(50vh - 8rem))
       scale(0.28);
 
   }
