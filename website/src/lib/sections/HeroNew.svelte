@@ -147,7 +147,7 @@
 <style>
   .hero {
     position: relative;
-    height: 600vh;
+    height: 500vh;
     background: #000;
     isolation: isolate;
     cursor: none;
@@ -175,20 +175,20 @@
     inset: -4%;
   }
 
-  .base-gradient {
-    background:
-      radial-gradient(
-        64% 64% at 50% 50%,
-        rgba(255, 250, 242, calc(0.16 + var(--p) * 0.82)) 0%,
-        rgba(255, 236, 214, calc(0.16 + var(--p) * 0.74)) 16%,
-        rgba(244, 203, 150, calc(0.14 + var(--p) * 0.62)) 33%,
-        rgba(216, 136, 64, calc(0.18 + var(--p) * 0.50)) 52%,
-        rgba(106, 42, 12, calc(0.42 + var(--p) * 0.28)) 74%,
-        rgba(5, 2, 2, 1) 100%
-      );
-    animation: baseDrift 40s ease-in-out infinite alternate;
-    will-change: transform;
-  }
+.base-gradient {
+  background:
+    radial-gradient(
+      66% 66% at 50% 50%,
+      rgba(255, 249, 240, calc(0.16 + var(--p) * 0.82)) 0%,
+      rgba(255, 235, 214, calc(0.16 + var(--p) * 0.74)) 20%,
+      rgba(239, 197, 146, calc(0.14 + var(--p) * 0.60)) 40%,
+      rgba(214, 126, 60, calc(0.18 + var(--p) * 0.48)) 58%,
+      rgba(108, 40, 12, calc(0.42 + var(--p) * 0.28)) 78%,
+      rgba(5, 2, 2, 1) 100%
+    );
+  animation: baseDrift 40s ease-in-out infinite alternate;
+  will-change: transform;
+}
 
   .ambient {
     opacity: calc(0.025 + var(--p) * 0.045);
@@ -196,40 +196,40 @@
   }
 
   .ambient-1 {
-    background:
-      radial-gradient(
-        28% 28% at 34% 42%,
-        rgba(245, 214, 166, 0.40) 0%,
-        rgba(221, 165, 95, 0.14) 40%,
-        rgba(255, 255, 255, 0) 74%
-      );
-    filter: blur(34px);
-    animation: ambientOne 48s ease-in-out infinite alternate;
-  }
+  background:
+    radial-gradient(
+      28% 28% at 34% 42%,
+      rgba(243, 212, 166, 0.34) 0%,
+      rgba(219, 158, 92, 0.12) 42%,
+      rgba(255, 255, 255, 0) 76%
+    );
+  filter: blur(34px);
+  animation: ambientOne 48s ease-in-out infinite alternate;
+}
 
-  .ambient-2 {
-    background:
-      radial-gradient(
-        24% 24% at 66% 36%,
-        rgba(255, 242, 226, 0.24) 0%,
-        rgba(224, 178, 110, 0.11) 42%,
-        rgba(255, 255, 255, 0) 76%
-      );
-    filter: blur(38px);
-    animation: ambientTwo 58s ease-in-out infinite alternate;
-  }
+.ambient-2 {
+  background:
+    radial-gradient(
+      24% 24% at 66% 36%,
+      rgba(255, 240, 220, 0.22) 0%,
+      rgba(220, 170, 102, 0.09) 44%,
+      rgba(255, 255, 255, 0) 78%
+    );
+  filter: blur(38px);
+  animation: ambientTwo 58s ease-in-out infinite alternate;
+}
 
-  .ambient-3 {
-    background:
-      radial-gradient(
-        30% 30% at 52% 64%,
-        rgba(200, 118, 52, 0.18) 0%,
-        rgba(232, 176, 110, 0.08) 42%,
-        rgba(255, 255, 255, 0) 78%
-      );
-    filter: blur(42px);
-    animation: ambientThree 54s ease-in-out infinite alternate;
-  }
+.ambient-3 {
+  background:
+    radial-gradient(
+      30% 30% at 52% 64%,
+      rgba(198, 110, 44, 0.16) 0%,
+      rgba(228, 170, 106, 0.07) 44%,
+      rgba(255, 255, 255, 0) 80%
+    );
+  filter: blur(42px);
+  animation: ambientThree 54s ease-in-out infinite alternate;
+}
 
   .vignette {
     background:
@@ -251,40 +251,40 @@
       );
   }
 
-  .center-glow {
-    background:
-      radial-gradient(
-        36% 36% at 50% 50%,
-        rgba(255, 249, 240, calc(var(--p) * 0.42)) 0%,
-        rgba(255, 232, 198, calc(var(--p) * 0.24)) 34%,
-        rgba(226, 176, 94, calc(var(--p) * 0.12)) 58%,
-        rgba(255, 255, 255, 0) 78%
-      );
-    filter: blur(22px);
-  }
+.center-glow {
+  background:
+    radial-gradient(
+      38% 38% at 50% 50%,
+      rgba(255, 248, 238, calc(var(--p) * 0.40)) 0%,
+      rgba(255, 230, 198, calc(var(--p) * 0.22)) 38%,
+      rgba(222, 170, 92, calc(var(--p) * 0.10)) 62%,
+      rgba(255, 255, 255, 0) 80%
+    );
+  filter: blur(24px);
+}
 
-  .warm-ring {
-    background:
-      radial-gradient(
-        52% 52% at 50% 50%,
-        rgba(255, 255, 255, 0) 0%,
-        rgba(220, 170, 96, calc(var(--p) * 0.08)) 42%,
-        rgba(176, 98, 36, calc(var(--p) * 0.14)) 58%,
-        rgba(255, 255, 255, 0) 76%
-      );
-    filter: blur(28px);
-  }
+.warm-ring {
+  background:
+    radial-gradient(
+      54% 54% at 50% 50%,
+      rgba(255, 255, 255, 0) 0%,
+      rgba(214, 166, 94, calc(var(--p) * 0.07)) 44%,
+      rgba(170, 92, 34, calc(var(--p) * 0.12)) 60%,
+      rgba(255, 255, 255, 0) 78%
+    );
+  filter: blur(30px);
+}
 
-  .white-lift {
-    background:
-      radial-gradient(
-        48% 48% at 50% 50%,
-        rgba(255, 253, 248, calc(max(0, (var(--p) - 0.52)) * 1.9)) 0%,
-        rgba(255, 244, 228, calc(max(0, (var(--p) - 0.52)) * 1.1)) 24%,
-        rgba(255, 255, 255, 0) 62%
-      );
-    filter: blur(12px);
-  }
+.white-lift {
+  background:
+    radial-gradient(
+      50% 50% at 50% 50%,
+      rgba(255, 252, 246, calc(max(0, (var(--p) - 0.52)) * 1.85)) 0%,
+      rgba(255, 242, 222, calc(max(0, (var(--p) - 0.52)) * 1.02)) 26%,
+      rgba(255, 255, 255, 0) 64%
+    );
+  filter: blur(13px);
+}
 
   .content {
     position: relative;
@@ -297,20 +297,20 @@
     text-align: center;
   }
 
-  h1 {
-    margin: 0;
-    margin-top: 8vh;
-    font-family: "Aboreto", serif;
-    font-size: clamp(2.8rem, 6vw, 6.2rem);
-    line-height: 1.1;
-    letter-spacing: 0.08em;
-    color: rgba(255, 250, 242, calc(0.78 + var(--tp) * 0.22));
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 0.48em;
-    text-shadow: 0 0 22px rgba(255, 244, 220, 0.08);
-  }
+h1 {
+  margin: 0;
+  margin-top: 8vh;
+  font-family: "Aboreto", serif;
+  font-size: clamp(2.8rem, 6vw, 6.2rem);
+  line-height: 1.1;
+  letter-spacing: 0.08em;
+  color: rgba(255, 248, 238, calc(0.78 + var(--tp) * 0.22));
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.48em;
+  text-shadow: 0 0 22px rgba(255, 240, 215, 0.08);
+}
 
   .word {
     display: inline-block;
@@ -321,20 +321,19 @@
       filter 2s cubic-bezier(.22,.61,.36,1);
   }
 
-  .scroll-indicator {
-    position: absolute;
-    bottom: 8vh;
-    left: 50%;
-    transform: translateX(-50%);
-    font-size: 0.8rem;
-    letter-spacing: 0.25em;
-    text-transform: uppercase;
-    color: rgba(255,245,228,0.65);
-    font-family: "Aboreto", serif;
-    pointer-events: none;
-    transition: opacity 0.6s ease;
-    white-space: nowrap;
-  }
+.scroll-indicator {
+  position: absolute;
+  bottom: 8vh;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 0.8rem;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: rgba(255,240,220,0.65);
+  pointer-events: none;
+  transition: opacity 0.6s ease;
+  white-space: nowrap;
+}
 
   @keyframes baseDrift {
     0% {
