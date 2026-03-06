@@ -13,6 +13,7 @@
 
   let currentMove = 0;
   let currentScale = 1;
+  let viewportH = 0;
 
   function clamp(v, min, max) {
     return Math.max(min, Math.min(v, max));
@@ -25,17 +26,29 @@
     return heroSection;
   }
 
-  function applyLogoTransform(progress) {
+  function syncViewport() {
+    viewportH = window.innerHeight || 0;
+  }
+
+  function applyLogoTransform(progress, immediate = false) {
     if (!logoMover || !logoScaler) return;
 
     const isMobile = window.innerWidth <= 768;
-    const moveY = (isMobile ? 20 : 22) * progress;
-    const scale = 1 - (isMobile ? 0.52 : 0.58) * progress;
 
-    currentMove += (moveY - currentMove) * 0.12;
-    currentScale += (scale - currentScale) * 0.12;
+    const maxMovePx = isMobile ? viewportH * 0.16 : viewportH * 0.22;
+    const targetMove = maxMovePx * progress;
+    const targetScale = 1 - (isMobile ? 0.42 : 0.58) * progress;
 
-    logoMover.style.transform = `translate3d(-50%, calc(-50% - ${currentMove}vh), 0)`;
+    if (immediate) {
+      currentMove = targetMove;
+      currentScale = targetScale;
+    } else {
+      const ease = isMobile ? 0.18 : 0.12;
+      currentMove += (targetMove - currentMove) * ease;
+      currentScale += (targetScale - currentScale) * ease;
+    }
+
+    logoMover.style.transform = `translate3d(-50%, calc(-50% - ${currentMove}px), 0)`;
     logoScaler.style.transform = `scale(${currentScale})`;
   }
 
@@ -43,28 +56,44 @@
     const hero = getHero();
     if (!hero) return;
 
+    syncViewport();
+
     const rect = hero.getBoundingClientRect();
-    const vh = window.innerHeight;
-    const max = rect.height - vh;
+    const max = rect.height - viewportH;
     const raw = clamp(-rect.top / max, 0, 1);
 
-    heroVisible = rect.bottom > 0 && rect.top < vh;
+    heroVisible = rect.bottom > 0 && rect.top < viewportH;
 
-    const moveWindow = 0.2;
+    const moveWindow = window.innerWidth <= 768 ? 0.16 : 0.2;
     const logoProgress = phase === "done" ? clamp(raw / moveWindow, 0, 1) : 0;
 
-    applyLogoTransform(logoProgress);
+    // reset parfait quand on revient tout en haut
+    if (logoProgress <= 0.001) {
+      applyLogoTransform(0, true);
+      return;
+    }
+
+    // lock parfait en fin de mouvement
+    if (logoProgress >= 0.999) {
+      applyLogoTransform(1, true);
+      return;
+    }
+
+    applyLogoTransform(logoProgress, false);
   }
 
   function handleResize() {
     clearTimeout(resizeTimeout);
     resizeTimeout = setTimeout(() => {
       heroSection = null;
+      syncViewport();
       updateLogoState();
     }, 80);
   }
 
   onMount(() => {
+    syncViewport();
+
     const timer = setTimeout(() => {
       phase = "done";
       updateLogoState();
@@ -72,8 +101,9 @@
 
     registerParallax(updateLogoState);
     window.addEventListener("resize", handleResize);
+    window.addEventListener("orientationchange", handleResize);
 
-    applyLogoTransform(0);
+    applyLogoTransform(0, true);
     updateLogoState();
 
     return () => {
@@ -81,6 +111,7 @@
       clearTimeout(resizeTimeout);
       unregisterParallax(updateLogoState);
       window.removeEventListener("resize", handleResize);
+      window.removeEventListener("orientationchange", handleResize);
     };
   });
 
@@ -88,6 +119,7 @@
     clearTimeout(resizeTimeout);
     unregisterParallax(updateLogoState);
     window.removeEventListener("resize", handleResize);
+    window.removeEventListener("orientationchange", handleResize);
   });
 </script>
 
@@ -211,12 +243,12 @@
 
   @media (max-width: 768px) {
     .eagle {
-      width: 190px;
+      width: 150px;
     }
 
     .progress-container {
-      width: 160px;
-      bottom: 31%;
+      width: 140px;
+      bottom: 28%;
     }
   }
 </style>

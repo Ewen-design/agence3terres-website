@@ -331,7 +331,7 @@
     letter-spacing: 0.25em;
     text-transform: uppercase;
     color: rgba(255,255,255,0.65);
-    font-family: "Aboreto", serif;
+    
     pointer-events: none;
     transition: opacity 0.6s ease;
     white-space: nowrap;
