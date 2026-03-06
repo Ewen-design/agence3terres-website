@@ -6,22 +6,19 @@
 
   let lastScrollY = 0;
   let scrollingDown = false;
-  let userExpanded = false;
   let menuOpen = false;
   let textColor = "white";
 
-  const SCROLL_THRESHOLD = 10; // 👈 tolérance anti micro-mouvements
+  const SCROLL_THRESHOLD = 10;
 
   function handleScroll() {
     const currentY = window.scrollY;
     const delta = currentY - lastScrollY;
 
-    // Ignore les micro variations dues à Lenis
     if (Math.abs(delta) < SCROLL_THRESHOLD) return;
 
     if (delta > 0 && currentY > 80) {
       scrollingDown = true;
-      userExpanded = false;
     } else if (delta < 0) {
       scrollingDown = false;
     }
@@ -30,12 +27,10 @@
     updateTextColor();
   }
 
-  function handleHover() {
-    userExpanded = true;
-  }
-
   function updateTextColor() {
     const header = document.querySelector("header");
+    if (!header) return;
+
     const headerMid = header.getBoundingClientRect().top + header.offsetHeight / 2;
 
     const sections = document.querySelectorAll(
@@ -43,6 +38,7 @@
     );
 
     let overSection = false;
+
     sections.forEach(section => {
       const rect = section.getBoundingClientRect();
       if (headerMid >= rect.top && headerMid <= rect.bottom) {
@@ -64,46 +60,76 @@
     btn.style.setProperty("--my", `${y}px`);
   }
 
-  $: compact = scrollingDown && !userExpanded;
+  function handleLogoClick() {
+    menuOpen = false;
+    window.location.reload();
+  }
+
+  $: compact = scrollingDown && !menuOpen;
 
   onMount(() => {
     lastScrollY = window.scrollY;
     window.addEventListener("scroll", handleScroll);
     updateTextColor();
+
     return () => window.removeEventListener("scroll", handleScroll);
   });
 </script>
 
 <header
   class="nav-wrapper {compact ? 'compact' : ''} {menuOpen ? 'menu-open' : ''}"
-  on:mouseenter={handleHover}
   style="color:{textColor}"
 >
   <nav class="nav-inner">
 
-    <div
+    <button
       class="nav-btn logo"
       data-cursor="button"
       on:mousemove={handleButtonMove}
-      on:click={() => navigate("home")}
+      on:click={handleLogoClick}
+      type="button"
     >
       Agence 3 Terres
-    </div>
+    </button>
 
     <div class="links">
-      <button class="nav-btn fade" data-cursor="button" on:mousemove={handleButtonMove} on:click={() => navigate("travail")}>
+      <button
+        class="nav-btn fade"
+        data-cursor="button"
+        on:mousemove={handleButtonMove}
+        on:click={() => navigate("travail")}
+        type="button"
+      >
         Projets
       </button>
 
-      <button class="nav-btn fade" data-cursor="button" on:mousemove={handleButtonMove} on:click={() => navigate("apropos")}>
+      <button
+        class="nav-btn fade"
+        data-cursor="button"
+        on:mousemove={handleButtonMove}
+        on:click={() => navigate("apropos")}
+        type="button"
+      >
         À propos
       </button>
 
-      <button class="nav-btn fade" data-cursor="button" on:mousemove={handleButtonMove} on:click={() => navigate("services")}>
+      <button
+        class="nav-btn fade"
+        data-cursor="button"
+        on:mousemove={handleButtonMove}
+        on:click={() => navigate("services")}
+        type="button"
+      >
         Services
       </button>
 
-      <button class="nav-btn fade" data-cursor="button" on:mousemove={handleButtonMove} on:click={() => navigate("contact")}>
+      <button
+        class="nav-btn fade"
+        data-cursor="button"
+        on:mousemove={handleButtonMove}
+        on:click={() => navigate("contact")}
+        type="button"
+      >
         Contact
       </button>
     </div>
@@ -189,7 +215,6 @@ header {
     background 1.2s cubic-bezier(.22,.61,.36,1);
 }
 
-/* 🔥 Glow bordure localisé ultra premium */
 .nav-btn::before {
   content: "";
   position: absolute;

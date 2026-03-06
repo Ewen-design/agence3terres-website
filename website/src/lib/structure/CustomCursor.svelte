@@ -217,7 +217,7 @@
   top: 0;
   left: 0;
   pointer-events: none;
-  z-index: 9999;
+  z-index: 10000;
 
   width: 26px;
   height: 26px;
