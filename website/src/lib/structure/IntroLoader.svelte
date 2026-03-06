@@ -11,9 +11,15 @@
   let logoMover;
   let logoScaler;
 
+  let viewportH = 0;
+
+  let targetMove = 0;
+  let targetScale = 1;
+
   let currentMove = 0;
   let currentScale = 1;
-  let viewportH = 0;
+
+  let rafId;
 
   function clamp(v, min, max) {
     return Math.max(min, Math.min(v, max));
@@ -30,26 +36,37 @@
     viewportH = window.innerHeight || 0;
   }
 
-  function applyLogoTransform(progress, immediate = false) {
-    if (!logoMover || !logoScaler) return;
-
+  function setTargetFromProgress(progress) {
     const isMobile = window.innerWidth <= 768;
 
-    const maxMovePx = isMobile ? viewportH * 0.16 : viewportH * 0.22;
-    const targetMove = maxMovePx * progress;
-    const targetScale = 1 - (isMobile ? 0.42 : 0.58) * progress;
+    const maxMovePx = isMobile ? viewportH * 0.15 : viewportH * 0.22;
+    targetMove = maxMovePx * progress;
 
-    if (immediate) {
-      currentMove = targetMove;
-      currentScale = targetScale;
-    } else {
-      const ease = isMobile ? 0.18 : 0.12;
-      currentMove += (targetMove - currentMove) * ease;
-      currentScale += (targetScale - currentScale) * ease;
-    }
+    targetScale = 1 - (isMobile ? 0.42 : 0.58) * progress;
+  }
+
+  function renderLogo() {
+    if (!logoMover || !logoScaler) return;
 
     logoMover.style.transform = `translate3d(-50%, calc(-50% - ${currentMove}px), 0)`;
     logoScaler.style.transform = `scale(${currentScale})`;
+  }
+
+  function animateLogo() {
+    const isMobile = window.innerWidth <= 768;
+
+    const easeMove = isMobile ? 0.16 : 0.11;
+    const easeScale = isMobile ? 0.14 : 0.1;
+
+    currentMove += (targetMove - currentMove) * easeMove;
+    currentScale += (targetScale - currentScale) * easeScale;
+
+    // seuil de repos pour éviter les micro-saccades finales
+    if (Math.abs(targetMove - currentMove) < 0.03) currentMove = targetMove;
+    if (Math.abs(targetScale - currentScale) < 0.0008) currentScale = targetScale;
+
+    renderLogo();
+    rafId = requestAnimationFrame(animateLogo);
   }
 
   function updateLogoState() {
@@ -60,26 +77,24 @@
 
     const rect = hero.getBoundingClientRect();
     const max = rect.height - viewportH;
-    const raw = clamp(-rect.top / max, 0, 1);
+    const raw = max > 0 ? clamp(-rect.top / max, 0, 1) : 0;
 
     heroVisible = rect.bottom > 0 && rect.top < viewportH;
 
-    const moveWindow = window.innerWidth <= 768 ? 0.16 : 0.2;
-    const logoProgress = phase === "done" ? clamp(raw / moveWindow, 0, 1) : 0;
+    const moveWindow = window.innerWidth <= 768 ? 0.18 : 0.2;
+    let logoProgress = phase === "done" ? clamp(raw / moveWindow, 0, 1) : 0;
 
-    // reset parfait quand on revient tout en haut
-    if (logoProgress <= 0.001) {
-      applyLogoTransform(0, true);
+    // reset parfaitement propre tout en haut
+    if (logoProgress <= 0.0005) {
+      logoProgress = 0;
+      currentMove = 0;
+      currentScale = 1;
+      setTargetFromProgress(0);
+      renderLogo();
       return;
     }
 
-    // lock parfait en fin de mouvement
-    if (logoProgress >= 0.999) {
-      applyLogoTransform(1, true);
-      return;
-    }
-
-    applyLogoTransform(logoProgress, false);
+    setTargetFromProgress(logoProgress);
   }
 
   function handleResize() {
@@ -93,6 +108,8 @@
 
   onMount(() => {
     syncViewport();
+    setTargetFromProgress(0);
+    renderLogo();
 
     const timer = setTimeout(() => {
       phase = "done";
@@ -103,7 +120,7 @@
     window.addEventListener("resize", handleResize);
     window.addEventListener("orientationchange", handleResize);
 
-    applyLogoTransform(0, true);
+    rafId = requestAnimationFrame(animateLogo);
     updateLogoState();
 
     return () => {
@@ -112,6 +129,7 @@
       unregisterParallax(updateLogoState);
       window.removeEventListener("resize", handleResize);
       window.removeEventListener("orientationchange", handleResize);
+      cancelAnimationFrame(rafId);
     };
   });
 
@@ -120,6 +138,7 @@
     unregisterParallax(updateLogoState);
     window.removeEventListener("resize", handleResize);
     window.removeEventListener("orientationchange", handleResize);
+    cancelAnimationFrame(rafId);
   });
 </script>
 
@@ -179,12 +198,14 @@
     transform: translate3d(-50%, -50%, 0);
     will-change: transform;
     backface-visibility: hidden;
+    transform-style: preserve-3d;
   }
 
   .logo-scaler {
     transform: scale(1);
     will-change: transform;
     backface-visibility: hidden;
+    transform-style: preserve-3d;
   }
 
   .eagle-container {
@@ -194,6 +215,7 @@
   .eagle {
     width: 250px;
     display: block;
+    backface-visibility: hidden;
   }
 
   .eagle path {
