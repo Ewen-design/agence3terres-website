@@ -147,7 +147,7 @@
 <style>
   .hero {
     position: relative;
-    height: 500vh;
+    height: 400vh;
     background: #000;
     isolation: isolate;
     cursor: none;
@@ -329,7 +329,7 @@ h1 {
   font-size: 0.8rem;
   letter-spacing: 0.25em;
   text-transform: uppercase;
-  color: rgba(255,240,220,0.65);
+  color: #fff;
   pointer-events: none;
   transition: opacity 0.6s ease;
   white-space: nowrap;
