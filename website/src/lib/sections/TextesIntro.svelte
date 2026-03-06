@@ -1,96 +1,105 @@
 <script>
 	import { onMount, onDestroy } from "svelte";
-	import gsap from "gsap";
-	import ScrollTrigger from "gsap/ScrollTrigger";
+	import { registerParallax, unregisterParallax } from "../scrollEngine.js";
 
-	gsap.registerPlugin(ScrollTrigger);
-
+	let section;
 	let leftWrapper;
 	let rightWrapper;
 	let bgText;
-	let ctx;
+	let bgLayer;
+
+	let sectionMetrics = null;
+
+	const clamp = (v, min, max) => Math.max(min, Math.min(v, max));
+
+	function measure() {
+		if (!section) return;
+
+		const scrollY = window.scrollY;
+
+		const sectionRect = section.getBoundingClientRect();
+
+		sectionMetrics = {
+			top: sectionRect.top + scrollY,
+			height: sectionRect.height
+		};
+	}
+
+	function updateParallax(scrollY) {
+		if (!section || !sectionMetrics) return;
+
+		const winH = window.innerHeight;
+		const sectionCenter = (sectionMetrics.top - scrollY) + sectionMetrics.height / 2;
+		const sectionProgress = clamp((sectionCenter - winH / 2) / winH, -1, 1);
+
+		// BACKGROUND : très lourd, presque fixed
+		if (bgLayer) {
+			const bgSpeed = -400;
+			const bgOffset = sectionProgress * bgSpeed;
+			bgLayer.style.transform = `translate3d(0, ${bgOffset}px, 0)`;
+		}
+
+		// TEXTE DE FOND : légèrement indépendant pour donner de la profondeur
+		if (bgText) {
+			const textSpeed = -24;
+			const textOffset = sectionProgress * textSpeed;
+			const fade = clamp(1 - Math.abs(sectionProgress) * 1.15, 0, 1);
+
+			bgText.style.transform = `translate3d(0, ${textOffset}px, 0)`;
+			bgText.style.opacity = fade;
+		}
+
+		// PANELS : logique proche de ton autre composant
+		if (leftWrapper) {
+			const rect = leftWrapper.getBoundingClientRect();
+			const center = rect.top + rect.height / 2;
+			const progress = clamp((center - winH / 2) / winH, -1, 1);
+			const speed = -140;
+			const offset = progress * speed;
+
+			leftWrapper.style.transform = `translate3d(0, ${offset}px, 0)`;
+		}
+
+		if (rightWrapper) {
+			const rect = rightWrapper.getBoundingClientRect();
+			const center = rect.top + rect.height / 2;
+			const progress = clamp((center - winH / 2) / winH, -1, 1);
+			const speed = -40;
+			const offset = progress * speed;
+
+			rightWrapper.style.transform = `translate3d(0, ${offset}px, 0)`;
+		}
+	}
 
 	onMount(() => {
-		ctx = gsap.context(() => {
+		measure();
 
-		// Fade titre fond
-		gsap.fromTo(
-			bgText,
-			{ opacity: 0 },
-			{
-				opacity: 1,
-				scrollTrigger: {
-					trigger: ".creative-section",
-					start: "top 90%",
-					end: "top 20%",
-					scrub: true
-				}
-			}
-		);
+		window.addEventListener("resize", measure);
+		window.addEventListener("load", measure);
 
-		// Apparition indépendante (SUR WRAPPER)
-		gsap.from(leftWrapper, {
-			y: 300,
-			scrollTrigger: {
-				trigger: leftWrapper,
-				start: "top 110%",
-				scrub: true
-			}
-		});
-
-		gsap.from(rightWrapper, {
-			y: 80,
-			scrollTrigger: {
-				trigger: rightWrapper,
-				start: "top 85%",
-				scrub: true
-			}
-		});
-
-		// PARALLAX FORTEMENT DIFFÉRENCIÉ (SUR WRAPPER)
-		gsap.to(leftWrapper, {
-			yPercent: -60,
-			ease: "none",
-			scrollTrigger: {
-				trigger: ".panels",
-				start: "top bottom",
-				end: "bottom top",
-				scrub: 3
-			}
-		});
-
-		gsap.to(rightWrapper, {
-			yPercent: -8,
-			ease: "none",
-			scrollTrigger: {
-				trigger: ".panels",
-				start: "top bottom",
-				end: "bottom top",
-				scrub: 1
-			}
-		});
-
-		}); // end gsap.context
+		registerParallax(updateParallax);
 	});
 
 	onDestroy(() => {
-		ctx?.revert();
+		unregisterParallax(updateParallax);
+		window.removeEventListener("resize", measure);
+		window.removeEventListener("load", measure);
 	});
 </script>
 
-<section class="creative-section">
-	<div class="bg-fixed">
-		<div class="bg-text" bind:this={bgText}>
-			<div>L'agence</div>
-			<div>créative</div>
-			<div>d'expériences</div>
-			<div class="accent">SINGULIÈRES</div>
+<section class="creative-section" bind:this={section}>
+	<div class="bg-wrap">
+		<div class="bg-layer" bind:this={bgLayer}>
+			<div class="bg-text" bind:this={bgText}>
+				<div>L'agence</div>
+				<div>créative</div>
+				<div>d'expériences</div>
+				<div class="accent">SINGULIÈRES</div>
+			</div>
 		</div>
 	</div>
 
 	<div class="panels">
-
-		<!-- WRAPPER ANIMÉ -->
 		<div class="panel-wrapper" bind:this={leftWrapper}>
 			<div class="panel left">
 				<p>
@@ -99,27 +108,25 @@
 			</div>
 		</div>
 
-		<!-- WRAPPER ANIMÉ -->
 		<div class="panel-wrapper" bind:this={rightWrapper}>
 			<div class="panel right">
 				<p>
-					3 Terres est une agence de création d’expériences de marque. 
-					Nous façonnons des univers singuliers, à la croisée du design, 
-					de la technologie et de la narration, pour faire vivre les marques autrement. 
-					Nous croyons que chaque projet mérite une vision créative forte, 
+					3 Terres est une agence de création d’expériences de marque.
+					Nous façonnons des univers singuliers, à la croisée du design,
+					de la technologie et de la narration, pour faire vivre les marques autrement.
+					Nous croyons que chaque projet mérite une vision créative forte,
 					pensée pour générer de l’émotion et du sens.
 				</p>
 			</div>
 		</div>
-
 	</div>
 </section>
 
 <style>
-
 .creative-section {
 	position: relative;
 	min-height: 140vh;
+	overflow: hidden;
 	background: linear-gradient(
 		to bottom,
 		#f5f6f7 0%,
@@ -127,18 +134,29 @@
 	);
 }
 
-.bg-fixed {
+.bg-wrap {
 	position: absolute;
 	inset: 0;
+	overflow: hidden;
+	z-index: 0;
+}
+
+.bg-layer {
+	position: absolute;
+	top: -14%;
+	left: 0;
+	width: 100%;
+	height: 128%;
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	z-index: 0;
 	background: linear-gradient(
 		to bottom,
 		#f5f6f7 0%,
 		#eef1f4 100%
 	);
+	will-change: transform;
+	transform: translate3d(0, 0, 0);
 }
 
 .bg-text {
@@ -148,6 +166,9 @@
 	line-height: 1.05;
 	text-align: center;
 	letter-spacing: .04em;
+	will-change: transform, opacity;
+	transform: translate3d(0, 0, 0);
+	opacity: 0.9;
 }
 
 .bg-text div {
@@ -167,7 +188,6 @@
 	-webkit-text-fill-color: transparent;
 }
 
-/* GRID */
 .panels {
 	position: relative;
 	z-index: 2;
@@ -176,27 +196,24 @@
 	gap: 4rem;
 	max-width: 1050px;
 	margin: 0 auto;
-	padding: 28vh 2rem 35vh;
+	padding: 55vh 2rem 35vh;
 	align-items: start;
 }
 
-/* WRAPPER (animé) */
 .panel-wrapper {
 	will-change: transform;
+	transform: translate3d(0, 0, 0);
 }
 
-/* BLUR PARFAIT (inchangé) */
 .panel {
 	background: rgba(255, 255, 255, 0.35);
 	backdrop-filter: blur(8px);
 	-webkit-backdrop-filter: blur(8px);
 	border-radius: 3px;
 	box-shadow: 0 10px 40px rgba(0,0,0,0.05);
-	
 	height: fit-content;
 }
 
-/* TITRE */
 .panel.left {
 	padding: 1rem;
 	display: flex;
@@ -209,7 +226,6 @@
 	color: #111;
 }
 
-/* TEXTE */
 .panel.right {
 	padding: 2rem;
 	font-family: system-ui, -apple-system, BlinkMacSystemFont,

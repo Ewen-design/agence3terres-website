@@ -282,13 +282,15 @@ on:click={handleZoneClick}
   padding: 5.5rem;
   translate: -50% -50%;
 
-  background: rgba(255,255,255,0.15);
-  backdrop-filter: blur(18px);
-  -webkit-backdrop-filter: blur(18px);
+ background: rgba(255,255,255,0.15);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
 
   border-radius: 3px;
 
-  box-shadow: 0 40px 80px rgba(0,0,0,0.65);
+  box-shadow:
+    0 8px 10px rgba(0,0,0,0.06),
+    inset 0 0 0 0px rgba(255,255,255,0.4);
 
   transition: transform 1.6s cubic-bezier(.22,.61,.36,1),
               opacity 1.2s ease;
