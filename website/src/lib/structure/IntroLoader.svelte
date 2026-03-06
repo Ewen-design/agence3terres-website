@@ -2,6 +2,9 @@
   import { onMount, onDestroy } from "svelte";
   import { registerParallax, unregisterParallax } from "../scrollEngine.js";
 
+  let stableViewportH = 0;
+let logoLocked = false;
+
   let phase = "draw";
 
   let heroVisible = true;
@@ -36,18 +39,24 @@
     return heroSection;
   }
 
-  function syncViewport() {
-    viewportH = window.innerHeight || 0;
+  function syncViewport(force = false) {
+  const current = window.innerHeight || 0;
+
+  if (!stableViewportH || force) {
+    stableViewportH = current;
   }
+
+  viewportH = stableViewportH;
+}
 
   function setTargetFromProgress(progress) {
-    const isMobile = window.innerWidth <= 768;
+  const isMobile = window.innerWidth <= 768;
 
-    const maxMovePx = isMobile ? viewportH * 0.135 : viewportH * 0.215;
-    targetMove = maxMovePx * progress;
+  const maxMovePx = isMobile ? stableViewportH * 0.135 : stableViewportH * 0.215;
+  targetMove = maxMovePx * progress;
 
-    targetScale = 1 - (isMobile ? 0.39 : 0.58) * progress;
-  }
+  targetScale = 1 - (isMobile ? 0.39 : 0.58) * progress;
+}
 
   function renderLogo() {
     if (!logoMover || !logoScaler) return;
@@ -58,71 +67,91 @@
     logoScaler.style.transform = `scale(${currentScale})`;
   }
 
-  function animateLogo() {
-    const isMobile = window.innerWidth <= 768;
+function animateLogo() {
+  const isMobile = window.innerWidth <= 768;
 
-    const easeMove = isMobile ? 0.235 : 0.13;
-    const easeScale = isMobile ? 0.215 : 0.115;
+  const easeMove = isMobile ? 0.18 : 0.13;
+  const easeScale = isMobile ? 0.16 : 0.115;
 
-    currentMove += (targetMove - currentMove) * easeMove;
-    currentScale += (targetScale - currentScale) * easeScale;
+  currentMove += (targetMove - currentMove) * easeMove;
+  currentScale += (targetScale - currentScale) * easeScale;
 
-    if (Math.abs(targetMove - currentMove) < 0.015) currentMove = targetMove;
-    if (Math.abs(targetScale - currentScale) < 0.00045) currentScale = targetScale;
+  if (Math.abs(targetMove - currentMove) < 0.02) currentMove = targetMove;
+  if (Math.abs(targetScale - currentScale) < 0.0005) currentScale = targetScale;
+
+  renderLogo();
+  rafId = requestAnimationFrame(animateLogo);
+}
+
+ function updateLogoState() {
+  const hero = getHero();
+
+  if (!hero) {
+    heroVisible = false;
+    logoLocked = false;
+
+    targetMove = 0;
+    targetScale = 1;
+    currentMove = 0;
+    currentScale = 1;
 
     renderLogo();
-    rafId = requestAnimationFrame(animateLogo);
+    return;
   }
 
-  function updateLogoState() {
-    const hero = getHero();
+  const rect = hero.getBoundingClientRect();
+  const max = rect.height - viewportH;
+  const raw = max > 0 ? clamp(-rect.top / max, 0, 1) : 0;
 
-    if (!hero) {
-      heroVisible = false;
-      targetMove = 0;
-      targetScale = 1;
-      currentMove = 0;
-      currentScale = 1;
+  heroVisible = rect.bottom > 0 && rect.top < viewportH;
+
+  const isMobile = window.innerWidth <= 768;
+  const moveWindow = isMobile ? 0.185 : 0.2;
+
+  let logoProgress = phase === "done" ? clamp(raw / moveWindow, 0, 1) : 0;
+
+  // reset propre en haut
+  if (logoProgress <= 0.0001) {
+    logoLocked = false;
+    targetMove = 0;
+    targetScale = 1;
+    currentMove = 0;
+    currentScale = 1;
+    renderLogo();
+    return;
+  }
+
+  // lock propre à la fin du déplacement
+  if (logoProgress >= 0.999) {
+    if (!logoLocked) {
+      logoLocked = true;
+      setTargetFromProgress(1);
+      currentMove = targetMove;
+      currentScale = targetScale;
       renderLogo();
-      return;
     }
-
-    syncViewport();
-
-    const rect = hero.getBoundingClientRect();
-    const max = rect.height - viewportH;
-    const raw = max > 0 ? clamp(-rect.top / max, 0, 1) : 0;
-
-    heroVisible = rect.bottom > 0 && rect.top < viewportH;
-
-    const moveWindow = window.innerWidth <= 768 ? 0.185 : 0.2;
-    let logoProgress = phase === "done" ? clamp(raw / moveWindow, 0, 1) : 0;
-
-    if (logoProgress <= 0.0001) {
-      logoProgress = 0;
-      currentMove = 0;
-      currentScale = 1;
-      setTargetFromProgress(0);
-      renderLogo();
-      return;
-    }
-
-    setTargetFromProgress(logoProgress);
+    return;
   }
 
-  function handleResize() {
-    clearTimeout(resizeTimeout);
-    resizeTimeout = setTimeout(() => {
-      heroSection = null;
-      syncViewport();
-      updateLogoState();
-    }, 80);
-  }
+  logoLocked = false;
+  setTargetFromProgress(logoProgress);
+}
+
+ function handleResize() {
+  clearTimeout(resizeTimeout);
+
+  resizeTimeout = setTimeout(() => {
+    heroSection = null;
+    logoLocked = false;
+    syncViewport(true);
+    updateLogoState();
+  }, 120);
+}
 
   onMount(() => {
     const isMobile = window.innerWidth <= 768;
 
-    syncViewport();
+    syncViewport(true);
     setTargetFromProgress(0);
 
     observer = new MutationObserver(() => {
