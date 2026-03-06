@@ -114,10 +114,14 @@
     setTargetFromProgress(0);
     renderLogo();
 
-    const timer = setTimeout(() => {
-      phase = "done";
-      updateLogoState();
-    }, 5200);
+   const isMobile = window.innerWidth <= 768;
+
+const drawDuration = isMobile ? 6800 : 5200;
+
+const timer = setTimeout(() => {
+  phase = "done";
+  updateLogoState();
+}, drawDuration);
 
     registerParallax(updateLogoState);
     window.addEventListener("resize", handleResize);
@@ -222,13 +226,19 @@
   }
 
   .eagle path {
-    fill: transparent;
-    stroke: currentColor;
-    stroke-width: 2;
-    stroke-dasharray: 15000;
-    stroke-dashoffset: 15000;
-    animation: draw 4.8s cubic-bezier(.7,0,.3,1) forwards;
+  fill: transparent;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-dasharray: 15000;
+  stroke-dashoffset: 15000;
+  animation: draw 4.8s cubic-bezier(.7,0,.3,1) forwards;
+}
+
+@media (max-width: 768px) {
+  .eagle path {
+    animation: draw 6.2s cubic-bezier(.7,0,.3,1) forwards;
   }
+}
 
   @keyframes draw {
     to {
@@ -267,6 +277,11 @@
   }
 
   @media (max-width: 768px) {
+  .eagle {
+    width: 130px;
+    height: auto;
+    display: block;
+  }
 
   .logo-wrapper {
     inset: 0;
@@ -274,21 +289,14 @@
   }
 
   .logo-mover {
-    top: 52%;
+    top: 50%;
     left: 50%;
     transform: translate3d(-50%, -50%, 0);
   }
 
-  .eagle {
-    width: min(78vw, 260px);
-    max-width: none;
-    height: auto;
-    display: block;
-  }
-
   .progress-container {
-    width: 140px;
-    bottom: 24%;
+    width: 130px;
+    bottom: 25%;
   }
 }
 </style>
