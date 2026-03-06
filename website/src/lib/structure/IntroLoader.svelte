@@ -267,13 +267,28 @@
   }
 
   @media (max-width: 768px) {
-    .eagle {
-      width: 148px;
-    }
 
-    .progress-container {
-      width: 136px;
-      bottom: 28%;
-    }
+  .logo-wrapper {
+    inset: 0;
+    overflow: visible;
   }
+
+  .logo-mover {
+    top: 52%;
+    left: 50%;
+    transform: translate3d(-50%, -50%, 0);
+  }
+
+  .eagle {
+    width: min(78vw, 260px);
+    max-width: none;
+    height: auto;
+    display: block;
+  }
+
+  .progress-container {
+    width: 140px;
+    bottom: 24%;
+  }
+}
 </style>
