@@ -1,6 +1,6 @@
 <script>
-  import { onMount } from "svelte";
-  import { initScrollEngine } from "./lib/scrollEngine.js";
+  import { onMount, onDestroy } from "svelte";
+  import { initScrollEngine, destroyScrollEngine, updateScrollEngine } from "./lib/scrollEngine.js";
   import Lenis from "@studio-freight/lenis";
 
   import Header from "./lib/structure/Header.svelte";
@@ -11,7 +11,7 @@
 
   // HOME
   import IconeFleche from "./lib/structure/IconeFleche.svelte";
-  import HeroScroll from "./lib/sections/HeroScroll.svelte";
+  import HeroNew from "./lib/sections/HeroNew.svelte";
   import TextesIntro from "./lib/sections/TextesIntro.svelte";
   import HomePage from "./lib/sections/HomePage.svelte";
   import ParallaxGallery from "./lib/sections/ParallaxGallery.svelte";
@@ -37,6 +37,7 @@
   let isLoading = true;
 
   let lenis;
+  let rafId;
 
   function navigate(page) {
     if (page === currentPage || isTransitioning) return;
@@ -46,7 +47,7 @@
 
     setTimeout(() => {
       currentPage = nextPage;
-      window.scrollTo(0, 0);
+      lenis?.scrollTo(0, { immediate: true });
     }, 600);
 
     setTimeout(() => {
@@ -58,46 +59,64 @@
   onMount(() => {
     initScrollEngine();
 
-    // LENIS SMOOTH SCROLL
-   lenis = new Lenis({
-  duration: 1.6,
-  easing: (t) => 1 - Math.pow(1 - t, 3.5),
-  smoothWheel: true,
-  smoothTouch: false,
-  wheelMultiplier: 1
-});
+    lenis = new Lenis({
+      duration: 1.35,
+      easing: (t) => 1 - Math.pow(1 - t, 3),
+      smoothWheel: true,
+      smoothTouch: false,
+      wheelMultiplier: 1,
+      touchMultiplier: 1
+    });
+
+    // source unique de vérité pour tout le site
+    lenis.on("scroll", (e) => {
+      updateScrollEngine(e.animatedScroll);
+    });
 
     function raf(time) {
       lenis.raf(time);
-      requestAnimationFrame(raf);
+      rafId = requestAnimationFrame(raf);
     }
 
-    requestAnimationFrame(raf);
+    rafId = requestAnimationFrame(raf);
 
-    window.addEventListener("load", () => {
+    // état initial
+    updateScrollEngine(window.scrollY || window.pageYOffset || 0);
+
+    const onLoad = () => {
       setTimeout(() => {
         isLoading = false;
       }, 15000);
-    });
+    };
+
+    window.addEventListener("load", onLoad);
+
+    return () => {
+      window.removeEventListener("load", onLoad);
+      cancelAnimationFrame(rafId);
+      lenis?.destroy();
+      destroyScrollEngine();
+    };
+  });
+
+  onDestroy(() => {
+    cancelAnimationFrame(rafId);
+    lenis?.destroy();
+    destroyScrollEngine();
   });
 </script>
 
 <main>
-
   <CustomCursor />
   <IconeFleche />
 
+  <IntroLoader />
 
-    <IntroLoader />
- 
-
-  <!-- HEADER TOUJOURS VISIBLE -->
   <Header {navigate} />
 
   <div class="page-wrapper {isTransitioning ? 'blur-out' : ''}">
-
     {#if currentPage === "home"}
-      <HeroScroll />
+      <HeroNew />
       <TextesIntro />
       <HomePage />
       <ParallaxGallery />
@@ -125,31 +144,29 @@
     {:else if currentPage === "projet2"}
       <Projet2 {navigate} />
     {/if}
-
   </div>
 
-  <!-- FOOTER MASQUÉ SUR LES PAGES PROJET -->
   {#if !["projet1", "projet2"].includes(currentPage)}
     <Footer />
   {/if}
-
 </main>
 
 <style>
-main {
-  position: relative;
-  width: 100%;
-  overflow-x: hidden;
-}
+  main {
+    position: relative;
+    width: 100%;
+    overflow-x: clip;
+    background: #000;
+  }
 
-.page-wrapper {
-  transition:
-    filter 0.8s cubic-bezier(.22,.61,.36,1),
-    opacity 0.8s cubic-bezier(.22,.61,.36,1);
-}
+  .page-wrapper {
+    transition:
+      filter 0.8s cubic-bezier(.22,.61,.36,1),
+      opacity 0.8s cubic-bezier(.22,.61,.36,1);
+  }
 
-.blur-out {
-  filter: blur(18px);
-  opacity: 0;
-}
+  .blur-out {
+    filter: blur(18px);
+    opacity: 0;
+  }
 </style>

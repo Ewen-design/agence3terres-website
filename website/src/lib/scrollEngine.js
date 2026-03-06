@@ -1,47 +1,50 @@
 // lib/scrollEngine.js
 
 let callbacks = new Set();
-let ticking = false;
-let scrollY = 0;
 let initialized = false;
+let currentY = 0;
 
-function loop() {
+function emit() {
   for (const cb of callbacks) {
     try {
-      cb(scrollY);
+      cb(currentY);
     } catch (e) {
       console.warn("ScrollEngine callback error:", e);
     }
-  }
-  ticking = false;
-}
-
-function onScroll() {
-  scrollY = window.scrollY || window.pageYOffset;
-
-  if (!ticking) {
-    requestAnimationFrame(loop);
-    ticking = true;
   }
 }
 
 export function initScrollEngine() {
   if (initialized) return;
-
-  window.addEventListener("scroll", onScroll, { passive: true });
   initialized = true;
 }
 
 export function destroyScrollEngine() {
-  window.removeEventListener("scroll", onScroll);
   callbacks.clear();
   initialized = false;
+  currentY = 0;
 }
 
 export function registerParallax(cb) {
   callbacks.add(cb);
+
+  // appel immédiat pour éviter un "flash" au montage
+  try {
+    cb(currentY);
+  } catch (e) {
+    console.warn("ScrollEngine callback error:", e);
+  }
 }
 
 export function unregisterParallax(cb) {
   callbacks.delete(cb);
+}
+
+export function updateScrollEngine(y) {
+  currentY = y;
+  emit();
+}
+
+export function getScrollY() {
+  return currentY;
 }
