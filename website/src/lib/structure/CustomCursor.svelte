@@ -3,11 +3,9 @@
 
   let cursor;
 
-  // 🔥 position réelle souris
   let targetX = 0;
   let targetY = 0;
 
-  // 🔥 position affichée (avec inertie)
   let x = 0;
   let y = 0;
 
@@ -20,7 +18,6 @@
   let previewImage = "";
   let direction = "next";
 
-  // ✅ ajout pour carousel
   let carouselDirection = "next";
 
   let currentSliderEl = null;
@@ -52,16 +49,17 @@
     const el = e.target.closest("[data-cursor]");
 
     if (!el) {
-      if ((mode === "slider" || mode === "carousel") && !isLeaving) {
+      if ((mode === "slider" || mode === "carousel" || mode === "down") && !isLeaving) {
         isLeaving = true;
 
         setTimeout(() => {
           mode = "dot";
           previewImage = "";
           currentSliderEl = null;
+          text = "";
           isLeaving = false;
         }, 350);
-      } else if (mode !== "slider" && mode !== "carousel") {
+      } else if (mode !== "slider" && mode !== "carousel" && mode !== "down") {
         scale = 1;
         text = "";
         mode = "dot";
@@ -102,9 +100,15 @@
       currentSliderEl = el;
     }
 
-    // ✅ nouveau mode carousel
     else if (type === "carousel") {
       mode = "carousel";
+      scale = 1;
+      currentSliderEl = null;
+    }
+
+    // ✅ curseur flèche vers le bas pour le hero
+    else if (type === "down") {
+      mode = "down";
       scale = 1;
       currentSliderEl = null;
     }
@@ -114,7 +118,7 @@
     isActive = true;
 
     if (mode !== "slider" && mode !== "carousel") {
-      scale = 1.1;
+      scale = 1.08;
     }
   }
 
@@ -132,7 +136,6 @@
     });
   }
 
-  // ✅ écoute direction envoyée par le slider
   function updateCarouselDirection(e) {
     carouselDirection = e.detail;
   }
@@ -147,8 +150,6 @@
     window.addEventListener("mouseup", up);
 
     window.addEventListener("slider-index-changed", refreshSliderPreview);
-
-    // ✅ nouvel event
     window.addEventListener("carousel-direction", updateCarouselDirection);
 
     animate();
@@ -175,6 +176,7 @@
     class:button={mode === "button"}
     class:slider={mode === "slider"}
     class:carousel={mode === "carousel"}
+    class:down={mode === "down"}
     class:active={isActive}
   >
     {#if mode === "slider"}
@@ -182,13 +184,23 @@
         <img src={previewImage} alt="" />
         <div class="arrow {direction}"></div>
       </div>
+
     {:else if mode === "carousel"}
       <div class="arrow {carouselDirection}">
-  <svg viewBox="0 0 60 20" fill="none">
-    <path d="M0 10H50" stroke="white" stroke-width="1.5"/>
-    <path d="M40 2L50 10L40 18" stroke="white" stroke-width="1.5"/>
-  </svg>
-</div>
+        <svg viewBox="0 0 60 20" fill="none">
+          <path d="M0 10H50" stroke="white" stroke-width="1.5"/>
+          <path d="M40 2L50 10L40 18" stroke="white" stroke-width="1.5"/>
+        </svg>
+      </div>
+
+    {:else if mode === "down"}
+      <div class="down-arrow">
+        <svg viewBox="0 0 28 28" fill="none">
+          <path d="M14 4V22" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+          <path d="M8 16L14 22L20 16" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+
     {:else}
       <span>{text}</span>
     {/if}
@@ -232,7 +244,8 @@
     height 0.35s cubic-bezier(.22,1,.36,1),
     border-radius 0.35s cubic-bezier(.22,1,.36,1),
     background 0.35s ease,
-    box-shadow 0.35s ease;
+    box-shadow 0.35s ease,
+    opacity 0.3s ease;
 }
 
 .cursor.button {
@@ -268,7 +281,6 @@
   filter: brightness(0.8);
 }
 
-/* ✅ carousel (flèche fine seule) */
 .cursor.carousel {
   width: 60px;
   height: 60px;
@@ -276,6 +288,32 @@
   backdrop-filter: none;
   box-shadow: none;
   border-radius: 0;
+}
+
+.cursor.down {
+  width: 64px;
+  height: 64px;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.08);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  box-shadow:
+    0 10px 30px rgba(0,0,0,0.15),
+    inset 0 0 0 1px rgba(255,255,255,0.18);
+}
+
+.down-arrow {
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: arrowFloat 1.8s ease-in-out infinite;
+}
+
+.down-arrow svg {
+  width: 100%;
+  height: 100%;
 }
 
 .arrow {
@@ -294,5 +332,17 @@
 
 .arrow.prev {
   transform: translate(-50%, -50%) rotate(180deg);
+}
+
+@keyframes arrowFloat {
+  0% {
+    transform: translateY(-2px);
+  }
+  50% {
+    transform: translateY(3px);
+  }
+  100% {
+    transform: translateY(-2px);
+  }
 }
 </style>

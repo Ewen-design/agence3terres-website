@@ -67,7 +67,8 @@
       wheelMultiplier: 1,
       touchMultiplier: 1
     });
-
+// @ts-ignore
+window.lenis = lenis;
     // source unique de vérité pour tout le site
     lenis.on("scroll", (e) => {
       updateScrollEngine(e.animatedScroll);
@@ -96,8 +97,11 @@
       cancelAnimationFrame(rafId);
       lenis?.destroy();
       destroyScrollEngine();
+        // @ts-ignore
+  window.lenis = null;
     };
   });
+
 
   onDestroy(() => {
     cancelAnimationFrame(rafId);

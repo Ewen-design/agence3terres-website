@@ -8,8 +8,7 @@
   let progress = 0;
   let smoothProgress = 0;
   let visible = false;
-  let drift = 0;
-  let rafId;
+  let textProgress = 0;
 
   const words = ["Crafting", "Digital", "Experiences", "Elegantly"];
 
@@ -24,11 +23,24 @@
     const vh = window.innerHeight;
     const max = rect.height - vh;
 
-    const raw = Math.min(Math.max(-rect.top / max, 0), 1);
-    const eased = easeOutCubic(raw);
+    let raw = Math.min(Math.max(-rect.top / max, 0), 1);
 
-    smoothProgress += (eased - smoothProgress) * 0.12;
+    if (raw < 0.002) {
+      raw = 0;
+      smoothProgress = 0;
+    } else if (raw > 0.998) {
+      raw = 1;
+      smoothProgress = 1;
+    } else {
+      const eased = easeOutCubic(raw);
+      smoothProgress += (eased - smoothProgress) * 0.075;
+    }
+
     progress = smoothProgress;
+
+    // le texte démarre après le déplacement du logo
+    const revealDelay = 0.18;
+    textProgress = Math.max(0, Math.min((progress - revealDelay) / (1 - revealDelay), 1));
 
     visible = rect.bottom > 0 && rect.top < vh;
 
@@ -46,33 +58,59 @@
     }
   }
 
+  function scrollToEnd() {
+    if (!section) return;
+
+    const targetY =
+      window.scrollY +
+      section.getBoundingClientRect().top +
+      section.offsetHeight -
+      window.innerHeight;
+
+    // @ts-ignore
+    if (window.lenis && typeof window.lenis.scrollTo === "function") {
+      // @ts-ignore
+      window.lenis.scrollTo(targetY, {
+        duration: 5.5,
+        easing: (t) => 1 - Math.pow(1 - t, 2.5)
+      });
+    } else {
+      window.scrollTo({
+        top: targetY,
+        behavior: "smooth"
+      });
+    }
+  }
+
   onMount(() => {
     registerParallax(updateHero);
     window.addEventListener("resize", updateHero);
 
-    const animate = (time) => {
-      drift = time * 0.00008;
-      rafId = requestAnimationFrame(animate);
-    };
-
-    rafId = requestAnimationFrame(animate);
     updateHero();
 
     return () => {
       unregisterParallax(updateHero);
       window.removeEventListener("resize", updateHero);
-      cancelAnimationFrame(rafId);
     };
   });
 
   onDestroy(() => {
     unregisterParallax(updateHero);
     window.removeEventListener("resize", updateHero);
-    cancelAnimationFrame(rafId);
   });
 </script>
 
-<section bind:this={section} class="hero" style="--p:{progress}; --d:{drift};">
+<section
+  bind:this={section}
+  class="hero"
+  data-hero="intro"
+  data-cursor="down"
+  style="--p:{progress}; --tp:{textProgress};"
+  on:click={scrollToEnd}
+  role="button"
+  tabindex="0"
+  on:keydown={(e) => (e.key === "Enter" || e.key === " ") && scrollToEnd()}
+>
   <div class="scene" bind:this={scene}>
     <div class="base-gradient"></div>
     <div class="ambient ambient-1"></div>
@@ -90,15 +128,19 @@
           <span
             class="word"
             style="
-              opacity:{progress > i * 0.16 ? 1 : 0};
-              filter:blur({progress > i * 0.16 ? 0 : 14}px);
-              transform:translate3d(0,{progress > i * 0.16 ? 0 : 28}px,0);
+              opacity:{textProgress > i * 0.18 ? 1 : 0};
+              filter:blur({textProgress > i * 0.18 ? 0 : 14}px);
+              transform:translate3d(0,{textProgress > i * 0.18 ? 0 : 28}px,0);
             "
           >
             {word}
           </span>
         {/each}
       </h1>
+
+      <div class="scroll-indicator" style="opacity:{Math.max(0, 1 - textProgress * 2)}">
+        Faites défiler pour découvrir
+      </div>
     </div>
   </div>
 </section>
@@ -106,9 +148,10 @@
 <style>
   .hero {
     position: relative;
-    height: 600vh;
-    background: #111;
+    height: 400vh;
+    background: #000;
     isolation: isolate;
+    cursor: none;
   }
 
   .scene {
@@ -136,20 +179,20 @@
   .base-gradient {
     background:
       radial-gradient(
-        62% 62% at 50% 50%,
-        rgba(255, 252, 248, calc(0.18 + var(--p) * 0.80)) 0%,
-        rgba(255, 232, 214, calc(0.18 + var(--p) * 0.72)) 16%,
-        rgba(255, 188, 150, calc(0.16 + var(--p) * 0.60)) 32%,
-        rgba(231, 103, 50, calc(0.18 + var(--p) * 0.54)) 50%,
-        rgba(111, 30, 8, calc(0.42 + var(--p) * 0.30)) 74%,
-        #111 100%
+        64% 64% at 50% 50%,
+        rgba(255, 252, 248, calc(0.16 + var(--p) * 0.82)) 0%,
+        rgba(255, 236, 220, calc(0.16 + var(--p) * 0.74)) 16%,
+        rgba(255, 194, 160, calc(0.14 + var(--p) * 0.62)) 33%,
+        rgba(232, 108, 56, calc(0.18 + var(--p) * 0.50)) 52%,
+        rgba(110, 32, 10, calc(0.42 + var(--p) * 0.28)) 74%,
+        rgba(5, 2, 2, 1) 100%
       );
-    animation: baseDrift 26s ease-in-out infinite alternate;
+    animation: baseDrift 40s ease-in-out infinite alternate;
     will-change: transform;
   }
 
   .ambient {
-    opacity: calc(0.035 + var(--p) * 0.055);
+    opacity: calc(0.025 + var(--p) * 0.045);
     will-change: transform, opacity;
   }
 
@@ -157,91 +200,91 @@
     background:
       radial-gradient(
         28% 28% at 34% 42%,
-        rgba(255, 206, 170, 0.55) 0%,
-        rgba(255, 162, 112, 0.18) 38%,
-        #111 72%
+        rgba(255, 210, 176, 0.42) 0%,
+        rgba(255, 164, 118, 0.14) 40%,
+        rgba(255, 255, 255, 0) 74%
       );
-    filter: blur(26px);
-    animation: ambientOne 34s ease-in-out infinite alternate;
+    filter: blur(34px);
+    animation: ambientOne 48s ease-in-out infinite alternate;
   }
 
   .ambient-2 {
     background:
       radial-gradient(
         24% 24% at 66% 36%,
-        rgba(255, 240, 230, 0.35) 0%,
-        rgba(255, 176, 122, 0.14) 42%,
-        #111 74%
+        rgba(255, 240, 232, 0.26) 0%,
+        rgba(255, 178, 126, 0.11) 42%,
+        rgba(255, 255, 255, 0) 76%
       );
-    filter: blur(30px);
-    animation: ambientTwo 40s ease-in-out infinite alternate;
+    filter: blur(38px);
+    animation: ambientTwo 58s ease-in-out infinite alternate;
   }
 
   .ambient-3 {
     background:
       radial-gradient(
         30% 30% at 52% 64%,
-        rgba(221, 94, 42, 0.22) 0%,
-        rgba(255, 166, 120, 0.10) 40%,
-        #111 76%
+        rgba(219, 96, 46, 0.18) 0%,
+        rgba(255, 170, 126, 0.08) 42%,
+        rgba(255, 255, 255, 0) 78%
       );
-    filter: blur(34px);
-    animation: ambientThree 38s ease-in-out infinite alternate;
+    filter: blur(42px);
+    animation: ambientThree 54s ease-in-out infinite alternate;
   }
 
   .vignette {
     background:
       radial-gradient(
-        90% 90% at 50% 50%,
-        rgba(0, 0, 0, 0) 52%,
-        rgba(0, 0, 0, calc(0.18 - var(--p) * 0.08)) 76%,
-        rgba(0, 0, 0, calc(0.52 - var(--p) * 0.18)) 100%
+        92% 92% at 50% 50%,
+        rgba(0, 0, 0, 0) 54%,
+        rgba(0, 0, 0, calc(0.16 - var(--p) * 0.07)) 78%,
+        rgba(0, 0, 0, calc(0.48 - var(--p) * 0.16)) 100%
       );
   }
 
   .dark-cover {
     background:
       radial-gradient(
-        62% 62% at 50% 50%,
-        rgba(0, 0, 0, calc(0.88 - var(--p) * 0.72)) 0%,
-        rgba(0, 0, 0, calc(0.95 - var(--p) * 0.55)) 35%,
-        rgba(0, 0, 0, calc(1 - var(--p) * 0.22)) 100%
+        64% 64% at 50% 50%,
+        rgba(0, 0, 0, calc(0.92 - var(--p) * 0.74)) 0%,
+        rgba(0, 0, 0, calc(0.97 - var(--p) * 0.58)) 36%,
+        rgba(0, 0, 0, calc(1 - var(--p) * 0.20)) 100%
       );
   }
 
   .center-glow {
     background:
       radial-gradient(
-        34% 34% at 50% 50%,
-        rgba(255, 255, 255, calc(var(--p) * 0.48)) 0%,
-        rgba(255, 236, 221, calc(var(--p) * 0.30)) 34%,
-        rgba(255, 186, 132, calc(var(--p) * 0.16)) 58%,
-        rgba(255, 255, 255, 0) 76%
+        36% 36% at 50% 50%,
+        rgba(255, 255, 255, calc(var(--p) * 0.42)) 0%,
+        rgba(255, 238, 224, calc(var(--p) * 0.24)) 34%,
+        rgba(255, 190, 138, calc(var(--p) * 0.12)) 58%,
+        rgba(255, 255, 255, 0) 78%
       );
-    filter: blur(18px);
+    filter: blur(22px);
   }
 
   .warm-ring {
     background:
       radial-gradient(
-        50% 50% at 50% 50%,
+        52% 52% at 50% 50%,
         rgba(255, 255, 255, 0) 0%,
-        rgba(255, 169, 110, calc(var(--p) * 0.10)) 42%,
-        rgba(204, 78, 28, calc(var(--p) * 0.18)) 58%,
-        rgba(255, 255, 255, 0) 74%
+        rgba(255, 172, 114, calc(var(--p) * 0.08)) 42%,
+        rgba(206, 82, 32, calc(var(--p) * 0.14)) 58%,
+        rgba(255, 255, 255, 0) 76%
       );
-    filter: blur(24px);
+    filter: blur(28px);
   }
 
   .white-lift {
     background:
       radial-gradient(
-        46% 46% at 50% 50%,
-        rgba(255, 255, 255, calc(max(0, (var(--p) - 0.55)) * 2.1)) 0%,
-        rgba(255, 245, 238, calc(max(0, (var(--p) - 0.55)) * 1.25)) 22%,
-        rgba(255, 255, 255, 0) 60%
+        48% 48% at 50% 50%,
+        rgba(255, 255, 255, calc(max(0, (var(--p) - 0.52)) * 1.9)) 0%,
+        rgba(255, 246, 240, calc(max(0, (var(--p) - 0.52)) * 1.1)) 24%,
+        rgba(255, 255, 255, 0) 62%
       );
-    filter: blur(10px);
+    filter: blur(12px);
   }
 
   .content {
@@ -257,11 +300,12 @@
 
   h1 {
     margin: 0;
+    margin-top: 8vh;
     font-family: "Aboreto", serif;
     font-size: clamp(2.8rem, 6vw, 6.2rem);
     line-height: 1.1;
     letter-spacing: 0.08em;
-    color: rgba(255, 255, 255, calc(0.78 + var(--p) * 0.22));
+    color: rgba(255, 255, 255, calc(0.78 + var(--tp) * 0.22));
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
@@ -273,44 +317,59 @@
     display: inline-block;
     will-change: transform, opacity, filter;
     transition:
-      opacity 1.6s cubic-bezier(.22,.61,.36,1),
-      transform 1.6s cubic-bezier(.22,.61,.36,1),
-      filter 1.6s cubic-bezier(.22,.61,.36,1);
+      opacity 2s cubic-bezier(.22,.61,.36,1),
+      transform 2s cubic-bezier(.22,.61,.36,1),
+      filter 2s cubic-bezier(.22,.61,.36,1);
+  }
+
+  .scroll-indicator {
+    position: absolute;
+    bottom: 8vh;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 0.8rem;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.65);
+    font-family: "Aboreto", serif;
+    pointer-events: none;
+    transition: opacity 0.6s ease;
+    white-space: nowrap;
   }
 
   @keyframes baseDrift {
     0% {
-      transform: scale(1) translate3d(-0.8%, -0.5%, 0);
+      transform: scale(1) translate3d(-0.6%, -0.4%, 0);
     }
     100% {
-      transform: scale(1.06) translate3d(0.8%, 0.6%, 0);
+      transform: scale(1.04) translate3d(0.6%, 0.4%, 0);
     }
   }
 
   @keyframes ambientOne {
     0% {
-      transform: translate3d(-1.6%, -1.2%, 0) scale(1.02);
+      transform: translate3d(-1.2%, -0.9%, 0) scale(1.01);
     }
     100% {
-      transform: translate3d(1.8%, 1.1%, 0) scale(1.06);
+      transform: translate3d(1.3%, 0.9%, 0) scale(1.04);
     }
   }
 
   @keyframes ambientTwo {
     0% {
-      transform: translate3d(1.4%, -1.4%, 0) scale(1.01);
+      transform: translate3d(1.1%, -1.1%, 0) scale(1.01);
     }
     100% {
-      transform: translate3d(-1.8%, 1.5%, 0) scale(1.05);
+      transform: translate3d(-1.3%, 1.1%, 0) scale(1.04);
     }
   }
 
   @keyframes ambientThree {
     0% {
-      transform: translate3d(-1.1%, 1.6%, 0) scale(1.03);
+      transform: translate3d(-0.9%, 1.1%, 0) scale(1.02);
     }
     100% {
-      transform: translate3d(1.2%, -1.8%, 0) scale(1.07);
+      transform: translate3d(1%, -1.2%, 0) scale(1.05);
     }
   }
 
@@ -320,22 +379,19 @@
     }
 
     h1 {
+      margin-top: 10vh;
       gap: 0.28em;
       font-size: clamp(2.2rem, 10vw, 4.2rem);
     }
 
-    .center-glow {
-      filter: blur(14px);
+    .ambient {
+      opacity: calc(0.015 + var(--p) * 0.03);
     }
 
-    .warm-ring {
-      filter: blur(18px);
-    }
-
-    .ambient-1,
-    .ambient-2,
-    .ambient-3 {
-      opacity: calc(0.02 + var(--p) * 0.04);
+    .scroll-indicator {
+      bottom: 7vh;
+      font-size: 0.68rem;
+      letter-spacing: 0.18em;
     }
   }
 </style>
