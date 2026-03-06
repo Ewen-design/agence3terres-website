@@ -116,7 +116,7 @@
 
    const isMobile = window.innerWidth <= 768;
 
-const drawDuration = isMobile ? 6800 : 5200;
+const drawDuration = isMobile ? 5400 : 5200;
 
 const timer = setTimeout(() => {
   phase = "done";
