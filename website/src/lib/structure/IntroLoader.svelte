@@ -39,10 +39,12 @@
   function setTargetFromProgress(progress) {
     const isMobile = window.innerWidth <= 768;
 
-    const maxMovePx = isMobile ? viewportH * 0.15 : viewportH * 0.22;
+    // plus propre sur mobile : mouvement un peu plus court
+    const maxMovePx = isMobile ? viewportH * 0.135 : viewportH * 0.215;
     targetMove = maxMovePx * progress;
 
-    targetScale = 1 - (isMobile ? 0.42 : 0.58) * progress;
+    // scale un peu moins violent sur mobile
+    targetScale = 1 - (isMobile ? 0.39 : 0.58) * progress;
   }
 
   function renderLogo() {
@@ -55,15 +57,16 @@
   function animateLogo() {
     const isMobile = window.innerWidth <= 768;
 
-    const easeMove = isMobile ? 0.16 : 0.11;
-    const easeScale = isMobile ? 0.14 : 0.1;
+    // réglages peaufinés mobile / desktop
+    const easeMove = isMobile ? 0.235 : 0.13;
+    const easeScale = isMobile ? 0.215 : 0.115;
 
     currentMove += (targetMove - currentMove) * easeMove;
     currentScale += (targetScale - currentScale) * easeScale;
 
-    // seuil de repos pour éviter les micro-saccades finales
-    if (Math.abs(targetMove - currentMove) < 0.03) currentMove = targetMove;
-    if (Math.abs(targetScale - currentScale) < 0.0008) currentScale = targetScale;
+    // snap très discret uniquement quand on est vraiment collé à la cible
+    if (Math.abs(targetMove - currentMove) < 0.015) currentMove = targetMove;
+    if (Math.abs(targetScale - currentScale) < 0.00045) currentScale = targetScale;
 
     renderLogo();
     rafId = requestAnimationFrame(animateLogo);
@@ -81,11 +84,11 @@
 
     heroVisible = rect.bottom > 0 && rect.top < viewportH;
 
-    const moveWindow = window.innerWidth <= 768 ? 0.18 : 0.2;
+    const moveWindow = window.innerWidth <= 768 ? 0.185 : 0.2;
     let logoProgress = phase === "done" ? clamp(raw / moveWindow, 0, 1) : 0;
 
     // reset parfaitement propre tout en haut
-    if (logoProgress <= 0.0005) {
+    if (logoProgress <= 0.0001) {
       logoProgress = 0;
       currentMove = 0;
       currentScale = 1;
@@ -265,11 +268,11 @@
 
   @media (max-width: 768px) {
     .eagle {
-      width: 150px;
+      width: 148px;
     }
 
     .progress-container {
-      width: 140px;
+      width: 136px;
       bottom: 28%;
     }
   }

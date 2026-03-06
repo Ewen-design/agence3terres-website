@@ -38,7 +38,6 @@
 
     progress = smoothProgress;
 
-    // le texte démarre après le déplacement du logo
     const revealDelay = 0.18;
     textProgress = Math.max(0, Math.min((progress - revealDelay) / (1 - revealDelay), 1));
 
@@ -148,7 +147,7 @@
 <style>
   .hero {
     position: relative;
-    height: 400vh;
+    height: 600vh;
     background: #000;
     isolation: isolate;
     cursor: none;
@@ -180,11 +179,11 @@
     background:
       radial-gradient(
         64% 64% at 50% 50%,
-        rgba(255, 252, 248, calc(0.16 + var(--p) * 0.82)) 0%,
-        rgba(255, 236, 220, calc(0.16 + var(--p) * 0.74)) 16%,
-        rgba(255, 194, 160, calc(0.14 + var(--p) * 0.62)) 33%,
-        rgba(232, 108, 56, calc(0.18 + var(--p) * 0.50)) 52%,
-        rgba(110, 32, 10, calc(0.42 + var(--p) * 0.28)) 74%,
+        rgba(255, 250, 242, calc(0.16 + var(--p) * 0.82)) 0%,
+        rgba(255, 236, 214, calc(0.16 + var(--p) * 0.74)) 16%,
+        rgba(244, 203, 150, calc(0.14 + var(--p) * 0.62)) 33%,
+        rgba(216, 136, 64, calc(0.18 + var(--p) * 0.50)) 52%,
+        rgba(106, 42, 12, calc(0.42 + var(--p) * 0.28)) 74%,
         rgba(5, 2, 2, 1) 100%
       );
     animation: baseDrift 40s ease-in-out infinite alternate;
@@ -200,8 +199,8 @@
     background:
       radial-gradient(
         28% 28% at 34% 42%,
-        rgba(255, 210, 176, 0.42) 0%,
-        rgba(255, 164, 118, 0.14) 40%,
+        rgba(245, 214, 166, 0.40) 0%,
+        rgba(221, 165, 95, 0.14) 40%,
         rgba(255, 255, 255, 0) 74%
       );
     filter: blur(34px);
@@ -212,8 +211,8 @@
     background:
       radial-gradient(
         24% 24% at 66% 36%,
-        rgba(255, 240, 232, 0.26) 0%,
-        rgba(255, 178, 126, 0.11) 42%,
+        rgba(255, 242, 226, 0.24) 0%,
+        rgba(224, 178, 110, 0.11) 42%,
         rgba(255, 255, 255, 0) 76%
       );
     filter: blur(38px);
@@ -224,8 +223,8 @@
     background:
       radial-gradient(
         30% 30% at 52% 64%,
-        rgba(219, 96, 46, 0.18) 0%,
-        rgba(255, 170, 126, 0.08) 42%,
+        rgba(200, 118, 52, 0.18) 0%,
+        rgba(232, 176, 110, 0.08) 42%,
         rgba(255, 255, 255, 0) 78%
       );
     filter: blur(42px);
@@ -256,9 +255,9 @@
     background:
       radial-gradient(
         36% 36% at 50% 50%,
-        rgba(255, 255, 255, calc(var(--p) * 0.42)) 0%,
-        rgba(255, 238, 224, calc(var(--p) * 0.24)) 34%,
-        rgba(255, 190, 138, calc(var(--p) * 0.12)) 58%,
+        rgba(255, 249, 240, calc(var(--p) * 0.42)) 0%,
+        rgba(255, 232, 198, calc(var(--p) * 0.24)) 34%,
+        rgba(226, 176, 94, calc(var(--p) * 0.12)) 58%,
         rgba(255, 255, 255, 0) 78%
       );
     filter: blur(22px);
@@ -269,8 +268,8 @@
       radial-gradient(
         52% 52% at 50% 50%,
         rgba(255, 255, 255, 0) 0%,
-        rgba(255, 172, 114, calc(var(--p) * 0.08)) 42%,
-        rgba(206, 82, 32, calc(var(--p) * 0.14)) 58%,
+        rgba(220, 170, 96, calc(var(--p) * 0.08)) 42%,
+        rgba(176, 98, 36, calc(var(--p) * 0.14)) 58%,
         rgba(255, 255, 255, 0) 76%
       );
     filter: blur(28px);
@@ -280,8 +279,8 @@
     background:
       radial-gradient(
         48% 48% at 50% 50%,
-        rgba(255, 255, 255, calc(max(0, (var(--p) - 0.52)) * 1.9)) 0%,
-        rgba(255, 246, 240, calc(max(0, (var(--p) - 0.52)) * 1.1)) 24%,
+        rgba(255, 253, 248, calc(max(0, (var(--p) - 0.52)) * 1.9)) 0%,
+        rgba(255, 244, 228, calc(max(0, (var(--p) - 0.52)) * 1.1)) 24%,
         rgba(255, 255, 255, 0) 62%
       );
     filter: blur(12px);
@@ -305,12 +304,12 @@
     font-size: clamp(2.8rem, 6vw, 6.2rem);
     line-height: 1.1;
     letter-spacing: 0.08em;
-    color: rgba(255, 255, 255, calc(0.78 + var(--tp) * 0.22));
+    color: rgba(255, 250, 242, calc(0.78 + var(--tp) * 0.22));
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
     gap: 0.48em;
-    text-shadow: 0 0 22px rgba(255, 255, 255, 0.08);
+    text-shadow: 0 0 22px rgba(255, 244, 220, 0.08);
   }
 
   .word {
@@ -330,8 +329,8 @@
     font-size: 0.8rem;
     letter-spacing: 0.25em;
     text-transform: uppercase;
-    color: rgba(255,255,255,0.65);
-    
+    color: rgba(255,245,228,0.65);
+    font-family: "Aboreto", serif;
     pointer-events: none;
     transition: opacity 0.6s ease;
     white-space: nowrap;
