@@ -45,6 +45,15 @@
     return max > 0 ? clamp(-rect.top / max, 0, 1) : 0;
   }
 
+  function introRunning() {
+    return (
+      document.body.classList.contains("intro-active") ||
+      document.body.classList.contains("intro-draw") ||
+      document.body.classList.contains("intro-leaving") ||
+      document.body.classList.contains("intro-lock")
+    );
+  }
+
   function setSnapLock(state) {
     snapLocked = state;
     document.body.classList.toggle("hero-snap-lock", state);
@@ -64,7 +73,7 @@
   }
 
   function snapTo(direction) {
-    if (!section || snapLocked) return;
+    if (!section || snapLocked || introRunning()) return;
 
     const lenis = getLenis();
     if (!lenis) return;
@@ -97,6 +106,12 @@
   }
 
   function handleWheel(e) {
+    if (introRunning()) {
+      e.preventDefault();
+      e.stopPropagation();
+      return;
+    }
+
     if (!section) return;
 
     const rect = section.getBoundingClientRect();
@@ -125,16 +140,32 @@
   }
 
   function handleTouchStart(e) {
+    if (introRunning()) {
+      touchStartY = 0;
+      return;
+    }
+
     touchStartY = e.touches[0]?.clientY ?? 0;
   }
 
   function handleTouchMove(e) {
+    if (introRunning()) {
+      e.preventDefault();
+      e.stopPropagation();
+      return;
+    }
+
     if (snapLocked) {
       e.preventDefault();
     }
   }
 
   function handleTouchEnd(e) {
+    if (introRunning()) {
+      touchStartY = 0;
+      return;
+    }
+
     if (!section || snapLocked) {
       touchStartY = 0;
       return;
@@ -165,7 +196,9 @@
   }
 
   function scrollToEndDesktop() {
+    if (introRunning()) return;
     if (snapLocked) return;
+
     const raw = getRawProgress();
     if (raw < 0.985) {
       snapTo("down");
@@ -212,20 +245,20 @@
     registerParallax(updateHero);
     window.addEventListener("resize", updateHero);
 
-    window.addEventListener("wheel", handleWheel, { passive: false });
-    window.addEventListener("touchstart", handleTouchStart, { passive: true });
-    window.addEventListener("touchmove", handleTouchMove, { passive: false });
-    window.addEventListener("touchend", handleTouchEnd, { passive: true });
+    window.addEventListener("wheel", handleWheel, { passive: false, capture: true });
+    window.addEventListener("touchstart", handleTouchStart, { passive: true, capture: true });
+    window.addEventListener("touchmove", handleTouchMove, { passive: false, capture: true });
+    window.addEventListener("touchend", handleTouchEnd, { passive: true, capture: true });
 
     updateHero();
 
     return () => {
       unregisterParallax(updateHero);
       window.removeEventListener("resize", updateHero);
-      window.removeEventListener("wheel", handleWheel);
-      window.removeEventListener("touchstart", handleTouchStart);
-      window.removeEventListener("touchmove", handleTouchMove);
-      window.removeEventListener("touchend", handleTouchEnd);
+      window.removeEventListener("wheel", handleWheel, { capture: true });
+      window.removeEventListener("touchstart", handleTouchStart, { capture: true });
+      window.removeEventListener("touchmove", handleTouchMove, { capture: true });
+      window.removeEventListener("touchend", handleTouchEnd, { capture: true });
       clearSnapTimer();
       setSnapLock(false);
     };
@@ -234,10 +267,6 @@
   onDestroy(() => {
     unregisterParallax(updateHero);
     window.removeEventListener("resize", updateHero);
-    window.removeEventListener("wheel", handleWheel);
-    window.removeEventListener("touchstart", handleTouchStart);
-    window.removeEventListener("touchmove", handleTouchMove);
-    window.removeEventListener("touchend", handleTouchEnd);
     clearSnapTimer();
     setSnapLock(false);
   });
@@ -301,7 +330,8 @@
 </section>
 
 <style>
-  :global(body.hero-snap-lock) {
+  :global(body.hero-snap-lock),
+  :global(body.intro-lock) {
     overflow: hidden;
     overscroll-behavior: none;
     touch-action: none;
@@ -309,11 +339,17 @@
 
   .hero {
     position: relative;
-    height: 600vh;
-    background: #000;
+    height: 400vh;
+    background: #111;
     isolation: isolate;
     cursor: none;
     touch-action: pan-y;
+  }
+
+  :global(body.intro-active) .hero,
+  :global(body.intro-draw) .hero,
+  :global(body.intro-leaving) .hero {
+    z-index: 9999;
   }
 
   .scene {
@@ -325,6 +361,13 @@
     will-change: opacity;
     backface-visibility: hidden;
     transform: translateZ(0);
+  }
+
+  :global(body.intro-active) .scene,
+  :global(body.intro-draw) .scene,
+  :global(body.intro-leaving) .scene {
+    opacity: 1 !important;
+    z-index: 9999 !important;
   }
 
   .base-gradient,
@@ -341,10 +384,10 @@
   .base-gradient {
     background:
       radial-gradient(
-        66% 66% at 50% 50%,
-        rgba(255, 249, 240, calc(0.16 + var(--p) * 0.82)) 0%,
-        rgba(255, 235, 214, calc(0.16 + var(--p) * 0.74)) 20%,
-        rgba(239, 197, 146, calc(0.14 + var(--p) * 0.60)) 40%,
+        118% 86% at 50% 92%,
+        rgba(255, 249, 240, calc(0.18 + var(--p) * 0.82)) 0%,
+        rgba(255, 235, 214, calc(0.17 + var(--p) * 0.74)) 18%,
+        rgba(239, 197, 146, calc(0.15 + var(--p) * 0.60)) 38%,
         rgba(214, 126, 60, calc(0.18 + var(--p) * 0.48)) 58%,
         rgba(108, 40, 12, calc(0.42 + var(--p) * 0.28)) 78%,
         rgba(5, 2, 2, 1) 100%
@@ -358,15 +401,46 @@
     will-change: transform, opacity;
   }
 
-  .ambient-1 { background: radial-gradient(28% 28% at 34% 42%, rgba(243,212,166,.34) 0%, rgba(219,158,92,.12) 42%, rgba(255,255,255,0) 76%); filter: blur(34px); animation: ambientOne 48s ease-in-out infinite alternate; }
-  .ambient-2 { background: radial-gradient(24% 24% at 66% 36%, rgba(255,240,220,.22) 0%, rgba(220,170,102,.09) 44%, rgba(255,255,255,0) 78%); filter: blur(38px); animation: ambientTwo 58s ease-in-out infinite alternate; }
-  .ambient-3 { background: radial-gradient(30% 30% at 52% 64%, rgba(198,110,44,.16) 0%, rgba(228,170,106,.07) 44%, rgba(255,255,255,0) 80%); filter: blur(42px); animation: ambientThree 54s ease-in-out infinite alternate; }
+  .ambient-1 {
+    background: radial-gradient(28% 28% at 34% 42%, rgba(243,212,166,.34) 0%, rgba(219,158,92,.12) 42%, rgba(255,255,255,0) 76%);
+    filter: blur(34px);
+    animation: ambientOne 48s ease-in-out infinite alternate;
+  }
 
-  .vignette { background: radial-gradient(92% 92% at 50% 50%, rgba(0,0,0,0) 54%, rgba(0,0,0,calc(0.16 - var(--p) * 0.07)) 78%, rgba(0,0,0,calc(0.48 - var(--p) * 0.16)) 100%); }
-  .dark-cover { background: radial-gradient(64% 64% at 50% 50%, rgba(0,0,0,calc(0.92 - var(--p) * 0.74)) 0%, rgba(0,0,0,calc(0.97 - var(--p) * 0.58)) 36%, rgba(0,0,0,calc(1 - var(--p) * 0.20)) 100%); }
-  .center-glow { background: radial-gradient(38% 38% at 50% 50%, rgba(255,248,238,calc(var(--p) * 0.40)) 0%, rgba(255,230,198,calc(var(--p) * 0.22)) 38%, rgba(222,170,92,calc(var(--p) * 0.10)) 62%, rgba(255,255,255,0) 80%); filter: blur(24px); }
-  .warm-ring { background: radial-gradient(54% 54% at 50% 50%, rgba(255,255,255,0) 0%, rgba(214,166,94,calc(var(--p) * 0.07)) 44%, rgba(170,92,34,calc(var(--p) * 0.12)) 60%, rgba(255,255,255,0) 78%); filter: blur(30px); }
-  .white-lift { background: radial-gradient(50% 50% at 50% 50%, rgba(255,252,246,calc(max(0, (var(--p) - 0.52)) * 1.85)) 0%, rgba(255,242,222,calc(max(0, (var(--p) - 0.52)) * 1.02)) 26%, rgba(255,255,255,0) 64%); filter: blur(13px); }
+  .ambient-2 {
+    background: radial-gradient(24% 24% at 66% 36%, rgba(255,240,220,.22) 0%, rgba(220,170,102,.09) 44%, rgba(255,255,255,0) 78%);
+    filter: blur(38px);
+    animation: ambientTwo 58s ease-in-out infinite alternate;
+  }
+
+  .ambient-3 {
+    background: radial-gradient(30% 30% at 52% 64%, rgba(198,110,44,.16) 0%, rgba(228,170,106,.07) 44%, rgba(255,255,255,0) 80%);
+    filter: blur(42px);
+    animation: ambientThree 54s ease-in-out infinite alternate;
+  }
+
+  .vignette {
+    background: radial-gradient(92% 92% at 50% 50%, rgba(0,0,0,0) 54%, rgba(0,0,0,calc(0.16 - var(--p) * 0.07)) 78%, rgba(0,0,0,calc(0.48 - var(--p) * 0.16)) 100%);
+  }
+
+  .dark-cover {
+    background: radial-gradient(64% 64% at 50% 50%, rgba(0,0,0,calc(0.92 - var(--p) * 0.74)) 0%, rgba(0,0,0,calc(0.97 - var(--p) * 0.58)) 36%, rgba(0,0,0,calc(1 - var(--p) * 0.20)) 100%);
+  }
+
+  .center-glow {
+    background: radial-gradient(42% 28% at 50% 88%, rgba(255,248,238,calc(var(--p) * 0.44)) 0%, rgba(255,230,198,calc(var(--p) * 0.22)) 36%, rgba(222,170,92,calc(var(--p) * 0.10)) 60%, rgba(255,255,255,0) 82%);
+    filter: blur(24px);
+  }
+
+  .warm-ring {
+    background: radial-gradient(68% 44% at 50% 96%, rgba(255,255,255,0) 0%, rgba(214,166,94,calc(var(--p) * 0.07)) 44%, rgba(170,92,34,calc(var(--p) * 0.12)) 60%, rgba(255,255,255,0) 80%);
+    filter: blur(30px);
+  }
+
+  .white-lift {
+    background: radial-gradient(58% 36% at 50% 100%, rgba(255,252,246,calc(max(0, (var(--p) - 0.52)) * 1.85)) 0%, rgba(255,242,222,calc(max(0, (var(--p) - 0.52)) * 1.02)) 24%, rgba(255,255,255,0) 66%);
+    filter: blur(13px);
+  }
 
   .hero-logo {
     position: absolute;
@@ -393,8 +467,17 @@
     will-change: transform;
   }
 
+  :global(body.intro-active) .hero-logo-mover,
+  :global(body.intro-active) .hero-logo-scaler,
+  :global(body.intro-draw) .hero-logo-mover,
+  :global(body.intro-draw) .hero-logo-scaler,
+  :global(body.intro-leaving) .hero-logo-mover,
+  :global(body.intro-leaving) .hero-logo-scaler {
+    transform: none !important;
+  }
+
   .hero-eagle {
-    width: 182px;
+    width: 196px;
     display: block;
     color: white;
     transform: translateZ(0);
@@ -404,7 +487,26 @@
   .hero-eagle path {
     fill: transparent;
     stroke: currentColor;
-    stroke-width: 2;
+    stroke-width: 1.45;
+    vector-effect: non-scaling-stroke;
+  }
+
+  :global(body.intro-active) .hero-eagle path {
+    stroke-dasharray: 15000;
+    stroke-dashoffset: 15000;
+  }
+
+  :global(body.intro-draw) .hero-eagle path {
+    animation: heroDraw 4.8s cubic-bezier(.7,0,.3,1) forwards;
+  }
+
+  :global(body.intro-leaving) .hero-eagle path,
+  :global(body.intro-complete) .hero-eagle path {
+    stroke-dashoffset: 0;
+  }
+
+  @keyframes heroDraw {
+    to { stroke-dashoffset: 0; }
   }
 
   .content {
@@ -416,6 +518,12 @@
     justify-content: center;
     padding: 0 6vw;
     text-align: center;
+  }
+
+  :global(body.intro-active) .content,
+  :global(body.intro-draw) .content,
+  :global(body.intro-leaving) .content {
+    opacity: 0;
   }
 
   h1 {
@@ -495,14 +603,39 @@
         );
     }
 
-    .ambient-1 { background: radial-gradient(48% 42% at 30% 88%, rgba(243,212,166,.28) 0%, rgba(219,158,92,.10) 44%, rgba(255,255,255,0) 78%); filter: blur(42px); }
-    .ambient-2 { background: radial-gradient(44% 38% at 72% 86%, rgba(255,240,220,.18) 0%, rgba(220,170,102,.08) 46%, rgba(255,255,255,0) 80%); filter: blur(46px); }
-    .ambient-3 { background: radial-gradient(54% 42% at 50% 96%, rgba(198,110,44,.14) 0%, rgba(228,170,106,.06) 46%, rgba(255,255,255,0) 82%); filter: blur(50px); }
+    .ambient-1 {
+      background: radial-gradient(48% 42% at 30% 88%, rgba(243,212,166,.28) 0%, rgba(219,158,92,.10) 44%, rgba(255,255,255,0) 78%);
+      filter: blur(42px);
+    }
 
-    .dark-cover { background: radial-gradient(118% 92% at 50% 94%, rgba(0,0,0,calc(0.94 - var(--p) * 0.74)) 0%, rgba(0,0,0,calc(0.98 - var(--p) * 0.60)) 36%, rgba(0,0,0,calc(1 - var(--p) * 0.20)) 100%); }
-    .center-glow { background: radial-gradient(72% 56% at 50% 96%, rgba(255,248,238,calc(var(--p) * 0.42)) 0%, rgba(255,230,198,calc(var(--p) * 0.22)) 36%, rgba(222,170,92,calc(var(--p) * 0.10)) 60%, rgba(255,255,255,0) 82%); filter: blur(34px); }
-    .warm-ring { background: radial-gradient(96% 70% at 50% 100%, rgba(255,255,255,0) 0%, rgba(214,166,94,calc(var(--p) * 0.06)) 42%, rgba(170,92,34,calc(var(--p) * 0.11)) 58%, rgba(255,255,255,0) 80%); filter: blur(36px); }
-    .white-lift { background: radial-gradient(82% 62% at 50% 100%, rgba(255,252,246,calc(max(0, (var(--p) - 0.52)) * 1.8)) 0%, rgba(255,242,222,calc(max(0, (var(--p) - 0.52)) * 1.0)) 24%, rgba(255,255,255,0) 66%); filter: blur(18px); }
+    .ambient-2 {
+      background: radial-gradient(44% 38% at 72% 86%, rgba(255,240,220,.18) 0%, rgba(220,170,102,.08) 46%, rgba(255,255,255,0) 80%);
+      filter: blur(46px);
+    }
+
+    .ambient-3 {
+      background: radial-gradient(54% 42% at 50% 96%, rgba(198,110,44,.14) 0%, rgba(228,170,106,.06) 46%, rgba(255,255,255,0) 82%);
+      filter: blur(50px);
+    }
+
+    .dark-cover {
+      background: radial-gradient(118% 92% at 50% 94%, rgba(0,0,0,calc(0.94 - var(--p) * 0.74)) 0%, rgba(0,0,0,calc(0.98 - var(--p) * 0.60)) 36%, rgba(0,0,0,calc(1 - var(--p) * 0.20)) 100%);
+    }
+
+    .center-glow {
+      background: radial-gradient(72% 56% at 50% 96%, rgba(255,248,238,calc(var(--p) * 0.42)) 0%, rgba(255,230,198,calc(var(--p) * 0.22)) 36%, rgba(222,170,92,calc(var(--p) * 0.10)) 60%, rgba(255,255,255,0) 82%);
+      filter: blur(34px);
+    }
+
+    .warm-ring {
+      background: radial-gradient(96% 70% at 50% 100%, rgba(255,255,255,0) 0%, rgba(214,166,94,calc(var(--p) * 0.06)) 42%, rgba(170,92,34,calc(var(--p) * 0.11)) 58%, rgba(255,255,255,0) 80%);
+      filter: blur(36px);
+    }
+
+    .white-lift {
+      background: radial-gradient(82% 62% at 50% 100%, rgba(255,252,246,calc(max(0, (var(--p) - 0.52)) * 1.8)) 0%, rgba(255,242,222,calc(max(0, (var(--p) - 0.52)) * 1.0)) 24%, rgba(255,255,255,0) 66%);
+      filter: blur(18px);
+    }
 
     .hero-logo-mover {
       transform: translate3d(0, calc(-1 * var(--lp) * 21vh), 0);
@@ -513,8 +646,12 @@
     }
 
     .hero-eagle {
-      width: 182px;
+      width: 196px;
       height: auto;
+    }
+
+    :global(body.intro-draw) .hero-eagle path {
+      animation: heroDraw 5.35s cubic-bezier(.7,0,.3,1) forwards;
     }
 
     h1 {
