@@ -123,42 +123,46 @@
     touchStartY = e.touches[0]?.clientY ?? 0;
   }
 
-  function handleTouchMove(e) {
-    if (window.innerWidth > 768) return;
+function handleTouchMove(e) {
+  if (window.innerWidth > 768) return;
 
-    if (snapLocked) {
-      e.preventDefault();
-      return;
-    }
-
-    if (!section) return;
-
-    const rect = section.getBoundingClientRect();
-    const vh = window.innerHeight;
-    const inView = rect.top < vh && rect.bottom > 0;
-
-    if (!inView) return;
-
-    const currentY = e.touches[0]?.clientY ?? 0;
-    const delta = currentY - touchStartY;
-    const raw = getRawProgress();
-
-    // doigt monte => scroll vers le bas
-    if (delta < -16 && raw < 0.985) {
-      e.preventDefault();
-      snapTo("down");
-    }
-
-    // doigt descend => scroll vers le haut
-    if (delta > 16 && raw > 0.015) {
-      e.preventDefault();
-      snapTo("up");
-    }
+  if (snapLocked) {
+    e.preventDefault();
   }
+}
 
-  function handleTouchEnd() {
+function handleTouchEnd(e) {
+  if (window.innerWidth > 768) return;
+  if (!section || snapLocked) {
     touchStartY = 0;
+    return;
   }
+
+  const rect = section.getBoundingClientRect();
+  const vh = window.innerHeight;
+  const inView = rect.top < vh && rect.bottom > 0;
+
+  if (!inView) {
+    touchStartY = 0;
+    return;
+  }
+
+  const endY = e.changedTouches[0]?.clientY ?? 0;
+  const delta = endY - touchStartY;
+  const raw = getRawProgress();
+
+  // doigt monte => scroll vers le bas
+  if (delta < -18 && raw < 0.985) {
+    snapTo("down");
+  }
+
+  // doigt descend => scroll vers le haut
+  if (delta > 18 && raw > 0.015) {
+    snapTo("up");
+  }
+
+  touchStartY = 0;
+}
 
   function scrollToEndDesktop() {
     if (window.innerWidth <= 768) {
@@ -270,6 +274,7 @@
     <div class="white-lift"></div>
 
     <div class="hero-logo">
+    <div class="hero-logo-anchor"> 
       <div class="hero-logo-mover">
         <div class="hero-logo-scaler">
           <svg viewBox="0 0 623.51 321.98" class="hero-eagle">
@@ -278,6 +283,7 @@
         </div>
       </div>
     </div>
+ </div>
 
     <div class="content">
       <h1>
@@ -371,31 +377,37 @@
   .white-lift { background: radial-gradient(50% 50% at 50% 50%, rgba(255,252,246,calc(max(0, (var(--p) - 0.52)) * 1.85)) 0%, rgba(255,242,222,calc(max(0, (var(--p) - 0.52)) * 1.02)) 26%, rgba(255,255,255,0) 64%); filter: blur(13px); }
 
   .hero-logo {
-    position: absolute;
-    inset: 0;
-    z-index: 2;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    pointer-events: none;
-  }
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+}
 
-  .hero-logo-mover {
-    transform: translate3d(0, calc(-1 * var(--lp) * 24vh), 0);
-    will-change: transform;
-  }
+.hero-logo-anchor {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate3d(-50%, -50%, 0);
+}
 
-  .hero-logo-scaler {
-    transform: scale(calc(1 - var(--lp) * 0.58));
-    transform-origin: center center;
-    will-change: transform;
-  }
+.hero-logo-mover {
+  transform: translate3d(0, calc(-1 * var(--lp) * 21vh), 0);
+  will-change: transform;
+}
 
-  .hero-eagle {
-    width: 250px;
-    display: block;
-    color: white;
-  }
+.hero-logo-scaler {
+  transform: scale(calc(1 - var(--lp) * 0.41));
+  transform-origin: center center;
+  will-change: transform;
+}
+
+.hero-eagle {
+  width: 182px;
+  display: block;
+  color: white;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+}
 
   .hero-eagle path {
     fill: transparent;
@@ -504,13 +516,25 @@
       transform: translate3d(0, calc(-1 * var(--lp) * 21vh), 0);
     }
 
-    .hero-logo-scaler {
-      transform: scale(calc(1 - var(--lp) * 0.41));
-    }
+  .hero-logo-scaler {
+  transform: scale(calc(1 - var(--lp) * 0.58));
+}
 
-    .hero-eagle {
-      width: 182px;
-    }
+ .hero-eagle {
+  width: 250px;
+  height: auto;
+  display: block;
+  color: white;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+}
+
+@media (max-width: 768px) {
+  .hero-eagle {
+    width: 182px;
+    height: auto;
+  }
+}
 
     h1 {
       margin-top: 10vh;
