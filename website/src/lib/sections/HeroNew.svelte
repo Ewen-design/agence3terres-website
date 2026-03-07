@@ -10,10 +10,123 @@
   let visible = false;
   let textProgress = 0;
 
+  let touchStartY = 0;
+  let mobileSnapLock = false;
+  let mobileAutoScrolling = false;
+
   const words = ["Crafting", "Digital", "Experiences", "Elegantly"];
 
   function easeOutCubic(t) {
     return 1 - Math.pow(1 - t, 3);
+  }
+
+  function getRawProgress() {
+    if (!section) return 0;
+
+    const rect = section.getBoundingClientRect();
+    const vh = window.innerHeight;
+    const max = rect.height - vh;
+
+    return Math.min(Math.max(-rect.top / max, 0), 1);
+  }
+
+  function scrollToHeroEnd(mobile = false) {
+    if (!section) return;
+
+    const targetY =
+      window.scrollY +
+      section.getBoundingClientRect().top +
+      section.offsetHeight -
+      window.innerHeight;
+
+    // @ts-ignore
+    if (window.lenis && typeof window.lenis.scrollTo === "function") {
+      // @ts-ignore
+      window.lenis.scrollTo(targetY, {
+        duration: mobile ? 1.9 : 5.5,
+        easing: (t) => 1 - Math.pow(1 - t, mobile ? 2.1 : 2.5)
+      });
+    } else {
+      window.scrollTo({
+        top: targetY,
+        behavior: "smooth"
+      });
+    }
+  }
+
+  function scrollToHeroStart() {
+    if (!section) return;
+
+    const targetY =
+      window.scrollY +
+      section.getBoundingClientRect().top;
+
+    // @ts-ignore
+    if (window.lenis && typeof window.lenis.scrollTo === "function") {
+      // @ts-ignore
+      window.lenis.scrollTo(targetY, {
+        duration: 1.8,
+        easing: (t) => 1 - Math.pow(1 - t, 2.1)
+      });
+    } else {
+      window.scrollTo({
+        top: targetY,
+        behavior: "smooth"
+      });
+    }
+  }
+
+  function lockMobileSnap(duration = 2100) {
+    mobileSnapLock = true;
+    mobileAutoScrolling = true;
+
+    setTimeout(() => {
+      mobileSnapLock = false;
+      mobileAutoScrolling = false;
+    }, duration);
+  }
+
+  function handleTouchStart(e) {
+    if (window.innerWidth > 768) return;
+    touchStartY = e.touches[0]?.clientY ?? 0;
+  }
+
+  function handleTouchMove(e) {
+    if (window.innerWidth > 768) return;
+    if (mobileSnapLock) {
+      e.preventDefault();
+    }
+  }
+
+  function handleTouchEnd(e) {
+    if (window.innerWidth > 768) return;
+    if (!section || mobileSnapLock) return;
+
+    const endY = e.changedTouches[0]?.clientY ?? 0;
+    const delta = endY - touchStartY;
+
+    const rect = section.getBoundingClientRect();
+    const vh = window.innerHeight;
+    const heroInView = rect.top < vh && rect.bottom > 0;
+
+    if (!heroInView) return;
+
+    const raw = getRawProgress();
+    const swipeUp = delta < -24;
+    const swipeDown = delta > 24;
+
+    const nearTop = raw <= 0.06;
+    const nearBottom = raw >= 0.94;
+
+    if (swipeUp && nearTop) {
+      scrollToHeroEnd(true);
+      lockMobileSnap(2200);
+    }
+
+    if (swipeDown && nearBottom) {
+      scrollToHeroStart();
+      lockMobileSnap(2100);
+    }
   }
 
   function updateHero() {
@@ -57,45 +170,31 @@
     }
   }
 
-  function scrollToEnd() {
-    if (!section) return;
-
-    const targetY =
-      window.scrollY +
-      section.getBoundingClientRect().top +
-      section.offsetHeight -
-      window.innerHeight;
-
-    // @ts-ignore
-    if (window.lenis && typeof window.lenis.scrollTo === "function") {
-      // @ts-ignore
-      window.lenis.scrollTo(targetY, {
-        duration: 5.5,
-        easing: (t) => 1 - Math.pow(1 - t, 2.5)
-      });
-    } else {
-      window.scrollTo({
-        top: targetY,
-        behavior: "smooth"
-      });
-    }
-  }
-
   onMount(() => {
     registerParallax(updateHero);
     window.addEventListener("resize", updateHero);
+
+    window.addEventListener("touchstart", handleTouchStart, { passive: true });
+    window.addEventListener("touchmove", handleTouchMove, { passive: false });
+    window.addEventListener("touchend", handleTouchEnd, { passive: true });
 
     updateHero();
 
     return () => {
       unregisterParallax(updateHero);
       window.removeEventListener("resize", updateHero);
+      window.removeEventListener("touchstart", handleTouchStart);
+      window.removeEventListener("touchmove", handleTouchMove);
+      window.removeEventListener("touchend", handleTouchEnd);
     };
   });
 
   onDestroy(() => {
     unregisterParallax(updateHero);
     window.removeEventListener("resize", updateHero);
+    window.removeEventListener("touchstart", handleTouchStart);
+    window.removeEventListener("touchmove", handleTouchMove);
+    window.removeEventListener("touchend", handleTouchEnd);
   });
 </script>
 
@@ -105,10 +204,10 @@
   data-hero="intro"
   data-cursor="down"
   style="--p:{progress}; --tp:{textProgress};"
-  on:click={scrollToEnd}
+  on:click={() => scrollToHeroEnd(false)}
   role="button"
   tabindex="0"
-  on:keydown={(e) => (e.key === "Enter" || e.key === " ") && scrollToEnd()}
+  on:keydown={(e) => (e.key === "Enter" || e.key === " ") && scrollToHeroEnd(false)}
 >
   <div class="scene" bind:this={scene}>
     <div class="base-gradient"></div>
@@ -151,6 +250,7 @@
     background: #000;
     isolation: isolate;
     cursor: none;
+    touch-action: pan-y;
   }
 
   .scene {
