@@ -1,21 +1,20 @@
 <script>
   import { onMount, onDestroy } from "svelte";
-  import { registerParallax, unregisterParallax } from "../scrollEngine.js";
 
   let section;
   let scene;
 
   let progress = 0;
-  let smoothProgress = 0;
-  let visible = false;
   let textProgress = 0;
   let logoProgress = 0;
+  let visible = false;
 
   let touchStartY = 0;
-  let snapLocked = false;
-  let unlockTimer = null;
   let introPlayed = false;
+  let introAnimating = false;
   let heroReadySent = false;
+
+  let rafTween = null;
 
   const words = ["Crafting", "Digital", "Experiences", "Elegantly"];
   const clamp = (v, min, max) => Math.max(min, Math.min(v, max));
@@ -38,14 +37,7 @@
   }
 
   function getBottomY() {
-    return getTopY() + section.offsetHeight - window.innerHeight;
-  }
-
-  function getRawProgress() {
-    const rect = section.getBoundingClientRect();
-    const vh = window.innerHeight;
-    const max = rect.height - vh;
-    return max > 0 ? clamp(-rect.top / max, 0, 1) : 0;
+    return getTopY() + window.innerHeight;
   }
 
   function introRunning() {
@@ -58,27 +50,18 @@
   }
 
   function setSnapLock(state) {
-    snapLocked = state;
     document.body.classList.toggle("hero-snap-lock", state);
   }
 
-  function clearSnapTimer() {
-    if (unlockTimer) {
-      clearTimeout(unlockTimer);
-      unlockTimer = null;
-    }
-  }
-
   function applyVisualState(raw) {
-    const eased = easeOutCubic(raw);
-    progress = eased;
-    smoothProgress = eased;
+    const p = clamp(raw, 0, 1);
+    progress = easeOutCubic(p);
 
     const logoWindow = isMobile() ? 0.42 : 0.32;
-    logoProgress = easeOutQuart(clamp(raw / logoWindow, 0, 1));
+    logoProgress = easeOutQuart(clamp(p / logoWindow, 0, 1));
 
     const revealDelay = isMobile() ? 0.32 : 0.24;
-    textProgress = clamp((eased - revealDelay) / (1 - revealDelay), 0, 1);
+    textProgress = clamp((progress - revealDelay) / (1 - revealDelay), 0, 1);
   }
 
   function applyInitialState() {
@@ -89,42 +72,60 @@
     applyVisualState(1);
   }
 
-  function releaseSnap() {
-    clearSnapTimer();
-    getLenis()?.start();
-    setSnapLock(false);
+  function cancelTween() {
+    if (rafTween) {
+      cancelAnimationFrame(rafTween);
+      rafTween = null;
+    }
+  }
+
+  function finishIntro() {
+    introAnimating = false;
     introPlayed = true;
     applyFinalState();
 
-    requestAnimationFrame(() => {
-      updateHero();
-    });
+    const lenis = getLenis();
+    if (lenis) {
+      lenis.start();
+      lenis.scrollTo(getBottomY(), {
+        duration: 0.8,
+        easing: (t) => 1 - Math.pow(1 - t, 2.2),
+        force: true
+      });
+    } else {
+      window.scrollTo({ top: getBottomY(), behavior: "smooth" });
+    }
+
+    setSnapLock(false);
   }
 
   function playIntroDown() {
-    if (!section || snapLocked || introRunning() || introPlayed) return;
+    if (!section || introRunning() || introPlayed || introAnimating) return;
+
+    introAnimating = true;
+    setSnapLock(true);
 
     const lenis = getLenis();
-    if (!lenis) return;
+    lenis?.stop();
 
-    setSnapLock(true);
-    clearSnapTimer();
-    lenis.stop();
+    const duration = isMobile() ? 4600 : 5200;
+    const start = performance.now();
 
-    lenis.scrollTo(getBottomY(), {
-      duration: isMobile() ? 4.8 : 5.4,
-      easing: (t) => 1 - Math.pow(1 - t, 2.55),
-      immediate: false,
-      force: true,
-      lock: true,
-      onComplete: () => {
-        releaseSnap();
+    cancelTween();
+
+    function frame(now) {
+      const t = clamp((now - start) / duration, 0, 1);
+      applyVisualState(t);
+
+      if (t < 1) {
+        rafTween = requestAnimationFrame(frame);
+      } else {
+        rafTween = null;
+        finishIntro();
       }
-    });
+    }
 
-    unlockTimer = setTimeout(() => {
-      releaseSnap();
-    }, isMobile() ? 5400 : 6000);
+    rafTween = requestAnimationFrame(frame);
   }
 
   function handleWheel(e) {
@@ -134,22 +135,20 @@
       return;
     }
 
-    if (!section) return;
+    const rect = section?.getBoundingClientRect();
+    if (!rect) return;
 
-    const rect = section.getBoundingClientRect();
     const vh = window.innerHeight;
     const inView = rect.top < vh && rect.bottom > 0;
-
     if (!inView) return;
 
-    if (snapLocked) {
-      e.preventDefault();
+    if (!introPlayed) {
+      if (e.deltaY > 8) {
+        e.preventDefault();
+        e.stopPropagation();
+        playIntroDown();
+      }
       return;
-    }
-
-    if (!introPlayed && e.deltaY > 8) {
-      e.preventDefault();
-      playIntroDown();
     }
   }
 
@@ -158,7 +157,6 @@
       touchStartY = 0;
       return;
     }
-
     touchStartY = e.touches[0]?.clientY ?? 0;
   }
 
@@ -169,16 +167,12 @@
       return;
     }
 
-    if (snapLocked) {
-      e.preventDefault();
-      return;
-    }
+    if (!introPlayed) {
+      const rect = section?.getBoundingClientRect();
+      if (!rect) return;
 
-    if (!introPlayed && section) {
-      const rect = section.getBoundingClientRect();
       const vh = window.innerHeight;
       const inView = rect.top < vh && rect.bottom > 0;
-
       if (inView) {
         e.preventDefault();
       }
@@ -191,7 +185,7 @@
       return;
     }
 
-    if (!section || snapLocked) {
+    if (!section || introPlayed) {
       touchStartY = 0;
       return;
     }
@@ -199,7 +193,6 @@
     const rect = section.getBoundingClientRect();
     const vh = window.innerHeight;
     const inView = rect.top < vh && rect.bottom > 0;
-
     if (!inView) {
       touchStartY = 0;
       return;
@@ -208,25 +201,22 @@
     const endY = e.changedTouches[0]?.clientY ?? 0;
     const delta = endY - touchStartY;
 
-    if (!introPlayed && delta < -12) {
+    if (delta < -12) {
       playIntroDown();
     }
 
     touchStartY = 0;
   }
 
-  function scrollToEndDesktop() {
+  function handleClickTrigger() {
     if (introRunning()) return;
-    if (snapLocked) return;
     if (!introPlayed) {
       playIntroDown();
     }
   }
 
   function maybeSendHeroReady() {
-    if (heroReadySent) return;
-    if (!section || !scene) return;
-
+    if (heroReadySent || !section || !scene) return;
     heroReadySent = true;
     window.dispatchEvent(new CustomEvent("hero-ready"));
   }
@@ -236,51 +226,29 @@
 
     const rect = section.getBoundingClientRect();
     const vh = window.innerHeight;
-    const max = rect.height - vh;
-    const raw = max > 0 ? clamp(-rect.top / max, 0, 1) : 0;
 
     visible = rect.bottom > 0 && rect.top < vh;
 
-    if (introPlayed) {
-      applyFinalState();
-    } else {
-      const eased = easeOutCubic(raw);
-      smoothProgress += (eased - smoothProgress) * 0.07;
-      progress = smoothProgress;
-
-      const logoWindow = isMobile() ? 0.42 : 0.32;
-      logoProgress = easeOutQuart(clamp(raw / logoWindow, 0, 1));
-
-      const revealDelay = isMobile() ? 0.32 : 0.24;
-      textProgress = clamp((progress - revealDelay) / (1 - revealDelay), 0, 1);
-    }
-
-    if (visible || introRunning()) {
-      scene.style.position = "fixed";
-      scene.style.top = "0";
-      scene.style.left = "0";
-      scene.style.width = "100%";
-      scene.style.height = "100vh";
-      scene.style.opacity = "1";
-      scene.style.pointerEvents = "none";
-    } else {
-      scene.style.opacity = "0";
-      scene.style.pointerEvents = "none";
-    }
+    scene.style.position = "fixed";
+    scene.style.top = "0";
+    scene.style.left = "0";
+    scene.style.width = "100%";
+    scene.style.height = "100vh";
+    scene.style.pointerEvents = "none";
+    scene.style.opacity = visible || introRunning() ? "1" : "0";
   }
 
   onMount(() => {
     applyInitialState();
+    updateHero();
 
-    registerParallax(updateHero);
-    window.addEventListener("resize", updateHero);
+    const onResize = () => updateHero();
 
+    window.addEventListener("resize", onResize);
     window.addEventListener("wheel", handleWheel, { passive: false, capture: true });
     window.addEventListener("touchstart", handleTouchStart, { passive: true, capture: true });
     window.addEventListener("touchmove", handleTouchMove, { passive: false, capture: true });
     window.addEventListener("touchend", handleTouchEnd, { passive: true, capture: true });
-
-    updateHero();
 
     requestAnimationFrame(() => {
       updateHero();
@@ -293,35 +261,32 @@
     });
 
     return () => {
-      unregisterParallax(updateHero);
-      window.removeEventListener("resize", updateHero);
+      cancelTween();
+      window.removeEventListener("resize", onResize);
       window.removeEventListener("wheel", handleWheel, { capture: true });
       window.removeEventListener("touchstart", handleTouchStart, { capture: true });
       window.removeEventListener("touchmove", handleTouchMove, { capture: true });
       window.removeEventListener("touchend", handleTouchEnd, { capture: true });
-      clearSnapTimer();
       setSnapLock(false);
     };
   });
 
   onDestroy(() => {
-    unregisterParallax(updateHero);
-    window.removeEventListener("resize", updateHero);
-    clearSnapTimer();
+    cancelTween();
     setSnapLock(false);
   });
 </script>
 
 <section
   bind:this={section}
-  class="hero {introPlayed ? 'hero-final' : ''}"
+  class="hero"
   data-hero="intro"
   data-cursor="down"
   style="--p:{progress}; --tp:{textProgress}; --lp:{logoProgress};"
-  on:click={scrollToEndDesktop}
+  on:click={handleClickTrigger}
   role="button"
   tabindex="0"
-  on:keydown={(e) => (e.key === "Enter" || e.key === " ") && scrollToEndDesktop()}
+  on:keydown={(e) => (e.key === "Enter" || e.key === " ") && handleClickTrigger()}
 >
   <div class="scene" bind:this={scene}>
     <div class="base-gradient"></div>
@@ -379,15 +344,11 @@
 
   .hero {
     position: relative;
-    height: 400vh;
+    height: 100vh;
     background: #111;
     isolation: isolate;
     cursor: none;
     touch-action: pan-y;
-  }
-
-  .hero.hero-final {
-    height: 100vh;
   }
 
   :global(body.intro-active) .hero,
@@ -654,10 +615,6 @@
 
   @media (max-width: 768px) {
     .hero {
-      height: 400vh;
-    }
-
-    .hero.hero-final {
       height: 100vh;
     }
 
