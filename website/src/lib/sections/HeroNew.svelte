@@ -11,8 +11,8 @@
   let textProgress = 0;
 
   let touchStartY = 0;
-  let mobileSnapLock = false;
-  let mobileAutoScrolling = false;
+  let gestureLocked = false;
+  let unlockTimer;
 
   const words = ["Crafting", "Digital", "Experiences", "Elegantly"];
 
@@ -20,70 +20,107 @@
     return 1 - Math.pow(1 - t, 3);
   }
 
-  function getRawProgress() {
+  function getLenis() {
+    return window.lenis;
+  }
+
+  function getHeroRawProgress() {
     if (!section) return 0;
 
     const rect = section.getBoundingClientRect();
     const vh = window.innerHeight;
     const max = rect.height - vh;
 
+    if (max <= 0) return 0;
+
     return Math.min(Math.max(-rect.top / max, 0), 1);
   }
 
-  function scrollToHeroEnd(mobile = false) {
-    if (!section) return;
+  function getHeroTopY() {
+    if (!section) return 0;
+    return window.scrollY + section.getBoundingClientRect().top;
+  }
 
-    const targetY =
-      window.scrollY +
-      section.getBoundingClientRect().top +
-      section.offsetHeight -
-      window.innerHeight;
+  function getHeroBottomY() {
+    if (!section) return 0;
+    return getHeroTopY() + section.offsetHeight - window.innerHeight;
+  }
 
-    // @ts-ignore
-    if (window.lenis && typeof window.lenis.scrollTo === "function") {
-      // @ts-ignore
-      window.lenis.scrollTo(targetY, {
-        duration: mobile ? 1.9 : 5.5,
-        easing: (t) => 1 - Math.pow(1 - t, mobile ? 2.1 : 2.5)
-      });
+  function setGestureLock(state) {
+    gestureLocked = state;
+
+    if (state) {
+      document.body.classList.add("hero-snap-lock");
     } else {
-      window.scrollTo({
-        top: targetY,
-        behavior: "smooth"
-      });
+      document.body.classList.remove("hero-snap-lock");
     }
   }
 
-  function scrollToHeroStart() {
-    if (!section) return;
-
-    const targetY =
-      window.scrollY +
-      section.getBoundingClientRect().top;
-
-    // @ts-ignore
-    if (window.lenis && typeof window.lenis.scrollTo === "function") {
-      // @ts-ignore
-      window.lenis.scrollTo(targetY, {
-        duration: 1.8,
-        easing: (t) => 1 - Math.pow(1 - t, 2.1)
-      });
-    } else {
-      window.scrollTo({
-        top: targetY,
-        behavior: "smooth"
-      });
+  function clearUnlockTimer() {
+    if (unlockTimer) {
+      clearTimeout(unlockTimer);
+      unlockTimer = null;
     }
   }
 
-  function lockMobileSnap(duration = 2100) {
-    mobileSnapLock = true;
-    mobileAutoScrolling = true;
+  function runHeroSnap(direction) {
+    const lenis = getLenis();
+    if (!lenis || !section || gestureLocked) return;
 
-    setTimeout(() => {
-      mobileSnapLock = false;
-      mobileAutoScrolling = false;
-    }, duration);
+    const targetY = direction === "down" ? getHeroBottomY() : getHeroTopY();
+
+    setGestureLock(true);
+    lenis.stop();
+
+    clearUnlockTimer();
+
+    lenis.scrollTo(targetY, {
+      duration: 2.1,
+      easing: (t) => 1 - Math.pow(1 - t, 2.35),
+      immediate: false,
+      force: true,
+      lock: true,
+      onComplete: () => {
+        lenis.start();
+        setGestureLock(false);
+      }
+    });
+
+    // sécurité si onComplete n'est pas déclenché
+    unlockTimer = setTimeout(() => {
+      lenis.start();
+      setGestureLock(false);
+    }, 2400);
+  }
+
+  function handleWheel(e) {
+    if (window.innerWidth > 768) return;
+    if (!section) return;
+
+    const rect = section.getBoundingClientRect();
+    const vh = window.innerHeight;
+    const heroInView = rect.top < vh && rect.bottom > 0;
+
+    if (!heroInView) return;
+
+    if (gestureLocked) {
+      e.preventDefault();
+      return;
+    }
+
+    const raw = getHeroRawProgress();
+
+    if (e.deltaY > 8 && raw < 0.98) {
+      e.preventDefault();
+      runHeroSnap("down");
+      return;
+    }
+
+    if (e.deltaY < -8 && raw > 0.02) {
+      e.preventDefault();
+      runHeroSnap("up");
+      return;
+    }
   }
 
   function handleTouchStart(e) {
@@ -93,17 +130,13 @@
 
   function handleTouchMove(e) {
     if (window.innerWidth > 768) return;
-    if (mobileSnapLock) {
+
+    if (gestureLocked) {
       e.preventDefault();
+      return;
     }
-  }
 
-  function handleTouchEnd(e) {
-    if (window.innerWidth > 768) return;
-    if (!section || mobileSnapLock) return;
-
-    const endY = e.changedTouches[0]?.clientY ?? 0;
-    const delta = endY - touchStartY;
+    if (!section) return;
 
     const rect = section.getBoundingClientRect();
     const vh = window.innerHeight;
@@ -111,22 +144,42 @@
 
     if (!heroInView) return;
 
-    const raw = getRawProgress();
-    const swipeUp = delta < -24;
-    const swipeDown = delta > 24;
+    const currentY = e.touches[0]?.clientY ?? 0;
+    const delta = currentY - touchStartY;
 
-    const nearTop = raw <= 0.06;
-    const nearBottom = raw >= 0.94;
+    const raw = getHeroRawProgress();
 
-    if (swipeUp && nearTop) {
-      scrollToHeroEnd(true);
-      lockMobileSnap(2200);
+    if (delta < -18 && raw < 0.98) {
+      e.preventDefault();
+      runHeroSnap("down");
+      return;
     }
 
-    if (swipeDown && nearBottom) {
-      scrollToHeroStart();
-      lockMobileSnap(2100);
+    if (delta > 18 && raw > 0.02) {
+      e.preventDefault();
+      runHeroSnap("up");
+      return;
     }
+  }
+
+  function handleTouchEnd() {
+    touchStartY = 0;
+  }
+
+  function scrollToEndDesktop() {
+    if (window.innerWidth <= 768) {
+      runHeroSnap("down");
+      return;
+    }
+
+    const lenis = getLenis();
+    if (!lenis || !section) return;
+
+    lenis.scrollTo(getHeroBottomY(), {
+      duration: 5.5,
+      easing: (t) => 1 - Math.pow(1 - t, 2.5),
+      force: true
+    });
   }
 
   function updateHero() {
@@ -174,6 +227,7 @@
     registerParallax(updateHero);
     window.addEventListener("resize", updateHero);
 
+    window.addEventListener("wheel", handleWheel, { passive: false });
     window.addEventListener("touchstart", handleTouchStart, { passive: true });
     window.addEventListener("touchmove", handleTouchMove, { passive: false });
     window.addEventListener("touchend", handleTouchEnd, { passive: true });
@@ -183,18 +237,26 @@
     return () => {
       unregisterParallax(updateHero);
       window.removeEventListener("resize", updateHero);
+      window.removeEventListener("wheel", handleWheel);
       window.removeEventListener("touchstart", handleTouchStart);
       window.removeEventListener("touchmove", handleTouchMove);
       window.removeEventListener("touchend", handleTouchEnd);
+
+      clearUnlockTimer();
+      setGestureLock(false);
     };
   });
 
   onDestroy(() => {
     unregisterParallax(updateHero);
     window.removeEventListener("resize", updateHero);
+    window.removeEventListener("wheel", handleWheel);
     window.removeEventListener("touchstart", handleTouchStart);
     window.removeEventListener("touchmove", handleTouchMove);
     window.removeEventListener("touchend", handleTouchEnd);
+
+    clearUnlockTimer();
+    setGestureLock(false);
   });
 </script>
 
@@ -204,10 +266,10 @@
   data-hero="intro"
   data-cursor="down"
   style="--p:{progress}; --tp:{textProgress};"
-  on:click={() => scrollToHeroEnd(false)}
+  on:click={scrollToEndDesktop}
   role="button"
   tabindex="0"
-  on:keydown={(e) => (e.key === "Enter" || e.key === " ") && scrollToHeroEnd(false)}
+  on:keydown={(e) => (e.key === "Enter" || e.key === " ") && scrollToEndDesktop()}
 >
   <div class="scene" bind:this={scene}>
     <div class="base-gradient"></div>

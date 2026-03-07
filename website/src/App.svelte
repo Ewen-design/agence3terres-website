@@ -9,7 +9,6 @@
   import IntroLoader from "./lib/structure/IntroLoader.svelte";
   import SliderCustom from "./lib/sections/SliderCustom.svelte";
 
-  // HOME
   import IconeFleche from "./lib/structure/IconeFleche.svelte";
   import HeroNew from "./lib/sections/HeroNew.svelte";
   import TextesIntro from "./lib/sections/TextesIntro.svelte";
@@ -20,13 +19,11 @@
   import BackgroundParallax from "./lib/sections/BackgroundParallax.svelte";
   import VisionSlider from "./lib/sections/VisionSlider.svelte";
 
-  // AUTRES PAGES
   import Travail from "./lib/structure/Travail.svelte";
   import Apropos from "./lib/structure/Apropos.svelte";
   import Services from "./lib/structure/Services.svelte";
   import Contact from "./lib/structure/Contact.svelte";
 
-  // PROJETS
   import Projet1 from "./lib/structure/Projet1.svelte";
   import Projet2 from "./lib/structure/Projet2.svelte";
 
@@ -67,9 +64,10 @@
       wheelMultiplier: 1,
       touchMultiplier: 1
     });
-// @ts-ignore
-window.lenis = lenis;
-    // source unique de vérité pour tout le site
+
+    // accès global pour les composants
+    window.lenis = lenis;
+
     lenis.on("scroll", (e) => {
       updateScrollEngine(e.animatedScroll);
     });
@@ -81,7 +79,6 @@ window.lenis = lenis;
 
     rafId = requestAnimationFrame(raf);
 
-    // état initial
     updateScrollEngine(window.scrollY || window.pageYOffset || 0);
 
     const onLoad = () => {
@@ -97,23 +94,21 @@ window.lenis = lenis;
       cancelAnimationFrame(rafId);
       lenis?.destroy();
       destroyScrollEngine();
-        // @ts-ignore
-  window.lenis = null;
+      window.lenis = null;
     };
   });
-
 
   onDestroy(() => {
     cancelAnimationFrame(rafId);
     lenis?.destroy();
     destroyScrollEngine();
+    window.lenis = null;
   });
 </script>
 
 <main>
   <CustomCursor />
   <IconeFleche />
-
   <IntroLoader />
 
   <Header {navigate} />
@@ -172,5 +167,11 @@ window.lenis = lenis;
   .blur-out {
     filter: blur(18px);
     opacity: 0;
+  }
+
+  :global(body.hero-snap-lock) {
+    overflow: hidden;
+    overscroll-behavior: none;
+    touch-action: none;
   }
 </style>
