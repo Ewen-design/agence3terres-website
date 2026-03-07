@@ -14,7 +14,8 @@
   let touchStartY = 0;
   let snapLocked = false;
   let unlockTimer = null;
-  let mobileDescended = false;
+  let introPlayed = false;
+  let heroReadySent = false;
 
   const words = ["Crafting", "Digital", "Experiences", "Elegantly"];
   const clamp = (v, min, max) => Math.max(min, Math.min(v, max));
@@ -68,50 +69,66 @@
     }
   }
 
-  function releaseSnap(direction = null) {
+  function applyVisualState(raw) {
+    const eased = easeOutCubic(raw);
+    progress = eased;
+    smoothProgress = eased;
+
+    const logoWindow = isMobile() ? 0.42 : 0.32;
+    logoProgress = easeOutQuart(clamp(raw / logoWindow, 0, 1));
+
+    const revealDelay = isMobile() ? 0.32 : 0.24;
+    textProgress = clamp((eased - revealDelay) / (1 - revealDelay), 0, 1);
+  }
+
+  function applyFinalState() {
+    applyVisualState(1);
+  }
+
+  function applyInitialState() {
+    applyVisualState(0);
+  }
+
+  function releaseSnap() {
     clearSnapTimer();
     getLenis()?.start();
     setSnapLock(false);
-
-    if (isMobile() && direction === "down") {
-      mobileDescended = true;
-    }
+    introPlayed = true;
+    applyFinalState();
+    requestAnimationFrame(updateHero);
   }
 
-  function snapTo(direction) {
-    if (!section || snapLocked || introRunning()) return;
+  function playIntroDown() {
+    if (!section || snapLocked || introRunning() || introPlayed) return;
 
     const lenis = getLenis();
     if (!lenis) return;
 
     const raw = getRawProgress();
-
-    if (direction === "down" && raw >= 0.995) return;
-    if (direction === "up" && raw <= 0.005) return;
-
-    const targetY = direction === "down" ? getBottomY() : getTopY();
+    if (raw >= 0.995) {
+      introPlayed = true;
+      applyFinalState();
+      return;
+    }
 
     setSnapLock(true);
     clearSnapTimer();
     lenis.stop();
 
-    const downDuration = isMobile() ? 6.2 : 7.1;
-    const upDuration = 7.0;
-
-    lenis.scrollTo(targetY, {
-      duration: direction === "down" ? downDuration : upDuration,
-      easing: (t) => 1 - Math.pow(1 - t, 2.75),
+    lenis.scrollTo(getBottomY(), {
+      duration: isMobile() ? 4.8 : 5.6,
+      easing: (t) => 1 - Math.pow(1 - t, 2.55),
       immediate: false,
       force: true,
       lock: true,
       onComplete: () => {
-        releaseSnap(direction);
+        releaseSnap();
       }
     });
 
     unlockTimer = setTimeout(() => {
-      releaseSnap(direction);
-    }, direction === "down" ? (isMobile() ? 6600 : 7500) : 7600);
+      releaseSnap();
+    }, isMobile() ? 5400 : 6200);
   }
 
   function handleWheel(e) {
@@ -134,17 +151,9 @@
       return;
     }
 
-    const raw = getRawProgress();
-
-    if (e.deltaY > 8 && raw < 0.995) {
+    if (!introPlayed && e.deltaY > 8) {
       e.preventDefault();
-      snapTo("down");
-      return;
-    }
-
-    if (!isMobile() && e.deltaY < -8 && raw > 0.005) {
-      e.preventDefault();
-      snapTo("up");
+      playIntroDown();
     }
   }
 
@@ -191,14 +200,9 @@
 
     const endY = e.changedTouches[0]?.clientY ?? 0;
     const delta = endY - touchStartY;
-    const raw = getRawProgress();
 
-    if (delta < -18 && raw < 0.995) {
-      snapTo("down");
-    }
-
-    if (!isMobile() && delta > 18 && raw > 0.005) {
-      snapTo("up");
+    if (!introPlayed && delta < -18) {
+      playIntroDown();
     }
 
     touchStartY = 0;
@@ -207,11 +211,17 @@
   function scrollToEndDesktop() {
     if (introRunning()) return;
     if (snapLocked) return;
-
-    const raw = getRawProgress();
-    if (raw < 0.995) {
-      snapTo("down");
+    if (!introPlayed) {
+      playIntroDown();
     }
+  }
+
+  function maybeSendHeroReady() {
+    if (heroReadySent) return;
+    if (!section || !scene) return;
+
+    heroReadySent = true;
+    window.dispatchEvent(new CustomEvent("hero-ready"));
   }
 
   function updateHero() {
@@ -222,19 +232,23 @@
     const max = rect.height - vh;
     const raw = max > 0 ? clamp(-rect.top / max, 0, 1) : 0;
 
-    const eased = easeOutCubic(raw);
-    smoothProgress += (eased - smoothProgress) * 0.07;
-    progress = smoothProgress;
-
-    const logoWindow = isMobile() ? 0.42 : 0.32;
-    logoProgress = easeOutQuart(clamp(raw / logoWindow, 0, 1));
-
-    const revealDelay = isMobile() ? 0.32 : 0.24;
-    textProgress = clamp((progress - revealDelay) / (1 - revealDelay), 0, 1);
-
     visible = rect.bottom > 0 && rect.top < vh;
 
-    if (visible) {
+    if (introPlayed) {
+      applyFinalState();
+    } else {
+      const eased = easeOutCubic(raw);
+      smoothProgress += (eased - smoothProgress) * 0.07;
+      progress = smoothProgress;
+
+      const logoWindow = isMobile() ? 0.42 : 0.32;
+      logoProgress = easeOutQuart(clamp(raw / logoWindow, 0, 1));
+
+      const revealDelay = isMobile() ? 0.32 : 0.24;
+      textProgress = clamp((progress - revealDelay) / (1 - revealDelay), 0, 1);
+    }
+
+    if (visible || introRunning()) {
       scene.style.position = "fixed";
       scene.style.top = "0";
       scene.style.left = "0";
@@ -249,7 +263,7 @@
   }
 
   onMount(() => {
-    mobileDescended = false;
+    applyInitialState();
 
     registerParallax(updateHero);
     window.addEventListener("resize", updateHero);
@@ -260,6 +274,16 @@
     window.addEventListener("touchend", handleTouchEnd, { passive: true, capture: true });
 
     updateHero();
+
+    requestAnimationFrame(() => {
+      updateHero();
+      requestAnimationFrame(() => {
+        updateHero();
+        setTimeout(() => {
+          maybeSendHeroReady();
+        }, isMobile() ? 180 : 80);
+      });
+    });
 
     return () => {
       unregisterParallax(updateHero);
@@ -377,6 +401,30 @@
   :global(body.intro-leaving) .scene {
     opacity: 1 !important;
     z-index: 9999 !important;
+  }
+
+  :global(body.intro-active) .base-gradient,
+  :global(body.intro-active) .ambient,
+  :global(body.intro-active) .vignette,
+  :global(body.intro-active) .dark-cover,
+  :global(body.intro-active) .center-glow,
+  :global(body.intro-active) .warm-ring,
+  :global(body.intro-active) .white-lift,
+  :global(body.intro-draw) .base-gradient,
+  :global(body.intro-draw) .ambient,
+  :global(body.intro-draw) .vignette,
+  :global(body.intro-draw) .dark-cover,
+  :global(body.intro-draw) .center-glow,
+  :global(body.intro-draw) .warm-ring,
+  :global(body.intro-draw) .white-lift,
+  :global(body.intro-leaving) .base-gradient,
+  :global(body.intro-leaving) .ambient,
+  :global(body.intro-leaving) .vignette,
+  :global(body.intro-leaving) .dark-cover,
+  :global(body.intro-leaving) .center-glow,
+  :global(body.intro-leaving) .warm-ring,
+  :global(body.intro-leaving) .white-lift {
+    opacity: 0 !important;
   }
 
   .base-gradient,
@@ -506,7 +554,7 @@
   }
 
   :global(body.intro-draw) .hero-eagle path {
-    animation: heroDraw 6.8s cubic-bezier(.5,0,.6,0.3) forwards;
+    animation: heroDraw 6.2s cubic-bezier(.5,0,.6,0.3) forwards;
   }
 
   :global(body.intro-leaving) .hero-eagle path,
@@ -595,7 +643,7 @@
 
   @media (max-width: 768px) {
     .hero {
-      height: 520vh;
+      height: 400vh;
     }
 
     .base-gradient {
@@ -659,7 +707,7 @@
     }
 
     :global(body.intro-draw) .hero-eagle path {
-      animation: heroDraw 6.8s cubic-bezier(.5,0,.6,0.3) forwards;
+      animation: heroDraw 6.2s cubic-bezier(.5,0,.6,0.3) forwards;
     }
 
     h1 {
