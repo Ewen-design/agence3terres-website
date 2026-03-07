@@ -1,5 +1,5 @@
 <script>
-  import { onMount } from "svelte";
+  import { onMount, onDestroy } from "svelte";
   import { registerParallax, unregisterParallax } from "../scrollEngine.js";
 
   let section;
@@ -12,8 +12,6 @@
   let logoProgress = 0;
 
   let touchStartY = 0;
-  let touchTriggered = false;
-
   let snapLocked = false;
   let unlockTimer = null;
 
@@ -41,18 +39,10 @@
   }
 
   function getRawProgress() {
-    if (!section) return 0;
     const rect = section.getBoundingClientRect();
     const vh = window.innerHeight;
     const max = rect.height - vh;
     return max > 0 ? clamp(-rect.top / max, 0, 1) : 0;
-  }
-
-  function isHeroInView() {
-    if (!section) return false;
-    const rect = section.getBoundingClientRect();
-    const vh = window.innerHeight;
-    return rect.top < vh && rect.bottom > 0;
   }
 
   function setSnapLock(state) {
@@ -67,10 +57,9 @@
     }
   }
 
-  function releaseSnapLock() {
-    const lenis = getLenis();
-    if (lenis) lenis.start();
+  function releaseSnap() {
     clearSnapTimer();
+    getLenis()?.start();
     setSnapLock(false);
   }
 
@@ -92,104 +81,95 @@
     lenis.stop();
 
     lenis.scrollTo(targetY, {
-      duration: direction === "down" ? 3.2 : 3,
-      easing: (t) => 1 - Math.pow(1 - t, 2.7),
+      duration: direction === "down" ? 7.8 : 7.0,
+      easing: (t) => 1 - Math.pow(1 - t, 2.85),
       immediate: false,
       force: true,
       lock: true,
       onComplete: () => {
-        releaseSnapLock();
+        releaseSnap();
       }
     });
 
     unlockTimer = setTimeout(() => {
-      releaseSnapLock();
-    }, 3800);
+      releaseSnap();
+    }, direction === "down" ? 8300 : 7600);
   }
 
   function handleWheel(e) {
     if (!section) return;
-    if (!isHeroInView()) return;
 
-    const raw = getRawProgress();
+    const rect = section.getBoundingClientRect();
+    const vh = window.innerHeight;
+    const inView = rect.top < vh && rect.bottom > 0;
+
+    if (!inView) return;
 
     if (snapLocked) {
       e.preventDefault();
       return;
     }
 
-    if (e.deltaY > 10) {
-      if (raw < 0.985) {
-        e.preventDefault();
-        snapTo("down");
-      }
+    const raw = getRawProgress();
+
+    if (e.deltaY > 8 && raw < 0.985) {
+      e.preventDefault();
+      snapTo("down");
       return;
     }
 
-    if (e.deltaY < -10) {
-      if (raw > 0.015) {
-        e.preventDefault();
-        snapTo("up");
-      }
+    if (e.deltaY < -8 && raw > 0.015) {
+      e.preventDefault();
+      snapTo("up");
     }
   }
 
   function handleTouchStart(e) {
-    if (!section) return;
     touchStartY = e.touches[0]?.clientY ?? 0;
-    touchTriggered = false;
   }
 
   function handleTouchMove(e) {
-    if (!section) return;
-    if (!isHeroInView()) return;
-
     if (snapLocked) {
       e.preventDefault();
-      return;
-    }
-
-    const currentY = e.touches[0]?.clientY ?? 0;
-    const delta = currentY - touchStartY;
-    const raw = getRawProgress();
-
-    if (touchTriggered) {
-      e.preventDefault();
-      return;
-    }
-
-    if (Math.abs(delta) < 16) return;
-
-    if (delta < 0) {
-      if (raw < 0.985) {
-        e.preventDefault();
-        touchTriggered = true;
-        snapTo("down");
-      }
-      return;
-    }
-
-    if (delta > 0) {
-      if (raw > 0.015) {
-        e.preventDefault();
-        touchTriggered = true;
-        snapTo("up");
-      }
     }
   }
 
-  function handleTouchEnd() {
+  function handleTouchEnd(e) {
+    if (!section || snapLocked) {
+      touchStartY = 0;
+      return;
+    }
+
+    const rect = section.getBoundingClientRect();
+    const vh = window.innerHeight;
+    const inView = rect.top < vh && rect.bottom > 0;
+
+    if (!inView) {
+      touchStartY = 0;
+      return;
+    }
+
+    const endY = e.changedTouches[0]?.clientY ?? 0;
+    const delta = endY - touchStartY;
+    const raw = getRawProgress();
+
+    if (delta < -18 && raw < 0.985) {
+      snapTo("down");
+    }
+
+    if (delta > 18 && raw > 0.015) {
+      snapTo("up");
+    }
+
     touchStartY = 0;
-    touchTriggered = false;
   }
 
-  function scrollToEnd() {
-    if (!section || snapLocked) return;
-
+  function scrollToEndDesktop() {
+    if (snapLocked) return;
     const raw = getRawProgress();
-    if (raw >= 0.985) return;
-
-    snapTo("down");
+    if (raw < 0.985) {
+      snapTo("down");
+    }
   }
 
   function updateHero() {
@@ -198,10 +178,11 @@
     const rect = section.getBoundingClientRect();
     const vh = window.innerHeight;
     const max = rect.height - vh;
+
     const raw = max > 0 ? clamp(-rect.top / max, 0, 1) : 0;
 
     const eased = easeOutCubic(raw);
-    smoothProgress += (eased - smoothProgress) * 0.08;
+    smoothProgress += (eased - smoothProgress) * 0.07;
     progress = smoothProgress;
 
     const isMobile = window.innerWidth <= 768;
@@ -214,6 +195,11 @@
     visible = rect.bottom > 0 && rect.top < vh;
 
     if (visible) {
+      scene.style.position = "fixed";
+      scene.style.top = "0";
+      scene.style.left = "0";
+      scene.style.width = "100%";
+      scene.style.height = "100vh";
       scene.style.opacity = "1";
       scene.style.pointerEvents = "none";
     } else {
@@ -226,38 +212,34 @@
     registerParallax(updateHero);
     window.addEventListener("resize", updateHero);
 
-    window.addEventListener("wheel", handleWheel, {
-      passive: false,
-      capture: true
-    });
-
-    window.addEventListener("touchstart", handleTouchStart, {
-      passive: true,
-      capture: true
-    });
-
-    window.addEventListener("touchmove", handleTouchMove, {
-      passive: false,
-      capture: true
-    });
-
-    window.addEventListener("touchend", handleTouchEnd, {
-      passive: true,
-      capture: true
-    });
+    window.addEventListener("wheel", handleWheel, { passive: false });
+    window.addEventListener("touchstart", handleTouchStart, { passive: true });
+    window.addEventListener("touchmove", handleTouchMove, { passive: false });
+    window.addEventListener("touchend", handleTouchEnd, { passive: true });
 
     updateHero();
 
     return () => {
       unregisterParallax(updateHero);
       window.removeEventListener("resize", updateHero);
-      window.removeEventListener("wheel", handleWheel, true);
-      window.removeEventListener("touchstart", handleTouchStart, true);
-      window.removeEventListener("touchmove", handleTouchMove, true);
-      window.removeEventListener("touchend", handleTouchEnd, true);
+      window.removeEventListener("wheel", handleWheel);
+      window.removeEventListener("touchstart", handleTouchStart);
+      window.removeEventListener("touchmove", handleTouchMove);
+      window.removeEventListener("touchend", handleTouchEnd);
       clearSnapTimer();
-      releaseSnapLock();
+      setSnapLock(false);
     };
+  });
+
+  onDestroy(() => {
+    unregisterParallax(updateHero);
+    window.removeEventListener("resize", updateHero);
+    window.removeEventListener("wheel", handleWheel);
+    window.removeEventListener("touchstart", handleTouchStart);
+    window.removeEventListener("touchmove", handleTouchMove);
+    window.removeEventListener("touchend", handleTouchEnd);
+    clearSnapTimer();
+    setSnapLock(false);
   });
 </script>
 
@@ -267,10 +249,10 @@
   data-hero="intro"
   data-cursor="down"
   style="--p:{progress}; --tp:{textProgress}; --lp:{logoProgress};"
-  on:click={scrollToEnd}
+  on:click={scrollToEndDesktop}
   role="button"
   tabindex="0"
-  on:keydown={(e) => (e.key === "Enter" || e.key === " ") && scrollToEnd()}
+  on:keydown={(e) => (e.key === "Enter" || e.key === " ") && scrollToEndDesktop()}
 >
   <div class="scene" bind:this={scene}>
     <div class="base-gradient"></div>
@@ -337,14 +319,12 @@
   .scene {
     position: fixed;
     inset: 0;
+    opacity: 0;
     overflow: hidden;
     z-index: 0;
-    opacity: 0;
-    pointer-events: none;
     will-change: opacity;
     backface-visibility: hidden;
     transform: translateZ(0);
-    transition: opacity 0.35s ease;
   }
 
   .base-gradient,
@@ -378,46 +358,15 @@
     will-change: transform, opacity;
   }
 
-  .ambient-1 {
-    background: radial-gradient(28% 28% at 34% 42%, rgba(243,212,166,.34) 0%, rgba(219,158,92,.12) 42%, rgba(255,255,255,0) 76%);
-    filter: blur(34px);
-    animation: ambientOne 48s ease-in-out infinite alternate;
-  }
+  .ambient-1 { background: radial-gradient(28% 28% at 34% 42%, rgba(243,212,166,.34) 0%, rgba(219,158,92,.12) 42%, rgba(255,255,255,0) 76%); filter: blur(34px); animation: ambientOne 48s ease-in-out infinite alternate; }
+  .ambient-2 { background: radial-gradient(24% 24% at 66% 36%, rgba(255,240,220,.22) 0%, rgba(220,170,102,.09) 44%, rgba(255,255,255,0) 78%); filter: blur(38px); animation: ambientTwo 58s ease-in-out infinite alternate; }
+  .ambient-3 { background: radial-gradient(30% 30% at 52% 64%, rgba(198,110,44,.16) 0%, rgba(228,170,106,.07) 44%, rgba(255,255,255,0) 80%); filter: blur(42px); animation: ambientThree 54s ease-in-out infinite alternate; }
 
-  .ambient-2 {
-    background: radial-gradient(24% 24% at 66% 36%, rgba(255,240,220,.22) 0%, rgba(220,170,102,.09) 44%, rgba(255,255,255,0) 78%);
-    filter: blur(38px);
-    animation: ambientTwo 58s ease-in-out infinite alternate;
-  }
-
-  .ambient-3 {
-    background: radial-gradient(30% 30% at 52% 64%, rgba(198,110,44,.16) 0%, rgba(228,170,106,.07) 44%, rgba(255,255,255,0) 80%);
-    filter: blur(42px);
-    animation: ambientThree 54s ease-in-out infinite alternate;
-  }
-
-  .vignette {
-    background: radial-gradient(92% 92% at 50% 50%, rgba(0,0,0,0) 54%, rgba(0,0,0,calc(0.16 - var(--p) * 0.07)) 78%, rgba(0,0,0,calc(0.48 - var(--p) * 0.16)) 100%);
-  }
-
-  .dark-cover {
-    background: radial-gradient(64% 64% at 50% 50%, rgba(0,0,0,calc(0.92 - var(--p) * 0.74)) 0%, rgba(0,0,0,calc(0.97 - var(--p) * 0.58)) 36%, rgba(0,0,0,calc(1 - var(--p) * 0.20)) 100%);
-  }
-
-  .center-glow {
-    background: radial-gradient(38% 38% at 50% 50%, rgba(255,248,238,calc(var(--p) * 0.40)) 0%, rgba(255,230,198,calc(var(--p) * 0.22)) 38%, rgba(222,170,92,calc(var(--p) * 0.10)) 62%, rgba(255,255,255,0) 80%);
-    filter: blur(24px);
-  }
-
-  .warm-ring {
-    background: radial-gradient(54% 54% at 50% 50%, rgba(255,255,255,0) 0%, rgba(214,166,94,calc(var(--p) * 0.07)) 44%, rgba(170,92,34,calc(var(--p) * 0.12)) 60%, rgba(255,255,255,0) 78%);
-    filter: blur(30px);
-  }
-
-  .white-lift {
-    background: radial-gradient(50% 50% at 50% 50%, rgba(255,252,246,calc(max(0, (var(--p) - 0.52)) * 1.85)) 0%, rgba(255,242,222,calc(max(0, (var(--p) - 0.52)) * 1.02)) 26%, rgba(255,255,255,0) 64%);
-    filter: blur(13px);
-  }
+  .vignette { background: radial-gradient(92% 92% at 50% 50%, rgba(0,0,0,0) 54%, rgba(0,0,0,calc(0.16 - var(--p) * 0.07)) 78%, rgba(0,0,0,calc(0.48 - var(--p) * 0.16)) 100%); }
+  .dark-cover { background: radial-gradient(64% 64% at 50% 50%, rgba(0,0,0,calc(0.92 - var(--p) * 0.74)) 0%, rgba(0,0,0,calc(0.97 - var(--p) * 0.58)) 36%, rgba(0,0,0,calc(1 - var(--p) * 0.20)) 100%); }
+  .center-glow { background: radial-gradient(38% 38% at 50% 50%, rgba(255,248,238,calc(var(--p) * 0.40)) 0%, rgba(255,230,198,calc(var(--p) * 0.22)) 38%, rgba(222,170,92,calc(var(--p) * 0.10)) 62%, rgba(255,255,255,0) 80%); filter: blur(24px); }
+  .warm-ring { background: radial-gradient(54% 54% at 50% 50%, rgba(255,255,255,0) 0%, rgba(214,166,94,calc(var(--p) * 0.07)) 44%, rgba(170,92,34,calc(var(--p) * 0.12)) 60%, rgba(255,255,255,0) 78%); filter: blur(30px); }
+  .white-lift { background: radial-gradient(50% 50% at 50% 50%, rgba(255,252,246,calc(max(0, (var(--p) - 0.52)) * 1.85)) 0%, rgba(255,242,222,calc(max(0, (var(--p) - 0.52)) * 1.02)) 26%, rgba(255,255,255,0) 64%); filter: blur(13px); }
 
   .hero-logo {
     position: absolute;
@@ -445,8 +394,7 @@
   }
 
   .hero-eagle {
-    width: 250px;
-    height: auto;
+    width: 182px;
     display: block;
     color: white;
     transform: translateZ(0);
@@ -457,7 +405,6 @@
     fill: transparent;
     stroke: currentColor;
     stroke-width: 2;
-    vector-effect: non-scaling-stroke;
   }
 
   .content {
@@ -548,39 +495,14 @@
         );
     }
 
-    .ambient-1 {
-      background: radial-gradient(48% 42% at 30% 88%, rgba(243,212,166,.28) 0%, rgba(219,158,92,.10) 44%, rgba(255,255,255,0) 78%);
-      filter: blur(42px);
-    }
+    .ambient-1 { background: radial-gradient(48% 42% at 30% 88%, rgba(243,212,166,.28) 0%, rgba(219,158,92,.10) 44%, rgba(255,255,255,0) 78%); filter: blur(42px); }
+    .ambient-2 { background: radial-gradient(44% 38% at 72% 86%, rgba(255,240,220,.18) 0%, rgba(220,170,102,.08) 46%, rgba(255,255,255,0) 80%); filter: blur(46px); }
+    .ambient-3 { background: radial-gradient(54% 42% at 50% 96%, rgba(198,110,44,.14) 0%, rgba(228,170,106,.06) 46%, rgba(255,255,255,0) 82%); filter: blur(50px); }
 
-    .ambient-2 {
-      background: radial-gradient(44% 38% at 72% 86%, rgba(255,240,220,.18) 0%, rgba(220,170,102,.08) 46%, rgba(255,255,255,0) 80%);
-      filter: blur(46px);
-    }
-
-    .ambient-3 {
-      background: radial-gradient(54% 42% at 50% 96%, rgba(198,110,44,.14) 0%, rgba(228,170,106,.06) 46%, rgba(255,255,255,0) 82%);
-      filter: blur(50px);
-    }
-
-    .dark-cover {
-      background: radial-gradient(118% 92% at 50% 94%, rgba(0,0,0,calc(0.94 - var(--p) * 0.74)) 0%, rgba(0,0,0,calc(0.98 - var(--p) * 0.60)) 36%, rgba(0,0,0,calc(1 - var(--p) * 0.20)) 100%);
-    }
-
-    .center-glow {
-      background: radial-gradient(72% 56% at 50% 96%, rgba(255,248,238,calc(var(--p) * 0.42)) 0%, rgba(255,230,198,calc(var(--p) * 0.22)) 36%, rgba(222,170,92,calc(var(--p) * 0.10)) 60%, rgba(255,255,255,0) 82%);
-      filter: blur(34px);
-    }
-
-    .warm-ring {
-      background: radial-gradient(96% 70% at 50% 100%, rgba(255,255,255,0) 0%, rgba(214,166,94,calc(var(--p) * 0.06)) 42%, rgba(170,92,34,calc(var(--p) * 0.11)) 58%, rgba(255,255,255,0) 80%);
-      filter: blur(36px);
-    }
-
-    .white-lift {
-      background: radial-gradient(82% 62% at 50% 100%, rgba(255,252,246,calc(max(0, (var(--p) - 0.52)) * 1.8)) 0%, rgba(255,242,222,calc(max(0, (var(--p) - 0.52)) * 1.0)) 24%, rgba(255,255,255,0) 66%);
-      filter: blur(18px);
-    }
+    .dark-cover { background: radial-gradient(118% 92% at 50% 94%, rgba(0,0,0,calc(0.94 - var(--p) * 0.74)) 0%, rgba(0,0,0,calc(0.98 - var(--p) * 0.60)) 36%, rgba(0,0,0,calc(1 - var(--p) * 0.20)) 100%); }
+    .center-glow { background: radial-gradient(72% 56% at 50% 96%, rgba(255,248,238,calc(var(--p) * 0.42)) 0%, rgba(255,230,198,calc(var(--p) * 0.22)) 36%, rgba(222,170,92,calc(var(--p) * 0.10)) 60%, rgba(255,255,255,0) 82%); filter: blur(34px); }
+    .warm-ring { background: radial-gradient(96% 70% at 50% 100%, rgba(255,255,255,0) 0%, rgba(214,166,94,calc(var(--p) * 0.06)) 42%, rgba(170,92,34,calc(var(--p) * 0.11)) 58%, rgba(255,255,255,0) 80%); filter: blur(36px); }
+    .white-lift { background: radial-gradient(82% 62% at 50% 100%, rgba(255,252,246,calc(max(0, (var(--p) - 0.52)) * 1.8)) 0%, rgba(255,242,222,calc(max(0, (var(--p) - 0.52)) * 1.0)) 24%, rgba(255,255,255,0) 66%); filter: blur(18px); }
 
     .hero-logo-mover {
       transform: translate3d(0, calc(-1 * var(--lp) * 21vh), 0);
@@ -592,6 +514,7 @@
 
     .hero-eagle {
       width: 182px;
+      height: auto;
     }
 
     h1 {

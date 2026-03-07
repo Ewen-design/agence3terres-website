@@ -7,25 +7,22 @@
   onMount(() => {
     const isMobile = window.innerWidth <= 768;
 
-    const drawDelay = isMobile ? 140 : 40;
-    const doneDelay = isMobile ? 6100 : 5600;
-
-    let drawTimer;
-    let doneTimer;
     let raf1;
     let raf2;
+    let drawTimer;
+    let doneTimer;
 
     raf1 = requestAnimationFrame(() => {
       raf2 = requestAnimationFrame(() => {
         drawTimer = setTimeout(() => {
           drawReady = true;
-        }, drawDelay);
+        }, isMobile ? 140 : 40);
       });
     });
 
     doneTimer = setTimeout(() => {
       phase = "done";
-    }, doneDelay);
+    }, isMobile ? 6000 : 5200);
 
     return () => {
       cancelAnimationFrame(raf1);
@@ -57,13 +54,10 @@
     position: fixed;
     inset: 0;
     background: #111;
-    display: flex;
-    align-items: center;
-    justify-content: center;
     z-index: 9998;
     transition:
-      opacity 1.15s cubic-bezier(.22,.61,.36,1),
-      visibility 1.15s cubic-bezier(.22,.61,.36,1);
+      opacity 1s cubic-bezier(.22,.61,.36,1),
+      visibility 1s cubic-bezier(.22,.61,.36,1);
   }
 
   .background.done {
@@ -78,8 +72,8 @@
     z-index: 9999;
     pointer-events: none;
     transition:
-      opacity 1s cubic-bezier(.22,.61,.36,1),
-      visibility 1s cubic-bezier(.22,.61,.36,1);
+      opacity 0.9s cubic-bezier(.22,.61,.36,1),
+      visibility 0.9s cubic-bezier(.22,.61,.36,1);
   }
 
   .logo-wrapper.done {
@@ -100,12 +94,11 @@
     backface-visibility: hidden;
   }
 
+  /* même base visuelle que le hero au départ */
   .eagle {
-    width: 250px;
+    width: 182px;
     height: auto;
     display: block;
-    transform: translateZ(0);
-    backface-visibility: hidden;
   }
 
   .eagle path {
@@ -118,40 +111,36 @@
   }
 
   .eagle.play path {
-    animation: draw 4.9s cubic-bezier(.7,0,.3,1) forwards;
+    animation: draw 4.8s cubic-bezier(.7,0,.3,1) forwards;
   }
 
   @keyframes draw {
-    to {
-      stroke-dashoffset: 0;
-    }
+    to { stroke-dashoffset: 0; }
   }
 
   .progress-container {
     width: 200px;
     height: 1px;
-    background: rgba(255,255,255,0.14);
+    background: rgba(255,255,255,0.15);
     overflow: hidden;
     position: absolute;
+    left: 50%;
     bottom: 35%;
-    transform: translateZ(0);
+    transform: translateX(-50%);
   }
 
   .progress-bar {
     height: 100%;
     width: 0%;
     background: white;
-    transform-origin: left center;
   }
 
   .progress-bar.play {
-    animation: loading 5.15s cubic-bezier(.7,0,.3,1) forwards;
+    animation: loading 5s cubic-bezier(.7,0,.3,1) forwards;
   }
 
   @keyframes loading {
-    to {
-      width: 100%;
-    }
+    to { width: 100%; }
   }
 
   @media (max-width: 768px) {

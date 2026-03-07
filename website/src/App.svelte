@@ -29,9 +29,7 @@
 
   let currentPage = "home";
   let nextPage = null;
-
   let isTransitioning = false;
-  let isLoading = true;
 
   let lenis;
   let rafId;
@@ -65,7 +63,6 @@
       touchMultiplier: 1
     });
 
-    // accès global pour les composants
     window.lenis = lenis;
 
     lenis.on("scroll", (e) => {
@@ -78,19 +75,9 @@
     }
 
     rafId = requestAnimationFrame(raf);
-
     updateScrollEngine(window.scrollY || window.pageYOffset || 0);
 
-    const onLoad = () => {
-      setTimeout(() => {
-        isLoading = false;
-      }, 15000);
-    };
-
-    window.addEventListener("load", onLoad);
-
     return () => {
-      window.removeEventListener("load", onLoad);
       cancelAnimationFrame(rafId);
       lenis?.destroy();
       destroyScrollEngine();
@@ -169,7 +156,8 @@
     opacity: 0;
   }
 
-  :global(body.hero-snap-lock) {
+  :global(body.hero-snap-lock),
+  :global(body.intro-lock) {
     overflow: hidden;
     overscroll-behavior: none;
     touch-action: none;
