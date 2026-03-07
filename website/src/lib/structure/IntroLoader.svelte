@@ -73,7 +73,9 @@
   });
 </script>
 
-<div class="background {phase}">
+<div class="background {phase}"></div>
+
+<div class="progress-layer {phase}">
   <div class="progress-container">
     <div class="progress-bar {progressReady ? 'play' : ''}"></div>
   </div>
@@ -90,7 +92,18 @@
       visibility 0.9s cubic-bezier(.22,.61,.36,1);
   }
 
-  .background.done {
+  .progress-layer {
+    position: fixed;
+    inset: 0;
+    z-index: 10001;
+    pointer-events: none;
+    transition:
+      opacity 0.9s cubic-bezier(.22,.61,.36,1),
+      visibility 0.9s cubic-bezier(.22,.61,.36,1);
+  }
+
+  .background.done,
+  .progress-layer.done {
     opacity: 0;
     visibility: hidden;
     pointer-events: none;
@@ -105,7 +118,6 @@
     height: 1px;
     background: rgba(255,255,255,0.15);
     overflow: hidden;
-    z-index: 10001;
   }
 
   .progress-bar {

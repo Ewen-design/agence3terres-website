@@ -81,12 +81,12 @@
     textProgress = clamp((eased - revealDelay) / (1 - revealDelay), 0, 1);
   }
 
-  function applyFinalState() {
-    applyVisualState(1);
-  }
-
   function applyInitialState() {
     applyVisualState(0);
+  }
+
+  function applyFinalState() {
+    applyVisualState(1);
   }
 
   function releaseSnap() {
@@ -95,7 +95,10 @@
     setSnapLock(false);
     introPlayed = true;
     applyFinalState();
-    requestAnimationFrame(updateHero);
+
+    requestAnimationFrame(() => {
+      updateHero();
+    });
   }
 
   function playIntroDown() {
@@ -104,19 +107,12 @@
     const lenis = getLenis();
     if (!lenis) return;
 
-    const raw = getRawProgress();
-    if (raw >= 0.995) {
-      introPlayed = true;
-      applyFinalState();
-      return;
-    }
-
     setSnapLock(true);
     clearSnapTimer();
     lenis.stop();
 
     lenis.scrollTo(getBottomY(), {
-      duration: isMobile() ? 4.8 : 5.6,
+      duration: isMobile() ? 4.8 : 5.4,
       easing: (t) => 1 - Math.pow(1 - t, 2.55),
       immediate: false,
       force: true,
@@ -128,7 +124,7 @@
 
     unlockTimer = setTimeout(() => {
       releaseSnap();
-    }, isMobile() ? 5400 : 6200);
+    }, isMobile() ? 5400 : 6000);
   }
 
   function handleWheel(e) {
@@ -175,6 +171,17 @@
 
     if (snapLocked) {
       e.preventDefault();
+      return;
+    }
+
+    if (!introPlayed && section) {
+      const rect = section.getBoundingClientRect();
+      const vh = window.innerHeight;
+      const inView = rect.top < vh && rect.bottom > 0;
+
+      if (inView) {
+        e.preventDefault();
+      }
     }
   }
 
@@ -201,7 +208,7 @@
     const endY = e.changedTouches[0]?.clientY ?? 0;
     const delta = endY - touchStartY;
 
-    if (!introPlayed && delta < -18) {
+    if (!introPlayed && delta < -12) {
       playIntroDown();
     }
 
@@ -307,7 +314,7 @@
 
 <section
   bind:this={section}
-  class="hero"
+  class="hero {introPlayed ? 'hero-final' : ''}"
   data-hero="intro"
   data-cursor="down"
   style="--p:{progress}; --tp:{textProgress}; --lp:{logoProgress};"
@@ -377,6 +384,10 @@
     isolation: isolate;
     cursor: none;
     touch-action: pan-y;
+  }
+
+  .hero.hero-final {
+    height: 100vh;
   }
 
   :global(body.intro-active) .hero,
@@ -644,6 +655,10 @@
   @media (max-width: 768px) {
     .hero {
       height: 400vh;
+    }
+
+    .hero.hero-final {
+      height: 100vh;
     }
 
     .base-gradient {
