@@ -14,9 +14,11 @@
   let touchStartY = 0;
   let snapLocked = false;
   let unlockTimer = null;
+  let mobileDescended = false;
 
   const words = ["Crafting", "Digital", "Experiences", "Elegantly"];
   const clamp = (v, min, max) => Math.max(min, Math.min(v, max));
+  const isMobile = () => window.innerWidth <= 768;
 
   function easeOutCubic(t) {
     return 1 - Math.pow(1 - t, 3);
@@ -66,10 +68,14 @@
     }
   }
 
-  function releaseSnap() {
+  function releaseSnap(direction = null) {
     clearSnapTimer();
     getLenis()?.start();
     setSnapLock(false);
+
+    if (isMobile() && direction === "down") {
+      mobileDescended = true;
+    }
   }
 
   function snapTo(direction) {
@@ -80,8 +86,8 @@
 
     const raw = getRawProgress();
 
-    if (direction === "down" && raw >= 0.985) return;
-    if (direction === "up" && raw <= 0.015) return;
+    if (direction === "down" && raw >= 0.995) return;
+    if (direction === "up" && raw <= 0.005) return;
 
     const targetY = direction === "down" ? getBottomY() : getTopY();
 
@@ -89,20 +95,23 @@
     clearSnapTimer();
     lenis.stop();
 
+    const downDuration = isMobile() ? 6.2 : 7.1;
+    const upDuration = 7.0;
+
     lenis.scrollTo(targetY, {
-      duration: direction === "down" ? 7.8 : 7.0,
-      easing: (t) => 1 - Math.pow(1 - t, 2.85),
+      duration: direction === "down" ? downDuration : upDuration,
+      easing: (t) => 1 - Math.pow(1 - t, 2.75),
       immediate: false,
       force: true,
       lock: true,
       onComplete: () => {
-        releaseSnap();
+        releaseSnap(direction);
       }
     });
 
     unlockTimer = setTimeout(() => {
-      releaseSnap();
-    }, direction === "down" ? 8300 : 7600);
+      releaseSnap(direction);
+    }, direction === "down" ? (isMobile() ? 6600 : 7500) : 7600);
   }
 
   function handleWheel(e) {
@@ -127,13 +136,13 @@
 
     const raw = getRawProgress();
 
-    if (e.deltaY > 8 && raw < 0.985) {
+    if (e.deltaY > 8 && raw < 0.995) {
       e.preventDefault();
       snapTo("down");
       return;
     }
 
-    if (e.deltaY < -8 && raw > 0.015) {
+    if (!isMobile() && e.deltaY < -8 && raw > 0.005) {
       e.preventDefault();
       snapTo("up");
     }
@@ -184,11 +193,11 @@
     const delta = endY - touchStartY;
     const raw = getRawProgress();
 
-    if (delta < -18 && raw < 0.985) {
+    if (delta < -18 && raw < 0.995) {
       snapTo("down");
     }
 
-    if (delta > 18 && raw > 0.015) {
+    if (!isMobile() && delta > 18 && raw > 0.005) {
       snapTo("up");
     }
 
@@ -200,7 +209,7 @@
     if (snapLocked) return;
 
     const raw = getRawProgress();
-    if (raw < 0.985) {
+    if (raw < 0.995) {
       snapTo("down");
     }
   }
@@ -211,18 +220,16 @@
     const rect = section.getBoundingClientRect();
     const vh = window.innerHeight;
     const max = rect.height - vh;
-
     const raw = max > 0 ? clamp(-rect.top / max, 0, 1) : 0;
 
     const eased = easeOutCubic(raw);
     smoothProgress += (eased - smoothProgress) * 0.07;
     progress = smoothProgress;
 
-    const isMobile = window.innerWidth <= 768;
-    const logoWindow = isMobile ? 0.42 : 0.32;
+    const logoWindow = isMobile() ? 0.42 : 0.32;
     logoProgress = easeOutQuart(clamp(raw / logoWindow, 0, 1));
 
-    const revealDelay = isMobile ? 0.32 : 0.24;
+    const revealDelay = isMobile() ? 0.32 : 0.24;
     textProgress = clamp((progress - revealDelay) / (1 - revealDelay), 0, 1);
 
     visible = rect.bottom > 0 && rect.top < vh;
@@ -242,6 +249,8 @@
   }
 
   onMount(() => {
+    mobileDescended = false;
+
     registerParallax(updateHero);
     window.addEventListener("resize", updateHero);
 
@@ -477,7 +486,7 @@
   }
 
   .hero-eagle {
-    width: 196px;
+    width: 300px;
     display: block;
     color: white;
     transform: translateZ(0);
@@ -487,7 +496,7 @@
   .hero-eagle path {
     fill: transparent;
     stroke: currentColor;
-    stroke-width: 1.45;
+    stroke-width: 0.8;
     vector-effect: non-scaling-stroke;
   }
 
@@ -497,7 +506,7 @@
   }
 
   :global(body.intro-draw) .hero-eagle path {
-    animation: heroDraw 4.8s cubic-bezier(.7,0,.3,1) forwards;
+    animation: heroDraw 6.8s cubic-bezier(.5,0,.6,0.3) forwards;
   }
 
   :global(body.intro-leaving) .hero-eagle path,
@@ -558,8 +567,7 @@
     font-size: 0.8rem;
     letter-spacing: 0.25em;
     text-transform: uppercase;
-    color: rgba(255,240,220,0.65);
-    font-family: "Aboreto", serif;
+    color: #fff;
     pointer-events: none;
     transition: opacity 0.6s ease;
     white-space: nowrap;
@@ -646,12 +654,12 @@
     }
 
     .hero-eagle {
-      width: 196px;
+      width: 300px;
       height: auto;
     }
 
     :global(body.intro-draw) .hero-eagle path {
-      animation: heroDraw 5.35s cubic-bezier(.7,0,.3,1) forwards;
+      animation: heroDraw 6.8s cubic-bezier(.5,0,.6,0.3) forwards;
     }
 
     h1 {

@@ -78,6 +78,7 @@
     background: rgba(255,255,255,0.15);
     overflow: hidden;
     position: absolute;
+    z-index: 10001;
     left: 50%;
     bottom: 35%;
     transform: translateX(-50%);
