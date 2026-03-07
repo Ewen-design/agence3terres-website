@@ -44,7 +44,7 @@
     const isMobile = window.innerWidth <= 768;
 
     // logo un peu plus haut sur téléphone
-    const movePx = (isMobile ? viewportH * 0.162 : viewportH * 0.215) * progress;
+   const movePx = (isMobile ? viewportH * 0.182 : viewportH * 0.25) * progress;
     const scale = 1 - (isMobile ? 0.41 : 0.58) * progress;
 
     logoTransform = `translate3d(-50%, calc(-50% - ${movePx}px), 0)`;

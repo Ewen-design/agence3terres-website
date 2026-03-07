@@ -75,8 +75,8 @@
     clearUnlockTimer();
 
     lenis.scrollTo(targetY, {
-      duration: 2.1,
-      easing: (t) => 1 - Math.pow(1 - t, 2.35),
+      duration: 3.2,
+      easing: (t) => 1 - Math.pow(1 - t, 2.8),
       immediate: false,
       force: true,
       lock: true,
@@ -90,7 +90,7 @@
     unlockTimer = setTimeout(() => {
       lenis.start();
       setGestureLock(false);
-    }, 2400);
+    }, 3600);
   }
 
   function handleWheel(e) {
@@ -176,8 +176,8 @@
     if (!lenis || !section) return;
 
     lenis.scrollTo(getHeroBottomY(), {
-      duration: 5.5,
-      easing: (t) => 1 - Math.pow(1 - t, 2.5),
+      duration: 10.2,
+      easing: (t) => 1 - Math.pow(1 - t, 4),
       force: true
     });
   }
