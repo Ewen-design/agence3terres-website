@@ -225,7 +225,7 @@ on:click={handleZoneClick}
   position: absolute;
   inset: 0;
   background-size: cover;
-  background-position: center;
+  background-position: right center;
   opacity: 0;
   will-change: transform, opacity;
   transform: translate3d(0,0,0);
