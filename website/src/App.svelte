@@ -107,9 +107,9 @@
       <TextesIntro />
       <HomePage />
       <ParallaxGallery />
+        <SliderScroll />
       <ProjetsHighlight />
       <VisionSlider />
-      <SliderScroll />
 
     {:else if currentPage === "travail"}
       <Travail {navigate} />
