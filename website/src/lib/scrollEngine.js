@@ -3,15 +3,16 @@
 let callbacks = new Set();
 let initialized = false;
 let currentY = 0;
+let lastY = -1;
 
 function emit() {
-  for (const cb of callbacks) {
+  callbacks.forEach((cb) => {
     try {
       cb(currentY);
     } catch (e) {
       console.warn("ScrollEngine callback error:", e);
     }
-  }
+  });
 }
 
 export function initScrollEngine() {
@@ -23,12 +24,12 @@ export function destroyScrollEngine() {
   callbacks.clear();
   initialized = false;
   currentY = 0;
+  lastY = -1;
 }
 
 export function registerParallax(cb) {
   callbacks.add(cb);
 
-  // appel immédiat pour éviter un "flash" au montage
   try {
     cb(currentY);
   } catch (e) {
@@ -41,7 +42,13 @@ export function unregisterParallax(cb) {
 }
 
 export function updateScrollEngine(y) {
+
+  // évite les recalculs inutiles
+  if (Math.abs(y - lastY) < 0.1) return;
+
+  lastY = y;
   currentY = y;
+
   emit();
 }
 

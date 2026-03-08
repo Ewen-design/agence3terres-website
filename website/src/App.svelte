@@ -18,7 +18,7 @@
   import ParallaxTextes from "./lib/sections/ParallaxTextes.svelte";
   import BackgroundParallax from "./lib/sections/BackgroundParallax.svelte";
   import VisionSlider from "./lib/sections/VisionSlider.svelte";
-   import SliderScroll from "./lib/sections/SliderScroll.svelte";
+  import SliderScroll from "./lib/sections/SliderScroll.svelte";
 
   import Travail from "./lib/structure/Travail.svelte";
   import Apropos from "./lib/structure/Apropos.svelte";
@@ -34,6 +34,12 @@
 
   let lenis;
   let rafId;
+
+  let isMobile = false;
+
+  function checkMobile() {
+    isMobile = window.innerWidth <= 768;
+  }
 
   function navigate(page) {
     if (page === currentPage || isTransitioning) return;
@@ -53,6 +59,9 @@
   }
 
   onMount(() => {
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+
     initScrollEngine();
 
     lenis = new Lenis({
@@ -83,6 +92,7 @@
       lenis?.destroy();
       destroyScrollEngine();
       window.lenis = null;
+      window.removeEventListener("resize", checkMobile);
     };
   });
 
@@ -91,11 +101,15 @@
     lenis?.destroy();
     destroyScrollEngine();
     window.lenis = null;
+    window.removeEventListener("resize", checkMobile);
   });
 </script>
 
 <main>
-  <CustomCursor />
+  {#if !isMobile}
+    <CustomCursor />
+  {/if}
+
   <IconeFleche />
   <IntroLoader />
 
@@ -107,7 +121,7 @@
       <TextesIntro />
       <HomePage />
       <ParallaxGallery />
-        <SliderScroll />
+      <SliderScroll />
       <ProjetsHighlight />
       <VisionSlider />
 
