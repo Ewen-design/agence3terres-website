@@ -67,7 +67,7 @@
     lenis = new Lenis({
       duration: 1.35,
       easing: (t) => 1 - Math.pow(1 - t, 3),
-      smoothWheel: true,
+    smoothWheel: window.innerWidth > 768,
       smoothTouch: false,
       wheelMultiplier: 1,
       touchMultiplier: 1
@@ -79,10 +79,12 @@
       updateScrollEngine(e.animatedScroll);
     });
 
-    function raf(time) {
-      lenis.raf(time);
-      rafId = requestAnimationFrame(raf);
-    }
+  function raf(time) {
+  if (!lenis) return;
+
+  lenis.raf(time);
+  rafId = requestAnimationFrame(raf);
+}
 
     rafId = requestAnimationFrame(raf);
     updateScrollEngine(window.scrollY || window.pageYOffset || 0);
@@ -103,6 +105,8 @@
     window.lenis = null;
     window.removeEventListener("resize", checkMobile);
   });
+
+  
 </script>
 
 <main>

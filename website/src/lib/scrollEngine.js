@@ -2,6 +2,7 @@
 
 let callbacks = new Set();
 let initialized = false;
+
 let currentY = 0;
 let lastY = -1;
 
@@ -43,8 +44,8 @@ export function unregisterParallax(cb) {
 
 export function updateScrollEngine(y) {
 
-  // évite les recalculs inutiles
-  if (Math.abs(y - lastY) < 0.1) return;
+  // évite les updates trop petites
+  if (Math.abs(y - lastY) < 0.5) return;
 
   lastY = y;
   currentY = y;
