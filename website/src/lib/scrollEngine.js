@@ -6,6 +6,9 @@ let initialized = false;
 let currentY = 0;
 let lastY = -1;
 
+const VIEWPORT_MARGIN = 800; 
+// distance avant/après le viewport pour activer une section
+
 function emit() {
   callbacks.forEach((cb) => {
     try {
@@ -55,4 +58,19 @@ export function updateScrollEngine(y) {
 
 export function getScrollY() {
   return currentY;
+}
+
+/*
+UTILITAIRE POUR LES COMPOSANTS
+
+Permet de savoir si une section est proche du viewport.
+*/
+export function sectionIsNearViewport(rect) {
+
+  const vh = window.innerHeight;
+
+  return !(
+    rect.bottom < -VIEWPORT_MARGIN ||
+    rect.top > vh + VIEWPORT_MARGIN
+  );
 }

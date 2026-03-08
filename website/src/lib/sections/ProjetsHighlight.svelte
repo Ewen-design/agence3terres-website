@@ -1,6 +1,7 @@
 <script>
   import { onMount, onDestroy } from "svelte";
   import { registerParallax, unregisterParallax } from "../scrollEngine.js";
+  import { sectionIsNearViewport } from "../scrollEngine.js";
 
   let cards = [];
   let metrics = [];
@@ -9,6 +10,7 @@
   let lineEl;
   let buttonEl;
   let isMobile = false;
+  let section;
 
   const projects = [
     {
@@ -43,6 +45,9 @@
   }
 
   function updateParallax(scrollY) {
+    const rect = section.getBoundingClientRect();
+
+if (!sectionIsNearViewport(rect)) return;
     const winH = window.innerHeight;
 
     metrics.forEach((m, index) => {
@@ -75,7 +80,6 @@
     });
 
     // Micro animation titre (inchangé)
-    const rect = headerEl.getBoundingClientRect();
     const progress = clamp(1 - rect.top / winH, 0, 1);
 
     headerEl.style.opacity = progress;
@@ -117,7 +121,7 @@
       esthétique et immersive.
     </p>
   </div>
-
+<div bind:this={section}></div>
   <div class="projects-grid">
     {#each projects as project}
       <div class="card">

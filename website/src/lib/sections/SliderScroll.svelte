@@ -1,6 +1,7 @@
 <script>
   import { onMount, onDestroy } from "svelte";
   import { registerParallax, unregisterParallax } from "../scrollEngine.js";
+  import { sectionIsNearViewport } from "../scrollEngine.js";
 
   let section;
 
@@ -48,9 +49,10 @@
   let progress = 0;
 
   function updateSlider() {
-    if (!section) return;
-
     const rect = section.getBoundingClientRect();
+
+if (!sectionIsNearViewport(rect)) return;
+    if (!section) return;
     const total = section.offsetHeight - window.innerHeight;
 
     if (total <= 0) {

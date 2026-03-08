@@ -2,6 +2,8 @@
   import { onMount, onDestroy } from "svelte";
   import { registerParallax, unregisterParallax } from "../scrollEngine.js";
 
+  import { sectionIsNearViewport } from "../scrollEngine.js";
+
   let section;
   let cards = [];
   let metrics = [];
@@ -26,6 +28,9 @@
   }
 
   function updateParallax(scrollY) {
+    const rect = section.getBoundingClientRect();
+
+if (!sectionIsNearViewport(rect)) return;
     const winH = window.innerHeight;
 
     metrics.forEach(m => {

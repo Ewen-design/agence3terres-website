@@ -1,6 +1,7 @@
 <script>
   import { onMount, onDestroy } from "svelte";
   import { registerParallax, unregisterParallax } from "../scrollEngine.js";
+  import { sectionIsNearViewport } from "../scrollEngine.js";
 
   const quotes = [
     { text: "Créer avec intention, toujours.", author: "Aboreto" },
@@ -11,6 +12,7 @@
     { text: "La profondeur crée l'émotion.", author: "Aboreto" }
   ];
 
+  let section;
   let current = 0;
   const angleStep = 360 / quotes.length;
   let radius = 540;
@@ -54,10 +56,12 @@ let deltaX = 0;
   }
 
   function updateParallax() {
+    const rect = section.getBoundingClientRect();
+
+if (!sectionIsNearViewport(rect)) return;
     if (!sectionEl || !bgEl) return;
 
     const winH = window.innerHeight;
-    const rect = sectionEl.getBoundingClientRect();
     const center = rect.top + rect.height / 2;
 
     const screenProgress = center / winH;
@@ -156,7 +160,7 @@ on:click={handleZoneClick}
   <div
     class="bg"
     bind:this={bgEl}
-    style="background-image:url('/images/livre.png')"
+    style="background-image:url('/images/photo.webp')"
   ></div>
 
   <div class="overlay"></div>
@@ -167,6 +171,8 @@ on:click={handleZoneClick}
     <p>Une collection de principes qui guident chacune de nos créations.</p>
   </div>
 
+  <div bind:this={section}></div>
+  
   <div class="carousel-wrapper">
     <div
       class="carousel"
