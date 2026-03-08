@@ -18,6 +18,7 @@
   import ParallaxTextes from "./lib/sections/ParallaxTextes.svelte";
   import BackgroundParallax from "./lib/sections/BackgroundParallax.svelte";
   import VisionSlider from "./lib/sections/VisionSlider.svelte";
+   import SliderScroll from "./lib/sections/SliderScroll.svelte";
 
   import Travail from "./lib/structure/Travail.svelte";
   import Apropos from "./lib/structure/Apropos.svelte";
@@ -108,6 +109,7 @@
       <ParallaxGallery />
       <ProjetsHighlight />
       <VisionSlider />
+      <SliderScroll />
 
     {:else if currentPage === "travail"}
       <Travail {navigate} />
