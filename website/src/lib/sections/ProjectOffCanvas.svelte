@@ -67,7 +67,7 @@
         <!-- 🔥 PARALLAX BACKGROUND -->
         <div 
           class="background parallax-bg"
-          style="background-image: url({selected.image || '/images/parfum.jpg'})"
+          style="background-image: url({selected.image || '/images/photo.webp'})"
           in:fly|local={{ 
             x: direction * -700,   /* moitié de la card = effet profondeur */
             duration: 900,

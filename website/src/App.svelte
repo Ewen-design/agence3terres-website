@@ -19,6 +19,7 @@
   import BackgroundParallax from "./lib/sections/BackgroundParallax.svelte";
   import VisionSlider from "./lib/sections/VisionSlider.svelte";
   import SliderScroll from "./lib/sections/SliderScroll.svelte";
+  import StickySlider from "./lib/sections/StickySlider.svelte";
 
   import Travail from "./lib/structure/Travail.svelte";
   import Apropos from "./lib/structure/Apropos.svelte";
@@ -125,7 +126,7 @@
       <TextesIntro />
       <HomePage />
       <ParallaxGallery />
-      <SliderScroll />
+       <StickySlider />
       <ProjetsHighlight />
       <VisionSlider />
 
@@ -139,6 +140,7 @@
 
     {:else if currentPage === "services"}
       <SliderCustom />
+      <SliderScroll />
       <Services />
 
     {:else if currentPage === "contact"}
