@@ -134,7 +134,7 @@
         on:keydown={(e) => e.key === 'Enter' && openProject(item)}
       >
         <div class="card-image-wrapper">
-          <img src="/images/parfum.jpg" alt={item.title} />
+          <img src="/images/photo.webp" alt={item.title} />
         </div>
 
         <div class="info">
@@ -235,6 +235,7 @@
   height: 100%;
   object-fit: cover;
   transition: filter 0.5s ease, transform 1.2s ease;
+  
 }
 
 .card:hover img {
