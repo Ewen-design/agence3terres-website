@@ -134,7 +134,7 @@
         on:keydown={(e) => e.key === 'Enter' && openProject(item)}
       >
         <div class="card-image-wrapper">
-          <img src="/images/photo.webp" alt={item.title} />
+          <img src="/images/photo2.webp" alt={item.title} />
         </div>
 
         <div class="info">
