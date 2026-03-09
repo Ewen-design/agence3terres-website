@@ -4,7 +4,6 @@
   import ProjectOffCanvas from "./ProjectOffCanvas.svelte";
   import { sectionIsNearViewport } from "../scrollEngine.js";
 
-  let section;
   let cards = [];
   let metrics = [];
   let selected = null;
@@ -41,9 +40,6 @@
   }
 
   function updateParallax(scrollY) {
-    const rect = section.getBoundingClientRect();
-
-if (!sectionIsNearViewport(rect)) return;
     const winH = window.innerHeight;
 
     // PARALLAX CARDS (inchangé)
@@ -126,7 +122,6 @@ if (!sectionIsNearViewport(rect)) return;
       des expériences digitales immersives et des univers visuels mémorables.
     </p>
   </div>
-  <div bind:this={section}></div>
 
   <div class="gallery-grid">
     {#each items as item}
