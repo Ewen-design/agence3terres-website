@@ -154,7 +154,7 @@
     {/if}
   </div>
 
-  {#if !["projet1", "projet2"].includes(currentPage)}
+  {#if !["projet1", "projet2", "contact"].includes(currentPage)}
     <Footer />
   {/if}
 </main>

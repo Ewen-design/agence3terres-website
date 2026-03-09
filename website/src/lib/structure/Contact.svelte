@@ -3,241 +3,312 @@
   let email = "";
   let message = "";
 
+  const mail = "contact@agence3terres.fr";
+
   function handleSubmit(e) {
     e.preventDefault();
     console.log({ name, email, message });
     alert("Message envoyé");
   }
+
+  function copyEmail() {
+    navigator.clipboard.writeText(mail);
+  }
 </script>
 
 <section class="contact">
 
-  <!-- HERO -->
-  <div class="hero">
-    <h1>
-      Let’s create<br>
-      something remarkable.
-    </h1>
-    <p>
-      Chaque collaboration commence par une conversation.
-    </p>
+  <div class="background">
+    <img src="images/photo.webp" alt="">
+    <div class="overlay"></div>
   </div>
 
-  <!-- MAIN CONTACT BLOCK -->
-  <div class="contact-wrapper">
+  <div class="container">
 
-    <!-- FORM -->
-    <form class="form" on:submit={handleSubmit}>
+    <!-- RIGHT SIDE -->
+    <div class="right">
 
-      <div class="field">
-        <input type="text" bind:value={name} required />
-        <label>Votre nom</label>
+      <div class="hero">
+        <h1>
+          Let’s create<br>
+          remarkable.
+        </h1>
+        <p>
+          Chaque collaboration commence par une conversation.
+        </p>
       </div>
 
-      <div class="field">
-        <input type="email" bind:value={email} required />
-        <label>Email</label>
+      <form class="form" on:submit={handleSubmit}>
+
+        <div class="field">
+          <input type="text" bind:value={name} required placeholder=" " />
+          <label>Votre nom</label>
+        </div>
+
+        <div class="field">
+          <input type="email" bind:value={email} required placeholder=" " />
+          <label>Email</label>
+        </div>
+
+        <div class="field">
+          <textarea rows="5" bind:value={message} required placeholder=" "></textarea>
+          <label>Votre message</label>
+        </div>
+
+        <button type="submit">
+          Envoyer →
+        </button>
+
+      </form>
+
+    </div>
+
+    <!-- LEFT SIDE -->
+    <div class="contact-info">
+
+      <div class="socials">
+        <a href="#" target="_blank">Instagram</a>
+        <a href="#" target="_blank">Linkedin</a>
+        <a href="#" target="_blank">Facebook</a>
       </div>
 
-      <div class="field">
-        <textarea rows="5" bind:value={message} required></textarea>
-        <label>Votre message</label>
-      </div>
+      <div class="email">
 
-      <button type="submit">
-        Envoyer →
-      </button>
-
-    </form>
-
-    <!-- SIDE INFO -->
-    <div class="info">
-      <h2>Contact direct</h2>
-
-      <div class="info-block">
-        <span>Email</span>
         <a href="mailto:contact@agence3terres.fr">
           contact@agence3terres.fr
         </a>
-      </div>
 
-      <div class="info-block">
-        <span>Localisation</span>
-        <p>Paris, France</p>
-      </div>
+        <button class="copy" on:click={copyEmail}>
+          copier
+        </button>
 
-      <div class="info-block">
-        <span>Disponibilité</span>
-        <p>Ouvert à tous vos projets</p>
       </div>
 
     </div>
 
   </div>
 
-  <!-- SIGNATURE SECTION -->
-  <div class="signature">
-    <h2>
-      contact@agence3terres.fr
-    </h2>
-  </div>
-
 </section>
 
 <style>
 
-/* GLOBAL */
+/* SECTION */
 
-.contact {
-  background: linear-gradient(to bottom, #ffffff, #f5f5f5);
-  color: #111;
-  padding: 0 10vw;
-  overflow: hidden;
+.contact{
+  position:relative;
+  height:100vh;
+  overflow:hidden;
+  color:white;
+}
+
+/* BACKGROUND */
+
+.background{
+  position:absolute;
+  inset:0;
+  z-index:0;
+}
+
+.background img{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+}
+
+.overlay{
+  position:absolute;
+  inset:0;
+  background:
+  linear-gradient(
+  to right,
+  rgba(0,0,0,0.8) 0%,
+  rgba(0,0,0,0.45) 40%,
+  rgba(0,0,0,0.7) 100%
+  );
+}
+
+/* LAYOUT */
+
+.container{
+  position:relative;
+  z-index:2;
+  height:100%;
+  padding:8vh 8vw;
+  display:flex;
+  justify-content:space-between;
+}
+
+/* RIGHT SIDE */
+
+.right{
+  width:500px;
+  display:flex;
+  flex-direction:column;
+  margin-top:4vh; /* descend le bloc */
 }
 
 /* HERO */
 
-.hero {
-  min-height: 60vh;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
+.hero{
+  margin-bottom:40px;
 }
 
-.hero h1 {
-  font-family: 'Aboreto', serif;
-  font-size: clamp(3rem, 6vw, 6rem);
-  line-height: 1.1;
-  font-weight: 400;
+.hero h1{
+  font-family:'Aboreto', serif;
+  font-size:clamp(2.5rem,4vw,3.5rem);
+  line-height:1.2;
+  font-weight:400;
 }
 
-.hero p {
-  margin-top: 20px;
-  font-size: 1.1rem;
-  opacity: 0.6;
-}
-
-/* WRAPPER */
-
-.contact-wrapper {
-  display: flex;
-  justify-content: space-between;
-  gap: 100px;
-  padding: 100px 0;
+.hero p{
+  margin-top:15px;
+  opacity:0.75;
 }
 
 /* FORM */
 
-.form {
-  width: 55%;
-  background: rgba(255,255,255,0.6);
-  backdrop-filter: blur(20px);
-  padding: 60px;
-  box-shadow: 0 30px 80px rgba(0,0,0,0.05);
+.form{
+
+  backdrop-filter:blur(20px);
+  background:rgba(255,255,255,0.08);
+
+  padding:50px;
+
+  border-radius:3px;
+
+  box-shadow:
+  0 20px 60px rgba(0,0,0,0.3);
+
+  border:0px solid rgba(255,255,255,0.15);
 }
 
-.field {
-  position: relative;
-  margin-bottom: 40px;
+/* FIELDS */
+
+.field{
+  position:relative;
+  margin-bottom:35px;
 }
 
 input,
-textarea {
-  width: 100%;
-  border: none;
-  border-bottom: 1px solid rgba(0,0,0,0.2);
-  background: transparent;
-  padding: 10px 0;
-  font-size: 1rem;
-  outline: none;
+textarea{
+  width:100%;
+  border:none;
+  border-bottom:1px solid rgba(255,255,255,0.4);
+  background:transparent;
+  padding:10px 0;
+  font-size:1rem;
+  outline:none;
+  color:white;
 }
 
-label {
-  position: absolute;
-  left: 0;
-  top: 10px;
-  font-size: 0.9rem;
-  opacity: 0.5;
-  transition: all 0.3s ease;
-  pointer-events: none;
+label{
+  position:absolute;
+  left:0;
+  top:10px;
+  font-size:0.9rem;
+  opacity:0.6;
+  transition:all .3s ease;
+  pointer-events:none;
 }
 
 input:focus + label,
 input:not(:placeholder-shown) + label,
 textarea:focus + label,
-textarea:not(:placeholder-shown) + label {
-  top: -15px;
-  font-size: 0.7rem;
-  opacity: 0.7;
+textarea:not(:placeholder-shown) + label{
+  top:-14px;
+  font-size:0.7rem;
+  opacity:0.8;
 }
 
-button {
-  margin-top: 20px;
-  padding: 14px 30px;
-  border: 1px solid #111;
-  background: transparent;
-  cursor: pointer;
-  letter-spacing: 2px;
-  transition: all 0.4s ease;
+/* BUTTON */
+
+.form button{
+  margin-top:10px;
+  padding:14px 30px;
+  border:1px solid white;
+  background:transparent;
+  color:white;
+  cursor:pointer;
+  letter-spacing:2px;
+  transition:all .3s ease;
 }
 
-button:hover {
-  background: #111;
-  color: white;
+.form button:hover{
+  background:white;
+  color:black;
 }
 
-/* INFO */
+/* LEFT SIDE CONTACT */
 
-.info {
-  width: 35%;
-  display: flex;
-  flex-direction: column;
-  gap: 40px;
+.contact-info{
+  display:flex;
+  flex-direction:column;
+  justify-content:flex-end;
 }
 
-.info h2 {
-  font-family: 'Aboreto', serif;
-  font-size: 2rem;
+/* SOCIALS */
+
+.socials{
+  display:flex;
+  gap:30px;
+  margin-bottom:20px;
 }
 
-.info-block span {
-  font-size: 0.8rem;
-  letter-spacing: 2px;
-  opacity: 0.5;
+.socials a{
+  font-size:1.1rem;
+  text-decoration:none;
+  color:white;
+  opacity:0.85;
+  transition:opacity .3s;
 }
 
-.info-block a,
-.info-block p {
-  font-size: 1.1rem;
-  margin-top: 5px;
-  display: block;
+.socials a:hover{
+  opacity:1;
 }
 
-/* SIGNATURE */
+/* EMAIL */
 
-.signature {
-  padding: 150px 0 100px 0;
+.email{
+  display:flex;
+  align-items:center;
+  gap:16px;
 }
 
-.signature h2 {
-  font-family: 'Aboreto', serif;
-  font-size: clamp(1rem, 5vw, 5rem);
-  opacity: 0.05;
-  word-break: break-word;
+.email a{
+  font-family:'Aboreto', serif;
+  font-size:clamp(1.8rem,2.5vw,2.5rem);
+  text-decoration:none;
+  color:white;
+}
+
+.copy{
+  font-size:0.85rem;
+  padding:8px 12px;
+  border:1px solid rgba(255,255,255,0.6);
+  background:transparent;
+  color:white;
+  cursor:pointer;
+  transition:all .3s;
+}
+
+.copy:hover{
+  background:white;
+  color:black;
 }
 
 /* RESPONSIVE */
 
-@media (max-width: 1000px) {
-  .contact-wrapper {
-    flex-direction: column;
-    gap: 60px;
-  }
+@media (max-width:1000px){
 
-  .form,
-  .info {
-    width: 100%;
-  }
+.container{
+  flex-direction:column;
+  gap:60px;
+}
+
+.right{
+  width:100%;
+}
+
 }
 
 </style>
