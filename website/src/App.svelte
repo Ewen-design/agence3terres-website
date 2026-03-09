@@ -8,6 +8,7 @@
   import CustomCursor from "./lib/structure/CustomCursor.svelte";
   import IntroLoader from "./lib/structure/IntroLoader.svelte";
   import SliderCustom from "./lib/sections/SliderCustom.svelte";
+   import AncienSliderCustom from "./lib/sections/AncienSliderCustom.svelte";
 
   import IconeFleche from "./lib/structure/IconeFleche.svelte";
   import HeroNew from "./lib/sections/HeroNew.svelte";
@@ -18,7 +19,7 @@
   import ParallaxTextes from "./lib/sections/ParallaxTextes.svelte";
   import BackgroundParallax from "./lib/sections/BackgroundParallax.svelte";
   import VisionSlider from "./lib/sections/VisionSlider.svelte";
-  import SliderScroll from "./lib/sections/SliderScroll.svelte";
+  import MixSlider from "./lib/sections/MixSlider.svelte";
   import StickySlider from "./lib/sections/StickySlider.svelte";
 
   import Travail from "./lib/structure/Travail.svelte";
@@ -140,8 +141,9 @@
 
     {:else if currentPage === "services"}
       <SliderCustom />
-      <SliderScroll />
+      <MixSlider />
       <Services />
+      <AncienSliderCustom />
 
     {:else if currentPage === "contact"}
       <Contact />

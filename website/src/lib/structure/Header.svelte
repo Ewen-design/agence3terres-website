@@ -34,7 +34,7 @@
     const headerMid = header.getBoundingClientRect().top + header.offsetHeight / 2;
 
     const sections = document.querySelectorAll(
-      "section.hero-wrapper, section.creative-section, section.services, section.contact"
+      "section.hero-wrapper, section.creative-section, section.services"
     );
 
     let overSection = false;

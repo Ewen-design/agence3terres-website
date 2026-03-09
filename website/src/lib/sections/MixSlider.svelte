@@ -30,37 +30,34 @@
     }
   ];
 
-  let slider;
   let sections = [];
   let activeIndex = 0;
   let fills = [0, 0, 0, 0];
-  let observer;
   let ticking = false;
+  let observer;
 
   const THRESHOLD = 0.6;
   const clamp = (v, min = 0, max = 1) => Math.max(min, Math.min(max, v));
 
   function updateProgress() {
     const vh = window.innerHeight;
-    const nextFills = slides.map(() => 0);
+    const next = slides.map(() => 0);
 
     sections.forEach((section, i) => {
       if (!section) return;
 
       const rect = section.getBoundingClientRect();
 
-      // progression de la slide i
-      // 0  -> quand la slide commence à entrer
-      // 100 -> exactement quand la slide suivante atteint 60% de visibilité
-      //
-      // Pour une slide de 100vh :
-      // la slide suivante devient active quand son top = 40vh
-      // donc pour la slide courante, on veut 100% quand son top = -60vh
-      const fill = clamp((0 - rect.top) / (vh * THRESHOLD), 0, 1);
-      nextFills[i] = fill * 100;
+      // 0% quand la slide arrive
+      // 100% exactement quand la slide suivante atteint le threshold 0.6
+      // Avec une slide de 100vh et threshold 0.6 :
+      // le changement arrive quand la slide courante a top = -60vh
+      const progress = clamp((-rect.top) / (vh * THRESHOLD), 0, 1);
+
+      next[i] = progress * 100;
     });
 
-    fills = nextFills;
+    fills = next;
     ticking = false;
   }
 
@@ -72,6 +69,10 @@
   }
 
   onMount(() => {
+    updateProgress();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", onScroll);
+
     observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
@@ -86,41 +87,39 @@
     sections.forEach((section) => {
       if (section) observer.observe(section);
     });
-
-    updateProgress();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    window.addEventListener("resize", onScroll);
-    requestAnimationFrame(updateProgress);
   });
 
   onDestroy(() => {
-    if (observer) observer.disconnect();
     window.removeEventListener("scroll", onScroll);
     window.removeEventListener("resize", onScroll);
+    if (observer) observer.disconnect();
   });
 </script>
 
-<section class="slider" bind:this={slider}>
+<section class="slider">
   <div class="sticky">
     <div class="backgrounds">
+      <div class="progress-nav">
+        {#each slides as slide, i}
+          <div class="segment">
+            <div class="segment-line">
+              <div class="segment-fill" style="width:{fills[i]}%"></div>
+            </div>
+
+            <div class="segment-label">
+              <span class="num">{slide.number}</span>
+            </div>
+          </div>
+        {/each}
+      </div>
+
       {#each slides as slide, i}
-        <div class="bg" class:active={activeIndex === i}>
-          <img src={slide.image} alt="" />
+        <div
+          class="bg"
+          class:active={activeIndex === i}
+        >
+          <img src={slide.image} alt="">
           <div class="overlay"></div>
-        </div>
-      {/each}
-    </div>
-
-    <div class="progress-nav">
-      {#each slides as slide, i}
-        <div class="segment">
-          <div class="segment-line">
-            <div class="segment-fill" style="width: {fills[i]}%"></div>
-          </div>
-
-          <div class="segment-label">
-            <span class="segment-number">{slide.number}</span>
-          </div>
         </div>
       {/each}
     </div>
@@ -128,7 +127,11 @@
 
   <div class="slides">
     {#each slides as slide, i}
-      <section class="slide" bind:this={sections[i]} data-index={i}>
+      <section
+        class="slide"
+        bind:this={sections[i]}
+        data-index={i}
+      >
         <div class="content">
           <div class="number">{slide.number}</div>
           <h2>{slide.title}</h2>
@@ -137,7 +140,6 @@
       </section>
     {/each}
 
-    <!-- queue finale pour permettre au 4e segment d’aller au bout -->
     <div class="tail" aria-hidden="true"></div>
   </div>
 </section>
@@ -157,6 +159,7 @@
     width:100%;
   }
 
+  /* sticky scene */
   .sticky{
     position:sticky;
     top:0;
@@ -167,6 +170,7 @@
     z-index:0;
   }
 
+  /* couche de sécurité pour masquer ton background fixe */
   .sticky::before{
     content:"";
     position:absolute;
@@ -175,6 +179,7 @@
     z-index:0;
   }
 
+  /* backgrounds */
   .backgrounds{
     position:absolute;
     inset:0;
@@ -218,6 +223,7 @@
       );
   }
 
+  /* slides flow */
   .slides{
     position:relative;
     z-index:3;
@@ -271,6 +277,21 @@
     color:#9b9b9b;
   }
 
+  @media (max-width:800px){
+    .slide{
+      padding:6rem 2rem;
+      align-items:flex-end;
+    }
+
+    h2{
+      font-size:clamp(3rem,15vw,5rem);
+    }
+
+    p{
+      font-size:1rem;
+    }
+  }
+
   .progress-nav{
     position:absolute;
     left:2rem;
@@ -278,12 +299,8 @@
     bottom:2rem;
     z-index:4;
     display:grid;
-    grid-template-columns:repeat(4, 1fr);
+    grid-template-columns:repeat(4,1fr);
     gap:.8rem;
-  }
-
-  .segment{
-    min-width:0;
   }
 
   .segment-line{
@@ -300,49 +317,13 @@
     top:0;
     bottom:0;
     width:0%;
-    background:rgba(255,255,255,0.96);
+    background:white;
     box-shadow:0 0 12px rgba(255,255,255,0.2);
+    transition:width 80ms linear;
   }
 
   .segment-label{
-    display:flex;
-    align-items:center;
-    gap:.35rem;
-    color:rgba(255,255,255,0.85);
-    font-size:.95rem;
-  }
-
-  .segment-number{
+    font-size:.9rem;
     opacity:.85;
-  }
-
-  @media (max-width:800px){
-    .slide{
-      padding:6rem 2rem;
-      align-items:flex-end;
-    }
-
-    h2{
-      font-size:clamp(3rem,15vw,5rem);
-    }
-
-    p{
-      font-size:1rem;
-    }
-
-    .progress-nav{
-      left:1rem;
-      right:1rem;
-      bottom:1.2rem;
-      gap:.55rem;
-    }
-
-    .segment-label{
-      font-size:.78rem;
-    }
-
-    .tail{
-      height:60vh;
-    }
   }
 </style>
