@@ -3,6 +3,7 @@
   import FullscreenMenu from "./FullscreenMenu.svelte";
 
   export let navigate;
+  export let currentPage = "home";
 
   let lastScrollY = 0;
   let scrollingDown = false;
@@ -67,6 +68,17 @@
 
   $: compact = scrollingDown && !menuOpen;
 
+  $: themeClass =
+    currentPage === "services"
+      ? "theme-services"
+      : currentPage === "travail"
+      ? "theme-projets"
+      : currentPage === "apropos"
+      ? "theme-apropos"
+      : currentPage === "contact"
+      ? "theme-contact"
+      : "";
+
   onMount(() => {
     lastScrollY = window.scrollY;
     window.addEventListener("scroll", handleScroll);
@@ -77,7 +89,7 @@
 </script>
 
 <header
-  class="nav-wrapper {compact ? 'compact' : ''} {menuOpen ? 'menu-open' : ''}"
+  class="nav-wrapper {compact ? 'compact' : ''} {menuOpen ? 'menu-open' : ''} {themeClass}"
   style="color:{textColor}"
 >
   <nav class="nav-inner">
@@ -198,17 +210,13 @@ header {
   color: inherit;
   border: none;
   cursor: pointer;
-
   background: rgba(255,255,255,0.15);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
-
   border-radius: 3px;
-
   box-shadow:
     0 8px 10px rgba(0,0,0,0.06),
     inset 0 0 0 0px rgba(255,255,255,0.4);
-
   transition:
     transform 1.2s cubic-bezier(.22,.61,.36,1),
     box-shadow 1.2s cubic-bezier(.22,.61,.36,1),
@@ -221,7 +229,6 @@ header {
   inset: 0;
   border-radius: inherit;
   padding: 1px;
-
   background:
     radial-gradient(
       80px circle at var(--mx) var(--my),
@@ -229,18 +236,63 @@ header {
       rgba(212, 102, 55, 0.45) 40%,
       transparent 75%
     );
-
   -webkit-mask:
     linear-gradient(#000 0 0) content-box,
     linear-gradient(#000 0 0);
   -webkit-mask-composite: xor;
           mask-composite: exclude;
-
   opacity: 0;
   transition: opacity 0.25s ease;
   pointer-events: none;
-
   filter: drop-shadow(0 0 3px rgba(212, 175, 55, 0.35));
+}
+
+.theme-services .nav-btn::before {
+  background:
+    radial-gradient(
+      80px circle at var(--mx) var(--my),
+      rgba(145, 205, 255, 0.98),
+      rgba(74, 140, 255, 0.68) 35%,
+      rgba(18, 45, 120, 0.52) 58%,
+      transparent 75%
+    );
+  filter: drop-shadow(0 0 4px rgba(95, 165, 255, 0.4));
+}
+
+.theme-projets .nav-btn::before {
+  background:
+    radial-gradient(
+      80px circle at var(--mx) var(--my),
+      rgba(249, 130, 130, 0.98),
+      rgba(124, 69, 165, 0.7) 35%,
+        rgba(40, 92, 255, 0.5) 58%,
+      transparent 75%
+    );
+  filter: drop-shadow(0 0 4px rgba(255, 90, 90, 0.4));
+}
+
+.theme-apropos .nav-btn::before {
+  background:
+    radial-gradient(
+      80px circle at var(--mx) var(--my),
+      rgba(255, 235, 145, 0.98),
+      rgba(230, 190, 72, 0.72) 35%,
+      rgba(145, 100, 20, 0.45) 58%,
+      transparent 75%
+    );
+  filter: drop-shadow(0 0 4px rgba(255, 212, 95, 0.4));
+}
+
+.theme-contact .nav-btn::before {
+  background:
+    radial-gradient(
+      80px circle at var(--mx) var(--my),
+      rgba(186, 132, 255, 0.98),
+      rgba(110, 74, 255, 0.7) 35%,
+      rgba(40, 92, 255, 0.5) 58%,
+      transparent 75%
+    );
+  filter: drop-shadow(0 0 4px rgba(122, 102, 255, 0.42));
 }
 
 .nav-btn:hover::before {

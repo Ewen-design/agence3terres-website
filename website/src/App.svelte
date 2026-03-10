@@ -21,6 +21,7 @@
   import VisionSlider from "./lib/sections/VisionSlider.svelte";
   import MixSlider from "./lib/sections/MixSlider.svelte";
   import StickySlider from "./lib/sections/StickySlider.svelte";
+    import ImageScroll from "./lib/sections/ImageScroll.svelte";
 
   import Travail from "./lib/structure/Travail.svelte";
   import Apropos from "./lib/structure/Apropos.svelte";
@@ -119,7 +120,7 @@
   <IconeFleche />
   <IntroLoader />
 
-  <Header {navigate} />
+<Header {navigate} {currentPage} />
 
   <div class="page-wrapper {isTransitioning ? 'blur-out' : ''}">
     {#if currentPage === "home"}
@@ -142,6 +143,7 @@
     {:else if currentPage === "services"}
       <SliderCustom />
       <MixSlider />
+      <ImageScroll src="images/photo.webp" alt="Description de l'image" />
       <Services />
       <AncienSliderCustom />
 
