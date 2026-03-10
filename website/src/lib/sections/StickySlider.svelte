@@ -1,145 +1,89 @@
 <script>
-  import { onMount, onDestroy } from "svelte";
+import { onMount } from "svelte";
 
-  const slides = [
-    {
-      number: "01",
-      title: "AI Strategy\n& Execution",
-      description: "Driving AI transformation for products, platforms, and people.",
-      image: "images/photo.webp"
-    },
-    {
-      number: "02",
-      title: "Product\nInnovation",
-      description: "Launching flagship digital experiences—used daily by billions.",
-      image:
-        "https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=2000&q=80"
-    },
-    {
-      number: "03",
-      title: "Brand\nExperiences",
-      description: "Creating elegant systems, campaigns, and immersive brand worlds.",
-      image: "images/photo.webp"
-    },
-    {
-      number: "04",
-      title: "Creative\nSystems",
-      description: "Designing refined digital identities, interfaces, and visual systems with lasting impact.",
-      image:
-        "https://images.unsplash.com/photo-1497366754035-f200968a6e72?auto=format&fit=crop&w=2000&q=80"
-    }
-  ];
+const slides = [
+{
+number: "01",
+title: "AI Strategy\n& Execution",
+description: "Driving AI transformation for products, platforms, and people.",
+image: "images/photo.webp"
+},
+{
+number: "02",
+title: "Product\nInnovation",
+description: "Launching flagship digital experiences—used daily by billions.",
+image:
+"https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=2000&q=80"
+},
+{
+number: "03",
+title: "Brand\nExperiences",
+description: "Creating elegant systems, campaigns, and immersive brand worlds.",
+image: "images/photo.webp"
+}
+];
 
-  let slider;
-  let sections = [];
-  let activeIndex = 0;
-  let fills = [0, 0, 0, 0];
-  let observer;
-  let ticking = false;
+let sections = [];
+let activeIndex = 0;
 
-  const THRESHOLD = 0.6;
-  const clamp = (v, min = 0, max = 1) => Math.max(min, Math.min(max, v));
+onMount(() => {
+const observer = new IntersectionObserver(
+(entries) => {
+entries.forEach((entry) => {
+if (entry.isIntersecting) {
+activeIndex = Number(entry.target.dataset.index);
+}
+});
+},
+{ threshold: 0.6 }
+);
 
-  function updateProgress() {
-    const vh = window.innerHeight;
-    const nextFills = slides.map(() => 0);
-
-    sections.forEach((section, i) => {
-      if (!section) return;
-
-      const rect = section.getBoundingClientRect();
-
-      // progression de la slide i
-      // 0  -> quand la slide commence à entrer
-      // 100 -> exactement quand la slide suivante atteint 60% de visibilité
-      //
-      // Pour une slide de 100vh :
-      // la slide suivante devient active quand son top = 40vh
-      // donc pour la slide courante, on veut 100% quand son top = -60vh
-      const fill = clamp((0 - rect.top) / (vh * THRESHOLD), 0, 1);
-      nextFills[i] = fill * 100;
-    });
-
-    fills = nextFills;
-    ticking = false;
-  }
-
-  function onScroll() {
-    if (!ticking) {
-      ticking = true;
-      requestAnimationFrame(updateProgress);
-    }
-  }
-
-  onMount(() => {
-    observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            activeIndex = Number(entry.target.dataset.index);
-          }
-        });
-      },
-      { threshold: THRESHOLD }
-    );
-
-    sections.forEach((section) => {
-      if (section) observer.observe(section);
-    });
-
-    updateProgress();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    window.addEventListener("resize", onScroll);
-    requestAnimationFrame(updateProgress);
-  });
-
-  onDestroy(() => {
-    if (observer) observer.disconnect();
-    window.removeEventListener("scroll", onScroll);
-    window.removeEventListener("resize", onScroll);
-  });
+sections.forEach((section) => observer.observe(section));
+});
 </script>
 
-<section class="slider" bind:this={slider}>
-  <div class="sticky">
-    <div class="backgrounds">
-      {#each slides as slide, i}
-        <div class="bg" class:active={activeIndex === i}>
-          <img src={slide.image} alt="" />
-          <div class="overlay"></div>
-        </div>
-      {/each}
-    </div>
+<section class="slider">
 
-    <div class="progress-nav">
-      {#each slides as slide, i}
-        <div class="segment">
-          <div class="segment-line">
-            <div class="segment-fill" style="width: {fills[i]}%"></div>
-          </div>
+<div class="sticky">
 
-          <div class="segment-label">
-            <span class="segment-number">{slide.number}</span>
-          </div>
-        </div>
-      {/each}
-    </div>
-  </div>
+<div class="backgrounds">
+{#each slides as slide, i}
+<div
+class="bg"
+class:active={activeIndex === i}
+>
+<img src={slide.image} alt="">
+<div class="overlay"></div>
+</div>
+{/each}
+</div>
 
-  <div class="slides">
-    {#each slides as slide, i}
-      <section class="slide" bind:this={sections[i]} data-index={i}>
-        <div class="content">
-          <div class="number">{slide.number}</div>
-          <h2>{slide.title}</h2>
-          <p>{slide.description}</p>
-        </div>
-      </section>
-    {/each}
+</div>
 
-    <!-- queue finale pour permettre au 4e segment d’aller au bout -->
-    <div class="tail" aria-hidden="true"></div>
-  </div>
+<div class="slides">
+
+{#each slides as slide, i}
+<section
+class="slide"
+bind:this={sections[i]}
+data-index={i}
+>
+
+<div class="content">
+
+<div class="number">{slide.number}</div>
+
+<h2>{slide.title}</h2>
+
+<p>{slide.description}</p>
+
+</div>
+
+</section>
+{/each}
+
+</div>
+
 </section>
 
 <style>
@@ -157,16 +101,18 @@
     width:100%;
   }
 
+  /* sticky scene */
   .sticky{
     position:sticky;
     top:0;
     height:100vh;
     overflow:hidden;
-    background:#050b14;
-    isolation:isolate;
+    background:#050b14; /* très important */
+    isolation:isolate;  /* très important */
     z-index:0;
   }
 
+  /* couche de sécurité pour masquer ton background fixe */
   .sticky::before{
     content:"";
     position:absolute;
@@ -175,11 +121,12 @@
     z-index:0;
   }
 
+  /* backgrounds */
   .backgrounds{
     position:absolute;
     inset:0;
     z-index:1;
-    background:#050b14;
+    background:#050b14; /* sécurité supplémentaire */
   }
 
   .bg{
@@ -188,7 +135,7 @@
     opacity:0;
     transition:opacity 900ms ease;
     z-index:1;
-    background:#050b14;
+    background:#050b14; /* empêche de voir derrière pendant le fade */
   }
 
   .bg.active{
@@ -218,6 +165,7 @@
       );
   }
 
+  /* slides flow */
   .slides{
     position:relative;
     z-index:3;
@@ -229,10 +177,6 @@
     align-items:center;
     padding:8rem 4rem;
     position:relative;
-  }
-
-  .tail{
-    height:60vh;
   }
 
   .content{
@@ -271,51 +215,6 @@
     color:#9b9b9b;
   }
 
-  .progress-nav{
-    position:absolute;
-    left:2rem;
-    right:2rem;
-    bottom:2rem;
-    z-index:4;
-    display:grid;
-    grid-template-columns:repeat(4, 1fr);
-    gap:.8rem;
-  }
-
-  .segment{
-    min-width:0;
-  }
-
-  .segment-line{
-    position:relative;
-    height:2px;
-    background:rgba(255,255,255,0.16);
-    overflow:hidden;
-    margin-bottom:.7rem;
-  }
-
-  .segment-fill{
-    position:absolute;
-    left:0;
-    top:0;
-    bottom:0;
-    width:0%;
-    background:rgba(255,255,255,0.96);
-    box-shadow:0 0 12px rgba(255,255,255,0.2);
-  }
-
-  .segment-label{
-    display:flex;
-    align-items:center;
-    gap:.35rem;
-    color:rgba(255,255,255,0.85);
-    font-size:.95rem;
-  }
-
-  .segment-number{
-    opacity:.85;
-  }
-
   @media (max-width:800px){
     .slide{
       padding:6rem 2rem;
@@ -328,21 +227,6 @@
 
     p{
       font-size:1rem;
-    }
-
-    .progress-nav{
-      left:1rem;
-      right:1rem;
-      bottom:1.2rem;
-      gap:.55rem;
-    }
-
-    .segment-label{
-      font-size:.78rem;
-    }
-
-    .tail{
-      height:60vh;
     }
   }
 </style>
