@@ -22,6 +22,7 @@
   import MixSlider from "./lib/sections/MixSlider.svelte";
   import StickySlider from "./lib/sections/StickySlider.svelte";
     import ImageScroll from "./lib/sections/ImageScroll.svelte";
+        import RevealGallery from "./lib/sections/RevealGallery.svelte";
 
   import Travail from "./lib/structure/Travail.svelte";
   import Apropos from "./lib/structure/Apropos.svelte";
@@ -133,7 +134,8 @@
       <VisionSlider />
 
     {:else if currentPage === "travail"}
-      <Travail {navigate} />
+     <RevealGallery />
+    <Travail {navigate} />
 
     {:else if currentPage === "apropos"}
       <Apropos />
