@@ -45,7 +45,10 @@
     if (!placeholderEl) return;
 
     const isMobile = window.innerWidth <= 900;
-    centerOffset = isMobile ? 0 : -90;
+
+    // desktop = décalage fort
+    // mobile = décalage plus léger mais visible
+    centerOffset = isMobile ? -52 : -90;
 
     const rect = placeholderEl.getBoundingClientRect();
 
@@ -212,7 +215,7 @@
 <style>
   .sg-root {
     position: relative;
-    background: #060606;
+    background: #000;
     isolation: isolate;
     overflow: clip;
   }
@@ -226,6 +229,7 @@
     position: sticky;
     top: 0;
     height: 100vh;
+    height: 100svh;
     z-index: 30;
     pointer-events: none;
     overflow: hidden;
@@ -276,6 +280,7 @@
     flex-direction: column;
     gap: clamp(8px, 1vw, 18px);
     will-change: transform;
+    min-width: 0;
   }
 
   .sg-col--center {
@@ -295,7 +300,7 @@
     overflow: hidden;
     border-radius: 4px;
     line-height: 0;
-    background: #111;
+    background: #000;
   }
 
   .sg-cell img {
@@ -315,27 +320,66 @@
     .sg-gallery {
       padding:
         var(--gallery-pad-top)
-        12px
-        40px;
+        10px
+        32px;
     }
 
     .sg-grid {
-      grid-template-columns: 1fr;
-      gap: 12px;
+      grid-template-columns: 0.92fr 1.16fr 0.92fr;
+      gap: 8px;
     }
 
     .sg-col {
-      gap: 12px;
-      transform: none !important;
-    }
-
-    .sg-col--center {
-      margin-top: 0;
-      margin-bottom: 0;
+      gap: 8px;
     }
 
     .sg-center-stack {
-      transform: none !important;
+      gap: 8px;
+    }
+  }
+
+  @media (max-width: 640px) {
+    .sg-gallery {
+      padding:
+        var(--gallery-pad-top)
+        8px
+        24px;
+    }
+
+    .sg-grid {
+      grid-template-columns: 0.9fr 1.18fr 0.9fr;
+      gap: 6px;
+    }
+
+    .sg-col,
+    .sg-center-stack {
+      gap: 6px;
+    }
+
+    .sg-cell {
+      border-radius: 3px;
+    }
+  }
+
+  @media (max-width: 420px) {
+    .sg-gallery {
+      padding:
+        var(--gallery-pad-top)
+        6px
+        18px;
+    }
+
+    .sg-grid {
+      gap: 5px;
+    }
+
+    .sg-col,
+    .sg-center-stack {
+      gap: 5px;
+    }
+
+    .sg-cell {
+      border-radius: 2px;
     }
   }
 </style>
