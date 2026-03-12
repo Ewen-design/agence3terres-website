@@ -4,29 +4,27 @@
   const slides = [
     {
       number: "01",
-      title: "AI Strategy\n& Execution",
-      description: "Driving AI transformation for products, platforms, and people.",
-      image: "images/photo.webp"
+      title: "Branding\n& stratégie",
+      description: "Nous révélons l’essence des marques et façonnons des identités fortes, cohérentes et mémorables. De la stratégie à l’identité visuelle, chaque élément est pensé pour créer une marque singulière et durable.",
+      image: "images/parfum3.webp"
     },
     {
       number: "02",
-      title: "Product\nInnovation",
-      description: "Launching flagship digital experiences—used daily by billions.",
-      image:
-        "https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=2000&q=80"
+      title: "Contenus\n& communication",
+      description: "Nous imaginons des contenus qui donnent vie aux marques. Images, mots et récits se rencontrent pour créer une communication sensible, cohérente et impactante.",
+      image: "images/parfum2.webp"
     },
     {
       number: "03",
-      title: "Brand\nExperiences",
-      description: "Creating elegant systems, campaigns, and immersive brand worlds.",
-      image: "images/photo.webp"
+      title: "Expériences\ndigitales & web", 
+      description: "Nous concevons des expériences digitales élégantes et immersives. Chaque interface est pensée pour refléter l’univers de la marque et offrir une navigation fluide et intuitive.",
+      image: "images/parfum4.webp"
     },
     {
       number: "04",
-      title: "Creative\nSystems",
+      title: "Accompagnement\n& événements",
       description: "Designing refined digital identities, interfaces, and visual systems with lasting impact.",
-      image:
-        "https://images.unsplash.com/photo-1497366754035-f200968a6e72?auto=format&fit=crop&w=2000&q=80"
+     image: "images/photo.webp"
     }
   ];
 
@@ -210,19 +208,6 @@
     display:block;
   }
 
-  .overlay{
-    position:absolute;
-    inset:0;
-    background:
-      linear-gradient(
-        to right,
-        rgba(0,0,0,0.72) 0%,
-        rgba(0,0,0,0.42) 35%,
-        rgba(0,0,0,0.22) 60%,
-        rgba(0,0,0,0.38) 100%
-      );
-  }
-
   /* slides flow */
   .slides{
     position:relative;
@@ -274,7 +259,7 @@
     opacity:.9;
     position:relative;
     z-index:5;
-    color:#9b9b9b;
+    color:rgba(244, 244, 244, 0.733);
   }
 
   @media (max-width:800px){
