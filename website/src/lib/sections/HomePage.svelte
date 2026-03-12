@@ -1,6 +1,10 @@
 <script>
   import { onMount, onDestroy } from "svelte";
-  import { registerParallax, unregisterParallax, sectionIsNearViewport } from "../scrollEngine.js";
+  import {
+    registerParallax,
+    unregisterParallax,
+    sectionIsNearViewport
+  } from "../scrollEngine.js";
 
   let section;
   let cards = [];
@@ -9,22 +13,34 @@
   let headerEl;
   let lineEl;
 
-  let isMobile = false;
+  let sectionMetrics = null;
+  let headerMetrics = null;
 
   const clamp = (v, min, max) => Math.max(min, Math.min(v, max));
   const round2 = (v) => Math.round(v * 100) / 100;
-
-  function checkMobile() {
-    isMobile = window.innerWidth <= 900;
-  }
 
   function measure() {
     if (!section) return;
 
     const scrollY = window.scrollY;
 
+    const sectionRect = section.getBoundingClientRect();
+    sectionMetrics = {
+      top: sectionRect.top + scrollY,
+      height: sectionRect.height
+    };
+
+    if (headerEl) {
+      const headerRect = headerEl.getBoundingClientRect();
+      headerMetrics = {
+        top: headerRect.top + scrollY,
+        height: headerRect.height
+      };
+    }
+
     metrics = cards.map((card) => {
       const rect = card.getBoundingClientRect();
+
       return {
         top: rect.top + scrollY,
         height: rect.height,
@@ -34,24 +50,28 @@
     });
   }
 
-  function updateParallax(scrollY) {
-    if (!section) return;
+  function updateParallax(scrollY, ctx) {
+    if (!section || !sectionMetrics) return;
 
-    const rect = section.getBoundingClientRect();
-    if (!sectionIsNearViewport(rect)) return;
+    const { vh, isMobile } = ctx;
 
-    const winH = window.innerHeight;
+    const sectionTopInView = sectionMetrics.top - scrollY;
+    const sectionBottomInView = sectionTopInView + sectionMetrics.height;
+
+    if (
+      sectionBottomInView < -800 ||
+      sectionTopInView > vh + 800
+    ) return;
 
     metrics.forEach((m, i) => {
       if (!m.wrapper) return;
 
       const center = (m.top - scrollY) + m.height / 2;
-      const progress = clamp((center - winH / 2) / winH, -1, 1);
+      const progress = clamp((center - vh / 2) / vh, -1, 1);
 
-      // amplitudes plus raisonnables
       const speed = isMobile
-        ? [70, 45, 60][i % 3]
-        : [140, 90, 120][i % 3];
+        ? [55, 38, 48][i % 3]
+        : [120, 80, 100][i % 3];
 
       const offset = round2(progress * speed * -1);
 
@@ -61,33 +81,34 @@
       }
     });
 
-    if (headerEl && lineEl) {
-      const headerRect = headerEl.getBoundingClientRect();
-      const progress = clamp(1 - headerRect.top / winH, 0, 1);
+    if (headerEl && lineEl && headerMetrics) {
+      const headerTopInView = headerMetrics.top - scrollY;
+      const progress = clamp(1 - headerTopInView / vh, 0, 1);
 
       headerEl.style.opacity = `${progress}`;
-      headerEl.style.transform = `translate3d(0, ${round2(40 - progress * 40)}px, 0)`;
+      headerEl.style.transform = `translate3d(0, ${round2(32 - progress * 32)}px, 0)`;
       lineEl.style.transform = `scaleX(${progress})`;
     }
   }
 
   function handleResize() {
-    checkMobile();
     measure();
-    updateParallax(window.scrollY);
+    updateParallax(window.scrollY, {
+      vh: window.innerHeight,
+      vw: window.innerWidth,
+      isMobile: window.innerWidth <= 900
+    });
   }
 
   onMount(() => {
     cards = [...section.querySelectorAll(".visual")];
 
-    checkMobile();
     measure();
 
     window.addEventListener("resize", handleResize, { passive: true });
     window.addEventListener("load", handleResize);
 
     registerParallax(updateParallax);
-    updateParallax(window.scrollY);
   });
 
   onDestroy(() => {
