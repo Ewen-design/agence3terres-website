@@ -1,6 +1,10 @@
 <script>
   import { onMount, onDestroy } from "svelte";
-  import { registerParallax, unregisterParallax, sectionIsNearViewport } from "../scrollEngine.js";
+  import {
+    registerParallax,
+    unregisterParallax,
+    sectionIsNearViewport
+  } from "../scrollEngine.js";
 
   let section;
   let cards = [];
@@ -10,10 +14,14 @@
   let lineEl;
 
   let isMobile = false;
-  let sectionMetrics = null;
-  let lastHeaderProgress = -1;
+  let ticking = false;
+  let latestScrollY = 0;
+
+  let currentHeader = 0;
+  let targetHeader = 0;
 
   const clamp = (v, min, max) => Math.max(min, Math.min(v, max));
+  const lerp = (a, b, t) => a + (b - a) * t;
   const round2 = (v) => Math.round(v * 100) / 100;
 
   function checkMobile() {
@@ -24,111 +32,121 @@
     if (!section) return;
 
     const scrollY = window.scrollY;
-    const sectionRect = section.getBoundingClientRect();
-
-    sectionMetrics = {
-      top: sectionRect.top + scrollY,
-      height: sectionRect.height
-    };
 
     metrics = cards.map((card) => {
       const rect = card.getBoundingClientRect();
+      const wrapper = card.querySelector(".parallax-wrapper");
 
       return {
+        el: card,
+        wrapper,
         top: rect.top + scrollY,
         height: rect.height,
-        wrapper: card.querySelector(".parallax-wrapper"),
-        lastOffset: null
+        currentOffset: 0,
+        targetOffset: 0
       };
     });
   }
 
-  function resetTransforms() {
-    metrics.forEach((m) => {
-      if (m.wrapper) {
-        m.wrapper.style.transform = `translate3d(0, 0, 0)`;
-      }
+  function updateTargets(scrollY) {
+    if (!section) return;
+
+    const rect = section.getBoundingClientRect();
+    if (!sectionIsNearViewport(rect)) return;
+
+    const winH = window.innerHeight;
+
+    metrics.forEach((m, i) => {
+      const center = m.top - scrollY + m.height / 2;
+      const progress = clamp((center - winH / 2) / winH, -1, 1);
+
+      // amplitudes plus fines = rendu premium + plus fluide
+      const speed = isMobile
+        ? [36, 26, 32][i % 3]
+        : [90, 60, 80][i % 3];
+
+      m.targetOffset = round2(progress * -speed);
     });
 
-    if (headerEl) {
-      headerEl.style.opacity = `1`;
-      headerEl.style.transform = `translate3d(0, 0, 0)`;
+    if (headerEl && lineEl) {
+      const headerRect = headerEl.getBoundingClientRect();
+      targetHeader = clamp(1 - headerRect.top / winH, 0, 1);
+    }
+  }
+
+  function renderFrame() {
+    ticking = false;
+
+    const ease = isMobile ? 0.14 : 0.11;
+    let needsNextFrame = false;
+
+    metrics.forEach((m) => {
+      if (!m.wrapper) return;
+
+      m.currentOffset = lerp(m.currentOffset, m.targetOffset, ease);
+
+      if (Math.abs(m.currentOffset - m.targetOffset) > 0.08) {
+        needsNextFrame = true;
+      } else {
+        m.currentOffset = m.targetOffset;
+      }
+
+      m.wrapper.style.transform = `translate3d(0, ${round2(m.currentOffset)}px, 0)`;
+    });
+
+    if (headerEl && lineEl) {
+      currentHeader = lerp(currentHeader, targetHeader, isMobile ? 0.16 : 0.12);
+
+      if (Math.abs(currentHeader - targetHeader) > 0.005) {
+        needsNextFrame = true;
+      } else {
+        currentHeader = targetHeader;
+      }
+
+      headerEl.style.opacity = `${currentHeader}`;
+      headerEl.style.transform = `translate3d(0, ${round2(28 - currentHeader * 28)}px, 0)`;
+      lineEl.style.transform = `scaleX(${currentHeader})`;
     }
 
-    if (lineEl) {
-      lineEl.style.transform = `scaleX(1)`;
+    if (needsNextFrame) {
+      requestAnimationFrame(renderFrame);
+      ticking = true;
     }
   }
 
   function updateParallax(scrollY) {
-    if (!section || !sectionMetrics) return;
+    latestScrollY = scrollY;
+    updateTargets(latestScrollY);
 
-    const sectionRect = section.getBoundingClientRect();
-    if (!sectionIsNearViewport(sectionRect)) return;
-
-    const winH = window.innerHeight;
-
-    // MOBILE : on coupe le parallaxe pour garder un rendu propre et fluide
-    if (isMobile) {
-      resetTransforms();
-      return;
-    }
-
-    // IMAGES
-    metrics.forEach((m) => {
-      if (!m.wrapper) return;
-
-      const center = (m.top - scrollY) + m.height / 2;
-      const progress = clamp((center - winH / 2) / winH, -1, 1);
-
-      // vitesse légèrement réduite pour un rendu plus premium et moins saccadé
-      const speed = -120;
-      const offset = round2(progress * speed);
-
-      if (offset !== m.lastOffset) {
-        m.wrapper.style.transform = `translate3d(0, ${offset}px, 0)`;
-        m.lastOffset = offset;
-      }
-    });
-
-    // HEADER
-    if (headerEl && lineEl) {
-      const headerTop = headerEl.getBoundingClientRect().top;
-      const progress = clamp(1 - headerTop / winH, 0, 1);
-      const roundedProgress = round2(progress);
-
-      if (roundedProgress !== lastHeaderProgress) {
-        headerEl.style.opacity = `${roundedProgress}`;
-        headerEl.style.transform = `translate3d(0, ${round2(32 - roundedProgress * 32)}px, 0)`;
-        lineEl.style.transform = `scaleX(${roundedProgress})`;
-        lastHeaderProgress = roundedProgress;
-      }
+    if (!ticking) {
+      ticking = true;
+      requestAnimationFrame(renderFrame);
     }
   }
 
   function handleResize() {
     checkMobile();
     measure();
+    updateTargets(window.scrollY);
 
-    if (isMobile) {
-      resetTransforms();
+    if (!ticking) {
+      ticking = true;
+      requestAnimationFrame(renderFrame);
     }
   }
 
   onMount(() => {
     cards = [...section.querySelectorAll(".visual")];
-
     checkMobile();
     measure();
-
-    if (isMobile) {
-      resetTransforms();
-    }
 
     window.addEventListener("resize", handleResize, { passive: true });
     window.addEventListener("load", handleResize);
 
     registerParallax(updateParallax);
+
+    updateTargets(window.scrollY);
+    requestAnimationFrame(renderFrame);
   });
 
   onDestroy(() => {
@@ -218,15 +236,14 @@
   margin-bottom: 6rem;
   text-align: center;
   color: #fff;
-
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-
   opacity: 0;
-  transform: translate3d(0, 40px, 0);
+  transform: translate3d(0, 28px, 0);
   will-change: transform, opacity;
+  backface-visibility: hidden;
 }
 
 .gallery-header h2 {
@@ -243,7 +260,6 @@
   line-height: 1.6;
 }
 
-/* Ligne animée */
 .line {
   width: 120px;
   height: 1px;
@@ -252,6 +268,7 @@
   transform: scaleX(0);
   transform-origin: center;
   will-change: transform;
+  backface-visibility: hidden;
 }
 
 /* SPLIT SECTIONS */
@@ -262,8 +279,6 @@
   gap: 6vw;
   padding: 14vh 10vw;
   width: 100%;
-  content-visibility: auto;
-  contain-intrinsic-size: 800px;
 }
 
 .split.reverse {
@@ -277,28 +292,29 @@
   height: 520px;
   overflow: hidden;
   position: relative;
-  contain: layout paint;
   background: #161616;
+  contain: layout paint;
 }
 
 .parallax-wrapper {
-  height: 124%;
-  will-change: transform;
+  height: 122%;
   transform: translate3d(0, 0, 0);
+  will-change: transform;
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
+  transform-origin: center center;
 }
 
 img {
   width: 100%;
   height: 100%;
-  object-fit: cover;
   display: block;
+  object-fit: cover;
+  user-select: none;
+  pointer-events: none;
   transform: translateZ(0);
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
-  user-select: none;
-  pointer-events: none;
 }
 
 .content {
@@ -329,7 +345,6 @@ img {
 .gallery-footer {
   text-align: center;
   margin-top: 6rem;
-
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -361,12 +376,6 @@ img {
   .gallery-header {
     width: min(92%, 680px);
     margin-bottom: 4rem;
-    opacity: 1;
-    transform: none;
-  }
-
-  .line {
-    transform: scaleX(1);
   }
 
   .split {
@@ -381,13 +390,11 @@ img {
   }
 
   .visual {
-    height: min(62vw, 460px);
+    height: min(66vw, 460px);
   }
 
   .parallax-wrapper {
-    height: 100%;
-    transform: none !important;
-    will-change: auto;
+    height: 112%;
   }
 
   .content h2 {
