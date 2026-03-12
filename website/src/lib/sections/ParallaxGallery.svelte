@@ -1,22 +1,16 @@
 <script>
-  // ─────────────────────────────────────────────────────────────────────────
-  //  GallerySection.svelte — Version Premium
-  //
-  //  Optimisations clés :
-  //  • Parallaxe avec lerp (damping) pour fluidité native 60/120fps
-  //  • rAF propre découplé du scroll event (pas de layout thrashing)
-  //  • Mobile : amplitude réduite + désactivation complète si prefers-reduced-motion
-  //  • Mesures DOM une seule fois au mount + ResizeObserver (pas de resize brutal)
-  //  • will-change ciblé uniquement pendant l'animation active
-  //  • Batch reads DOM / batch writes DOM séparés strictement
-  //  • IntersectionObserver pour activer/désactiver le rAF loop hors écran
-  // ─────────────────────────────────────────────────────────────────────────
-
   import { onMount, onDestroy } from "svelte";
   import { registerParallax, unregisterParallax } from "../scrollEngine.js";
   import ProjectOffCanvas from "./ProjectOffCanvas.svelte";
 
-  // ── Data ──────────────────────────────────────────────────────────────────
+  let selected = null;
+  let gallerySection;
+  let isMobile = false;
+  let sectionMetrics = null;
+  let headerMetrics = null;
+  let headerEl;
+  let lineEl;
+
   const items = [
     {
       title: "Création de logo",
@@ -50,67 +44,36 @@
     },
   ];
 
-  // ── State ─────────────────────────────────────────────────────────────────
-  let selected = null;
-  let gallerySection;
-  let headerEl;
-  let lineEl;
+  // ── Parallax state ────────────────────────────────────────────────────────
+  // Chaque carte a un offset courant (lerp-é) et un offset cible (calculé depuis scroll)
+  let cardData = [];
 
-  // ── Parallax engine state ──────────────────────────────────────────────────
-  // On stocke les données de chaque carte dans un tableau d'objets légers
-  // pour éviter les re-queries DOM dans la boucle de rendu.
-  let cardData = []; // { top, height, wrapper, info, img, curOffset, tgtOffset, active }
-
-  let sectionTop    = 0;
-  let sectionHeight = 0;
-  let headerTop     = 0;
-  let headerHeight  = 0;
-
-  let isMobile       = false;
-  let reducedMotion  = false;
-  let sectionVisible = false; // géré par IntersectionObserver
-
-  // Lerp damping — plus élevé = plus réactif, moins élevé = plus doux
-  // Mobile : 0.10–0.12 pour masquer le jank du scroll iOS
-  // Desktop : 0.14–0.16 pour une réponse vive mais fluide
-  const LERP_DESKTOP = 0.14;
-  const LERP_MOBILE  = 0.10;
-
-  // Amplitude parallaxe (px) : réduite sur mobile pour éviter l'effet "flottant"
-  const SPEED_DESKTOP = -130;
-  const SPEED_MOBILE  =  -50;
-
-  // rAF handle
-  let rafId = null;
-  // Scroll Y courant (mis à jour dans le callback du scrollEngine)
+  // scroll Y courant, mis à jour par scrollEngine
   let currentScrollY = 0;
+  let rafId = null;
+  let sectionVisible = false;
 
   // ── Helpers ───────────────────────────────────────────────────────────────
-  const clamp   = (v, lo, hi) => Math.min(Math.max(v, lo), hi);
-  const lerp    = (a, b, t)   => a + (b - a) * t;
-  const round2  = (v)         => Math.round(v * 100) / 100;
+  const clamp  = (v, lo, hi) => Math.min(Math.max(v, lo), hi);
+  const round2 = (v) => Math.round(v * 100) / 100;
+  // lerp standard
+  const lerp   = (a, b, t) => a + (b - a) * t;
 
-  // ── Mesures DOM (batch read — jamais de write ici) ────────────────────────
+  // ── Mesures DOM (batch read) ───────────────────────────────────────────────
   function measure() {
     if (!gallerySection) return;
-
     const scrollY = window.scrollY;
 
-    // Section
     const sr = gallerySection.getBoundingClientRect();
-    sectionTop    = sr.top  + scrollY;
-    sectionHeight = sr.height;
+    sectionMetrics = { top: sr.top + scrollY, height: sr.height };
 
-    // Header
     if (headerEl) {
-      const hr  = headerEl.getBoundingClientRect();
-      headerTop    = hr.top  + scrollY;
-      headerHeight = hr.height;
+      const hr = headerEl.getBoundingClientRect();
+      headerMetrics = { top: hr.top + scrollY, height: hr.height };
     }
 
-    // Cards — batch read strict
-    const cards = gallerySection.querySelectorAll(".card");
-    cardData = Array.from(cards).map((card) => {
+    const cards = [...gallerySection.querySelectorAll(".card")];
+    cardData = cards.map((card) => {
       const r = card.getBoundingClientRect();
       return {
         top:       r.top + scrollY,
@@ -118,107 +81,93 @@
         wrapper:   card.querySelector(".card-image-wrapper"),
         info:      card.querySelector(".info"),
         img:       card.querySelector("img"),
-        curOffset: 0,
-        tgtOffset: 0,
-        active:    false,
-        curActiveTranslate: -10,
-        tgtActiveTranslate: -10,
-        curActiveOpacity:   0,
-        tgtActiveOpacity:   0,
+        // lerp state
+        curOffset:         0,
+        tgtOffset:         0,
+        // mobile active state (lerp-é aussi)
+        curOpacity:        0,
+        curTranslate:     -10,
+        lastActive:        null,
       };
     });
-
-    // Activer will-change uniquement pendant l'utilisation
-    cardData.forEach((c) => {
-      if (c.wrapper) c.wrapper.style.willChange = "transform";
-    });
   }
 
-  // ── Callback scroll (appelé par scrollEngine — pas de writes DOM ici) ────
+  // ── Callback scrollEngine : stocke le scrollY, c'est tout ─────────────────
   function updateParallax(scrollY) {
     currentScrollY = scrollY;
-    // Le rAF loop s'occupe des writes
   }
 
-  // ── rAF loop : lerp + writes DOM ──────────────────────────────────────────
+  // ── rAF loop : calcul des cibles + lerp + writes ───────────────────────────
   function tick() {
-    if (!sectionVisible || reducedMotion) {
-      rafId = null;
-      return;
-    }
+    if (!sectionVisible) { rafId = null; return; }
 
     const scrollY = currentScrollY;
     const winH    = window.innerHeight;
-    const speed   = isMobile ? SPEED_MOBILE : SPEED_DESKTOP;
-    const lerpFactor = isMobile ? LERP_MOBILE : LERP_DESKTOP;
 
-    // Culling grossier : section hors écran → skip + désactiver will-change
-    const secBottom = sectionTop - scrollY + sectionHeight;
-    const secTopVP  = sectionTop - scrollY;
-    if (secBottom < -600 || secTopVP > winH + 600) {
-      rafId = requestAnimationFrame(tick);
-      return;
+    // Amplitudes
+    // Desktop : −155 (bien visible), Mobile : −75 (visible sans jank)
+    const speed       = isMobile ? -75 : -155;
+    // Facteur lerp : mobile plus doux pour absorber le scroll iOS inertiel
+    const lerpFactor  = isMobile ? 0.10 : 0.16;
+
+    // Culling section
+    if (sectionMetrics) {
+      const secTopVP  = sectionMetrics.top - scrollY;
+      const secBotVP  = secTopVP + sectionMetrics.height;
+      if (secBotVP < -600 || secTopVP > winH + 600) {
+        rafId = requestAnimationFrame(tick);
+        return;
+      }
     }
 
-    // ── BATCH READ (valeurs logiques, pas de layout trigger) ────────────────
+    // ── BATCH READ ─────────────────────────────────────────────────────────
     const targets = cardData.map((c) => {
       const center   = c.top - scrollY + c.height / 2;
       const progress = clamp((center - winH / 2) / winH, -1, 1);
-      const tgtOffset = round2(progress * speed);
+      const tgt      = round2(progress * speed);
 
-      // Mobile : activation de l'info overlay basée sur la proximité du centre
       let tgtActive = false;
       if (isMobile) {
-        const dist      = Math.abs(center - winH / 2);
-        const threshold = c.height * 0.4;
-        tgtActive = dist < threshold;
+        const dist = Math.abs(center - winH / 2);
+        tgtActive  = dist < c.height * 0.42;
       }
-
-      return { tgtOffset, tgtActive };
+      return { tgt, tgtActive };
     });
 
-    // Header
-    const headerTopInView = headerTop - scrollY;
-    const headerProg      = clamp(1 - headerTopInView / winH, 0, 1);
+    // Header target
+    let headerProg = 0;
+    if (headerMetrics) {
+      const hTop = headerMetrics.top - scrollY;
+      headerProg = clamp(1 - hTop / winH, 0, 1);
+    }
 
-    // ── LERP state ──────────────────────────────────────────────────────────
-    let needsAnotherFrame = false;
-
+    // ── LERP + BATCH WRITE ─────────────────────────────────────────────────
     cardData.forEach((c, i) => {
-      const { tgtOffset, tgtActive } = targets[i];
-      c.tgtOffset = tgtOffset;
+      const { tgt, tgtActive } = targets[i];
+      c.tgtOffset = tgt;
+      c.curOffset = lerp(c.curOffset, c.tgtOffset, lerpFactor);
 
-      const newOffset = lerp(c.curOffset, c.tgtOffset, lerpFactor);
-      if (Math.abs(newOffset - c.tgtOffset) > 0.05) needsAnotherFrame = true;
-
-      c.curOffset = newOffset;
-
-      // Mobile active state (lerp opacity/translate)
-      if (isMobile) {
-        const tgtOp = tgtActive ? 1 : 0;
-        const tgtTr = tgtActive ? 0 : -10;
-        c.curActiveOpacity   = lerp(c.curActiveOpacity,   tgtOp, 0.12);
-        c.curActiveTranslate = lerp(c.curActiveTranslate, tgtTr, 0.12);
-        if (Math.abs(c.curActiveOpacity - tgtOp) > 0.005) needsAnotherFrame = true;
-      }
-    });
-
-    // ── BATCH WRITE ─────────────────────────────────────────────────────────
-    cardData.forEach((c) => {
       if (c.wrapper) {
         c.wrapper.style.transform = `translate3d(0,${round2(c.curOffset)}px,0)`;
       }
 
       if (isMobile && c.info && c.img) {
-        c.info.style.opacity   = round2(c.curActiveOpacity).toString();
-        c.info.style.transform = `translate3d(0,${round2(c.curActiveTranslate)}px,0)`;
-        c.img.style.filter     = c.curActiveOpacity > 0.5 ? "brightness(0.6)" : "";
-        c.img.style.transform  = c.curActiveOpacity > 0.5 ? "scale(1.05)" : "";
+        // Lerp opacity et translate pour l'activation mobile
+        const tgtOp = tgtActive ? 1 : 0;
+        const tgtTr = tgtActive ? 0 : -10;
+        c.curOpacity   = lerp(c.curOpacity,   tgtOp, 0.12);
+        c.curTranslate = lerp(c.curTranslate,  tgtTr, 0.12);
+
+        c.info.style.opacity   = round2(c.curOpacity).toString();
+        c.info.style.transform = `translate3d(0,${round2(c.curTranslate)}px,0)`;
+        c.img.style.filter     = c.curOpacity > 0.5 ? "brightness(0.6)" : "";
+        c.img.style.transform  = c.curOpacity > 0.5
+          ? "scale(1.05) translateZ(0)"
+          : "translateZ(0)";
       }
     });
 
-    // Header
-    if (headerEl && lineEl) {
+    if (headerEl && lineEl && headerMetrics) {
       headerEl.style.opacity   = round2(headerProg).toString();
       headerEl.style.transform = `translate3d(0,${round2(40 - headerProg * 40)}px,0)`;
       lineEl.style.transform   = `scaleX(${round2(headerProg)})`;
@@ -230,17 +179,13 @@
   function startLoop() {
     if (!rafId) rafId = requestAnimationFrame(tick);
   }
-
   function stopLoop() {
     if (rafId) { cancelAnimationFrame(rafId); rafId = null; }
   }
 
-  // ── Resize (ResizeObserver — pas d'écouteur window bruyant) ───────────────
-  let resizeObserver;
+  // ── Resize (debounce 120ms) ────────────────────────────────────────────────
   let resizeTimeout;
-
-  function onResize() {
-    // Debounce 120ms pour éviter les mesures en cascade
+  function handleResize() {
     clearTimeout(resizeTimeout);
     resizeTimeout = setTimeout(() => {
       isMobile = window.innerWidth <= 900;
@@ -248,37 +193,30 @@
     }, 120);
   }
 
-  // ── Intersection observer — pause rAF hors champ ──────────────────────────
+  // ── Lifecycle ─────────────────────────────────────────────────────────────
+  let resizeObserver;
   let intersectionObserver;
 
-  // ── Lifecycle ─────────────────────────────────────────────────────────────
   onMount(() => {
-    // Détection reduced motion
-    reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-
     isMobile = window.innerWidth <= 900;
 
-    // Mesure initiale après le premier paint
     requestAnimationFrame(() => {
       measure();
       startLoop();
     });
 
-    // scrollEngine
     registerParallax(updateParallax);
 
-    // ResizeObserver sur la section (plus précis que window.resize)
-    resizeObserver = new ResizeObserver(onResize);
+    resizeObserver = new ResizeObserver(handleResize);
     resizeObserver.observe(gallerySection);
 
-    // IntersectionObserver : start/stop rAF selon visibilité
     intersectionObserver = new IntersectionObserver(
       ([entry]) => {
         sectionVisible = entry.isIntersecting;
         if (sectionVisible) startLoop();
         else stopLoop();
       },
-      { rootMargin: "200px 0px 200px 0px" }
+      { rootMargin: "300px 0px 300px 0px" }
     );
     intersectionObserver.observe(gallerySection);
   });
@@ -289,10 +227,6 @@
     resizeObserver?.disconnect();
     intersectionObserver?.disconnect();
     clearTimeout(resizeTimeout);
-    // Nettoyer will-change
-    cardData.forEach((c) => {
-      if (c.wrapper) c.wrapper.style.willChange = "auto";
-    });
   });
 
   // ── Off-canvas ────────────────────────────────────────────────────────────
@@ -300,232 +234,151 @@
     selected = item;
     document.body.style.overflow = "hidden";
   }
-
   function closeProject() {
     selected = null;
     document.body.style.overflow = "";
   }
 </script>
 
-<!-- ════════════════════════════════════════════════════════════════════════
-     TEMPLATE
-═════════════════════════════════════════════════════════════════════════ -->
 <section class="gallery" bind:this={gallerySection}>
 
-  <!-- Header -->
-  <header class="gallery-header" bind:this={headerEl} aria-label="Nos services">
-    <p class="gallery-eyebrow">Studio</p>
-    <h2>Nos&thinsp;services</h2>
-    <div class="line" bind:this={lineEl} aria-hidden="true"></div>
-    <p class="gallery-lead">
+  <div class="gallery-header" bind:this={headerEl}>
+    <h2>Nos services</h2>
+    <div class="line" bind:this={lineEl}></div>
+    <p>
       Une approche stratégique et sensorielle pour construire des identités fortes,
       des expériences digitales immersives et des univers visuels mémorables.
     </p>
-  </header>
+  </div>
 
-  <!-- Grid -->
-  <div class="gallery-grid" role="list">
+  <div class="gallery-grid">
     {#each items as item, i}
-      <article
+      <div
         class="card"
-        role="listitem"
-        tabindex="0"
-        aria-label="Voir le projet : {item.title}"
         data-cursor="view"
+        role="button"
+        tabindex="0"
         on:click={() => openProject(item)}
         on:keydown={(e) => e.key === "Enter" && openProject(item)}
       >
-        <!-- Numéro éditorial -->
-        <span class="card-index" aria-hidden="true">{String(i + 1).padStart(2, "0")}</span>
-
-        <!-- Image avec parallaxe -->
-        <div class="card-image-wrapper" aria-hidden="true">
+        <div class="card-image-wrapper">
           <img
             src="/images/photo2.webp"
-            alt=""
-            loading={i < 3 ? "eager" : "lazy"}
+            alt={item.title}
+            loading="lazy"
             decoding="async"
+            fetchpriority="low"
             draggable="false"
           />
         </div>
 
-        <!-- Overlay info -->
-        <div class="info" aria-hidden="true">
+        <div class="info">
           <span class="date">{item.date}</span>
           <span class="title">{item.title}</span>
         </div>
 
-        <!-- CTA -->
-        <div class="card-plus" aria-hidden="true">
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <line x1="8" y1="0" x2="8" y2="16" stroke="currentColor" stroke-width="1.2"/>
-            <line x1="0" y1="8" x2="16" y2="8" stroke="currentColor" stroke-width="1.2"/>
-          </svg>
-        </div>
+        <!-- Numéro éditorial -->
+        <span class="card-index" aria-hidden="true">
+          {String(i + 1).padStart(2, "0")}
+        </span>
 
-        <!-- Barre de progression hover (détail premium) -->
-        <div class="card-hover-line" aria-hidden="true"></div>
-      </article>
+        <div class="card-plus">+</div>
+      </div>
     {/each}
   </div>
 
-  <!-- Footer -->
-  <footer class="gallery-footer">
+  <div class="gallery-footer">
     <a href="/services" class="services-btn">
-      <span>Découvrir tous les services</span>
-      <svg class="btn-arrow" width="20" height="10" viewBox="0 0 20 10" fill="none" aria-hidden="true">
-        <path d="M0 5H18M14 1L18 5L14 9" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
-      </svg>
+      Découvrir tous les services
     </a>
-  </footer>
+  </div>
 
 </section>
 
 <ProjectOffCanvas {selected} {items} on:close={closeProject} />
 
-<!-- ════════════════════════════════════════════════════════════════════════
-     STYLES
-═════════════════════════════════════════════════════════════════════════ -->
 <style>
-  /* ── Tokens ────────────────────────────────────────────────────────────── */
-  :root {
-    --clr-bg:        #0c0c0c;
-    --clr-surface:   #141414;
-    --clr-border:    rgba(255,255,255,0.07);
-    --clr-text:      #f0ece4;
-    --clr-muted:     rgba(240,236,228,0.45);
-    --clr-accent:    #c8b89a;    /* beige chaud, ton premium */
-
-    --font-display:  "Aboreto", serif;
-    --font-body:     "Manrope", sans-serif;
-
-    --ease-out:      cubic-bezier(0.16, 1, 0.3, 1);
-    --ease-inout:    cubic-bezier(0.65, 0, 0.35, 1);
-  }
-
-  /* ── Section ───────────────────────────────────────────────────────────── */
+  /* ─── Section ──────────────────────────────────────────────────────────── */
   .gallery {
     position: relative;
     width: 100vw;
     left: 50%;
     transform: translateX(-50%);
-    background: var(--clr-bg);
-    padding: 10rem 0 12rem;
+    background: #111;
+    padding: 10rem 0;
     overflow: clip;
-    /* Texture subtile */
-    background-image:
-      radial-gradient(ellipse 80% 50% at 50% -10%, rgba(200,184,154,0.04) 0%, transparent 60%);
   }
 
-  /* ── Header ────────────────────────────────────────────────────────────── */
+  /* ─── Header ───────────────────────────────────────────────────────────── */
   .gallery-header {
-    width: min(860px, 88%);
-    margin: 0 auto 7rem;
+    width: min(900px, 90%);
+    margin: 0 auto 6rem auto;
     text-align: center;
-    color: var(--clr-text);
+    color: #fff;
     opacity: 0;
     transform: translate3d(0, 40px, 0);
     will-change: transform, opacity;
-  }
-
-  .gallery-eyebrow {
-    font-family: var(--font-body);
-    font-size: 0.7rem;
-    letter-spacing: 0.35em;
-    text-transform: uppercase;
-    color: var(--clr-accent);
-    margin-bottom: 1.4rem;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
   }
 
   .gallery-header h2 {
-    font-family: var(--font-display);
-    font-size: clamp(2.4rem, 4vw, 4.2rem);
-    letter-spacing: 0.18em;
-    font-weight: 400;
-    margin-bottom: 0;
-    line-height: 1.1;
-    color: var(--clr-text);
+    font-family: "Aboreto", serif;
+    font-size: clamp(2.5rem, 4vw, 4rem);
+    letter-spacing: 0.2em;
+    margin-bottom: 1.5rem;
+  }
+
+  .gallery-header p {
+    font-family: "Manrope", sans-serif;
+    font-size: 1rem;
+    opacity: 0.65;
+    line-height: 1.6;
   }
 
   .line {
-    width: 1px;
-    height: 52px;
-    background: linear-gradient(to bottom, var(--clr-accent), transparent);
-    margin: 2rem auto;
-    transform: scaleY(0);
-    transform-origin: top center;
+    width: 120px;
+    height: 1px;
+    background: #fff;
+    margin: 0 auto 2rem auto;
+    transform: scaleX(0);
+    transform-origin: center;
     will-change: transform;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
   }
 
-  .gallery-lead {
-    font-family: var(--font-body);
-    font-size: clamp(0.88rem, 1.1vw, 1rem);
-    color: var(--clr-muted);
-    line-height: 1.75;
-    max-width: 560px;
-    margin: 0 auto;
-  }
-
-  /* ── Grid ──────────────────────────────────────────────────────────────── */
+  /* ─── Grid ─────────────────────────────────────────────────────────────── */
   .gallery-grid {
-    width: min(1480px, 92%);
+    width: min(1500px, 92%);
     margin: 0 auto;
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: clamp(10px, 1.2vw, 18px);
+    gap: 1rem;
   }
 
-  /* ── Card ──────────────────────────────────────────────────────────────── */
+  /* ─── Card ─────────────────────────────────────────────────────────────── */
   .card {
+    aspect-ratio: 1 / 1;
     position: relative;
     overflow: hidden;
     cursor: pointer;
-    background: var(--clr-surface);
-    aspect-ratio: 3 / 4;
-    /* contain: layout paint style;  ← retiré : bloque les stacking contexts */
-    outline: none;
-    border: 1px solid var(--clr-border);
-    transition: border-color 0.6s var(--ease-out);
+    will-change: transform;
+    contain: layout paint;
+    background: #161616;
   }
 
-  .card:hover,
-  .card:focus-visible {
-    border-color: rgba(200,184,154,0.25);
-  }
-
-  .card:focus-visible {
-    outline: 2px solid var(--clr-accent);
-    outline-offset: 3px;
-  }
-
-  /* ── Card index ────────────────────────────────────────────────────────── */
-  .card-index {
-    position: absolute;
-    top: 18px;
-    right: 18px;
-    font-family: var(--font-body);
-    font-size: 0.65rem;
-    letter-spacing: 0.15em;
-    color: rgba(255,255,255,0.25);
-    z-index: 3;
-    transition: color 0.4s ease;
-    pointer-events: none;
-  }
-
-  .card:hover .card-index {
-    color: rgba(255,255,255,0.5);
-  }
-
-  /* ── Image wrapper (parallaxe) ─────────────────────────────────────────── */
+  /* ─── Image wrapper ─────────────────────────────────────────────────────── */
   .card-image-wrapper {
-    position: absolute;
-    inset: 0;
-    /* Overscan : plus haut que la carte pour permettre le parallaxe */
-    /* Desktop : 124%, Mobile : 114% (géré en media query) */
+    /* Overscan : 124% desktop, réduit en media query pour mobile */
     height: 124%;
     top: -12%;
+    position: absolute;
+    inset-inline: 0;
+    will-change: transform;
     transform: translate3d(0, 0, 0);
-    /* will-change activé/désactivé dynamiquement par JS */
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
   }
 
   .card img {
@@ -533,38 +386,37 @@
     height: 100%;
     object-fit: cover;
     display: block;
-    pointer-events: none;
-    user-select: none;
-    /* transition uniquement pour hover — pas pour le parallaxe */
-    transition: filter 0.5s var(--ease-out), transform 0.8s var(--ease-out);
     transform: translateZ(0);
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    transition: filter 0.45s ease, transform 0.8s ease;
+    user-select: none;
+    pointer-events: none;
   }
 
   .card:hover img {
-    filter: brightness(0.55);
-    transform: scale(1.04) translateZ(0);
+    filter: brightness(0.6);
+    transform: scale(1.05);
   }
 
-  /* ── Info overlay ──────────────────────────────────────────────────────── */
+  /* ─── Info overlay ──────────────────────────────────────────────────────── */
   .info {
     position: absolute;
-    top: 18px;
-    left: 18px;
+    top: 16px;
+    left: 16px;
     display: flex;
     flex-direction: column;
-    gap: 3px;
+    gap: 4px;
     padding: 10px 14px;
-    background: rgba(12, 12, 12, 0.6);
-    backdrop-filter: blur(12px) saturate(1.4);
-    -webkit-backdrop-filter: blur(12px) saturate(1.4);
-    border: 1px solid rgba(255,255,255,0.08);
-    color: var(--clr-text);
-    font-size: 0.75rem;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    background: rgba(255, 255, 255, 0.15);
+    color: #fff;
+    font-size: 0.8rem;
     opacity: 0;
-    transform: translate3d(0, -8px, 0);
-    transition: opacity 0.45s var(--ease-out), transform 0.45s var(--ease-out);
+    transform: translate3d(0, -10px, 0);
+    transition: opacity 0.4s ease, transform 0.4s ease;
     z-index: 2;
-    pointer-events: none;
   }
 
   .card:hover .info {
@@ -572,235 +424,182 @@
     transform: translate3d(0, 0, 0);
   }
 
-  .date {
-    font-family: var(--font-body);
-    font-size: 0.65rem;
-    letter-spacing: 0.12em;
-    color: var(--clr-accent);
-  }
+  .date { opacity: 0.7; }
 
   .title {
-    font-family: var(--font-body);
-    font-weight: 500;
-    letter-spacing: 0.03em;
+    font-family: "Manrope", sans-serif;
   }
 
-  /* ── Card plus ─────────────────────────────────────────────────────────── */
+  /* ─── Index numéro ──────────────────────────────────────────────────────── */
+  .card-index {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    font-family: "Manrope", sans-serif;
+    font-size: 0.65rem;
+    letter-spacing: 0.18em;
+    color: rgba(255, 255, 255, 0.3);
+    z-index: 2;
+    pointer-events: none;
+    transition: color 0.4s ease;
+  }
+
+  .card:hover .card-index {
+    color: rgba(255, 255, 255, 0.6);
+  }
+
+  /* ─── Card plus ─────────────────────────────────────────────────────────── */
   .card-plus {
     position: absolute;
-    bottom: 18px;
-    right: 18px;
-    width: 40px;
-    height: 40px;
-    display: grid;
-    place-items: center;
-    color: var(--clr-text);
-    background: rgba(12, 12, 12, 0.55);
+    bottom: 16px;
+    left: 16px;
+    width: 42px;
+    height: 42px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    color: #fff;
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
-    border: 1px solid rgba(255,255,255,0.1);
-    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.15);
+    transition: transform 0.4s ease, background 0.4s ease;
     z-index: 2;
-    transition:
-      transform 0.45s var(--ease-out),
-      background 0.45s ease,
-      border-color 0.45s ease;
-    pointer-events: none;
   }
 
   .card:hover .card-plus {
-    transform: scale(1.12) rotate(90deg);
-    background: rgba(200,184,154,0.2);
-    border-color: rgba(200,184,154,0.35);
+    transform: scale(1.15);
+    background: rgba(255, 255, 255, 0.25);
   }
 
-  /* ── Hover line (détail premium) ───────────────────────────────────────── */
-  .card-hover-line {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    width: 100%;
-    height: 2px;
-    background: linear-gradient(90deg, transparent, var(--clr-accent), transparent);
-    transform: scaleX(0);
-    transform-origin: left;
-    transition: transform 0.55s var(--ease-out);
-    pointer-events: none;
-  }
-
-  .card:hover .card-hover-line {
-    transform: scaleX(1);
-  }
-
-  /* ── Footer ────────────────────────────────────────────────────────────── */
+  /* ─── Footer ────────────────────────────────────────────────────────────── */
   .gallery-footer {
     text-align: center;
-    margin-top: 7rem;
+    margin-top: 6rem;
   }
 
   .services-btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 14px;
-    padding: 15px 40px;
-    border: 1px solid rgba(200,184,154,0.35);
-    color: var(--clr-text);
+    display: inline-block;
+    padding: 14px 36px;
+    border: 1px solid #fff;
+    color: #fff;
     text-decoration: none;
-    font-family: var(--font-body);
-    font-size: 0.72rem;
-    letter-spacing: 0.22em;
+    font-family: "Manrope", sans-serif;
+    font-size: 0.8rem;
+    letter-spacing: 0.2em;
     text-transform: uppercase;
-    transition:
-      background 0.45s var(--ease-out),
-      color 0.45s var(--ease-out),
-      border-color 0.45s var(--ease-out),
-      gap 0.45s var(--ease-out);
+    transition: all 0.4s ease;
   }
 
   .services-btn:hover {
-    background: var(--clr-accent);
-    color: var(--clr-bg);
-    border-color: var(--clr-accent);
-    gap: 20px;
+    background: #fff;
+    color: #111;
   }
 
-  .btn-arrow {
-    flex-shrink: 0;
-    transition: transform 0.4s var(--ease-out);
-  }
-
-  .services-btn:hover .btn-arrow {
-    transform: translateX(4px);
-  }
-
-  /* ════════════════════════════════
+  /* ════════════════════
      RESPONSIVE
-  ════════════════════════════════ */
+  ════════════════════ */
 
-  /* ── Tablet / petits desktop ─────────────────────────────────────────── */
   @media (max-width: 900px) {
-    .gallery {
-      padding: 8rem 0 9rem;
-    }
+    .gallery { padding: 8rem 0; }
 
     .gallery-header {
-      width: min(92%, 640px);
-      margin-bottom: 4.5rem;
+      width: min(92%, 720px);
+      margin-bottom: 4rem;
     }
+    .gallery-header h2 {
+      font-size: clamp(2.1rem, 6vw, 3.2rem);
+      letter-spacing: 0.12em;
+    }
+    .gallery-header p {
+      font-size: 0.96rem;
+      line-height: 1.58;
+    }
+    .line { width: 96px; margin-bottom: 1.5rem; }
 
     .gallery-grid {
-      width: min(94%, 640px);
-      /* Colonne unique sur mobile */
+      width: min(94%, 760px);
       grid-template-columns: 1fr;
-      gap: clamp(8px, 2vw, 14px);
+      gap: 0.9rem;
     }
 
-    .card {
-      aspect-ratio: 4 / 3;
-    }
+    .card { aspect-ratio: 1 / 1.08; }
 
-    /*
-      Parallaxe mobile : amplitude réduite → overscan réduit
-      Moins d'overscan = moins de layout shift et GPU pressure
-    */
+    /* Overscan réduit mobile : moins de GPU pressure */
     .card-image-wrapper {
-      height: 115%;
-      top: -7.5%;
+      height: 116%;
+      top: -8%;
     }
 
-    /*
-      Sur mobile, les hover CSS sont désactivés (touch).
-      L'activation est gérée par JS (IntersectionObserver-like via scroll).
-    */
-    .card:hover img {
-      filter: none;
-      transform: translateZ(0);
-    }
-
-    .card:hover .info {
-      opacity: 0;
-      transform: translate3d(0, -8px, 0);
-    }
-
+    /* Hover désactivé sur touch */
+    .card:hover img       { filter: none; transform: translateZ(0); }
+    .card:hover .info     { opacity: 0; transform: translate3d(0, -10px, 0); }
     .card:hover .card-plus {
       transform: none;
-      background: rgba(12, 12, 12, 0.55);
-      border-color: rgba(255,255,255,0.1);
+      background: rgba(255, 255, 255, 0.15);
     }
 
-    .card:hover .card-hover-line {
-      transform: scaleX(0);
-    }
+    .gallery-footer { margin-top: 4rem; }
   }
 
-  /* ── Mobile ──────────────────────────────────────────────────────────── */
   @media (max-width: 640px) {
-    .gallery {
-      padding: 6rem 0 7rem;
-    }
+    .gallery { padding: 6.5rem 0; }
 
     .gallery-header {
-      width: min(92%, 480px);
-      margin-bottom: 3.5rem;
+      width: min(92%, 560px);
+      margin-bottom: 3rem;
     }
-
     .gallery-header h2 {
-      letter-spacing: 0.1em;
+      font-size: clamp(1.8rem, 8vw, 2.6rem);
+      letter-spacing: 0.08em;
+      margin-bottom: 1rem;
     }
+    .gallery-header p { font-size: 0.9rem; line-height: 1.55; }
+    .line { width: 82px; margin-bottom: 1.2rem; }
 
-    .gallery-grid {
-      width: min(94%, 480px);
-    }
+    .gallery-grid { width: min(94%, 560px); gap: 0.75rem; }
+    .card { aspect-ratio: 1 / 1.12; }
+    .card-image-wrapper { height: 114%; top: -7%; }
 
-    .card {
-      aspect-ratio: 3 / 3.5;
-    }
+    .info { top: 14px; left: 14px; padding: 9px 12px; font-size: 0.74rem; }
+    .card-plus { bottom: 14px; left: 14px; width: 38px; height: 38px; font-size: 1rem; }
+    .card-index { top: 14px; right: 14px; }
 
-    .card-image-wrapper {
-      height: 112%;
-      top: -6%;
-    }
-
-    .gallery-footer {
-      margin-top: 4.5rem;
-    }
+    .services-btn { padding: 12px 24px; font-size: 0.72rem; letter-spacing: 0.14em; }
   }
 
-  /* ── Petit mobile ────────────────────────────────────────────────────── */
   @media (max-width: 420px) {
-    .gallery {
-      padding: 5rem 0 6rem;
-    }
+    .gallery { padding: 5.5rem 0; }
 
     .gallery-header {
-      margin-bottom: 2.8rem;
+      width: min(94%, 420px);
+      margin-bottom: 2.4rem;
     }
+    .gallery-header h2 {
+      font-size: clamp(1.55rem, 8vw, 2.15rem);
+      letter-spacing: 0.06em;
+    }
+    .gallery-header p { font-size: 0.86rem; line-height: 1.5; }
+    .line { width: 70px; margin-bottom: 1rem; }
 
-    .card {
-      aspect-ratio: 3 / 3.8;
-    }
+    .gallery-grid { width: min(94%, 420px); gap: 0.65rem; }
+    .card { aspect-ratio: 1 / 1.16; }
+    .card-image-wrapper { height: 112%; top: -6%; }
 
-    .card-image-wrapper {
-      height: 110%;
-      top: -5%;
-    }
+    .info { top: 12px; left: 12px; padding: 8px 11px; font-size: 0.7rem; }
+    .card-plus { bottom: 12px; left: 12px; width: 34px; height: 34px; font-size: 0.95rem; }
+    .card-index { top: 12px; right: 12px; }
+
+    .gallery-footer { margin-top: 3rem; }
+    .services-btn { padding: 11px 20px; font-size: 0.68rem; letter-spacing: 0.12em; }
   }
 
-  /* ── Reduced motion ──────────────────────────────────────────────────── */
+  /* Reduced motion */
   @media (prefers-reduced-motion: reduce) {
     .card img,
     .info,
-    .card-plus,
-    .card-hover-line,
-    .services-btn,
-    .btn-arrow {
-      transition: none;
-    }
-
-    .gallery-header,
-    .line {
-      opacity: 1 !important;
-      transform: none !important;
-    }
+    .card-plus { transition: none; }
+    .gallery-header { opacity: 1 !important; transform: none !important; }
+    .line { transform: scaleX(1) !important; }
   }
 </style>
