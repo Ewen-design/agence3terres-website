@@ -119,7 +119,7 @@
   {/if}
 
   <IconeFleche />
-  <IntroLoader />
+ 
 
 <Header {navigate} {currentPage} />
 
