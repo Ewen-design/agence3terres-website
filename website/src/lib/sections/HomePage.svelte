@@ -1,10 +1,6 @@
 <script>
   import { onMount, onDestroy } from "svelte";
-  import {
-    registerParallax,
-    unregisterParallax,
-    sectionIsNearViewport
-  } from "../scrollEngine.js";
+  import { registerParallax, unregisterParallax, sectionIsNearViewport } from "../scrollEngine.js";
 
   let section;
   let cards = [];
@@ -14,14 +10,8 @@
   let lineEl;
 
   let isMobile = false;
-  let ticking = false;
-  let latestScrollY = 0;
-
-  let currentHeader = 0;
-  let targetHeader = 0;
 
   const clamp = (v, min, max) => Math.max(min, Math.min(v, max));
-  const lerp = (a, b, t) => a + (b - a) * t;
   const round2 = (v) => Math.round(v * 100) / 100;
 
   function checkMobile() {
@@ -35,20 +25,16 @@
 
     metrics = cards.map((card) => {
       const rect = card.getBoundingClientRect();
-      const wrapper = card.querySelector(".parallax-wrapper");
-
       return {
-        el: card,
-        wrapper,
         top: rect.top + scrollY,
         height: rect.height,
-        currentOffset: 0,
-        targetOffset: 0
+        wrapper: card.querySelector(".parallax-wrapper"),
+        lastOffset: null
       };
     });
   }
 
-  function updateTargets(scrollY) {
+  function updateParallax(scrollY) {
     if (!section) return;
 
     const rect = section.getBoundingClientRect();
@@ -57,86 +43,43 @@
     const winH = window.innerHeight;
 
     metrics.forEach((m, i) => {
-      const center = m.top - scrollY + m.height / 2;
+      if (!m.wrapper) return;
+
+      const center = (m.top - scrollY) + m.height / 2;
       const progress = clamp((center - winH / 2) / winH, -1, 1);
 
-      // amplitudes plus fines = rendu premium + plus fluide
+      // amplitudes plus raisonnables
       const speed = isMobile
-        ? [36, 26, 32][i % 3]
-        : [90, 60, 80][i % 3];
+        ? [70, 45, 60][i % 3]
+        : [140, 90, 120][i % 3];
 
-      m.targetOffset = round2(progress * -speed);
+      const offset = round2(progress * speed * -1);
+
+      if (offset !== m.lastOffset) {
+        m.wrapper.style.transform = `translate3d(0, ${offset}px, 0)`;
+        m.lastOffset = offset;
+      }
     });
 
     if (headerEl && lineEl) {
       const headerRect = headerEl.getBoundingClientRect();
-      targetHeader = clamp(1 - headerRect.top / winH, 0, 1);
-    }
-  }
+      const progress = clamp(1 - headerRect.top / winH, 0, 1);
 
-  function renderFrame() {
-    ticking = false;
-
-    const ease = isMobile ? 0.14 : 0.11;
-    let needsNextFrame = false;
-
-    metrics.forEach((m) => {
-      if (!m.wrapper) return;
-
-      m.currentOffset = lerp(m.currentOffset, m.targetOffset, ease);
-
-      if (Math.abs(m.currentOffset - m.targetOffset) > 0.08) {
-        needsNextFrame = true;
-      } else {
-        m.currentOffset = m.targetOffset;
-      }
-
-      m.wrapper.style.transform = `translate3d(0, ${round2(m.currentOffset)}px, 0)`;
-    });
-
-    if (headerEl && lineEl) {
-      currentHeader = lerp(currentHeader, targetHeader, isMobile ? 0.16 : 0.12);
-
-      if (Math.abs(currentHeader - targetHeader) > 0.005) {
-        needsNextFrame = true;
-      } else {
-        currentHeader = targetHeader;
-      }
-
-      headerEl.style.opacity = `${currentHeader}`;
-      headerEl.style.transform = `translate3d(0, ${round2(28 - currentHeader * 28)}px, 0)`;
-      lineEl.style.transform = `scaleX(${currentHeader})`;
-    }
-
-    if (needsNextFrame) {
-      requestAnimationFrame(renderFrame);
-      ticking = true;
-    }
-  }
-
-  function updateParallax(scrollY) {
-    latestScrollY = scrollY;
-    updateTargets(latestScrollY);
-
-    if (!ticking) {
-      ticking = true;
-      requestAnimationFrame(renderFrame);
+      headerEl.style.opacity = `${progress}`;
+      headerEl.style.transform = `translate3d(0, ${round2(40 - progress * 40)}px, 0)`;
+      lineEl.style.transform = `scaleX(${progress})`;
     }
   }
 
   function handleResize() {
     checkMobile();
     measure();
-    updateTargets(window.scrollY);
-
-    if (!ticking) {
-      ticking = true;
-      requestAnimationFrame(renderFrame);
-    }
+    updateParallax(window.scrollY);
   }
 
   onMount(() => {
     cards = [...section.querySelectorAll(".visual")];
+
     checkMobile();
     measure();
 
@@ -144,9 +87,7 @@
     window.addEventListener("load", handleResize);
 
     registerParallax(updateParallax);
-
-    updateTargets(window.scrollY);
-    requestAnimationFrame(renderFrame);
+    updateParallax(window.scrollY);
   });
 
   onDestroy(() => {
@@ -161,33 +102,14 @@
     <h2>Découvrez nos terres</h2>
     <div class="line" bind:this={lineEl}></div>
     <p>
-      Notre agence repose sur 3 piliers fondamentaux : les sommets de l'ambition,
-      le reflet d'un art et les lumières de la création.
+      Notre agence repose sur 3 piliers fondamentaux : les sommets de l'ambition, le reflet d'un art et les lumières de la création.
     </p>
   </div>
 
   {#each [
-    {
-      img: "/images/photo2.webp",
-      alt: "Creative vision",
-      title: "Discover our creative VISION",
-      text: "We shape visual universes where form, texture and motion create immersive brand experiences.",
-      reverse: false
-    },
-    {
-      img: "/images/photo2.webp",
-      alt: "Artistic depth",
-      title: "Crafted interactions with artistic DEPTH",
-      text: "Every motion, contrast and transition is designed to create rhythm and harmony.",
-      reverse: true
-    },
-    {
-      img: "/images/photo2.webp",
-      alt: "Emotional impact",
-      title: "Where design meets emotional IMPACT",
-      text: "We blend minimalism, sculpture-like compositions and cinematic pacing.",
-      reverse: false
-    }
+    { img: '/images/photo2.webp', alt: "Creative vision", title: "Discover our creative VISION", text: "We shape visual universes where form, texture and motion create immersive brand experiences.", reverse: false },
+    { img: '/images/photo2.webp', alt: "Artistic depth", title: "Crafted interactions with artistic DEPTH", text: "Every motion, contrast and transition is designed to create rhythm and harmony.", reverse: true },
+    { img: '/images/photo2.webp', alt: "Emotional impact", title: "Where design meets emotional IMPACT", text: "We blend minimalism, sculpture-like compositions and cinematic pacing.", reverse: false }
   ] as sectionData}
     <div class="split {sectionData.reverse ? 'reverse' : ''}">
       <div class="visual">
@@ -202,7 +124,6 @@
           />
         </div>
       </div>
-
       <div class="content">
         <h2>{sectionData.title}</h2>
         <p>{sectionData.text}</p>
@@ -241,9 +162,8 @@
   align-items: center;
   justify-content: center;
   opacity: 0;
-  transform: translate3d(0, 28px, 0);
+  transform: translate3d(0, 40px, 0);
   will-change: transform, opacity;
-  backface-visibility: hidden;
 }
 
 .gallery-header h2 {
@@ -268,7 +188,6 @@
   transform: scaleX(0);
   transform-origin: center;
   will-change: transform;
-  backface-visibility: hidden;
 }
 
 /* SPLIT SECTIONS */
@@ -292,29 +211,28 @@
   height: 520px;
   overflow: hidden;
   position: relative;
+  contain: paint;
   background: #161616;
-  contain: layout paint;
 }
 
 .parallax-wrapper {
-  height: 122%;
+  height: 128%;
   transform: translate3d(0, 0, 0);
   will-change: transform;
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
-  transform-origin: center center;
 }
 
 img {
   width: 100%;
   height: 100%;
-  display: block;
   object-fit: cover;
-  user-select: none;
-  pointer-events: none;
+  display: block;
   transform: translateZ(0);
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
+  user-select: none;
+  pointer-events: none;
 }
 
 .content {
@@ -327,7 +245,7 @@ img {
 }
 
 .content h2 {
-  font-family: "Aboreto", serif;
+  font-family: 'Aboreto', serif;
   font-size: clamp(2.5rem, 4vw, 4.5rem);
   line-height: 1.05;
   margin-bottom: 2rem;
@@ -369,19 +287,10 @@ img {
 }
 
 @media (max-width: 900px) {
-  .home-showcase {
-    padding: 10vh 0;
-  }
-
-  .gallery-header {
-    width: min(92%, 680px);
-    margin-bottom: 4rem;
-  }
-
   .split {
     grid-template-columns: 1fr;
-    gap: 2.25rem;
-    padding: 10vh 6vw;
+    padding: 12vh 6vw;
+    gap: 2.5rem;
   }
 
   .split.reverse .visual,
@@ -390,11 +299,11 @@ img {
   }
 
   .visual {
-    height: min(66vw, 460px);
+    height: min(68vw, 460px);
   }
 
   .parallax-wrapper {
-    height: 112%;
+    height: 118%;
   }
 
   .content h2 {
