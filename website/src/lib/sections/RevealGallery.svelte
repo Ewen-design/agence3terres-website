@@ -215,7 +215,7 @@
 <style>
   .sg-root {
     position: relative;
-    background: #000;
+    background: #111;
     isolation: isolate;
     overflow: clip;
   }
@@ -298,9 +298,9 @@
   .sg-cell {
     width: 100%;
     overflow: hidden;
-    border-radius: 4px;
+    border-radius: 3px;
     line-height: 0;
-    background: #000;
+    background: #111;
   }
 
   .sg-cell img {

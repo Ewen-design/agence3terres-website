@@ -9,14 +9,18 @@
 	let bgLayer;
 
 	let sectionMetrics = null;
+	let isMobile = false;
 
 	const clamp = (v, min, max) => Math.max(min, Math.min(v, max));
+
+	function checkMobile() {
+		isMobile = window.innerWidth <= 900;
+	}
 
 	function measure() {
 		if (!section) return;
 
 		const scrollY = window.scrollY;
-
 		const sectionRect = section.getBoundingClientRect();
 
 		sectionMetrics = {
@@ -25,21 +29,36 @@
 		};
 	}
 
+	function resetMobileTransforms() {
+		if (bgLayer) bgLayer.style.transform = `translate3d(0, 0, 0)`;
+
+		if (bgText) {
+			bgText.style.transform = `translate3d(0, 0, 0)`;
+			bgText.style.opacity = isMobile ? 1 : 0.9;
+		}
+
+		if (leftWrapper) leftWrapper.style.transform = `translate3d(0, 0, 0)`;
+		if (rightWrapper) rightWrapper.style.transform = `translate3d(0, 0, 0)`;
+	}
+
 	function updateParallax(scrollY) {
 		if (!section || !sectionMetrics) return;
 
+		if (isMobile) {
+			resetMobileTransforms();
+			return;
+		}
+
 		const winH = window.innerHeight;
-		const sectionCenter = (sectionMetrics.top - scrollY) + sectionMetrics.height / 2;
+		const sectionCenter = sectionMetrics.top - scrollY + sectionMetrics.height / 2;
 		const sectionProgress = clamp((sectionCenter - winH / 2) / winH, -1, 1);
 
-		// BACKGROUND : très lourd, presque fixed
 		if (bgLayer) {
 			const bgSpeed = -400;
 			const bgOffset = sectionProgress * bgSpeed;
 			bgLayer.style.transform = `translate3d(0, ${bgOffset}px, 0)`;
 		}
 
-		// TEXTE DE FOND : légèrement indépendant pour donner de la profondeur
 		if (bgText) {
 			const textSpeed = -24;
 			const textOffset = sectionProgress * textSpeed;
@@ -49,7 +68,6 @@
 			bgText.style.opacity = fade;
 		}
 
-		// PANELS : logique proche de ton autre composant
 		if (leftWrapper) {
 			const rect = leftWrapper.getBoundingClientRect();
 			const center = rect.top + rect.height / 2;
@@ -71,19 +89,27 @@
 		}
 	}
 
-	onMount(() => {
+	function handleResize() {
+		checkMobile();
 		measure();
+		resetMobileTransforms();
+	}
 
-		window.addEventListener("resize", measure);
-		window.addEventListener("load", measure);
+	onMount(() => {
+		checkMobile();
+		measure();
+		resetMobileTransforms();
+
+		window.addEventListener("resize", handleResize);
+		window.addEventListener("load", handleResize);
 
 		registerParallax(updateParallax);
 	});
 
 	onDestroy(() => {
 		unregisterParallax(updateParallax);
-		window.removeEventListener("resize", measure);
-		window.removeEventListener("load", measure);
+		window.removeEventListener("resize", handleResize);
+		window.removeEventListener("load", handleResize);
 	});
 </script>
 
@@ -100,7 +126,7 @@
 	</div>
 
 	<div class="panels">
-		<div class="panel-wrapper" bind:this={leftWrapper}>
+		<div class="panel-wrapper left-wrap" bind:this={leftWrapper}>
 			<div class="panel left">
 				<p>
 					<i><b>L’artisanat d’émotions</b></i>
@@ -108,7 +134,7 @@
 			</div>
 		</div>
 
-		<div class="panel-wrapper" bind:this={rightWrapper}>
+		<div class="panel-wrapper right-wrap" bind:this={rightWrapper}>
 			<div class="panel right">
 				<p>
 					3 Terres est une agence de création d’expériences de marque.
@@ -165,14 +191,14 @@
 	font-size: clamp(3rem, 6vw, 6rem);
 	line-height: 1.05;
 	text-align: center;
-	letter-spacing: .04em;
+	letter-spacing: 0.04em;
 	will-change: transform, opacity;
 	transform: translate3d(0, 0, 0);
 	opacity: 0.9;
 }
 
 .bg-text div {
-	margin: .3rem 0;
+	margin: 0.3rem 0;
 }
 
 .accent {
@@ -228,17 +254,162 @@
 
 .panel.right {
 	padding: 2rem;
-	font-family: system-ui, -apple-system, BlinkMacSystemFont,
-	"Segoe UI", Roboto, sans-serif;
+	font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 	font-size: 1.05rem;
 	line-height: 1.8;
 	color: #505050;
 }
 
 @media (max-width: 900px) {
+	.creative-section {
+		min-height: auto;
+		padding: 0;
+		overflow: visible;
+	}
+
+	.bg-wrap {
+		position: relative;
+		inset: auto;
+		overflow: visible;
+		z-index: 1;
+	}
+
+	.bg-layer {
+		position: relative;
+		top: auto;
+		left: auto;
+		width: 100%;
+		height: auto;
+		display: block;
+		background: transparent;
+		transform: none !important;
+		will-change: auto;
+		padding: 3.5rem 1rem 0;
+	}
+
+	.bg-text {
+		position: relative;
+		font-size: clamp(3.3rem, 16vw, 6rem);
+		line-height: 0.92;
+		text-align: center;
+		letter-spacing: 0.01em;
+		opacity: 1 !important;
+		transform: none !important;
+		padding: 0;
+		max-width: 100%;
+	}
+
+	.bg-text div {
+		margin: 0 0 0.12em;
+	}
+
 	.panels {
-		grid-template-columns: 1fr;
-		gap: 3rem;
+		display: block;
+		max-width: 100%;
+		padding: 2.25rem 1rem 3.5rem;
+	}
+
+	.panel-wrapper {
+		transform: none !important;
+		will-change: auto;
+	}
+
+	.left-wrap {
+		margin-bottom: 2.25rem;
+	}
+
+	.right-wrap {
+		margin-bottom: 0;
+	}
+
+	.panel {
+		background: transparent;
+		backdrop-filter: none;
+		-webkit-backdrop-filter: none;
+		box-shadow: none;
+		border-radius: 0;
+	}
+
+	.panel.left {
+		padding: 0;
+		display: block;
+		text-align: left;
+		font-family: "Playfair Display", serif;
+		font-size: 1rem;
+		line-height: 1.2;
+		color: #111;
+	}
+
+	.panel.left p {
+		margin: 0;
+	}
+
+	.panel.right {
+		padding: 0;
+		font-size: 1.15rem;
+		line-height: 1.55;
+		color: #666;
+		max-width: 32rem;
+	}
+
+	.panel.right p {
+		margin: 0;
+	}
+}
+
+@media (max-width: 640px) {
+	.bg-layer {
+		padding: 3rem 0.9rem 0;
+	}
+
+	.bg-text {
+		font-size: clamp(2.9rem, 16vw, 4.8rem);
+		line-height: 0.93;
+	}
+
+	.panels {
+		padding: 2rem 0.9rem 3rem;
+	}
+
+	.left-wrap {
+		margin-bottom: 1.9rem;
+	}
+
+	.panel.left {
+		font-size: 0.92rem;
+	}
+
+	.panel.right {
+		font-size: 1rem;
+		line-height: 1.56;
+	}
+}
+
+@media (max-width: 420px) {
+	.bg-layer {
+		padding: 2.6rem 0.75rem 0;
+	}
+
+	.bg-text {
+		font-size: clamp(2.55rem, 15vw, 4rem);
+		line-height: 0.94;
+	}
+
+	.panels {
+		padding: 1.8rem 0.75rem 2.6rem;
+	}
+
+	.left-wrap {
+		margin-bottom: 1.6rem;
+	}
+
+	.panel.left {
+		font-size: 0.88rem;
+	}
+
+	.panel.right {
+		font-size: 0.94rem;
+		line-height: 1.58;
 	}
 }
 </style>
