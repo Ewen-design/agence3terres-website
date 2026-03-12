@@ -119,13 +119,13 @@
   {/if}
 
   <IconeFleche />
- 
+Introlaoder
 
 <Header {navigate} {currentPage} />
 
   <div class="page-wrapper {isTransitioning ? 'blur-out' : ''}">
     {#if currentPage === "home"}
-      
+     HeroNew
       <TextesIntro />
       <HomePage />
       <ParallaxGallery />

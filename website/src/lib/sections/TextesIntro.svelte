@@ -262,9 +262,15 @@
 
 @media (max-width: 900px) {
 	.creative-section {
-		min-height: auto;
+		min-height: 100vh;
+		min-height: 100svh;
+		height: 100vh;
+		height: 100svh;
+		display: flex;
+		flex-direction: column;
+		justify-content: center;
+		overflow: hidden;
 		padding: 0;
-		overflow: visible;
 	}
 
 	.bg-wrap {
@@ -272,6 +278,7 @@
 		inset: auto;
 		overflow: visible;
 		z-index: 1;
+		flex: 0 0 auto;
 	}
 
 	.bg-layer {
@@ -280,42 +287,53 @@
 		left: auto;
 		width: 100%;
 		height: auto;
-		display: block;
+		display: flex;
+		align-items: center;
+		justify-content: center;
 		background: transparent;
 		transform: none !important;
 		will-change: auto;
-		padding: 3.5rem 1rem 0;
+		padding: 0;
 	}
 
 	.bg-text {
 		position: relative;
-		font-size: clamp(3.3rem, 16vw, 6rem);
+		width: min(100%, 680px);
+		margin: 0 auto;
+		padding: 0 1rem;
+		font-size: clamp(3rem, 15vw, 5.8rem);
 		line-height: 0.92;
 		text-align: center;
 		letter-spacing: 0.01em;
 		opacity: 1 !important;
 		transform: none !important;
-		padding: 0;
-		max-width: 100%;
 	}
 
 	.bg-text div {
-		margin: 0 0 0.12em;
+		margin: 0 0 0.1em;
 	}
 
 	.panels {
-		display: block;
+		flex: 0 0 auto;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 0;
 		max-width: 100%;
-		padding: 2.25rem 1rem 3.5rem;
+		width: 100%;
+		margin: 0;
+		padding: 1.75rem 1rem 0;
 	}
 
 	.panel-wrapper {
 		transform: none !important;
 		will-change: auto;
+		width: 100%;
+		max-width: 680px;
 	}
 
 	.left-wrap {
-		margin-bottom: 2.25rem;
+		margin-bottom: 1.5rem;
 	}
 
 	.right-wrap {
@@ -333,7 +351,7 @@
 	.panel.left {
 		padding: 0;
 		display: block;
-		text-align: left;
+		text-align: center;
 		font-family: "Playfair Display", serif;
 		font-size: 1rem;
 		line-height: 1.2;
@@ -346,10 +364,12 @@
 
 	.panel.right {
 		padding: 0;
-		font-size: 1.15rem;
-		line-height: 1.55;
+		text-align: center;
+		font-size: 1rem;
+		line-height: 1.58;
 		color: #666;
-		max-width: 32rem;
+		max-width: 30rem;
+		margin: 0 auto;
 	}
 
 	.panel.right p {
@@ -358,21 +378,23 @@
 }
 
 @media (max-width: 640px) {
-	.bg-layer {
-		padding: 3rem 0.9rem 0;
-	}
-
 	.bg-text {
-		font-size: clamp(2.9rem, 16vw, 4.8rem);
+		width: min(100%, 560px);
+		padding: 0 0.95rem;
+		font-size: clamp(2.65rem, 15vw, 4.8rem);
 		line-height: 0.93;
 	}
 
 	.panels {
-		padding: 2rem 0.9rem 3rem;
+		padding: 1.45rem 0.95rem 0;
+	}
+
+	.panel-wrapper {
+		max-width: 560px;
 	}
 
 	.left-wrap {
-		margin-bottom: 1.9rem;
+		margin-bottom: 1.25rem;
 	}
 
 	.panel.left {
@@ -380,36 +402,40 @@
 	}
 
 	.panel.right {
-		font-size: 1rem;
+		font-size: 0.93rem;
 		line-height: 1.56;
+		max-width: 27rem;
 	}
 }
 
 @media (max-width: 420px) {
-	.bg-layer {
-		padding: 2.6rem 0.75rem 0;
-	}
-
 	.bg-text {
-		font-size: clamp(2.55rem, 15vw, 4rem);
+		width: 100%;
+		padding: 0 0.8rem;
+		font-size: clamp(2.35rem, 14.5vw, 4rem);
 		line-height: 0.94;
 	}
 
 	.panels {
-		padding: 1.8rem 0.75rem 2.6rem;
+		padding: 1.2rem 0.8rem 0;
+	}
+
+	.panel-wrapper {
+		max-width: 100%;
 	}
 
 	.left-wrap {
-		margin-bottom: 1.6rem;
+		margin-bottom: 1rem;
 	}
 
 	.panel.left {
-		font-size: 0.88rem;
+		font-size: 0.86rem;
 	}
 
 	.panel.right {
-		font-size: 0.94rem;
-		line-height: 1.58;
+		font-size: 0.89rem;
+		line-height: 1.55;
+		max-width: 100%;
 	}
 }
 </style>
