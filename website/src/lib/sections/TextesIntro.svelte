@@ -296,18 +296,30 @@
 		padding: 0;
 	}
 
-	.bg-text {
-		position: relative;
-		width: min(100%, 680px);
-		margin: 0 auto;
-		padding: 0 1rem;
-		font-size: clamp(3rem, 15vw, 5.8rem);
-		line-height: 0.92;
-		text-align: center;
-		letter-spacing: 0.01em;
-		opacity: 1 !important;
-		transform: none !important;
-	}
+
+
+  .bg-text {
+    position: relative;
+
+    /* limite la largeur pour éviter que ça coupe */
+    width: min(92vw, 520px);
+    margin: 0 auto;
+
+    /* marges propres */
+    padding: 0 1.2rem;
+
+    /* taille légèrement réduite */
+    font-size: clamp(2.4rem, 13vw, 4.6rem);
+
+    line-height: 0.94;
+    letter-spacing: 0.01em;
+    text-align: center;
+
+    /* on remonte légèrement le bloc */
+    transform: translateY(-2.2vh) !important;
+
+    opacity: 1 !important;
+  }
 
 	.bg-text div {
 		margin: 0 0 0.1em;
@@ -409,12 +421,12 @@
 }
 
 @media (max-width: 420px) {
-	.bg-text {
-		width: 100%;
-		padding: 0 0.8rem;
-		font-size: clamp(2.35rem, 14.5vw, 4rem);
-		line-height: 0.94;
-	}
+
+  .bg-text {
+    width: min(92vw, 460px);
+    font-size: clamp(2.1rem, 12.5vw, 3.8rem);
+    transform: translateY(-1.8vh) !important;
+  }
 
 	.panels {
 		padding: 1.2rem 0.8rem 0;
