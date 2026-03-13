@@ -302,66 +302,72 @@
   }
 
   @media (max-width: 900px) {
-    .scroll-section {
-      height: 210vh;
-    }
-
-    .sticky-scene {
-      flex-direction: column;
-    }
-
-    .text-overlay {
-      justify-content: flex-start;
-      padding: 1.5rem 1.25rem 1.5rem 1.25rem;
-      max-width: 100%;
-    }
-
-    .eyebrow-wrap {
-      margin-bottom: 0.9rem;
-    }
-
-    .eyebrow-line {
-      width: 34px;
-    }
-
-    .eyebrow {
-      font-size: 0.68rem;
-      letter-spacing: 0.18em;
-    }
-
-    h1 {
-      white-space: normal;
-      font-size: clamp(2.8rem, 12vw, 4.8rem);
-      margin-bottom: 1rem;
-      max-width: 12rem;
-    }
-
-    p {
-      max-width: 15.5rem;
-      font-size: 0.92rem;
-      line-height: 1.55;
-    }
-
-    .actions {
-      margin-top: 1.25rem;
-    }
-
-    .discover-btn {
-      font-size: 0.82rem;
-      padding: 0.85rem 1.15rem;
-    }
-
-    .side-mark {
-      display: none;
-    }
-
-    .left-panel {
-      width: 100%;
-    }
-
-    .image-panel {
-      width: 100%;
-      margin-top: auto;
-    }
+  .scroll-section {
+    height: 210vh;
   }
+
+  .sticky-scene {
+    flex-direction: column;
+  }
+
+  .text-overlay {
+    justify-content: flex-start;
+    align-items: center;
+    text-align: center;
+
+    padding: 0 1.6rem;
+    padding-top: 18vh;   /* descend le bloc */
+    
+    max-width: 100%;
+  }
+
+  .eyebrow-wrap {
+    margin-bottom: 0.9rem;
+    justify-content: center;
+  }
+
+  .eyebrow-line {
+    width: 34px;
+  }
+
+  .eyebrow {
+    font-size: 0.68rem;
+    letter-spacing: 0.18em;
+  }
+
+  h1 {
+    white-space: normal;
+    font-size: clamp(2.8rem, 12vw, 4.8rem);
+    margin-bottom: 1rem;
+    max-width: 14rem;
+  }
+
+  p {
+    max-width: 20rem;
+    font-size: 0.92rem;
+    line-height: 1.55;
+  }
+
+  .actions {
+    margin-top: 1.4rem;
+  }
+
+  .discover-btn {
+    font-size: 0.82rem;
+    padding: 0.85rem 1.15rem;
+  }
+
+  .side-mark {
+    display: none;
+  }
+
+  .left-panel {
+    width: 100%;
+  }
+
+  .image-panel {
+    width: 100%;
+    margin-top: auto;
+  }
+}
 </style>
