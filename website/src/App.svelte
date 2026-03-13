@@ -49,6 +49,15 @@
   }
 
   function navigate(page) {
+    setTimeout(() => {
+  currentPage = nextPage;
+  lenis?.scrollTo(0, { immediate: true });
+
+  setTimeout(() => {
+    lenis?.resize();   // 👈 IMPORTANT
+  }, 50);
+
+}, 600);
     if (page === currentPage || isTransitioning) return;
 
     nextPage = page;
@@ -66,6 +75,9 @@
   }
 
   onMount(() => {
+    window.addEventListener("load", () => {
+  lenis?.resize();
+});
     checkMobile();
     window.addEventListener("resize", checkMobile);
 
@@ -149,7 +161,6 @@
       <MixSlider />
       <Transition2 />
       <ImageScroll src="images/photo.webp" alt="Description de l'image" />
-      <SliderCustom />
       <AncienSliderCustom />
 
     {:else if currentPage === "contact"}

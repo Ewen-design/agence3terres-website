@@ -46,10 +46,6 @@
 
       const rect = section.getBoundingClientRect();
 
-      // 0% quand la slide arrive
-      // 100% exactement quand la slide suivante atteint le threshold 0.6
-      // Avec une slide de 100vh et threshold 0.6 :
-      // le changement arrive quand la slide courante a top = -60vh
       const progress = clamp((-rect.top) / (vh * THRESHOLD), 0, 1);
 
       next[i] = progress * 100;
@@ -155,6 +151,7 @@
   .slider{
     position:relative;
     width:100%;
+    min-height:460vh; /* ajouté seulement pour stabiliser la vraie hauteur scrollable */
   }
 
   /* sticky scene */
@@ -162,6 +159,7 @@
     position:sticky;
     top:0;
     height:100vh;
+    height:100svh;
     overflow:hidden;
     background:#050b14;
     isolation:isolate;
@@ -263,7 +261,18 @@
   }
 
   @media (max-width:800px){
+    .slider{
+      min-height:460vh;
+    }
+
+    .sticky{
+      height:100vh;
+      height:100svh;
+    }
+
     .slide{
+      min-height:100vh;
+      min-height:100svh;
       padding:6rem 2rem;
       align-items:flex-end;
     }
@@ -311,4 +320,4 @@
     font-size:.9rem;
     opacity:.85;
   }
-</style> 
+</style>

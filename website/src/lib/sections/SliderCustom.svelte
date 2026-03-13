@@ -167,21 +167,22 @@
 </section>
 
 <style>
-  .services-section {
-    position: relative;
-    min-height: 170vh;
-    width: 100%;
-    background: #000;
-  }
+.services-section {
+  position: relative;
+  min-height: 200vh; /* augmenté pour garantir assez de scroll */
+  width: 100%;
+  background: #000;
+}
 
-  .sticky-bg {
-    position: sticky;
-    top: 0;
-    width: 100%;
-    height: 100vh;
-    z-index: 1;
-    overflow: hidden;
-  }
+.sticky-bg {
+  position: sticky;
+  top: 0;
+  width: 100%;
+  height: 100vh;
+  height: 100svh; /* évite certains bugs mobile */
+  z-index: 1;
+  overflow: hidden;
+}
 
   .hero-title {
     position: relative;

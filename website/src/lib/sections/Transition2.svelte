@@ -123,7 +123,7 @@
     margin: 0;
     font-family: "Aboreto", serif;
     font-style: italic;
-    font-size: clamp(9rem, 3vw, 3rem);
+   font-size: clamp(9rem, 8vw, 9rem);
     line-height: 1.02;
     font-weight: 400;
     color: #fff;

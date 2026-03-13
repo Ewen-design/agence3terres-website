@@ -3,7 +3,6 @@
 
   let section;
   let progress = 0;
-  let scrollRaf = null;
   let isMobile = false;
 
   const clamp = (v, min, max) => Math.max(min, Math.min(v, max));
@@ -23,39 +22,18 @@
     progress = maxScroll > 0 ? clamp(scrolled / maxScroll, 0, 1) : 0;
   }
 
-  function easeInOutCubic(t) {
-    return t < 0.5
-      ? 4 * t * t * t
-      : 1 - Math.pow(-2 * t + 2, 3) / 2;
-  }
-
   function smoothScrollToSlider() {
     const target = document.querySelector("section.slider");
     if (!target) return;
 
-    if (scrollRaf) cancelAnimationFrame(scrollRaf);
-
-    const startY = window.scrollY;
-    const targetY = target.getBoundingClientRect().top + window.scrollY;
-    const distance = targetY - startY;
-    const duration = 1800;
-    const startTime = performance.now();
-
-    function animate(now) {
-      const elapsed = now - startTime;
-      const t = clamp(elapsed / duration, 0, 1);
-      const eased = easeInOutCubic(t);
-
-      window.scrollTo(0, startY + distance * eased);
-
-      if (t < 1) {
-        scrollRaf = requestAnimationFrame(animate);
-      } else {
-        scrollRaf = null;
-      }
+    if (window.lenis) {
+      window.lenis.scrollTo(target, {
+        duration: 1.8,
+        easing: (t) => 1 - Math.pow(1 - t, 3)
+      });
+    } else {
+      target.scrollIntoView({ behavior: "smooth", block: "start" });
     }
-
-    scrollRaf = requestAnimationFrame(animate);
   }
 
   function handleResize() {
@@ -69,11 +47,12 @@
 
     window.addEventListener("scroll", updateProgress, { passive: true });
     window.addEventListener("resize", handleResize);
+    window.addEventListener("load", handleResize);
 
     return () => {
       window.removeEventListener("scroll", updateProgress);
       window.removeEventListener("resize", handleResize);
-      if (scrollRaf) cancelAnimationFrame(scrollRaf);
+      window.removeEventListener("load", handleResize);
     };
   });
 
@@ -120,7 +99,6 @@
       class="text-overlay"
       style={`opacity:${textFade}; filter: blur(${textBlur}px);`}
     >
-
       <h1>Services</h1>
 
       <p>
@@ -153,6 +131,7 @@
     position: sticky;
     top: 0;
     height: 100vh;
+    height: 100svh;
     display: flex;
     overflow: hidden;
     background: #000;
@@ -203,8 +182,7 @@
 
   h1 {
     margin: 0 0 2rem 0;
-   font-family: "Aboreto", serif;
-    
+    font-family: "Aboreto", serif;
     font-size: clamp(4rem, 8vw, 6rem);
     line-height: 0.95;
     font-weight: 400;
@@ -278,72 +256,58 @@
   }
 
   @media (max-width: 900px) {
-  .scroll-section {
-    height: 210vh;
-  }
+    .scroll-section {
+      height: 210vh;
+    }
 
-  .sticky-scene {
-    flex-direction: column;
-  }
+    .sticky-scene {
+      flex-direction: column;
+      height: 100vh;
+      height: 100svh;
+    }
 
-  .text-overlay {
-    justify-content: flex-start;
-    align-items: center;
-    text-align: center;
+    .text-overlay {
+      justify-content: flex-start;
+      align-items: center;
+      text-align: center;
+      padding: 0 1.6rem;
+      padding-top: 18vh;
+      max-width: 100%;
+    }
 
-    padding: 0 1.6rem;
-    padding-top: 18vh;   /* descend le bloc */
-    
-    max-width: 100%;
-  }
+    h1 {
+      white-space: normal;
+      font-size: clamp(2.8rem, 12vw, 4.8rem);
+      margin-bottom: 1rem;
+      max-width: 14rem;
+    }
 
-  .eyebrow-wrap {
-    margin-bottom: 0.9rem;
-    justify-content: center;
-  }
+    p {
+      max-width: 20rem;
+      font-size: 0.92rem;
+      line-height: 1.55;
+    }
 
-  .eyebrow-line {
-    width: 34px;
-  }
+    .actions {
+      margin-top: 1.4rem;
+    }
 
-  .eyebrow {
-    font-size: 0.68rem;
-    letter-spacing: 0.18em;
-  }
+    .discover-btn {
+      font-size: 0.82rem;
+      padding: 0.85rem 1.15rem;
+    }
 
-  h1 {
-    white-space: normal;
-    font-size: clamp(2.8rem, 12vw, 4.8rem);
-    margin-bottom: 1rem;
-    max-width: 14rem;
-  }
+    .side-mark {
+      display: none;
+    }
 
-  p {
-    max-width: 20rem;
-    font-size: 0.92rem;
-    line-height: 1.55;
-  }
+    .left-panel {
+      width: 100%;
+    }
 
-  .actions {
-    margin-top: 1.4rem;
+    .image-panel {
+      width: 100%;
+      margin-top: auto;
+    }
   }
-
-  .discover-btn {
-    font-size: 0.82rem;
-    padding: 0.85rem 1.15rem;
-  }
-
-  .side-mark {
-    display: none;
-  }
-
-  .left-panel {
-    width: 100%;
-  }
-
-  .image-panel {
-    width: 100%;
-    margin-top: auto;
-  }
-}
 </style>

@@ -1,5 +1,5 @@
 <script>
-  import { onMount, onDestroy } from "svelte";
+  import { onMount } from "svelte";
   import gsap from "gsap";
   import { ScrollTrigger } from "gsap/ScrollTrigger";
 
@@ -7,6 +7,7 @@
 
   let wrapper;
   let ctx;
+  let handleLoad;
 
   const textsContent = [
     "Nous façonnons des expériences de marque avec une attention rare au SENS",
@@ -17,11 +18,9 @@
 
   onMount(() => {
     ctx = gsap.context(() => {
-
       const texts = gsap.utils.toArray(".scroll-text");
 
-      // Split mots
-      texts.forEach(text => {
+      texts.forEach((text) => {
         const words = text.innerText.split(" ");
         text.innerHTML = words.map(word => `<span class="word">${word}</span>`).join(" ");
       });
@@ -33,7 +32,7 @@
         scrollTrigger: {
           trigger: wrapper,
           start: "top top",
-          end: "+=800%",
+          end: "+=500%",
           scrub: 1,
           pin: true,
           pinSpacing: true,
@@ -47,7 +46,6 @@
 
         tl.set(text, { opacity: 1 });
 
-        // Révélation mot par mot
         tl.to(words, {
           opacity: 1,
           color: "#fff",
@@ -56,26 +54,26 @@
           duration: 2
         });
 
-        // Pause pour respiration
-        tl.to({}, { duration: 0.8 });
+        tl.to({}, { duration: 0.6 });
 
-        // Transition fond + disparition texte
         if (index === 0) {
-          tl.to(".bg-image", { opacity: 1, duration: 2, ease: "none" }, "<");
+          tl.to(".bg-image", { opacity: 1, duration: 1.5, ease: "none" }, "<");
         }
 
         if (index < texts.length - 1) {
-          tl.to(text, { opacity: 0, duration: 1.2, ease: "none" });
+          tl.to(text, { opacity: 0, duration: 1, ease: "none" });
         }
       });
-
     }, wrapper);
 
-    window.addEventListener("load", () => ScrollTrigger.refresh());
+    handleLoad = () => ScrollTrigger.refresh();
+    window.addEventListener("load", handleLoad);
 
-    onDestroy(() => {
-      ctx.revert();
-    });
+    return () => {
+      window.removeEventListener("load", handleLoad);
+      ctx?.revert();
+      ScrollTrigger.refresh();
+    };
   });
 </script>
 
@@ -93,9 +91,8 @@
 <style>
 .narrative-wrapper {
   position: relative;
-  width: 100vw;
-  height: 100vh;
-  margin-left: calc(50% - 50vw);
+  width: 100%;
+  min-height: 100vh;
   overflow: hidden;
   background: #111;
 }
