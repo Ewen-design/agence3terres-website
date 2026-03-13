@@ -120,10 +120,6 @@
       class="text-overlay"
       style={`opacity:${textFade}; filter: blur(${textBlur}px);`}
     >
-      <div class="eyebrow-wrap">
-        <span class="eyebrow-line"></span>
-        <span class="eyebrow">Premium experiences</span>
-      </div>
 
       <h1>Services</h1>
 
@@ -150,7 +146,7 @@
   .scroll-section {
     position: relative;
     height: 240vh;
-    background: #111;
+    background: #000;
   }
 
   .sticky-scene {
@@ -159,12 +155,12 @@
     height: 100vh;
     display: flex;
     overflow: hidden;
-    background: #111;
+    background: #000;
   }
 
   .left-panel {
     flex: 0 0 auto;
-    background: #111;
+    background: #000;
     will-change: width, height;
     z-index: 1;
   }
@@ -205,30 +201,10 @@
     pointer-events: auto;
   }
 
-  .eyebrow-wrap {
-    display: flex;
-    align-items: center;
-    gap: 0.9rem;
-    margin-bottom: 1.2rem;
-  }
-
-  .eyebrow-line {
-    width: 52px;
-    height: 1px;
-    background: rgba(255, 255, 255, 0.3);
-    display: block;
-  }
-
-  .eyebrow {
-    font-size: 0.85rem;
-    letter-spacing: 0.22em;
-    text-transform: uppercase;
-    color: rgba(255, 255, 255, 0.5);
-  }
-
   h1 {
     margin: 0 0 2rem 0;
-    font-family: "Aboreto", serif;
+   font-family: "Aboreto", serif;
+    
     font-size: clamp(4rem, 8vw, 6rem);
     line-height: 0.95;
     font-weight: 400;

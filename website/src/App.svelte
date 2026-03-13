@@ -24,6 +24,8 @@
     import ImageScroll from "./lib/sections/ImageScroll.svelte";
         import RevealGallery from "./lib/sections/RevealGallery.svelte";
          import NewSectionHero from "./lib/sections/NewSectionHero.svelte";
+                  import Transition1 from "./lib/sections/Transition1.svelte";
+                  import Transition2 from "./lib/sections/Transition2.svelte";
 
   import Travail from "./lib/structure/Travail.svelte";
   import Apropos from "./lib/structure/Apropos.svelte";
@@ -143,7 +145,9 @@
 
     {:else if currentPage === "services"}
       <NewSectionHero />
+<Transition1 />
       <MixSlider />
+      <Transition2 />
       <ImageScroll src="images/photo.webp" alt="Description de l'image" />
       <SliderCustom />
       <AncienSliderCustom />

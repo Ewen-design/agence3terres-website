@@ -262,7 +262,7 @@
   .projects-header h2 {
     font-family: "Aboreto", serif;
     font-size: clamp(2.5rem, 4vw, 4rem);
-    letter-spacing: 0.2em;
+    letter-spacing: 0.05em;
     margin-bottom: 1.2rem;
   }
 
