@@ -4,8 +4,13 @@
   let section;
   let progress = 0;
   let scrollRaf = null;
+  let isMobile = false;
 
   const clamp = (v, min, max) => Math.max(min, Math.min(v, max));
+
+  function checkMobile() {
+    isMobile = window.innerWidth <= 900;
+  }
 
   function updateProgress() {
     if (!section) return;
@@ -53,32 +58,57 @@
     scrollRaf = requestAnimationFrame(animate);
   }
 
-  onMount(() => {
+  function handleResize() {
+    checkMobile();
     updateProgress();
+  }
+
+  onMount(() => {
+    checkMobile();
+    updateProgress();
+
     window.addEventListener("scroll", updateProgress, { passive: true });
-    window.addEventListener("resize", updateProgress);
+    window.addEventListener("resize", handleResize);
 
     return () => {
       window.removeEventListener("scroll", updateProgress);
-      window.removeEventListener("resize", updateProgress);
+      window.removeEventListener("resize", handleResize);
       if (scrollRaf) cancelAnimationFrame(scrollRaf);
     };
   });
 
+  // Desktop
   $: leftWidth = 40 - 40 * progress;
   $: imageWidth = 60 + 40 * progress;
 
+  // Mobile
+  $: topHeight = 58 - 58 * progress;
+  $: mobileImageHeight = 42 + 58 * progress;
+
   $: textFade = clamp(1 - progress * 8, 0, 1);
   $: textBlur = progress * 16;
-
   $: imageScale = 1 + progress * 0.04;
 </script>
 
 <section class="scroll-section" bind:this={section}>
-  <div class="sticky-scene">
-    <div class="left-panel" style={`width:${leftWidth}%;`}></div>
+  <div class="sticky-scene mobile-layout-{isMobile}">
+    <div
+      class="left-panel"
+      style={
+        isMobile
+          ? `width:100%; height:${topHeight}%;`
+          : `width:${leftWidth}%; height:100%;`
+      }
+    ></div>
 
-    <div class="image-panel" style={`width:${imageWidth}%;`}>
+    <div
+      class="image-panel"
+      style={
+        isMobile
+          ? `width:100%; height:${mobileImageHeight}%;`
+          : `width:${imageWidth}%; height:100%;`
+      }
+    >
       <img
         src="images/parfum4.webp"
         alt="Beauty portrait"
@@ -98,7 +128,7 @@
       <h1>Services</h1>
 
       <p>
-        Chez 3 Terres, nous sommes passionnés par la création d'expériences de marque uniques et mémorables. 
+        Chez 3 Terres, nous sommes passionnés par la création d'expériences de marque uniques et mémorables.
         Nous sommes expert en design et stratégie pour donner vie à votre vision et créer des expériences qui résonnent avec votre audience.
       </p>
 
@@ -133,19 +163,17 @@
   }
 
   .left-panel {
-    height: 100%;
     flex: 0 0 auto;
     background: #111;
-    will-change: width;
+    will-change: width, height;
     z-index: 1;
   }
 
   .image-panel {
     position: relative;
-    height: 100%;
     flex: 0 0 auto;
     overflow: hidden;
-    will-change: width;
+    will-change: width, height;
     z-index: 1;
   }
 
@@ -226,7 +254,7 @@
     border: 0.5px solid #fff;
     background: #111;
     color: #fff;
-    font-size: 0.80rem;
+    font-size: 0.8rem;
     letter-spacing: 0.08em;
     text-transform: uppercase;
     padding: 0.95rem 1.4rem;
@@ -243,7 +271,7 @@
   .discover-btn:hover {
     background: #fff;
     border-color: #fff;
-     color: #111;
+    color: #111;
     transform: translateY(-1px);
   }
 
@@ -278,9 +306,13 @@
       height: 210vh;
     }
 
+    .sticky-scene {
+      flex-direction: column;
+    }
+
     .text-overlay {
-      justify-content: flex-end;
-      padding: 0 1.5rem 4rem 1.5rem;
+      justify-content: flex-start;
+      padding: 1.5rem 1.25rem 1.5rem 1.25rem;
       max-width: 100%;
     }
 
@@ -301,16 +333,17 @@
       white-space: normal;
       font-size: clamp(2.8rem, 12vw, 4.8rem);
       margin-bottom: 1rem;
+      max-width: 12rem;
     }
 
     p {
-      max-width: 18rem;
-      font-size: 0.95rem;
-      line-height: 1.6;
+      max-width: 15.5rem;
+      font-size: 0.92rem;
+      line-height: 1.55;
     }
 
     .actions {
-      margin-top: 1.4rem;
+      margin-top: 1.25rem;
     }
 
     .discover-btn {
@@ -320,6 +353,15 @@
 
     .side-mark {
       display: none;
+    }
+
+    .left-panel {
+      width: 100%;
+    }
+
+    .image-panel {
+      width: 100%;
+      margin-top: auto;
     }
   }
 </style>
