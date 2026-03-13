@@ -23,6 +23,7 @@
   import StickySlider from "./lib/sections/StickySlider.svelte";
     import ImageScroll from "./lib/sections/ImageScroll.svelte";
         import RevealGallery from "./lib/sections/RevealGallery.svelte";
+         import NewSectionHero from "./lib/sections/NewSectionHero.svelte";
 
   import Travail from "./lib/structure/Travail.svelte";
   import Apropos from "./lib/structure/Apropos.svelte";
@@ -119,13 +120,11 @@
   {/if}
 
   <IconeFleche />
-Introlaoder
 
 <Header {navigate} {currentPage} />
 
   <div class="page-wrapper {isTransitioning ? 'blur-out' : ''}">
     {#if currentPage === "home"}
-     HeroNew
       <TextesIntro />
       <HomePage />
       <ParallaxGallery />
@@ -143,10 +142,10 @@ Introlaoder
       <BackgroundParallax />
 
     {:else if currentPage === "services"}
-      <SliderCustom />
+      <NewSectionHero />
       <MixSlider />
       <ImageScroll src="images/photo.webp" alt="Description de l'image" />
-      <Services />
+      <SliderCustom />
       <AncienSliderCustom />
 
     {:else if currentPage === "contact"}

@@ -6,10 +6,10 @@
   let hovered = null;
 
   const links = [
-    { label: "L'envol", page: "home", image: "https://images.unsplash.com/photo-1498579809087-ef1e558fd1da?q=80&w=2000" },
-    { label: "Projets", page: "travail", image: "https://images.unsplash.com/photo-1504674900247-0877df9cc836?q=80&w=2000" },
-    { label: "À propos", page: "apropos", image: "https://images.unsplash.com/photo-1414235077428-338989a2e8c0?q=80&w=2000" },
-    { label: "Services", page: "services", image: "https://images.unsplash.com/photo-1559339352-11d035aa65de?q=80&w=2000" },
+    { label: "L'envol", page: "home", image: "images/photo.webp" },
+    { label: "Projets", page: "travail", image: "images/parfum4.webp" },
+    { label: "À propos", page: "apropos", image: "images/parfum3.webp" },
+    { label: "Services", page: "services", image: "images/parfum2.webp" },
     { label: "Contact", page: "contact", image: "https://images.unsplash.com/photo-1550966871-3ed3cdb5ed0c?q=80&w=2000" }
   ];
 
@@ -20,7 +20,7 @@
       open = false;
       closing = false;
       hovered = null;
-    }, 900);
+    }, 900); 
   }
 
   function handleClick(link) {
