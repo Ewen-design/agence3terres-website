@@ -1,4 +1,5 @@
 <script>
+
   import { onMount, onDestroy } from "svelte";
   import FullscreenMenu from "./FullscreenMenu.svelte";
 
@@ -11,6 +12,8 @@
   let menuOpen       = false;
   let textColor      = "white";
   let headerEl;
+  let menuButtonEl;
+  let menuOrigin = { x: 0, y: 0, width: 44, height: 40 };
 
   const SCROLL_THRESHOLD = 10;
 
@@ -65,6 +68,21 @@
     const rect = btn.getBoundingClientRect();
     btn.style.setProperty("--mx", `${e.clientX - rect.left}px`);
     btn.style.setProperty("--my", `${e.clientY - rect.top}px`);
+  }
+
+  // ── Menu origin ────────────────────────────────────────────────────────────
+  function openMenu() {
+    if (menuButtonEl) {
+      const rect = menuButtonEl.getBoundingClientRect();
+      menuOrigin = {
+        x: rect.left + rect.width / 2,
+        y: rect.top + rect.height / 2,
+        width: rect.width,
+        height: rect.height
+      };
+    }
+
+    menuOpen = true;
   }
 
   // ── Logo ───────────────────────────────────────────────────────────────────
@@ -139,6 +157,7 @@
 
     <!-- Burger -->
     <div
+      bind:this={menuButtonEl}
       class="nav-btn more"
       data-cursor="button"
       role="button"
@@ -146,8 +165,8 @@
       aria-label="Ouvrir le menu"
       aria-expanded={menuOpen}
       on:mousemove={handleButtonMove}
-      on:click={() => (menuOpen = true)}
-      on:keydown={(e) => e.key === "Enter" && (menuOpen = true)}
+      on:click={openMenu}
+      on:keydown={(e) => e.key === "Enter" && openMenu()}
     >
       <span></span>
       <span></span>
@@ -157,7 +176,7 @@
   </nav>
 </header>
 
-<FullscreenMenu bind:open={menuOpen} {navigate} />
+<FullscreenMenu bind:open={menuOpen} {navigate} origin={menuOrigin} />
 
 <style>
   /* ── Wrapper fixé ──────────────────────────────────────────────────────── */
