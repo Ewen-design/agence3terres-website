@@ -1,15 +1,16 @@
 <script>
-  import { tick, onDestroy } from "svelte";
+  import { tick, onMount, onDestroy } from "svelte";
 
   export let open = false;
   export let navigate;
   export let origin = { x: 0, y: 0, width: 44, height: 40 };
 
   let visible = false;
-  let expanded = false;       // fond noir déployé
-  let contentVisible = false; // éléments visibles
+  let expanded = false;
+  let contentVisible = false;
   let closing = false;
   let hovered = null;
+  let isMobile = false;
 
   let raf1;
   let raf2;
@@ -24,6 +25,10 @@
     { label: "Services", page: "services", image: "images/parfum2.webp" },
     { label: "Contact", page: "contact", image: "https://images.unsplash.com/photo-1550966871-3ed3cdb5ed0c?q=80&w=2000" }
   ];
+
+  function checkMobile() {
+    isMobile = window.innerWidth <= 768;
+  }
 
   function clearAsync() {
     cancelAnimationFrame(raf1);
@@ -50,10 +55,9 @@
       });
     });
 
-    // le contenu arrive après le déploiement du fond
     contentTimer = setTimeout(() => {
       contentVisible = true;
-    }, 420);
+    }, isMobile ? 320 : 420);
   }
 
   function startClose() {
@@ -63,15 +67,12 @@
     closing = true;
     hovered = null;
 
-    // 1) les éléments disparaissent d'abord
     contentVisible = false;
 
-    // 2) puis le fond se rétracte
     retractTimer = setTimeout(() => {
       expanded = false;
-    }, 220);
+    }, isMobile ? 160 : 220);
 
-    // 3) démontage à la fin
     closeTimer = setTimeout(() => {
       visible = false;
       closing = false;
@@ -80,7 +81,7 @@
       if (typeof document !== "undefined") {
         document.body.classList.remove("menu-open");
       }
-    }, 1170); // 220ms + 950ms
+    }, isMobile ? 920 : 1170);
   }
 
   $: if (open && !visible) {
@@ -91,8 +92,14 @@
     startClose();
   }
 
+  onMount(() => {
+    checkMobile();
+    window.addEventListener("resize", checkMobile, { passive: true });
+  });
+
   onDestroy(() => {
     clearAsync();
+    window.removeEventListener("resize", checkMobile);
     if (typeof document !== "undefined") {
       document.body.classList.remove("menu-open");
     }
@@ -120,7 +127,7 @@
 </script>
 
 <div
-  class="fs-menu {visible ? 'is-visible' : ''} {expanded ? 'expanded' : ''} {contentVisible ? 'content-visible' : ''} {closing ? 'is-closing' : ''}"
+  class="fs-menu {visible ? 'is-visible' : ''} {expanded ? 'expanded' : ''} {contentVisible ? 'content-visible' : ''} {closing ? 'is-closing' : ''} {isMobile ? 'mobile' : ''}"
   style={originStyle}
   aria-hidden={!visible}
 >
@@ -162,7 +169,8 @@
   <nav class="center-nav" aria-label="Navigation principale">
     {#each links as link, i}
       <button
-        class="nav-link {hovered === link ? 'is-active' : ''} {hovered && hovered !== link ? 'is-dimmed' : ''}"
+        class="nav-link"
+        class:is-dimmed={hovered && hovered !== link}
         style="--i:{i}"
         on:mouseenter={() => (hovered = link)}
         on:mouseleave={() => (hovered = null)}
@@ -232,6 +240,7 @@
       #050505;
     border: 1px solid rgba(255,255,255,0.08);
     backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
     transform: translate(-50%, -50%) scale(1);
     transform-origin: center center;
     border-radius: 18px;
@@ -395,8 +404,9 @@
     width: 75px;
     height: 75px;
     backdrop-filter: blur(40px);
+    -webkit-backdrop-filter: blur(40px);
     background: rgba(255,255,255,0.06);
-    border: 1px solid rgba(255,255,255,0.08);
+    border: 0px solid rgba(255,255,255,0.08);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -456,15 +466,17 @@
     transform: translateY(20px);
     transition:
       opacity 0.32s ease,
-      transform 0.32s cubic-bezier(.22,1,.36,1),
-      filter 0.85s ease,
-      letter-spacing 0.85s ease;
+      transform 0.32s cubic-bezier(.22,1,.36,1);
     transition-delay: calc(var(--i) * 0.03s);
   }
 
   .fs-menu.content-visible .nav-link {
     opacity: 1;
     transform: translateY(0);
+  }
+
+  .nav-link.is-dimmed {
+    opacity: 0.5 !important;
   }
 
   .index {
@@ -483,24 +495,6 @@
     line-height: 0.95;
     letter-spacing: 0.04em;
     text-align: center;
-    transition:
-      letter-spacing 0.85s ease,
-      transform 0.85s cubic-bezier(.22,1,.36,1),
-      opacity 0.85s ease;
-  }
-
-  .nav-link.is-active {
-    transform: translateX(16px) scale(1.015);
-  }
-
-  .nav-link.is-active .label {
-    letter-spacing: 0.11em;
-    transform: translateX(10px);
-  }
-
-  .nav-link.is-dimmed {
-    opacity: 0.18;
-    filter: blur(2.2px);
   }
 
   .bottom-bar {
@@ -572,7 +566,25 @@
     justify-content: flex-end;
   }
 
-  @media (max-width: 900px) {
+  @media (max-width: 768px) {
+    .expander {
+      backdrop-filter: none;
+      -webkit-backdrop-filter: none;
+      transition:
+        transform 0.72s cubic-bezier(.22,1,.36,1),
+        border-radius 0.72s cubic-bezier(.22,1,.36,1),
+        opacity 0.22s ease;
+    }
+
+    .fs-menu.expanded .expander {
+      transform: translate(-50%, -50%) scale(90);
+    }
+
+    .noise,
+    .gold-glow {
+      display: none;
+    }
+
     .topbar {
       height: 92px;
       padding: 0 18px;
@@ -607,6 +619,7 @@
       gap: 10px;
       flex-direction: column;
       align-items: center;
+      transition-duration: 0.24s;
     }
 
     .index {
