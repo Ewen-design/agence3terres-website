@@ -1,4 +1,7 @@
 <script lang="ts">
+  import { onMount, onDestroy } from "svelte";
+  import { registerParallax, unregisterParallax } from "../scrollEngine.js";
+
   type Finish = {
     color: string;
     label: string;
@@ -12,6 +15,8 @@
     height?: number;
     loading?: "eager" | "lazy";
     fetchpriority?: "high" | "low" | "auto";
+    year?: string;
+    title?: string;
   };
 
   type GalleryColumn = {
@@ -37,6 +42,8 @@
         {
           src: "images/photo.webp",
           alt: "Ring close-up",
+          title: "Ring close-up",
+          year: "2024",
           className: "left-top",
           width: 500,
           height: 720,
@@ -46,6 +53,8 @@
         {
           src: "images/photo.webp",
           alt: "Hands detail",
+          title: "Hands detail",
+          year: "2024",
           className: "left-bottom",
           width: 500,
           height: 640,
@@ -60,6 +69,8 @@
         {
           src: "images/photo.webp",
           alt: "Smiling woman portrait",
+          title: "Smiling woman",
+          year: "2024",
           className: "single",
           width: 700,
           height: 1100,
@@ -74,6 +85,8 @@
         {
           src: "images/photo.webp",
           alt: "Athletic portrait",
+          title: "Athletic portrait",
+          year: "2024",
           className: "single",
           width: 700,
           height: 980,
@@ -88,6 +101,8 @@
         {
           src: "images/photo.webp",
           alt: "Ring on mineral surface",
+          title: "Ring on mineral",
+          year: "2024",
           className: "single",
           width: 1000,
           height: 1200,
@@ -102,6 +117,8 @@
         {
           src: "images/photo.webp",
           alt: "Ring detail",
+          title: "Ring detail",
+          year: "2024",
           className: "right-top",
           width: 500,
           height: 720,
@@ -111,6 +128,8 @@
         {
           src: "images/photo.webp",
           alt: "Hands with rings",
+          title: "Hands with rings",
+          year: "2024",
           className: "right-bottom",
           width: 500,
           height: 720,
@@ -124,6 +143,190 @@
   function selectFinish(index: number) {
     selectedFinish = index;
   }
+
+  const flatItems = galleryColumns.flatMap((column) => column.items);
+
+  let lifestyleSection: HTMLElement;
+  let galleryEl: HTMLElement;
+
+  let isMobile = false;
+  let sectionMetrics: { top: number; height: number } | null = null;
+
+  let cardData: {
+    top: number;
+    height: number;
+    wrapper: HTMLDivElement | null;
+    info: HTMLDivElement | null;
+    img: HTMLImageElement | null;
+    curOffset: number;
+    tgtOffset: number;
+    curOpacity: number;
+    curTranslate: number;
+  }[] = [];
+
+  let currentScrollY = 0;
+  let rafId: number | null = null;
+  let sectionVisible = false;
+  let resizeTimeout: ReturnType<typeof setTimeout> | null = null;
+  let resizeObserver: ResizeObserver | null = null;
+  let intersectionObserver: IntersectionObserver | null = null;
+
+  const clamp = (v: number, lo: number, hi: number) => Math.min(Math.max(v, lo), hi);
+  const round2 = (v: number) => Math.round(v * 100) / 100;
+  const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
+
+  function measure() {
+    if (!lifestyleSection || !galleryEl) return;
+
+    const scrollY = window.scrollY;
+    const sectionRect = lifestyleSection.getBoundingClientRect();
+
+    sectionMetrics = {
+      top: sectionRect.top + scrollY,
+      height: sectionRect.height
+    };
+
+    const cards = [...galleryEl.querySelectorAll<HTMLElement>(".card")];
+
+    cardData = cards.map((card) => {
+      const rect = card.getBoundingClientRect();
+
+      return {
+        top: rect.top + scrollY,
+        height: rect.height,
+        wrapper: card.querySelector<HTMLDivElement>(".card-image-wrapper"),
+        info: card.querySelector<HTMLDivElement>(".card-info"),
+        img: card.querySelector<HTMLImageElement>("img"),
+        curOffset: 0,
+        tgtOffset: 0,
+        curOpacity: 0,
+        curTranslate: -10
+      };
+    });
+  }
+
+  function updateParallax(scrollY: number) {
+    currentScrollY = scrollY;
+  }
+
+  function tick() {
+    if (!sectionVisible) {
+      rafId = null;
+      return;
+    }
+
+    const scrollY = currentScrollY;
+    const winH = window.innerHeight;
+    const speed = isMobile ? -55 : -110;
+    const lerpFactor = isMobile ? 0.1 : 0.14;
+
+    if (sectionMetrics) {
+      const secTopVP = sectionMetrics.top - scrollY;
+      const secBotVP = secTopVP + sectionMetrics.height;
+
+      if (secBotVP < -500 || secTopVP > winH + 500) {
+        rafId = requestAnimationFrame(tick);
+        return;
+      }
+    }
+
+    const targets = cardData.map((c) => {
+      const center = c.top - scrollY + c.height / 2;
+      const progress = clamp((center - winH / 2) / winH, -1, 1);
+      const tgt = round2(progress * speed);
+
+      let tgtActive = false;
+      if (isMobile) {
+        const dist = Math.abs(center - winH / 2);
+        tgtActive = dist < c.height * 0.42;
+      }
+
+      return { tgt, tgtActive };
+    });
+
+    cardData.forEach((c, i) => {
+      const { tgt, tgtActive } = targets[i];
+
+      c.tgtOffset = tgt;
+      c.curOffset = lerp(c.curOffset, c.tgtOffset, lerpFactor);
+
+      if (c.wrapper) {
+        c.wrapper.style.transform = `translate3d(0, ${round2(c.curOffset)}px, 0)`;
+      }
+
+      if (isMobile && c.info && c.img) {
+        const tgtOp = tgtActive ? 1 : 0;
+        const tgtTr = tgtActive ? 0 : -10;
+
+        c.curOpacity = lerp(c.curOpacity, tgtOp, 0.12);
+        c.curTranslate = lerp(c.curTranslate, tgtTr, 0.12);
+
+        c.info.style.opacity = round2(c.curOpacity).toString();
+        c.info.style.transform = `translate3d(0, ${round2(c.curTranslate)}px, 0)`;
+        c.img.style.filter = c.curOpacity > 0.5
+          ? "saturate(0.94) brightness(0.68) contrast(0.98)"
+          : "saturate(0.94) brightness(1.01) contrast(0.98)";
+        c.img.style.transform = c.curOpacity > 0.5
+          ? "scale(1.05) translateZ(0)"
+          : "translateZ(0)";
+      }
+    });
+
+    rafId = requestAnimationFrame(tick);
+  }
+
+  function startLoop() {
+    if (!rafId) rafId = requestAnimationFrame(tick);
+  }
+
+  function stopLoop() {
+    if (rafId) {
+      cancelAnimationFrame(rafId);
+      rafId = null;
+    }
+  }
+
+  function handleResize() {
+    if (resizeTimeout) clearTimeout(resizeTimeout);
+
+    resizeTimeout = setTimeout(() => {
+      isMobile = window.innerWidth <= 780;
+      measure();
+    }, 120);
+  }
+
+  onMount(() => {
+    isMobile = window.innerWidth <= 780;
+
+    requestAnimationFrame(() => {
+      measure();
+      startLoop();
+    });
+
+    registerParallax(updateParallax);
+
+    resizeObserver = new ResizeObserver(handleResize);
+    if (lifestyleSection) resizeObserver.observe(lifestyleSection);
+
+    intersectionObserver = new IntersectionObserver(
+      ([entry]) => {
+        sectionVisible = entry.isIntersecting;
+        if (sectionVisible) startLoop();
+        else stopLoop();
+      },
+      { rootMargin: "300px 0px 300px 0px" }
+    );
+
+    if (lifestyleSection) intersectionObserver.observe(lifestyleSection);
+  });
+
+  onDestroy(() => {
+    stopLoop();
+    unregisterParallax(updateParallax);
+    resizeObserver?.disconnect();
+    intersectionObserver?.disconnect();
+    if (resizeTimeout) clearTimeout(resizeTimeout);
+  });
 </script>
 
 <svelte:head>
@@ -135,7 +338,11 @@
   />
 </svelte:head>
 
-<section class="lifestyle-section" aria-labelledby="lifestyle-title">
+<section
+  class="lifestyle-section"
+  aria-labelledby="lifestyle-title"
+  bind:this={lifestyleSection}
+>
   <div class="canvas-shell">
     <div class="top">
       <h2 id="lifestyle-title" class="heading">
@@ -167,21 +374,35 @@
   </div>
 
   <div class="gallery-wrap">
-    <div class="gallery" aria-label="Galerie visuelle du projet">
+    <div class="gallery" aria-label="Galerie visuelle du projet" bind:this={galleryEl}>
       {#each galleryColumns as column (column.className)}
         <div class={`col ${column.className}`}>
-          {#each column.items as item (item.alt)}
-            <article class={`card ${item.className}`}>
-              <img
-                src={item.src}
-                alt={item.alt}
-                width={item.width}
-                height={item.height}
-                loading={item.loading ?? "lazy"}
-                decoding="async"
-                fetchpriority={item.fetchpriority ?? "auto"}
-                draggable="false"
-              />
+          {#each column.items as item, itemIndex (item.alt)}
+            <article
+              class={`card ${item.className}`}
+              style={`--card-index:"${String(flatItems.findIndex((entry) => entry.alt === item.alt) + 1).padStart(2, "0")}"`}
+            >
+              <div class="card-image-wrapper">
+                <img
+                  src={item.src}
+                  alt={item.alt}
+                  width={item.width}
+                  height={item.height}
+                  loading={item.loading ?? "lazy"}
+                  decoding="async"
+                  fetchpriority={item.fetchpriority ?? "auto"}
+                  draggable="false"
+                />
+              </div>
+
+              <div class="card-info">
+                <span class="card-date">{item.year ?? "2024"}</span>
+                <span class="card-title">{item.title ?? item.alt}</span>
+              </div>
+
+              <span class="card-index" aria-hidden="true">
+                {String(flatItems.findIndex((entry) => entry.alt === item.alt) + 1).padStart(2, "0")}
+              </span>
             </article>
           {/each}
         </div>
@@ -389,7 +610,19 @@
     border-radius: 3px;
     background: var(--card);
     box-shadow: var(--shadow-card);
-    contain: paint;
+    contain: layout paint;
+    cursor: pointer;
+  }
+
+  .card-image-wrapper {
+    position: absolute;
+    inset-inline: 0;
+    height: 124%;
+    top: -12%;
+    will-change: transform;
+    transform: translate3d(0, 0, 0);
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
   }
 
   .card img {
@@ -399,8 +632,69 @@
     object-fit: cover;
     object-position: center;
     filter: saturate(0.94) brightness(1.01) contrast(0.98);
+    transform: translateZ(0);
+    transition: filter 0.45s ease, transform 0.8s ease;
     user-select: none;
     pointer-events: none;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+  }
+
+  .card:hover img {
+    filter: saturate(0.94) brightness(0.68) contrast(0.98);
+    transform: scale(1.05);
+  }
+
+  .card-info {
+    position: absolute;
+    top: 16px;
+    left: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 10px 14px;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    background: rgba(255, 255, 255, 0.18);
+    color: white;
+    font-size: 0.8rem;
+    opacity: 0;
+    transform: translate3d(0, -10px, 0);
+    transition: opacity 0.4s ease, transform 0.4s ease;
+    z-index: 2;
+  }
+
+  .card:hover .card-info {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+
+  .card-date {
+    opacity: 0.62;
+    font-size: 0.72rem;
+    letter-spacing: 0.08em;
+  }
+
+  .card-title {
+    font-size: 0.82rem;
+    font-weight: 500;
+    line-height: 1.1;
+  }
+
+  .card-index {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    font-size: 0.65rem;
+    letter-spacing: 0.18em;
+    color: rgba(79, 72, 66, 0.34);
+    z-index: 2;
+    pointer-events: none;
+    transition: color 0.4s ease;
+  }
+
+  .card:hover .card-index {
+    color: rgba(79, 72, 66, 0.62);
   }
 
   .edge-left {
@@ -538,6 +832,11 @@
       margin: 0;
     }
 
+    .card-image-wrapper {
+      height: 116%;
+      top: -8%;
+    }
+
     .portrait-left .single,
     .portrait-center .single,
     .hero-product .single {
@@ -554,10 +853,82 @@
     .hero-product .single {
       aspect-ratio: 1.08;
     }
+
+    .card:hover img {
+      filter: saturate(0.94) brightness(1.01) contrast(0.98);
+      transform: translateZ(0);
+    }
+
+    .card:hover .card-info {
+      opacity: 0;
+      transform: translate3d(0, -10px, 0);
+    }
+
+    .card:hover .card-plus {
+      transform: none;
+      background: rgba(255, 255, 255, 0.18);
+    }
+  }
+
+  @media (max-width: 640px) {
+    .card-image-wrapper {
+      height: 114%;
+      top: -7%;
+    }
+
+    .card-info {
+      top: 14px;
+      left: 14px;
+      padding: 9px 12px;
+      font-size: 0.74rem;
+    }
+
+    .card-plus {
+      bottom: 14px;
+      left: 14px;
+      width: 38px;
+      height: 38px;
+      font-size: 1rem;
+    }
+
+    .card-index {
+      top: 14px;
+      right: 14px;
+    }
+  }
+
+  @media (max-width: 420px) {
+    .card-image-wrapper {
+      height: 112%;
+      top: -6%;
+    }
+
+    .card-info {
+      top: 12px;
+      left: 12px;
+      padding: 8px 11px;
+      font-size: 0.7rem;
+    }
+
+    .card-plus {
+      bottom: 12px;
+      left: 12px;
+      width: 34px;
+      height: 34px;
+      font-size: 0.95rem;
+    }
+
+    .card-index {
+      top: 12px;
+      right: 12px;
+    }
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .swatch {
+    .swatch,
+    .card img,
+    .card-info,
+    .card-plus {
       transition: none;
     }
   }
