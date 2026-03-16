@@ -26,6 +26,8 @@
          import NewSectionHero from "./lib/sections/NewSectionHero.svelte";
                   import Transition1 from "./lib/sections/Transition1.svelte";
                   import Transition2 from "./lib/sections/Transition2.svelte";
+                  import Gallery from "./lib/sections/Gallery.svelte";
+                  import Gallery2 from "./lib/sections/Gallery2.svelte";
 
   import Travail from "./lib/structure/Travail.svelte";
   import Apropos from "./lib/structure/Apropos.svelte";
@@ -133,7 +135,7 @@
     <CustomCursor />
   {/if}
 
-  <IconeFleche />
+  <IconeFleche {currentPage}/>
 
 <Header {navigate} {currentPage} />
 
@@ -147,7 +149,8 @@
       <VisionSlider />
 
     {:else if currentPage === "travail"}
-     <RevealGallery />
+      <Gallery2 />
+      <Gallery />
     <Travail {navigate} />
 
     {:else if currentPage === "apropos"}

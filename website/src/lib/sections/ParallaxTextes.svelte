@@ -107,7 +107,7 @@
 .bg-image {
   position: absolute;
   inset: 0;
-  background: url("/images/aigleciel.jpg") center / cover no-repeat;
+  background: url("/images/photo.webp") center / cover no-repeat;
   filter: blur(25px) brightness(0.6);
   z-index: 2;
   opacity: 0;

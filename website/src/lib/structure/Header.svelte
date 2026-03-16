@@ -1,5 +1,4 @@
 <script>
-
   import { onMount, onDestroy } from "svelte";
   import FullscreenMenu from "./FullscreenMenu.svelte";
 
@@ -50,7 +49,7 @@
     if (!headerEl) return;
     const headerMid = headerEl.getBoundingClientRect().top + headerEl.offsetHeight / 2;
     const sections  = document.querySelectorAll(
-      "section.hero-wrapper, section.creative-section, section.services"
+      "section.hero-wrapper, section.creative-section, section.services, section.dna-section, section.lifestyle-section"
     );
 
     let overLight = false;
@@ -283,37 +282,37 @@
     filter: drop-shadow(0 0 4px rgba(95, 165, 255, 0.4));
   }
 
-  .theme-projets .nav-btn::before {
-    background: radial-gradient(
-      80px circle at var(--mx, 50%) var(--my, 50%),
-      rgba(249, 130, 130, 0.98),
-      rgba(124, 69, 165, 0.7) 35%,
-      rgba(40, 92, 255, 0.5) 58%,
-      transparent 75%
-    );
-    filter: drop-shadow(0 0 4px rgba(255, 90, 90, 0.4));
-  }
+.theme-projets .nav-btn::before {
+  background: radial-gradient(
+    80px circle at var(--mx, 50%) var(--my, 50%),
+    rgba(210, 210, 230, 0.98),
+    rgba(130, 110, 220, 0.7) 35%,
+    rgba(35, 30, 95, 0.55) 58%,
+    transparent 75%
+  );
+  filter: drop-shadow(0 0 4px rgba(150, 140, 230, 0.4));
+}
 
-  .theme-apropos .nav-btn::before {
-    background: radial-gradient(
-      80px circle at var(--mx, 50%) var(--my, 50%),
-      rgba(255, 235, 145, 0.98),
-      rgba(230, 190, 72, 0.72) 35%,
-      rgba(145, 100, 20, 0.45) 58%,
-      transparent 75%
-    );
-    filter: drop-shadow(0 0 4px rgba(255, 212, 95, 0.4));
-  }
+.theme-apropos .nav-btn::before {
+  background: radial-gradient(
+    80px circle at var(--mx, 50%) var(--my, 50%),
+    rgba(255, 170, 170, 0.98),
+    rgba(255, 110, 90, 0.75) 35%,
+    rgba(150, 40, 40, 0.55) 58%,
+    transparent 75%
+  );
+  filter: drop-shadow(0 0 4px rgba(255, 110, 90, 0.4));
+}
 
   .theme-contact .nav-btn::before {
     background: radial-gradient(
       80px circle at var(--mx, 50%) var(--my, 50%),
-      rgba(186, 132, 255, 0.98),
-      rgba(110, 74, 255, 0.7) 35%,
-      rgba(40, 92, 255, 0.5) 58%,
+      rgba(170, 255, 233, 0.98),
+      rgba(77, 214, 182, 0.72) 34%,
+      rgba(26, 111, 117, 0.5) 58%,
       transparent 75%
     );
-    filter: drop-shadow(0 0 4px rgba(122, 102, 255, 0.42));
+    filter: drop-shadow(0 0 4px rgba(77, 214, 182, 0.4));
   }
 
   /* ── Liens desktop ─────────────────────────────────────────────────────── */

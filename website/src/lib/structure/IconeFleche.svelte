@@ -1,17 +1,30 @@
 <script>
   import { onMount } from "svelte";
 
+  export let currentPage = "home";
+
   let progress = 0;
   let x = 50;
   let y = 50;
   let visible = false;
   let arrowColor = "white"; // couleur dynamique de la flèche
 
+  $: progressGradient =
+    currentPage === "services"
+      ? "rgba(145, 205, 255, 0.98), rgba(74, 140, 255, 0.68), rgba(145, 205, 255, 0.98)"
+      : currentPage === "travail"
+      ? "rgba(214, 155, 255, 0.98), rgba(140, 92, 255, 0.75), rgba(214, 155, 255, 0.98)"
+      : currentPage === "apropos"
+      ? "rgba(255, 170, 170, 0.98), rgba(255, 110, 90, 0.75), rgba(255, 170, 170, 0.98)"
+      : currentPage === "contact"
+      ? "rgba(186, 132, 255, 0.98), rgba(110, 74, 255, 0.7), rgba(186, 132, 255, 0.98)"
+      : "rgba(213, 184, 89, 0.95), rgba(212, 102, 55, 0.45), rgba(213, 184, 89, 0.95)";
+
   function updateScroll() {
     const scrollTop = window.scrollY;
     const docHeight = document.body.scrollHeight - window.innerHeight;
 
-    progress = (scrollTop / docHeight) * 100;
+    progress = docHeight > 0 ? (scrollTop / docHeight) * 100 : 0;
     visible = scrollTop > 0;
 
     updateArrowColor();
@@ -52,11 +65,11 @@
 
     const btnMid = btn.getBoundingClientRect().top + btn.offsetHeight / 2;
     const sections = document.querySelectorAll(
-      "section.hero-wrapper, section.creative-section, section.services, section.contact"
+      "section.hero-wrapper, section.creative-section, section.services, section.contact, section.dna-section, section.lifestyle-section"
     );
 
     let overSection = false;
-    sections.forEach(section => {
+    sections.forEach((section) => {
       const rect = section.getBoundingClientRect();
       if (btnMid >= rect.top && btnMid <= rect.bottom) {
         overSection = true;
@@ -67,7 +80,7 @@
   }
 
   onMount(() => {
-    window.addEventListener("scroll", updateScroll);
+    window.addEventListener("scroll", updateScroll, { passive: true });
     updateScroll();
     return () => window.removeEventListener("scroll", updateScroll);
   });
@@ -77,7 +90,7 @@
   class="scroll-btn {visible ? 'show' : ''}"
   on:click={scrollToTop}
   on:mousemove={handleMove}
-  style="--progress:{progress}; --x:{x}%; --y:{y}%"
+  style="--progress:{progress}; --x:{x}%; --y:{y}%; --progress-gradient:{progressGradient}"
   aria-label="Retour en haut"
 >
   <svg viewBox="0 0 24 24" class="arrow" stroke={arrowColor}>
@@ -104,7 +117,6 @@
   pointer-events: none;
   transition: all 0.8s cubic-bezier(.22,.61,.36,1);
 
-  /* Fond blur identique au header */
   background: rgba(255,255,255,0.15);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
@@ -127,8 +139,10 @@
   border-radius: 50%;
   padding: 1px;
   background: conic-gradient(
-    rgba(213, 184, 89, 0.95) calc(var(--progress) * 1%),
-    rgba(255,255,255,0.06) 0%
+    from 0deg,
+    rgba(255,255,255,0.06) 0deg,
+    var(--progress-gradient) calc(var(--progress) * 1%),
+    rgba(255,255,255,0.06) 0deg
   );
   -webkit-mask:
     radial-gradient(farthest-side, transparent calc(100% - 1.5px), black 0);
