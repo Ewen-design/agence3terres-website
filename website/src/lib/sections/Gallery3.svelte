@@ -36,6 +36,7 @@
   ];
 
   let selectedFinish = 1;
+  let darkPhase = false;
 
   const galleryColumns: GalleryColumn[] = [
     {
@@ -230,6 +231,9 @@
         rafId = requestAnimationFrame(tick);
         return;
       }
+
+      const darkTrigger = sectionMetrics.top + Math.min(5200, sectionMetrics.height * 0);
+darkPhase = scrollY > darkTrigger;
     }
 
     const targets = cardData.map((c) => {
@@ -341,48 +345,11 @@
 </svelte:head>
 
 <section
-  class="lifestyles-section"
+  class="lifestyle-section top-aligned"
+  class:dark-phase={darkPhase}
   aria-labelledby="lifestyle-title"
   bind:this={lifestyleSection}
 >
-  <div class="canvas-shell">
-    <div class="top">
-      <h2 id="lifestyle-title" class="heading">
-        <span class="title-main">Un projet de</span>
-        <span class="title-accent">Serein Design</span>
-      </h2>
-
-      <div class="controls">
-        <div class="select-copy" aria-label="Collection sélectionnée">
-          <span class="select-title">Horizon</span>
-          <span class="select-subtitle">Sleek, sophisticated design</span>
-        </div>
-
-        <div class="finish-card" aria-label="Choix de couleur">
-          {#each finishes as finish, index (finish.color)}
-            <button
-              type="button"
-              class="swatch"
-              class:active={selectedFinish === index}
-              style={`--swatch:${finish.color}`}
-              aria-label={`Choisir la finition ${finish.label}`}
-              aria-pressed={selectedFinish === index}
-              on:click={() => selectFinish(index)}
-            />
-          {/each}
-        </div>
-      </div>
-
-      <button
-        type="button"
-        class="project-button"
-        on:click={() => navigate("projet1")}
-      >
-        Voir le projet
-      </button>
-    </div>
-  </div>
-
   <div class="gallery-wrap">
     <div class="gallery" aria-label="Galerie visuelle du projet" bind:this={galleryEl}>
       {#each galleryColumns as column (column.className)}
@@ -419,6 +386,44 @@
       {/each}
     </div>
   </div>
+
+  <div class="canvas-shell">
+    <div class="top text-part">
+      <h2 id="lifestyle-title" class="heading">
+        <span class="title-main">Un projet de</span>
+        <span class="title-accent">Serein Design</span>
+      </h2>
+
+      <div class="controls">
+        <div class="select-copy" aria-label="Collection sélectionnée">
+          <span class="select-title">Horizon</span>
+          <span class="select-subtitle">Sleek, sophisticated design</span>
+        </div>
+
+        <div class="finish-card" aria-label="Choix de couleur">
+          {#each finishes as finish, index (finish.color)}
+            <button
+              type="button"
+              class="swatch"
+              class:active={selectedFinish === index}
+              style={`--swatch:${finish.color}`}
+              aria-label={`Choisir la finition ${finish.label}`}
+              aria-pressed={selectedFinish === index}
+              on:click={() => selectFinish(index)}
+            />
+          {/each}
+        </div>
+      </div>
+
+      <button
+        type="button"
+        class="project-button"
+        on:click={() => navigate("projet2")}
+      >
+        voir le projet
+      </button>
+    </div>
+  </div>
 </section>
 
 <style>
@@ -430,32 +435,48 @@
     margin: 0;
   }
 
-  .lifestyles-section {
-    --bg: #f3efea;
-    --bg-top: #f7f4ef;
-    --text: #4e4741;
-    --muted: #8d857d;
-    --card: #e9e3db;
-    --line: rgba(96, 86, 78, 0.08);
-    --line-soft: rgba(96, 86, 78, 0.06);
-    --shadow-ui: 0 1px 0 rgba(255, 255, 255, 0.72) inset,
-      0 6px 18px rgba(93, 74, 49, 0.018);
-    --shadow-card: 0 1px 0 rgba(255, 255, 255, 0.58) inset,
-      0 10px 24px rgba(90, 72, 50, 0.018);
+  .lifestyle-section {
+  --bg: #f3efea;
+  --text: #4e4741;
+  --muted: #8d857d;
+  --card: #e9e3db;
+  --line: rgba(96, 86, 78, 0.08);
+  --line-soft: rgba(96, 86, 78, 0.06);
+  --panel-bg: rgba(255, 255, 255, 0.82);
+  --panel-text: rgba(76, 69, 63, 0.95);
+  --panel-muted: #8d857d;
+  --panel-border: rgba(96, 86, 78, 0.06);
+  --shadow-ui: 0 1px 0 rgba(255, 255, 255, 0.72) inset,
+    0 6px 18px rgba(93, 74, 49, 0.018);
+  --shadow-card: 0 1px 0 rgba(255, 255, 255, 0.58) inset,
+    0 10px 24px rgba(90, 72, 50, 0.018);
 
-    position: relative;
-    isolation: isolate;
-    width: 100%;
-    min-height: 100svh;
-    padding-block: clamp(4.5rem, 9vw, 8.5rem);
-    overflow: clip;
-    background:
-      radial-gradient(circle at 50% 0%, rgba(255, 255, 255, 0.76) 0%, rgba(255, 255, 255, 0) 42%),
-      linear-gradient(180deg, var(--bg-top) 0%, var(--bg) 100%);
-    font-family: "Inter", sans-serif;
-    color: var(--text);
-    contain: layout paint style;
-  }
+  position: relative;
+  isolation: isolate;
+  width: 100%;
+  min-height: 100svh;
+  padding-block: clamp(4.5rem, 9vw, 8.5rem);
+  overflow: clip;
+  background: var(--bg);
+  font-family: "Inter", sans-serif;
+  color: var(--text);
+  contain: layout paint style;
+  transition:
+    background 520ms ease,
+    color 520ms ease;
+}
+
+.lifestyle-section.dark-phase {
+  --bg: #111;
+  --text: #f5f5f5;
+  --muted: rgba(255, 255, 255, 0.62);
+  --panel-bg: rgba(0, 0, 0, 0.86);
+  --panel-text: #f5f5f5;
+  --panel-muted: rgba(255, 255, 255, 0.62);
+  --panel-border: rgba(255, 255, 255, 0.1);
+  --shadow-ui: 0 1px 0 rgba(255, 255, 255, 0.05) inset,
+    0 12px 28px rgba(0, 0, 0, 0.22);
+}
 
   .canvas-shell {
     width: min(100%, 1600px);
@@ -474,6 +495,11 @@
     margin-bottom: clamp(2.8rem, 4.2vw, 4rem);
   }
 
+  .text-part {
+    margin-top: clamp(2.8rem, 4.2vw, 4rem);
+    margin-bottom: 0;
+  }
+
   .heading {
     margin: 0;
     display: flex;
@@ -485,6 +511,11 @@
     letter-spacing: -0.055em;
     text-align: center;
     text-wrap: balance;
+  }
+
+  .title-main,
+  .title-accent {
+    transition: color 280ms ease;
   }
 
   .title-main {
@@ -501,6 +532,11 @@
     color: rgba(79, 72, 66, 0.92);
   }
 
+  .dark-phase .title-main,
+  .dark-phase .title-accent {
+    color: #fff;
+  }
+
   .controls {
     display: flex;
     align-items: center;
@@ -513,10 +549,10 @@
     min-height: 2.35rem;
     padding: 0.7rem 1.15rem;
     border-radius: 7px;
-    border: 1px solid var(--line-soft);
-    background: rgba(255, 255, 255, 0.82);
+    border: 1px solid var(--panel-border);
+    background: var(--panel-bg);
     box-shadow: var(--shadow-ui);
-    color: rgba(76, 69, 63, 0.95);
+    color: var(--panel-text);
     font-family: "Inter", sans-serif;
     font-size: 0.8rem;
     font-weight: 500;
@@ -525,13 +561,14 @@
     transition:
       transform 140ms ease,
       box-shadow 140ms ease,
-      background 140ms ease;
+      background 280ms ease,
+      border-color 280ms ease,
+      color 280ms ease;
     -webkit-tap-highlight-color: transparent;
   }
 
   .project-button:hover {
     transform: translateY(-1px);
-    background: rgba(255, 255, 255, 0.9);
   }
 
   .project-button:focus-visible {
@@ -542,13 +579,24 @@
       0 0 0 4px rgba(111, 101, 91, 0.12);
   }
 
+  .dark-phase .project-button:focus-visible {
+    box-shadow:
+      0 0 0 1px rgba(255, 255, 255, 0.1),
+      inset 0 1px 1px rgba(255, 255, 255, 0.06),
+      0 0 0 4px rgba(255, 255, 255, 0.08);
+  }
+
   .select-copy,
   .finish-card {
     min-height: 2.35rem;
     border-radius: 7px;
-    border: 1px solid var(--line-soft);
-    background: rgba(255, 255, 255, 0.82);
+    border: 1px solid var(--panel-border);
+    background: var(--panel-bg);
     box-shadow: var(--shadow-ui);
+    transition:
+      background 280ms ease,
+      border-color 280ms ease,
+      box-shadow 280ms ease;
   }
 
   .select-copy {
@@ -558,17 +606,22 @@
     padding: 0.45rem 0.85rem 0.48rem;
   }
 
+  .select-title,
+  .select-subtitle {
+    transition: color 280ms ease;
+  }
+
   .select-title {
     font-size: 0.86rem;
     font-weight: 500;
-    color: rgba(76, 69, 63, 0.95);
+    color: var(--panel-text);
     line-height: 1;
   }
 
   .select-subtitle {
     font-size: 0.78rem;
     font-weight: 400;
-    color: var(--muted);
+    color: var(--panel-muted);
     line-height: 1;
     white-space: nowrap;
   }
@@ -599,6 +652,12 @@
     -webkit-tap-highlight-color: transparent;
   }
 
+  .dark-phase .swatch {
+    box-shadow:
+      0 0 0 1px rgba(255, 255, 255, 0.12),
+      inset 0 1px 1px rgba(255, 255, 255, 0.18);
+  }
+
   .swatch:hover {
     transform: scale(1.04);
   }
@@ -611,12 +670,24 @@
       0 0 0 4px rgba(111, 101, 91, 0.12);
   }
 
+  .dark-phase .swatch:focus-visible {
+    box-shadow:
+      0 0 0 1px rgba(255, 255, 255, 0.12),
+      inset 0 1px 1px rgba(255, 255, 255, 0.18),
+      0 0 0 4px rgba(255, 255, 255, 0.08);
+  }
+
   .swatch.active::before {
     content: "";
     position: absolute;
     inset: -0.24rem;
     border-radius: inherit;
     border: 1px solid rgba(103, 95, 87, 0.46);
+    transition: border-color 280ms ease;
+  }
+
+  .dark-phase .swatch.active::before {
+    border-color: rgba(255, 255, 255, 0.45);
   }
 
   .gallery-wrap {
@@ -635,13 +706,13 @@
       minmax(220px, 1.6fr)
       minmax(72px, 0.6fr);
     gap: 0.8rem;
-    align-items: end;
+    align-items: start;
   }
 
   .col {
     display: flex;
     flex-direction: column;
-    justify-content: flex-end;
+    justify-content: flex-start;
     gap: 0.72rem;
     min-height: 30rem;
     contain: layout paint;
@@ -742,24 +813,24 @@
 
   .edge-left {
     margin-left: clamp(-1.6rem, -1.8vw, -1rem);
-    padding-top: 1.1rem;
+    padding-bottom: 1.1rem;
   }
 
   .portrait-left {
-    padding-top: 5.2rem;
+    padding-bottom: 5.2rem;
   }
 
   .portrait-center {
-    padding-top: 8.3rem;
+    padding-bottom: 8.3rem;
   }
 
   .hero-product {
-    padding-top: 4.2rem;
+    padding-bottom: 4.2rem;
   }
 
   .edge-right {
     margin-right: clamp(-1.6rem, -1.8vw, -1rem);
-    padding-top: 0;
+    padding-bottom: 0;
   }
 
   .left-top {
@@ -791,7 +862,7 @@
   }
 
   @media (max-width: 1100px) {
-    .lifestyles-section {
+    .lifestyle-section {
       padding-block: clamp(3.5rem, 7vw, 5.5rem);
     }
 
@@ -808,7 +879,7 @@
 
     .col {
       min-height: auto;
-      padding-top: 0;
+      padding-bottom: 0;
       margin: 0;
     }
 
@@ -818,17 +889,19 @@
 
     .portrait-center .single {
       height: 14rem;
-      margin-top: 2.8rem;
+      margin-top: 0;
+      margin-bottom: 2.8rem;
     }
 
     .hero-product .single {
       height: 20rem;
-      margin-top: 0.6rem;
+      margin-top: 0;
+      margin-bottom: 0.6rem;
     }
   }
 
   @media (max-width: 780px) {
-    .lifestyles-section {
+    .lifestyle-section {
       padding-block: 3.25rem 4rem;
     }
 
@@ -836,8 +909,8 @@
       padding: 0 0.9rem 1.2rem;
     }
 
-    .top {
-      margin-bottom: 2rem;
+    .text-part {
+      margin-top: 2rem;
     }
 
     .heading {
@@ -874,6 +947,7 @@
     .portrait-center,
     .hero-product {
       margin: 0;
+      padding-bottom: 0;
     }
 
     .card-image-wrapper {
@@ -886,7 +960,7 @@
     .hero-product .single {
       height: auto;
       min-height: 14rem;
-      margin-top: 0;
+      margin-bottom: 0;
     }
 
     .portrait-left .single,
@@ -948,10 +1022,17 @@
   }
 
   @media (prefers-reduced-motion: reduce) {
+    .lifestyle-section,
+    .title-main,
+    .title-accent,
+    .select-copy,
+    .finish-card,
+    .project-button,
+    .select-title,
+    .select-subtitle,
     .swatch,
     .card img,
-    .card-info,
-    .project-button {
+    .card-info {
       transition: none;
     }
   }

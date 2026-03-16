@@ -28,6 +28,7 @@
                   import Transition2 from "./lib/sections/Transition2.svelte";
                   import Gallery from "./lib/sections/Gallery.svelte";
                   import Gallery2 from "./lib/sections/Gallery2.svelte";
+                  import Gallery3 from "./lib/sections/Gallery3.svelte";
 
   import Travail from "./lib/structure/Travail.svelte";
   import Apropos from "./lib/structure/Apropos.svelte";
@@ -51,30 +52,25 @@
   }
 
   function navigate(page) {
-    setTimeout(() => {
-  currentPage = nextPage;
-  lenis?.scrollTo(0, { immediate: true });
+  if (page === currentPage || isTransitioning) return;
+
+  nextPage = page;
+  isTransitioning = true;
 
   setTimeout(() => {
-    lenis?.resize();   // 👈 IMPORTANT
-  }, 50);
-
-}, 600);
-    if (page === currentPage || isTransitioning) return;
-
-    nextPage = page;
-    isTransitioning = true;
+    currentPage = nextPage;
+    lenis?.scrollTo(0, { immediate: true });
 
     setTimeout(() => {
-      currentPage = nextPage;
-      lenis?.scrollTo(0, { immediate: true });
-    }, 600);
+      lenis?.resize();
+    }, 50);
+  }, 600);
 
-    setTimeout(() => {
-      isTransitioning = false;
-      nextPage = null;
-    }, 1300);
-  }
+  setTimeout(() => {
+    isTransitioning = false;
+    nextPage = null;
+  }, 1300);
+}
 
   onMount(() => {
     window.addEventListener("load", () => {
@@ -149,9 +145,10 @@
       <VisionSlider />
 
     {:else if currentPage === "travail"}
-      <Gallery2 />
-      <Gallery />
-    <Travail {navigate} />
+      <Gallery2 {navigate} />
+        <Gallery3 {navigate} />
+      
+ 
 
     {:else if currentPage === "apropos"}
       <Apropos />
@@ -170,8 +167,9 @@
       <Contact />
 
     {:else if currentPage === "projet1"}
-      <Projet1 {navigate} />
-
+        <Gallery />
+    <Projet1 {navigate} />
+    
     {:else if currentPage === "projet2"}
       <Projet2 {navigate} />
     {/if}
