@@ -799,7 +799,7 @@
   }
 
   .left-top {
-    height: 18rem;
+    height: 16rem;
   }
 
   .left-bottom {
