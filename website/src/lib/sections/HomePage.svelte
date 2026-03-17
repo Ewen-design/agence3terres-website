@@ -18,10 +18,10 @@
       reverse: true,
     },
     {
-      img:     "/images/photo2.webp",
+      img:     "/images/montagne.webp",
       alt:     "Emotional impact",
-      title:   "Where design meets emotional IMPACT",
-      text:    "We blend minimalism, sculpture-like compositions and cinematic pacing.",
+      title:   "Les sommets de l'ambition",
+      text:    "La montangne est notre troisième terre, celle de l'ambition. Nous visons le sommet pour nos clients, en créant des expériences visuelles qui inspirent et marquent les esprits.",
       reverse: false,
     },
   ];
