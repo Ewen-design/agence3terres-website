@@ -65,7 +65,7 @@
 
     const btnMid = btn.getBoundingClientRect().top + btn.offsetHeight / 2;
     const sections = document.querySelectorAll(
-      "section.hero-wrapper, section.creative-section, section.services, section.contact, section.dna-section, section.lifestyle-section"
+      "section.hero-wrapper, section.creative-section, section.services, section.dna-section, section.lifestyles-section"
     );
 
     let overSection = false;

@@ -1,72 +1,64 @@
 // lib/scrollEngine.js
+//
+// Single broadcast layer. Lenis calls updateScrollEngine(y) each RAF frame.
+// We fan-out to all registered callbacks synchronously — no extra RAF, no lerp.
+//
+// winH / vw are cached here and updated only on resize (via updateScrollEngineViewport).
+// This prevents layout queries (window.innerHeight) inside scroll callbacks,
+// which would force a reflow on every frame and cause jank.
 
-let callbacks = new Set();
+let callbacks   = new Set();
 let initialized = false;
+let currentY    = 0;
+let cachedVh    = 0;
+let cachedVw    = 0;
 
-let currentY = 0;
-let targetY = 0;
-let ticking = false;
+function readViewport() {
+  cachedVh = window.innerHeight || 0;
+  cachedVw = window.innerWidth  || 0;
+}
 
-const VIEWPORT_MARGIN = 800;
+// Called once at init and on every resize from App.svelte
+export function updateScrollEngineViewport() {
+  readViewport();
+}
 
 function emit() {
-  const vh = window.innerHeight;
-  const vw = window.innerWidth;
-
+  const ctx = { vh: cachedVh, vw: cachedVw, isMobile: cachedVw <= 900 };
   callbacks.forEach((cb) => {
-    try {
-      cb(currentY, {
-        vh,
-        vw,
-        isMobile: vw <= 900
-      });
-    } catch (e) {
-      console.warn("ScrollEngine callback error:", e);
-    }
+    try { cb(currentY, ctx); }
+    catch (e) { console.warn("ScrollEngine callback error:", e); }
   });
-}
-
-function tick() {
-  ticking = false;
-
-  if (Math.abs(targetY - currentY) < 0.1) {
-    currentY = targetY;
-    emit();
-    return;
-  }
-
-  currentY = targetY;
-  emit();
-}
-
-function requestTick() {
-  if (ticking) return;
-  ticking = true;
-  requestAnimationFrame(tick);
 }
 
 export function initScrollEngine() {
   if (initialized) return;
   initialized = true;
+  readViewport();
+  // Keep viewport fresh on resize — single listener for the whole app
+  window.addEventListener("resize", updateScrollEngineViewport, { passive: true });
 }
 
 export function destroyScrollEngine() {
   callbacks.clear();
+  window.removeEventListener("resize", updateScrollEngineViewport);
   initialized = false;
   currentY = 0;
-  targetY = 0;
-  ticking = false;
+}
+
+// Called by App.svelte inside lenis.on("scroll", e => updateScrollEngine(e.animatedScroll))
+// Already on Lenis RAF cadence — fan-out immediately, no buffering.
+export function updateScrollEngine(y) {
+  currentY = y;
+  emit();
 }
 
 export function registerParallax(cb) {
   callbacks.add(cb);
-
+  if (!cachedVh) readViewport();
+  // Fire once immediately so the component draws at the current scroll position
   try {
-    cb(currentY, {
-      vh: window.innerHeight,
-      vw: window.innerWidth,
-      isMobile: window.innerWidth <= 900
-    });
+    cb(currentY, { vh: cachedVh, vw: cachedVw, isMobile: cachedVw <= 900 });
   } catch (e) {
     console.warn("ScrollEngine callback error:", e);
   }
@@ -76,24 +68,10 @@ export function unregisterParallax(cb) {
   callbacks.delete(cb);
 }
 
-export function updateScrollEngine(y) {
-  targetY = y;
-  requestTick();
-}
-
 export function forceScrollEngineUpdate() {
-  requestTick();
+  emit();
 }
 
 export function getScrollY() {
   return currentY;
-}
-
-export function sectionIsNearViewport(rect) {
-  const vh = window.innerHeight;
-
-  return !(
-    rect.bottom < -VIEWPORT_MARGIN ||
-    rect.top > vh + VIEWPORT_MARGIN
-  );
 }

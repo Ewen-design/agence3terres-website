@@ -697,14 +697,14 @@
    
   }
 
-  .card-image-wrapper {
-    position: absolute;
-    inset-inline: 0;
-    height: 124%;
-    top: -15%;
-    will-change: transform;
-    transform: translate3d(0, 0, 0);
-  }
+ .card-image-wrapper {
+  position: absolute;
+  inset-inline: 0;
+  height: 150%;
+  top: -25%;
+  will-change: transform;
+  transform: translate3d(0, 0, 0);
+}
 
   .card img {
     width: 100%;

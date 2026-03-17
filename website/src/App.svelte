@@ -1,7 +1,7 @@
 <script>
   import { onMount, onDestroy } from "svelte";
-  import { initScrollEngine, destroyScrollEngine, updateScrollEngine } from "./lib/scrollEngine.js";
   import Lenis from "@studio-freight/lenis";
+  import { initScrollEngine, destroyScrollEngine, updateScrollEngine, updateScrollEngineViewport } from "./lib/scrollEngine.js";
 
   import Header from "./lib/structure/Header.svelte";
   import Footer from "./lib/structure/Footer.svelte";
@@ -15,6 +15,7 @@
   import TextesIntro from "./lib/sections/TextesIntro.svelte";
   import HomePage from "./lib/sections/HomePage.svelte";
   import ParallaxGallery from "./lib/sections/ParallaxGallery.svelte";
+  import ParallaxGallery2 from "./lib/sections/ParallaxGallery2.svelte";
   import ProjetsHighlight from "./lib/sections/ProjetsHighlight.svelte";
   import ParallaxTextes from "./lib/sections/ParallaxTextes.svelte";
   import BackgroundParallax from "./lib/sections/BackgroundParallax.svelte";
@@ -82,9 +83,13 @@
     });
 
     checkMobile();
-    window.addEventListener("resize", checkMobile);
+   window.addEventListener("resize", () => {
+         checkMobile();
+    updateScrollEngineViewport();
+  });
 
     initScrollEngine();
+    updateScrollEngineViewport();
 
     lenis = new Lenis({
       duration: 1.35,
@@ -141,7 +146,8 @@
     {#if currentPage === "home"}
       <TextesIntro />
       <HomePage />
-      <ParallaxGallery />
+      
+      <ParallaxGallery2 />
       <StickySlider />
       <ProjetsHighlight />
       <VisionSlider />
