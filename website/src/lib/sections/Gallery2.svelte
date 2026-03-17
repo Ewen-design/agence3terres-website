@@ -3,6 +3,7 @@
   import { registerParallax, unregisterParallax } from "../scrollEngine.js";
 
   export let navigate;
+  export let darkPhase = false;
 
   type Finish = {
     color: string;
@@ -269,8 +270,7 @@
           c.curOpacity > 0.5
             ? "saturate(0.94) brightness(0.68) contrast(0.98)"
             : "saturate(0.94) brightness(1.01) contrast(0.98)";
-        c.img.style.transform =
-          c.curOpacity > 0.5 ? "scale(1.05) translateZ(0)" : "translateZ(0)";
+        c.img.style.transform = c.curOpacity > 0.5 ? "scale(1.05) translateZ(0)" : "translateZ(0)";
       }
     });
 
@@ -342,6 +342,7 @@
 
 <section
   class="lifestyles-section"
+  class:dark-phase={darkPhase}
   aria-labelledby="lifestyle-title"
   bind:this={lifestyleSection}
 >
@@ -438,6 +439,10 @@
     --card: #e9e3db;
     --line: rgba(96, 86, 78, 0.08);
     --line-soft: rgba(96, 86, 78, 0.06);
+    --panel-bg: rgba(255, 255, 255, 0.82);
+    --panel-text: rgba(76, 69, 63, 0.95);
+    --panel-muted: #8d857d;
+    --panel-border: rgba(96, 86, 78, 0.06);
     --shadow-ui: 0 1px 0 rgba(255, 255, 255, 0.72) inset,
       0 6px 18px rgba(93, 74, 49, 0.018);
     --shadow-card: 0 1px 0 rgba(255, 255, 255, 0.58) inset,
@@ -449,12 +454,26 @@
     min-height: 100svh;
     padding-block: clamp(4.5rem, 9vw, 8.5rem);
     overflow: clip;
-    background:
-      radial-gradient(circle at 50% 0%, rgba(255, 255, 255, 0.76) 0%, rgba(255, 255, 255, 0) 42%),
-      linear-gradient(180deg, var(--bg-top) 0%, var(--bg) 100%);
+    background: var(--bg);
     font-family: "Inter", sans-serif;
     color: var(--text);
     contain: layout paint style;
+    transition:
+      background 520ms ease,
+      color 520ms ease;
+  }
+
+  .lifestyles-section.dark-phase {
+    --bg: #111;
+    --bg-top: #111;
+    --text: #f5f5f5;
+    --muted: rgba(255, 255, 255, 0.62);
+    --panel-bg: rgba(0, 0, 0, 0.86);
+    --panel-text: #f5f5f5;
+    --panel-muted: rgba(255, 255, 255, 0.62);
+    --panel-border: rgba(255, 255, 255, 0.1);
+    --shadow-ui: 0 1px 0 rgba(255, 255, 255, 0.05) inset,
+      0 12px 28px rgba(0, 0, 0, 0.22);
   }
 
   .canvas-shell {
@@ -487,6 +506,11 @@
     text-wrap: balance;
   }
 
+  .title-main,
+  .title-accent {
+    transition: color 520ms ease;
+  }
+
   .title-main {
     font-size: clamp(2.8rem, 4.25vw, 3rem);
     font-weight: 300;
@@ -501,6 +525,11 @@
     color: rgba(79, 72, 66, 0.92);
   }
 
+  .dark-phase .title-main,
+  .dark-phase .title-accent {
+    color: #fff;
+  }
+
   .controls {
     display: flex;
     align-items: center;
@@ -509,46 +538,25 @@
     flex-wrap: wrap;
   }
 
+  .select-copy,
+  .finish-card,
   .project-button {
-    min-height: 2.35rem;
-    padding: 0.7rem 1.15rem;
-    border-radius: 7px;
-    border: 1px solid var(--line-soft);
-    background: rgba(255, 255, 255, 0.82);
+    border: 1px solid var(--panel-border);
+    background: var(--panel-bg);
+    color: var(--panel-text);
     box-shadow: var(--shadow-ui);
-    color: rgba(76, 69, 63, 0.95);
-    font-family: "Inter", sans-serif;
-    font-size: 0.8rem;
-    font-weight: 500;
-    letter-spacing: 0.04em;
-    cursor: pointer;
     transition:
-      transform 140ms ease,
-      box-shadow 140ms ease,
-      background 140ms ease;
-    -webkit-tap-highlight-color: transparent;
-  }
-
-  .project-button:hover {
-    transform: translateY(-1px);
-    background: rgba(255, 255, 255, 0.9);
-  }
-
-  .project-button:focus-visible {
-    outline: none;
-    box-shadow:
-      0 0 0 1px rgba(88, 79, 71, 0.11),
-      inset 0 1px 1px rgba(255, 255, 255, 0.45),
-      0 0 0 4px rgba(111, 101, 91, 0.12);
+      background 520ms ease,
+      color 520ms ease,
+      border-color 520ms ease,
+      box-shadow 520ms ease,
+      transform 140ms ease;
   }
 
   .select-copy,
   .finish-card {
     min-height: 2.35rem;
     border-radius: 7px;
-    border: 1px solid var(--line-soft);
-    background: rgba(255, 255, 255, 0.82);
-    box-shadow: var(--shadow-ui);
   }
 
   .select-copy {
@@ -561,16 +569,18 @@
   .select-title {
     font-size: 0.86rem;
     font-weight: 500;
-    color: rgba(76, 69, 63, 0.95);
+    color: var(--panel-text);
     line-height: 1;
+    transition: color 520ms ease;
   }
 
   .select-subtitle {
     font-size: 0.78rem;
     font-weight: 400;
-    color: var(--muted);
+    color: var(--panel-muted);
     line-height: 1;
     white-space: nowrap;
+    transition: color 520ms ease;
   }
 
   .finish-card {
@@ -599,16 +609,14 @@
     -webkit-tap-highlight-color: transparent;
   }
 
-  .swatch:hover {
-    transform: scale(1.04);
+  .dark-phase .swatch {
+    box-shadow:
+      0 0 0 1px rgba(255, 255, 255, 0.12),
+      inset 0 1px 1px rgba(255, 255, 255, 0.18);
   }
 
-  .swatch:focus-visible {
-    outline: none;
-    box-shadow:
-      0 0 0 1px rgba(88, 79, 71, 0.11),
-      inset 0 1px 1px rgba(255, 255, 255, 0.45),
-      0 0 0 4px rgba(111, 101, 91, 0.12);
+  .swatch:hover {
+    transform: scale(1.04);
   }
 
   .swatch.active::before {
@@ -617,6 +625,26 @@
     inset: -0.24rem;
     border-radius: inherit;
     border: 1px solid rgba(103, 95, 87, 0.46);
+  }
+
+  .dark-phase .swatch.active::before {
+    border-color: rgba(255, 255, 255, 0.45);
+  }
+
+  .project-button {
+    min-height: 2.35rem;
+    padding: 0.7rem 1.15rem;
+    border-radius: 7px;
+    font-family: "Inter", sans-serif;
+    font-size: 0.8rem;
+    font-weight: 500;
+    letter-spacing: 0.04em;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .project-button:hover {
+    transform: translateY(-1px);
   }
 
   .gallery-wrap {
@@ -654,7 +682,6 @@
     background: var(--card);
     box-shadow: var(--shadow-card);
     contain: layout paint;
-    cursor: pointer;
   }
 
   .card-image-wrapper {
@@ -679,8 +706,6 @@
     transition: filter 0.45s ease, transform 0.8s ease;
     user-select: none;
     pointer-events: none;
-    backface-visibility: hidden;
-    -webkit-backface-visibility: hidden;
   }
 
   .card:hover img {
@@ -791,10 +816,6 @@
   }
 
   @media (max-width: 1100px) {
-    .lifestyles-section {
-      padding-block: clamp(3.5rem, 7vw, 5.5rem);
-    }
-
     .gallery {
       grid-template-columns: 1fr 0.9fr 1.15fr;
       gap: 0.7rem;
@@ -828,20 +849,12 @@
   }
 
   @media (max-width: 780px) {
-    .lifestyles-section {
-      padding-block: 3.25rem 4rem;
-    }
-
     .canvas-shell {
       padding: 0 0.9rem 1.2rem;
     }
 
     .top {
       margin-bottom: 2rem;
-    }
-
-    .heading {
-      gap: 0.14rem;
     }
 
     .title-main {
@@ -897,61 +910,20 @@
     .hero-product .single {
       aspect-ratio: 1.08;
     }
-
-    .card:hover img {
-      filter: saturate(0.94) brightness(1.01) contrast(0.98);
-      transform: translateZ(0);
-    }
-
-    .card:hover .card-info {
-      opacity: 0;
-      transform: translate3d(0, -10px, 0);
-    }
-  }
-
-  @media (max-width: 640px) {
-    .card-image-wrapper {
-      height: 114%;
-      top: -7%;
-    }
-
-    .card-info {
-      top: 14px;
-      left: 14px;
-      padding: 9px 12px;
-      font-size: 0.74rem;
-    }
-
-    .card-index {
-      top: 14px;
-      right: 14px;
-    }
-  }
-
-  @media (max-width: 420px) {
-    .card-image-wrapper {
-      height: 112%;
-      top: -6%;
-    }
-
-    .card-info {
-      top: 12px;
-      left: 12px;
-      padding: 8px 11px;
-      font-size: 0.7rem;
-    }
-
-    .card-index {
-      top: 12px;
-      right: 12px;
-    }
   }
 
   @media (prefers-reduced-motion: reduce) {
+    .lifestyles-section,
+    .title-main,
+    .title-accent,
+    .select-copy,
+    .finish-card,
+    .project-button,
+    .select-title,
+    .select-subtitle,
     .swatch,
     .card img,
-    .card-info,
-    .project-button {
+    .card-info {
       transition: none;
     }
   }

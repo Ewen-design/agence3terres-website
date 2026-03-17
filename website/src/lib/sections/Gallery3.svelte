@@ -1,8 +1,11 @@
 <script lang="ts">
-  import { onMount, onDestroy } from "svelte";
+  import { onMount, onDestroy, createEventDispatcher } from "svelte";
   import { registerParallax, unregisterParallax } from "../scrollEngine.js";
 
   export let navigate;
+  export let darkPhase = false;
+
+  const dispatch = createEventDispatcher();
 
   type Finish = {
     color: string;
@@ -36,14 +39,13 @@
   ];
 
   let selectedFinish = 1;
-  let darkPhase = false;
 
   const galleryColumns: GalleryColumn[] = [
     {
       className: "edge-left",
       items: [
         {
-          src: "images/photo.webp",
+          src: "images/parfum.jpg",
           alt: "Ring close-up",
           title: "Ring close-up",
           year: "2024",
@@ -118,7 +120,7 @@
       className: "edge-right",
       items: [
         {
-          src: "images/photo.webp",
+          src: "images/parfum.jpg",
           alt: "Ring detail",
           title: "Ring detail",
           year: "2024",
@@ -232,8 +234,13 @@
         return;
       }
 
-      const darkTrigger = sectionMetrics.top + Math.min(5200, sectionMetrics.height * 0);
-darkPhase = scrollY > darkTrigger;
+      const darkTrigger = sectionMetrics.top + Math.min(120, sectionMetrics.height * -0.027);
+      const nextDarkPhase = scrollY > darkTrigger;
+
+      if (nextDarkPhase !== darkPhase) {
+        darkPhase = nextDarkPhase;
+        dispatch("darkchange", darkPhase);
+      }
     }
 
     const targets = cardData.map((c) => {
@@ -420,7 +427,7 @@ darkPhase = scrollY > darkTrigger;
         class="project-button"
         on:click={() => navigate("projet2")}
       >
-        voir le projet
+        Voir le projet
       </button>
     </div>
   </div>
@@ -436,47 +443,75 @@ darkPhase = scrollY > darkTrigger;
   }
 
   .lifestyle-section {
-  --bg: #f3efea;
-  --text: #4e4741;
-  --muted: #8d857d;
-  --card: #e9e3db;
-  --line: rgba(96, 86, 78, 0.08);
-  --line-soft: rgba(96, 86, 78, 0.06);
-  --panel-bg: rgba(255, 255, 255, 0.82);
-  --panel-text: rgba(76, 69, 63, 0.95);
-  --panel-muted: #8d857d;
-  --panel-border: rgba(96, 86, 78, 0.06);
-  --shadow-ui: 0 1px 0 rgba(255, 255, 255, 0.72) inset,
-    0 6px 18px rgba(93, 74, 49, 0.018);
-  --shadow-card: 0 1px 0 rgba(255, 255, 255, 0.58) inset,
-    0 10px 24px rgba(90, 72, 50, 0.018);
+    --bg: #f3efea;
+    --text: #4e4741;
+    --muted: #8d857d;
+    --card: transparent;
+    --line: rgba(96, 86, 78, 0.08);
+    --line-soft: rgba(96, 86, 78, 0.06);
+    --panel-bg: rgba(255, 255, 255, 0.82);
+    --panel-text: rgba(76, 69, 63, 0.95);
+    --panel-muted: #8d857d;
+    --panel-border: rgba(96, 86, 78, 0.06);
+    --shadow-ui: 0 1px 0 rgba(255, 255, 255, 0.72) inset,
+      0 6px 18px rgba(93, 74, 49, 0.018);
+    --shadow-card: 0 1px 0 rgba(255, 255, 255, 0.58) inset,
+      0 10px 24px rgba(90, 72, 50, 0.018);
 
-  position: relative;
-  isolation: isolate;
-  width: 100%;
-  min-height: 100svh;
-  padding-block: clamp(4.5rem, 9vw, 8.5rem);
-  overflow: clip;
-  background: var(--bg);
-  font-family: "Inter", sans-serif;
-  color: var(--text);
-  contain: layout paint style;
-  transition:
-    background 520ms ease,
-    color 520ms ease;
-}
+    position: relative;
+    isolation: isolate;
+    width: 100%;
+    min-height: 100svh;
+    padding-block: clamp(4.5rem, 9vw, 8.5rem);
+    overflow: clip;
+    background: var(--bg);
+    font-family: "Inter", sans-serif;
+    color: var(--text);
+    contain: layout paint style;
+    transition:
+      background 520ms ease,
+      color 520ms ease;
+  }
 
-.lifestyle-section.dark-phase {
-  --bg: #111;
-  --text: #f5f5f5;
-  --muted: rgba(255, 255, 255, 0.62);
-  --panel-bg: rgba(0, 0, 0, 0.86);
-  --panel-text: #f5f5f5;
-  --panel-muted: rgba(255, 255, 255, 0.62);
-  --panel-border: rgba(255, 255, 255, 0.1);
-  --shadow-ui: 0 1px 0 rgba(255, 255, 255, 0.05) inset,
-    0 12px 28px rgba(0, 0, 0, 0.22);
-}
+  .lifestyle-section.dark-phase {
+    --bg: #111;
+    --text: #f5f5f5;
+    --muted: rgba(255, 255, 255, 0.62);
+    --panel-bg: rgba(0, 0, 0, 0.86);
+    --panel-text: #f5f5f5;
+    --panel-muted: rgba(255, 255, 255, 0.62);
+    --panel-border: rgba(255, 255, 255, 0.1);
+    --shadow-ui: 0 1px 0 rgba(255, 255, 255, 0.05) inset,
+      0 12px 28px rgba(0, 0, 0, 0.22);
+  }
+
+  .gallery-wrap {
+    width: 100%;
+  }
+
+  .gallery {
+    width: 100%;
+    margin: 0 auto;
+    padding-inline: clamp(0.55rem, 1vw, 0.95rem);
+    display: grid;
+    grid-template-columns:
+      minmax(72px, 0.6fr)
+      minmax(150px, 1.15fr)
+      minmax(130px, 1fr)
+      minmax(220px, 1.6fr)
+      minmax(72px, 0.6fr);
+    gap: 0.8rem;
+    align-items: start;
+  }
+
+  .col {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    gap: 0.72rem;
+    min-height: 30rem;
+    contain: layout paint;
+  }
 
   .canvas-shell {
     width: min(100%, 1600px);
@@ -492,7 +527,6 @@ darkPhase = scrollY > darkTrigger;
     flex-direction: column;
     align-items: center;
     gap: 1.1rem;
-    margin-bottom: clamp(2.8rem, 4.2vw, 4rem);
   }
 
   .text-part {
@@ -515,7 +549,7 @@ darkPhase = scrollY > darkTrigger;
 
   .title-main,
   .title-accent {
-    transition: color 280ms ease;
+    transition: color 520ms ease;
   }
 
   .title-main {
@@ -545,58 +579,25 @@ darkPhase = scrollY > darkTrigger;
     flex-wrap: wrap;
   }
 
+  .select-copy,
+  .finish-card,
   .project-button {
-    min-height: 2.35rem;
-    padding: 0.7rem 1.15rem;
-    border-radius: 7px;
     border: 1px solid var(--panel-border);
     background: var(--panel-bg);
-    box-shadow: var(--shadow-ui);
     color: var(--panel-text);
-    font-family: "Inter", sans-serif;
-    font-size: 0.8rem;
-    font-weight: 500;
-    letter-spacing: 0.04em;
-    cursor: pointer;
+    box-shadow: var(--shadow-ui);
     transition:
-      transform 140ms ease,
-      box-shadow 140ms ease,
-      background 280ms ease,
-      border-color 280ms ease,
-      color 280ms ease;
-    -webkit-tap-highlight-color: transparent;
-  }
-
-  .project-button:hover {
-    transform: translateY(-1px);
-  }
-
-  .project-button:focus-visible {
-    outline: none;
-    box-shadow:
-      0 0 0 1px rgba(88, 79, 71, 0.11),
-      inset 0 1px 1px rgba(255, 255, 255, 0.45),
-      0 0 0 4px rgba(111, 101, 91, 0.12);
-  }
-
-  .dark-phase .project-button:focus-visible {
-    box-shadow:
-      0 0 0 1px rgba(255, 255, 255, 0.1),
-      inset 0 1px 1px rgba(255, 255, 255, 0.06),
-      0 0 0 4px rgba(255, 255, 255, 0.08);
+      background 520ms ease,
+      color 520ms ease,
+      border-color 520ms ease,
+      box-shadow 520ms ease,
+      transform 140ms ease;
   }
 
   .select-copy,
   .finish-card {
     min-height: 2.35rem;
     border-radius: 7px;
-    border: 1px solid var(--panel-border);
-    background: var(--panel-bg);
-    box-shadow: var(--shadow-ui);
-    transition:
-      background 280ms ease,
-      border-color 280ms ease,
-      box-shadow 280ms ease;
   }
 
   .select-copy {
@@ -606,16 +607,12 @@ darkPhase = scrollY > darkTrigger;
     padding: 0.45rem 0.85rem 0.48rem;
   }
 
-  .select-title,
-  .select-subtitle {
-    transition: color 280ms ease;
-  }
-
   .select-title {
     font-size: 0.86rem;
     font-weight: 500;
     color: var(--panel-text);
     line-height: 1;
+    transition: color 520ms ease;
   }
 
   .select-subtitle {
@@ -624,6 +621,7 @@ darkPhase = scrollY > darkTrigger;
     color: var(--panel-muted);
     line-height: 1;
     white-space: nowrap;
+    transition: color 520ms ease;
   }
 
   .finish-card {
@@ -662,60 +660,31 @@ darkPhase = scrollY > darkTrigger;
     transform: scale(1.04);
   }
 
-  .swatch:focus-visible {
-    outline: none;
-    box-shadow:
-      0 0 0 1px rgba(88, 79, 71, 0.11),
-      inset 0 1px 1px rgba(255, 255, 255, 0.45),
-      0 0 0 4px rgba(111, 101, 91, 0.12);
-  }
-
-  .dark-phase .swatch:focus-visible {
-    box-shadow:
-      0 0 0 1px rgba(255, 255, 255, 0.12),
-      inset 0 1px 1px rgba(255, 255, 255, 0.18),
-      0 0 0 4px rgba(255, 255, 255, 0.08);
-  }
-
   .swatch.active::before {
     content: "";
     position: absolute;
     inset: -0.24rem;
     border-radius: inherit;
     border: 1px solid rgba(103, 95, 87, 0.46);
-    transition: border-color 280ms ease;
   }
 
   .dark-phase .swatch.active::before {
     border-color: rgba(255, 255, 255, 0.45);
   }
 
-  .gallery-wrap {
-    width: 100%;
+  .project-button {
+    min-height: 2.35rem;
+    padding: 0.7rem 1.15rem;
+    border-radius: 7px;
+    font-family: "Inter", sans-serif;
+    font-size: 0.8rem;
+    font-weight: 500;
+    letter-spacing: 0.04em;
+    cursor: pointer;
   }
 
-  .gallery {
-    width: 100%;
-    margin: 0 auto;
-    padding-inline: clamp(0.55rem, 1vw, 0.95rem);
-    display: grid;
-    grid-template-columns:
-      minmax(72px, 0.6fr)
-      minmax(150px, 1.15fr)
-      minmax(130px, 1fr)
-      minmax(220px, 1.6fr)
-      minmax(72px, 0.6fr);
-    gap: 0.8rem;
-    align-items: start;
-  }
-
-  .col {
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-start;
-    gap: 0.72rem;
-    min-height: 30rem;
-    contain: layout paint;
+  .project-button:hover {
+    transform: translateY(-1px);
   }
 
   .card {
@@ -725,18 +694,16 @@ darkPhase = scrollY > darkTrigger;
     background: var(--card);
     box-shadow: var(--shadow-card);
     contain: layout paint;
-    cursor: pointer;
+   
   }
 
   .card-image-wrapper {
     position: absolute;
     inset-inline: 0;
     height: 124%;
-    top: -12%;
+    top: -15%;
     will-change: transform;
     transform: translate3d(0, 0, 0);
-    backface-visibility: hidden;
-    -webkit-backface-visibility: hidden;
   }
 
   .card img {
@@ -750,8 +717,6 @@ darkPhase = scrollY > darkTrigger;
     transition: filter 0.45s ease, transform 0.8s ease;
     user-select: none;
     pointer-events: none;
-    backface-visibility: hidden;
-    -webkit-backface-visibility: hidden;
   }
 
   .card:hover img {
@@ -862,10 +827,6 @@ darkPhase = scrollY > darkTrigger;
   }
 
   @media (max-width: 1100px) {
-    .lifestyle-section {
-      padding-block: clamp(3.5rem, 7vw, 5.5rem);
-    }
-
     .gallery {
       grid-template-columns: 1fr 0.9fr 1.15fr;
       gap: 0.7rem;
@@ -889,32 +850,22 @@ darkPhase = scrollY > darkTrigger;
 
     .portrait-center .single {
       height: 14rem;
-      margin-top: 0;
       margin-bottom: 2.8rem;
     }
 
     .hero-product .single {
       height: 20rem;
-      margin-top: 0;
       margin-bottom: 0.6rem;
     }
   }
 
   @media (max-width: 780px) {
-    .lifestyle-section {
-      padding-block: 3.25rem 4rem;
-    }
-
     .canvas-shell {
       padding: 0 0.9rem 1.2rem;
     }
 
     .text-part {
       margin-top: 2rem;
-    }
-
-    .heading {
-      gap: 0.14rem;
     }
 
     .title-main {
@@ -970,54 +921,6 @@ darkPhase = scrollY > darkTrigger;
 
     .hero-product .single {
       aspect-ratio: 1.08;
-    }
-
-    .card:hover img {
-      filter: saturate(0.94) brightness(1.01) contrast(0.98);
-      transform: translateZ(0);
-    }
-
-    .card:hover .card-info {
-      opacity: 0;
-      transform: translate3d(0, -10px, 0);
-    }
-  }
-
-  @media (max-width: 640px) {
-    .card-image-wrapper {
-      height: 114%;
-      top: -7%;
-    }
-
-    .card-info {
-      top: 14px;
-      left: 14px;
-      padding: 9px 12px;
-      font-size: 0.74rem;
-    }
-
-    .card-index {
-      top: 14px;
-      right: 14px;
-    }
-  }
-
-  @media (max-width: 420px) {
-    .card-image-wrapper {
-      height: 112%;
-      top: -6%;
-    }
-
-    .card-info {
-      top: 12px;
-      left: 12px;
-      padding: 8px 11px;
-      font-size: 0.7rem;
-    }
-
-    .card-index {
-      top: 12px;
-      right: 12px;
     }
   }
 

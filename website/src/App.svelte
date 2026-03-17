@@ -8,7 +8,7 @@
   import CustomCursor from "./lib/structure/CustomCursor.svelte";
   import IntroLoader from "./lib/structure/IntroLoader.svelte";
   import SliderCustom from "./lib/sections/SliderCustom.svelte";
-   import AncienSliderCustom from "./lib/sections/AncienSliderCustom.svelte";
+  import AncienSliderCustom from "./lib/sections/AncienSliderCustom.svelte";
 
   import IconeFleche from "./lib/structure/IconeFleche.svelte";
   import HeroNew from "./lib/sections/HeroNew.svelte";
@@ -21,14 +21,13 @@
   import VisionSlider from "./lib/sections/VisionSlider.svelte";
   import MixSlider from "./lib/sections/MixSlider.svelte";
   import StickySlider from "./lib/sections/StickySlider.svelte";
-    import ImageScroll from "./lib/sections/ImageScroll.svelte";
-        import RevealGallery from "./lib/sections/RevealGallery.svelte";
-         import NewSectionHero from "./lib/sections/NewSectionHero.svelte";
-                  import Transition1 from "./lib/sections/Transition1.svelte";
-                  import Transition2 from "./lib/sections/Transition2.svelte";
-                  import Gallery from "./lib/sections/Gallery.svelte";
-                  import Gallery2 from "./lib/sections/Gallery2.svelte";
-                  import Gallery3 from "./lib/sections/Gallery3.svelte";
+  import ImageScroll from "./lib/sections/ImageScroll.svelte";
+  import RevealGallery from "./lib/sections/RevealGallery.svelte";
+  import NewSectionHero from "./lib/sections/NewSectionHero.svelte";
+  import Transition1 from "./lib/sections/Transition1.svelte";
+  import Transition2 from "./lib/sections/Transition2.svelte";
+  import Gallery3 from "./lib/sections/Gallery3.svelte";
+  import Gallery2 from "./lib/sections/Gallery2.svelte";
 
   import Travail from "./lib/structure/Travail.svelte";
   import Apropos from "./lib/structure/Apropos.svelte";
@@ -46,36 +45,42 @@
   let rafId;
 
   let isMobile = false;
+  let travailDarkPhase = false;
 
   function checkMobile() {
     isMobile = window.innerWidth <= 768;
   }
 
   function navigate(page) {
-  if (page === currentPage || isTransitioning) return;
+    if (page === currentPage || isTransitioning) return;
 
-  nextPage = page;
-  isTransitioning = true;
-
-  setTimeout(() => {
-    currentPage = nextPage;
-    lenis?.scrollTo(0, { immediate: true });
+    nextPage = page;
+    isTransitioning = true;
 
     setTimeout(() => {
-      lenis?.resize();
-    }, 50);
-  }, 600);
+      currentPage = nextPage;
+      lenis?.scrollTo(0, { immediate: true });
 
-  setTimeout(() => {
-    isTransitioning = false;
-    nextPage = null;
-  }, 1300);
-}
+      setTimeout(() => {
+        lenis?.resize();
+      }, 50);
+    }, 600);
+
+    setTimeout(() => {
+      isTransitioning = false;
+      nextPage = null;
+
+      if (currentPage !== "travail") {
+        travailDarkPhase = false;
+      }
+    }, 1300);
+  }
 
   onMount(() => {
     window.addEventListener("load", () => {
-  lenis?.resize();
-});
+      lenis?.resize();
+    });
+
     checkMobile();
     window.addEventListener("resize", checkMobile);
 
@@ -84,7 +89,7 @@
     lenis = new Lenis({
       duration: 1.35,
       easing: (t) => 1 - Math.pow(1 - t, 3),
-    smoothWheel: window.innerWidth > 768,
+      smoothWheel: window.innerWidth > 768,
       smoothTouch: false,
       wheelMultiplier: 1,
       touchMultiplier: 1
@@ -96,12 +101,11 @@
       updateScrollEngine(e.animatedScroll);
     });
 
-  function raf(time) {
-  if (!lenis) return;
-
-  lenis.raf(time);
-  rafId = requestAnimationFrame(raf);
-}
+    function raf(time) {
+      if (!lenis) return;
+      lenis.raf(time);
+      rafId = requestAnimationFrame(raf);
+    }
 
     rafId = requestAnimationFrame(raf);
     updateScrollEngine(window.scrollY || window.pageYOffset || 0);
@@ -122,8 +126,6 @@
     window.lenis = null;
     window.removeEventListener("resize", checkMobile);
   });
-
-  
 </script>
 
 <main>
@@ -131,24 +133,26 @@
     <CustomCursor />
   {/if}
 
-  <IconeFleche {currentPage}/>
+  <IconeFleche {currentPage} />
 
-<Header {navigate} {currentPage} />
+  <Header {navigate} {currentPage} />
 
   <div class="page-wrapper {isTransitioning ? 'blur-out' : ''}">
     {#if currentPage === "home"}
       <TextesIntro />
       <HomePage />
       <ParallaxGallery />
-       <StickySlider />
+      <StickySlider />
       <ProjetsHighlight />
       <VisionSlider />
 
     {:else if currentPage === "travail"}
-      <Gallery2 {navigate} />
-        <Gallery3 {navigate} />
-      
- 
+      <Gallery2 {navigate} darkPhase={travailDarkPhase} />
+      <Gallery3
+        {navigate}
+        darkPhase={travailDarkPhase}
+        on:darkchange={(e) => (travailDarkPhase = e.detail)}
+      />
 
     {:else if currentPage === "apropos"}
       <Apropos />
@@ -157,7 +161,7 @@
 
     {:else if currentPage === "services"}
       <NewSectionHero />
-<Transition1 />
+      <Transition1 />
       <MixSlider />
       <Transition2 />
       <ImageScroll src="images/photo.webp" alt="Description de l'image" />
@@ -167,9 +171,8 @@
       <Contact />
 
     {:else if currentPage === "projet1"}
-        <Gallery />
-    <Projet1 {navigate} />
-    
+      <Projet1 {navigate} />
+
     {:else if currentPage === "projet2"}
       <Projet2 {navigate} />
     {/if}
