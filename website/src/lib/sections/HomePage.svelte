@@ -6,15 +6,15 @@
     {
       img:     "/images/photo2.webp",
       alt:     "Creative vision",
-      title:   "Discover our creative VISION",
-      text:    "We shape visual universes where form, texture and motion create immersive brand experiences.",
+      title:   "Le reflet d'un art",
+      text:    "Dans le silence apaisant d’un lac, chaque détail trouve son écho. Chez 3 Terres, nous nous plaçons comme la surface limpide où se reflète l’essence de votre marque.",
       reverse: false,
     },
     {
       img:     "/images/photo2.webp",
       alt:     "Artistic depth",
-      title:   "Crafted interactions with artistic DEPTH",
-      text:    "Every motion, contrast and transition is designed to create rhythm and harmony.",
+      title:   "Les lumières de la création",
+      text:    "Cet univers urbain est le théâtre de notre créativité : élégant, moderne, vibrant. 3 Terres puise dans l’énergie de la ville l’audace d’inventer, de façonner des univers visuels qui marient esthétisme et ingéniosité.",
       reverse: true,
     },
     {

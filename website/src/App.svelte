@@ -145,10 +145,8 @@
   <div class="page-wrapper {isTransitioning ? 'blur-out' : ''}">
     {#if currentPage === "home"}
       <TextesIntro />
-      <HomePage />
-      
-      <ParallaxGallery2 />
       <StickySlider />
+      <ParallaxGallery2 />
       <ProjetsHighlight />
       <VisionSlider />
 
