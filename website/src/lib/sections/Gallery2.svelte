@@ -147,6 +147,13 @@
     selectedFinish = index;
   }
 
+  function handleProjectButtonMove(e: MouseEvent) {
+    const btn = e.currentTarget as HTMLElement;
+    const rect = btn.getBoundingClientRect();
+    btn.style.setProperty("--mx", `${e.clientX - rect.left}px`);
+    btn.style.setProperty("--my", `${e.clientY - rect.top}px`);
+  }
+
   const flatItems = galleryColumns.flatMap((column) => column.items);
 
   let lifestyleSection: HTMLElement;
@@ -377,6 +384,8 @@
       <button
         type="button"
         class="project-button"
+        data-cursor="button"
+        on:mousemove={handleProjectButtonMove}
         on:click={() => navigate("projet1")}
       >
         Voir le projet
@@ -539,8 +548,7 @@
   }
 
   .select-copy,
-  .finish-card,
-  .project-button {
+  .finish-card {
     border: 1px solid var(--panel-border);
     background: var(--panel-bg);
     color: var(--panel-text);
@@ -631,20 +639,65 @@
     border-color: rgba(255, 255, 255, 0.45);
   }
 
+  /* ── Bouton projet : même logique que header page travail ───────────────── */
   .project-button {
+    position: relative;
     min-height: 2.35rem;
-    padding: 0.7rem 1.15rem;
-    border-radius: 7px;
+    height: 40px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 1.5rem;
+    border-radius: 3px;
     font-family: "Inter", sans-serif;
     font-size: 0.8rem;
     font-weight: 500;
     letter-spacing: 0.04em;
+    white-space: nowrap;
+    color: var(--panel-text);
+    border: none;
     cursor: pointer;
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    box-shadow:
+      0 8px 10px rgba(0, 0, 0, 0.06),
+      inset 0 0 0 0px rgba(255, 255, 255, 0.4);
+    transition:
+      background 1.2s cubic-bezier(.22,.61,.36,1),
+      color 520ms ease,
+      box-shadow 1.2s cubic-bezier(.22,.61,.36,1),
+      border-color 520ms ease,
+      transform 1.2s cubic-bezier(.22,.61,.36,1);
     -webkit-tap-highlight-color: transparent;
   }
 
-  .project-button:hover {
-    transform: translateY(-1px);
+  .project-button::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    padding: 1px;
+    background: radial-gradient(
+      80px circle at var(--mx, 50%) var(--my, 50%),
+      rgba(210, 210, 230, 0.98),
+      rgba(130, 110, 220, 0.7) 35%,
+      rgba(35, 30, 95, 0.55) 58%,
+      transparent 75%
+    );
+    -webkit-mask:
+      linear-gradient(#000 0 0) content-box,
+      linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    opacity: 0;
+    transition: opacity 0.25s ease;
+    pointer-events: none;
+    filter: drop-shadow(0 0 4px rgba(150, 140, 230, 0.4));
+  }
+
+  .project-button:hover::before {
+    opacity: 1;
   }
 
   .gallery-wrap {

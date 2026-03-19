@@ -3,11 +3,12 @@
   import { registerParallax, unregisterParallax } from "../scrollEngine.js";
   import ProjectOffCanvas from "./ProjectOffCanvas.svelte";
 
-  // ─── Data ─────────────────────────────────────────────────────────────────────
+  export let navigate = null;
+
   let selected = null;
   let gallerySection;
   let bgTitleEl;
-  let isMobile       = false;
+  let isMobile = false;
   let prefersReduced = false;
 
   const items = [
@@ -19,27 +20,24 @@
     { title: "Motion Concept",       date: "2024", desc: "Concept motion design pour lancement de produit digital.",                                image: "/images/photo.webp"  },
   ];
 
-  // ─── DOM refs ─────────────────────────────────────────────────────────────────
-  let cardEls    = [];
+  let cardEls = [];
   let wrapperEls = [];
-  let infoEls    = [];
-  let imgEls     = [];
+  let infoEls = [];
+  let imgEls = [];
+  let servicesBtnEl;
 
-  // ─── Metrics — populated by measure(), NEVER inside onScroll ─────────────────
   let cardMetrics = [];
   let secTop = 0, secBottom = 0;
-  let bgTop  = 0, bgHeight  = 0, hasBg = false;
+  let bgTop = 0, bgHeight = 0, hasBg = false;
   let measured = false;
 
-  // ─── Prev committed values ────────────────────────────────────────────────────
-  let prevWrapperY  = [];
-  let prevInfoOp    = [];  // raw floats for lerp continuity
-  let prevInfoTY    = [];
-  let prevImgDark   = [];
+  let prevWrapperY = [];
+  let prevInfoOp = [];
+  let prevInfoTY = [];
+  let prevImgDark = [];
   let prevImgScaled = [];
-  let prevBgY       = null;
+  let prevBgY = null;
 
-  // ─── State ────────────────────────────────────────────────────────────────────
   let sectionVisible = false;
   let intersectionObs;
   let resizeObs;
@@ -47,48 +45,55 @@
   let mediaQuery;
 
   const SPEED_DESKTOP = -155;
-  const SPEED_MOBILE  = -75;
-  const Q        = 0.5;
+  const SPEED_MOBILE = -75;
+  const Q = 0.5;
   const quantize = (v) => Math.round(v / Q) * Q;
-  const clamp    = (v, lo, hi) => (v < lo ? lo : v > hi ? hi : v);
+  const clamp = (v, lo, hi) => (v < lo ? lo : v > hi ? hi : v);
 
-  // ─── Measure — ONLY called outside scroll callback ────────────────────────────
+  function handleButtonMove(e) {
+    const btn = e.currentTarget;
+    const rect = btn.getBoundingClientRect();
+    btn.style.setProperty("--mx", `${e.clientX - rect.left}px`);
+    btn.style.setProperty("--my", `${e.clientY - rect.top}px`);
+  }
+
   function measure() {
     if (!gallerySection) return;
     const scrollY = (window.lenis?.animatedScroll ?? window.scrollY) || 0;
 
-    const sr  = gallerySection.getBoundingClientRect();
-    secTop    = sr.top + scrollY;
+    const sr = gallerySection.getBoundingClientRect();
+    secTop = sr.top + scrollY;
     secBottom = secTop + sr.height;
 
     hasBg = !!bgTitleEl;
     if (hasBg) {
       const br = bgTitleEl.getBoundingClientRect();
-      bgTop    = br.top + scrollY;
+      bgTop = br.top + scrollY;
       bgHeight = br.height;
     }
 
     cardMetrics = [];
     for (let i = 0; i < items.length; i++) {
       const el = cardEls[i];
-      if (!el) { cardMetrics.push({ top: 0, height: 0 }); continue; }
+      if (!el) {
+        cardMetrics.push({ top: 0, height: 0 });
+        continue;
+      }
       const r = el.getBoundingClientRect();
       cardMetrics.push({ top: r.top + scrollY, height: r.height });
     }
 
-    prevWrapperY  = new Array(items.length).fill(null);
-    prevInfoOp    = new Array(items.length).fill(null);
-    prevInfoTY    = new Array(items.length).fill(null);
-    prevImgDark   = new Array(items.length).fill(null);
+    prevWrapperY = new Array(items.length).fill(null);
+    prevInfoOp = new Array(items.length).fill(null);
+    prevInfoTY = new Array(items.length).fill(null);
+    prevImgDark = new Array(items.length).fill(null);
     prevImgScaled = new Array(items.length).fill(null);
-    prevBgY       = null;
-    measured      = true;
+    prevBgY = null;
+    measured = true;
   }
 
-  // ─── Render — called every Lenis frame, zero DOM reads ───────────────────────
   function onScroll(scrollY, { vh, isMobile: mob }) {
     if (!sectionVisible || prefersReduced || !measured) return;
-
     if (secTop - scrollY > vh + 800 || secBottom - scrollY < -800) return;
 
     const speed = mob ? SPEED_MOBILE : SPEED_DESKTOP;
@@ -99,25 +104,24 @@
       const m = cardMetrics[i];
       if (!m?.height) continue;
 
-      const center   = m.top - scrollY + m.height * 0.5;
+      const center = m.top - scrollY + m.height * 0.5;
       const progress = clamp((center - vh * 0.5) / vh, -1, 1);
-      const wY       = quantize(progress * speed);
+      const wY = quantize(progress * speed);
 
       if (wY !== prevWrapperY[i]) {
         wrapper.style.transform = `translate3d(0,${wY}px,0)`;
         prevWrapperY[i] = wY;
       }
 
-      // Mobile info overlay — lerp only the fade (not parallax position)
       if (mob) {
         const info = infoEls[i];
-        const img  = imgEls[i];
+        const img = imgEls[i];
         if (!info || !img) continue;
 
-        const dist   = Math.abs(center - vh * 0.5);
+        const dist = Math.abs(center - vh * 0.5);
         const active = dist < m.height * 0.42;
-        const tgtOp  = active ? 1 : 0;
-        const tgtTY  = active ? 0 : -10;
+        const tgtOp = active ? 1 : 0;
+        const tgtTY = active ? 0 : -10;
 
         const curOp = prevInfoOp[i] !== null ? prevInfoOp[i] : tgtOp;
         const curTY = prevInfoTY[i] !== null ? prevInfoTY[i] : tgtTY;
@@ -127,29 +131,29 @@
         prevInfoOp[i] = newOp;
         prevInfoTY[i] = newTY;
 
-        const qOp  = Math.round(newOp * 40) / 40;
-        const qTY  = quantize(newTY);
+        const qOp = Math.round(newOp * 40) / 40;
+        const qTY = quantize(newTY);
         const dark = newOp > 0.5;
 
-        info.style.opacity   = qOp;
+        info.style.opacity = qOp;
         info.style.transform = `translate3d(0,${qTY}px,0)`;
 
         if (dark !== prevImgDark[i]) {
-          img.style.filter    = dark ? "brightness(0.6)" : "";
-          prevImgDark[i]      = dark;
+          img.style.filter = dark ? "brightness(0.6)" : "";
+          prevImgDark[i] = dark;
         }
         if (dark !== prevImgScaled[i]) {
           img.style.transform = dark ? "scale(1.05) translateZ(0)" : "translateZ(0)";
-          prevImgScaled[i]    = dark;
+          prevImgScaled[i] = dark;
         }
       }
     }
 
-    // BG title — desktop only
     if (hasBg && bgTitleEl && !mob) {
       const titleCenter = bgTop - scrollY + bgHeight * 0.5;
-      const prog        = clamp((titleCenter - vh * 0.5) / vh, -1, 1);
-      const bgY         = quantize(prog * -90);
+      const prog = clamp((titleCenter - vh * 0.5) / vh, -1, 1);
+      const bgY = quantize(prog * -90);
+
       if (bgY !== prevBgY) {
         bgTitleEl.style.transform = `translate3d(0,${bgY}px,0)`;
         prevBgY = bgY;
@@ -157,7 +161,6 @@
     }
   }
 
-  // ─── Resize ───────────────────────────────────────────────────────────────────
   function handleResize() {
     clearTimeout(resizeTimer);
     resizeTimer = setTimeout(() => {
@@ -170,18 +173,28 @@
     }, 100);
   }
 
-  function openProject(item) { selected = item; document.body.style.overflow = "hidden"; }
-  function closeProject()    { selected = null;  document.body.style.overflow = ""; }
+  function openProject(item) {
+    selected = item;
+    document.body.style.overflow = "hidden";
+  }
 
-  // ─── Lifecycle ────────────────────────────────────────────────────────────────
+  function closeProject() {
+    selected = null;
+    document.body.style.overflow = "";
+  }
+
   onMount(() => {
     isMobile = window.innerWidth <= 900;
 
     mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
     prefersReduced = mediaQuery.matches;
-    const onMotion = (e) => { prefersReduced = e.matches; };
+
+    const onMotion = (e) => {
+      prefersReduced = e.matches;
+    };
+
     if (mediaQuery.addEventListener) mediaQuery.addEventListener("change", onMotion);
-    else                             mediaQuery.addListener(onMotion);
+    else mediaQuery.addListener(onMotion);
 
     requestAnimationFrame(() => {
       measure();
@@ -193,16 +206,18 @@
       sectionVisible = entry.isIntersecting;
       if (sectionVisible && !wasVisible) measure();
     }, { rootMargin: "600px 0px 600px 0px", threshold: 0 });
+
     intersectionObs.observe(gallerySection);
 
     resizeObs = new ResizeObserver(handleResize);
     resizeObs.observe(gallerySection);
+
     window.addEventListener("resize", handleResize, { passive: true });
     window.addEventListener("orientationchange", handleResize, { passive: true });
 
     return () => {
       if (mediaQuery?.removeEventListener) mediaQuery.removeEventListener("change", onMotion);
-      else if (mediaQuery?.removeListener)  mediaQuery.removeListener(onMotion);
+      else if (mediaQuery?.removeListener) mediaQuery.removeListener(onMotion);
     };
   });
 
@@ -223,6 +238,7 @@
       <span>NOS</span>
       <span>SERVICES</span>
     </div>
+
     <div class="gallery-header">
       <div class="intro-card">
         <p>
@@ -255,18 +271,32 @@
             draggable="false"
           />
         </div>
+
         <div class="info" bind:this={infoEls[i]}>
           <span class="date">{item.date}</span>
           <span class="title">{item.title}</span>
         </div>
-        <span class="card-index" aria-hidden="true">{String(i + 1).padStart(2, "0")}</span>
+
+        <span class="card-index" aria-hidden="true">
+          {String(i + 1).padStart(2, "0")}
+        </span>
+
         <div class="card-plus">+</div>
       </div>
     {/each}
   </div>
 
   <div class="gallery-footer">
-    <a href="/services" class="services-btn">Découvrir tous les services</a>
+    <button
+      class="services-btn"
+      bind:this={servicesBtnEl}
+      type="button"
+      data-cursor="button"
+      on:mousemove={handleButtonMove}
+      on:click={() => navigate && navigate("services")}
+    >
+      Découvrir tous les services
+    </button>
   </div>
 </section>
 
@@ -302,7 +332,8 @@
     align-items: flex-start;
     pointer-events: none;
     width: min(1500px, 94%);
-    left: 0; right: 0;
+    left: 0;
+    right: 0;
     margin: 0 auto;
     padding-left: 3%;
     will-change: transform;
@@ -362,11 +393,6 @@
       "card4 card4 card5 card5 card6 card6";
   }
 
-  /* ── Card
-   * contain: layout paint — NOT strict.
-   * strict would clip the card-image-wrapper that intentionally overflows.
-   * layout + paint still isolates compositing without breaking overflow.
-   * ── */
   .card {
     position: relative;
     overflow: hidden;
@@ -424,7 +450,8 @@
 
   .info {
     position: absolute;
-    top: 16px; left: 16px;
+    top: 16px;
+    left: 16px;
     display: flex;
     flex-direction: column;
     gap: 4px;
@@ -446,12 +473,13 @@
     transform: translate3d(0, 0, 0);
   }
 
-  .date  { opacity: 0.7; }
+  .date { opacity: 0.7; }
   .title { font-family: "Manrope", sans-serif; }
 
   .card-index {
     position: absolute;
-    top: 16px; right: 16px;
+    top: 16px;
+    right: 16px;
     font-family: "Manrope", sans-serif;
     font-size: 0.65rem;
     letter-spacing: 0.18em;
@@ -461,12 +489,16 @@
     transition: color 0.35s ease;
   }
 
-  .card:hover .card-index { color: rgba(255, 255, 255, 0.6); }
+  .card:hover .card-index {
+    color: rgba(255, 255, 255, 0.6);
+  }
 
   .card-plus {
     position: absolute;
-    bottom: 16px; left: 16px;
-    width: 42px; height: 42px;
+    bottom: 16px;
+    left: 16px;
+    width: 42px;
+    height: 42px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -485,24 +517,63 @@
     background: rgba(255, 255, 255, 0.25);
   }
 
-  .gallery-footer { text-align: center; margin-top: 6rem; }
-
-  .services-btn {
-    display: inline-block;
-    padding: 14px 36px;
-    border: 1px solid #fff;
-    color: #fff;
-    text-decoration: none;
-    font-family: "Manrope", sans-serif;
-    font-size: 0.8rem;
-    letter-spacing: 0.2em;
-    text-transform: uppercase;
-    transition: background 0.4s ease, color 0.4s ease;
+  .gallery-footer {
+    text-align: center;
+    margin-top: 6rem;
   }
 
-  .services-btn:hover { background: #fff; color: #111; }
+  .services-btn {
+    position: relative;
+    height: 40px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 1.5rem;
+    font-size: 0.9rem;
+    white-space: nowrap;
+    color: #fff;
+    border: none;
+    cursor: pointer;
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-radius: 3px;
+    box-shadow:
+      0 8px 10px rgba(0, 0, 0, 0.06),
+      inset 0 0 0 0px rgba(255, 255, 255, 0.4);
+    transition:
+      transform 1.2s cubic-bezier(.22,.61,.36,1),
+      box-shadow 1.2s cubic-bezier(.22,.61,.36,1),
+      background 1.2s cubic-bezier(.22,.61,.36,1);
+  }
 
-  /* ── Breakpoints ── */
+  .services-btn::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    padding: 1px;
+    background: radial-gradient(
+      80px circle at var(--mx, 50%) var(--my, 50%),
+      rgba(212, 175, 55, 0.95),
+      rgba(212, 102, 55, 0.45) 40%,
+      transparent 75%
+    );
+    -webkit-mask:
+      linear-gradient(#000 0 0) content-box,
+      linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    opacity: 0;
+    transition: opacity 0.25s ease;
+    pointer-events: none;
+    filter: drop-shadow(0 0 3px rgba(212, 175, 55, 0.35));
+  }
+
+  .services-btn:hover::before {
+    opacity: 1;
+  }
+
   @media (max-width: 1100px) {
     .header-stage { min-height: 92vh; }
     .bg-title span { font-size: clamp(4rem, 12vw, 8rem); }
@@ -513,35 +584,66 @@
   @media (max-width: 900px) {
     .gallery { padding: 0 0 8rem 0; }
     .header-stage { min-height: auto; padding: 7rem 0 3rem 0; display: block; }
+
     .bg-title {
-      position: relative; inset: auto;
+      position: relative;
+      inset: auto;
       width: min(92%, 760px);
-      left: auto; right: auto;
-      margin: 0 0 2rem 0; padding-left: 0;
+      left: auto;
+      right: auto;
+      margin: 0 0 2rem 0;
+      padding-left: 0;
       transform: none !important;
     }
-    .bg-title span { font-size: clamp(2.6rem, 13vw, 4.8rem); line-height: 0.92; color: rgba(255,255,255,0.16); }
-    .gallery-header { width: min(92%, 760px); margin: 0 auto; display: block; }
+
+    .bg-title span {
+      font-size: clamp(2.6rem, 13vw, 4.8rem);
+      line-height: 0.92;
+      color: rgba(255, 255, 255, 0.16);
+    }
+
+    .gallery-header {
+      width: min(92%, 760px);
+      margin: 0 auto;
+      display: block;
+    }
+
     .intro-card { width: 100%; padding: 1.6rem 1.4rem; }
     .intro-card p { font-size: 0.95rem; line-height: 1.65; }
+
     .gallery-grid {
-      width: min(94%, 760px); margin: 2rem auto 0 auto;
-      grid-template-columns: 1fr; grid-template-rows: none; grid-template-areas: none; gap: 0.9rem;
+      width: min(94%, 760px);
+      margin: 2rem auto 0 auto;
+      grid-template-columns: 1fr;
+      grid-template-rows: none;
+      grid-template-areas: none;
+      gap: 0.9rem;
     }
-    .card:nth-child(1),.card:nth-child(2),.card:nth-child(3),
-    .card:nth-child(4),.card:nth-child(5),.card:nth-child(6) { grid-area: auto; }
+
+    .card:nth-child(1),
+    .card:nth-child(2),
+    .card:nth-child(3),
+    .card:nth-child(4),
+    .card:nth-child(5),
+    .card:nth-child(6) {
+      grid-area: auto;
+    }
+
     .card:nth-child(1) { aspect-ratio: 1.45/1; }
     .card:nth-child(2) { aspect-ratio: 0.92/1.18; }
     .card:nth-child(3) { aspect-ratio: 1.1/1; }
     .card:nth-child(4) { aspect-ratio: 0.92/1.22; }
     .card:nth-child(5) { aspect-ratio: 1.5/1; }
     .card:nth-child(6) { aspect-ratio: 1.08/1; }
+
     .card-image-wrapper { top: -12%; height: 124%; }
     .card:nth-child(1) .card-image-wrapper,
     .card:nth-child(5) .card-image-wrapper { top: -24%; height: 150%; }
-    .card:hover img        { filter: none; transform: translateZ(0); }
-    .card:hover .info      { opacity: 0; transform: translate3d(0,-10px,0); }
-    .card:hover .card-plus { transform: none; background: rgba(255,255,255,0.15); }
+
+    .card:hover img { filter: none; transform: translateZ(0); }
+    .card:hover .info { opacity: 0; transform: translate3d(0, -10px, 0); }
+    .card:hover .card-plus { transform: none; background: rgba(255, 255, 255, 0.15); }
+
     .gallery-footer { margin-top: 4rem; }
   }
 
@@ -558,7 +660,7 @@
     .info { top: 14px; left: 14px; padding: 9px 12px; font-size: 0.74rem; }
     .card-plus { bottom: 14px; left: 14px; width: 38px; height: 38px; font-size: 1rem; }
     .card-index { top: 14px; right: 14px; }
-    .services-btn { padding: 12px 24px; font-size: 0.72rem; letter-spacing: 0.14em; }
+    .services-btn { padding: 0 1.2rem; font-size: 0.8rem; }
   }
 
   @media (max-width: 420px) {
@@ -577,11 +679,17 @@
     .card-plus { bottom: 12px; left: 12px; width: 34px; height: 34px; font-size: 0.95rem; }
     .card-index { top: 12px; right: 12px; }
     .gallery-footer { margin-top: 3rem; }
-    .services-btn { padding: 11px 20px; font-size: 0.68rem; letter-spacing: 0.12em; }
+    .services-btn { padding: 0 1rem; font-size: 0.72rem; }
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .card img, .info, .card-plus { transition: none; }
+    .card img,
+    .info,
+    .card-plus,
+    .services-btn {
+      transition: none;
+    }
+
     .bg-title { transform: none !important; }
     .card-image-wrapper { transform: none !important; }
   }

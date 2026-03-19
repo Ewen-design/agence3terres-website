@@ -6,62 +6,48 @@
   export let currentPage = "home";
 
   // ── State ──────────────────────────────────────────────────────────────────
-  let lastScrollY    = 0;
-  let scrollingDown  = false;
-  let menuOpen       = false;
-  let textColor      = "white";
+  let lastScrollY   = 0;
+  let scrollingDown = false;
+  let menuOpen      = false;
+  let textColor     = "white";
   let headerEl;
   let menuButtonEl;
   let menuOrigin = { x: 0, y: 0, width: 44, height: 40 };
 
   const SCROLL_THRESHOLD = 10;
 
-  // ── Scroll handler — debattu via rAF pour éviter le layout thrashing ───────
+  // ── Scroll handler ─────────────────────────────────────────────────────────
   let ticking = false;
-
   function handleScroll() {
     if (ticking) return;
     ticking = true;
-    requestAnimationFrame(() => {
-      processScroll();
-      ticking = false;
-    });
+    requestAnimationFrame(() => { processScroll(); ticking = false; });
   }
-
   function processScroll() {
     const currentY = window.scrollY;
     const delta    = currentY - lastScrollY;
-
     if (Math.abs(delta) >= SCROLL_THRESHOLD) {
-      scrollingDown = delta > 0 && currentY > 80
-        ? true
-        : delta < 0
-          ? false
-          : scrollingDown;
-      lastScrollY = currentY;
+      scrollingDown = delta > 0 && currentY > 80 ? true : delta < 0 ? false : scrollingDown;
+      lastScrollY   = currentY;
     }
-
     updateTextColor();
   }
 
-  // ── Couleur texte selon la section survolée ────────────────────────────────
   function updateTextColor() {
     if (!headerEl) return;
     const headerMid = headerEl.getBoundingClientRect().top + headerEl.offsetHeight / 2;
     const sections  = document.querySelectorAll(
       "section.hero-wrapper, section.creative-section, section.services, section.dna-section, section.lifestyles-section"
     );
-
     let overLight = false;
     sections.forEach((section) => {
       const rect = section.getBoundingClientRect();
       if (headerMid >= rect.top && headerMid <= rect.bottom) overLight = true;
     });
-
     textColor = overLight ? "black" : "white";
   }
 
-  // ── Glow cursor ────────────────────────────────────────────────────────────
+  // ── Glow cursor (hover manuel) ─────────────────────────────────────────────
   function handleButtonMove(e) {
     const btn  = e.currentTarget;
     const rect = btn.getBoundingClientRect();
@@ -69,22 +55,97 @@
     btn.style.setProperty("--my", `${e.clientY - rect.top}px`);
   }
 
-  // ── Menu origin ────────────────────────────────────────────────────────────
+  // ── Auto-tour glow ─────────────────────────────────────────────────────────
+  // Toutes les ~4s, on choisit un bouton au hasard et on anime le glow
+  // de gauche à droite à travers lui en mettant à jour --mx / --my
+  // et en forçant opacity:1 sur ::before via une classe CSS .auto-glow.
+  let btnEls = [];      // refs sur tous les .nav-btn (logo + links + burger)
+  let tourTimer;
+  let tourRaf;
+  let isTouringNow = false;
+
+  function startTour() {
+    if (isTouringNow) return;
+
+    // Choisit un bouton au hasard parmi tous les boutons (logo, liens, burger)
+    const linkBtns = btnEls.filter(el => el != null);
+    if (!linkBtns.length) return;
+
+    const btn = linkBtns[Math.floor(Math.random() * linkBtns.length)];
+    const rect = btn.getBoundingClientRect();
+    const h    = rect.height;
+
+    // Centre vertical fixe, mx va de -20px à rect.width+20px
+    btn.style.setProperty("--my", `${h / 2}px`);
+
+    const duration = 900; // ms pour traverser le bouton
+    const start    = performance.now();
+    const fromX    = -20;
+    const toX      = rect.width + 20;
+
+    isTouringNow = true;
+    btn.classList.add("auto-glow");
+
+    // Si c'est le burger, animer aussi les points
+    const isBurger = btn.classList.contains("more");
+    if (isBurger) {
+      const spans = btn.querySelectorAll("span");
+      if (spans[0]) spans[0].style.transform = "translateX(6px) scale(1.6)";
+      if (spans[1]) spans[1].style.opacity = "0";
+      if (spans[1]) spans[1].style.transform = "scale(0)";
+      if (spans[2]) spans[2].style.transform = "translateX(-6px) scale(1.6)";
+    }
+
+    function animFrame(now) {
+      const t       = Math.min((now - start) / duration, 1);
+      // ease in-out
+      const ease    = t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
+      const mx      = fromX + (toX - fromX) * ease;
+      btn.style.setProperty("--mx", `${mx}px`);
+
+      if (t < 1) {
+        tourRaf = requestAnimationFrame(animFrame);
+      } else {
+        // Fade out
+        btn.classList.remove("auto-glow");
+        btn.classList.add("auto-glow-out");
+        // Reset burger spans
+        if (isBurger) {
+          const spans = btn.querySelectorAll("span");
+          spans.forEach(s => { s.style.transform = ""; s.style.opacity = ""; });
+        }
+        setTimeout(() => {
+          btn.classList.remove("auto-glow-out");
+          isTouringNow = false;
+          scheduleTour();
+        }, 350);
+      }
+    }
+
+    tourRaf = requestAnimationFrame(animFrame);
+  }
+
+  function scheduleTour() {
+    // Intervalle aléatoire entre 3s et 6s
+    const delay = 3000 + Math.random() * 3000;
+    tourTimer = setTimeout(startTour, delay);
+  }
+
+  // Svelte action pour enregistrer le burger dans btnEls sans double bind:this
+  function registerBurger(node) {
+    btnEls[5] = node;
+    return { destroy() { btnEls[5] = null; } };
+  }
+
+  // ── Menu ───────────────────────────────────────────────────────────────────
   function openMenu() {
     if (menuButtonEl) {
       const rect = menuButtonEl.getBoundingClientRect();
-      menuOrigin = {
-        x: rect.left + rect.width / 2,
-        y: rect.top + rect.height / 2,
-        width: rect.width,
-        height: rect.height
-      };
+      menuOrigin = { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2, width: rect.width, height: rect.height };
     }
-
     menuOpen = true;
   }
 
-  // ── Logo ───────────────────────────────────────────────────────────────────
   function handleLogoClick() {
     menuOpen = false;
     window.location.reload();
@@ -92,7 +153,6 @@
 
   // ── Dérivés ────────────────────────────────────────────────────────────────
   $: compact = scrollingDown && !menuOpen;
-
   $: themeClass =
     currentPage === "services" ? "theme-services" :
     currentPage === "travail"  ? "theme-projets"  :
@@ -105,10 +165,15 @@
     lastScrollY = window.scrollY;
     updateTextColor();
     window.addEventListener("scroll", handleScroll, { passive: true });
+
+    // Démarre le tour après un délai initial
+    scheduleTour();
   });
 
   onDestroy(() => {
     window.removeEventListener("scroll", handleScroll);
+    clearTimeout(tourTimer);
+    cancelAnimationFrame(tourRaf);
   });
 </script>
 
@@ -125,6 +190,7 @@
       data-cursor="button"
       type="button"
       aria-label="Retour à l'accueil"
+      bind:this={btnEls[0]}
       on:mousemove={handleButtonMove}
       on:click={handleLogoClick}
     >
@@ -138,7 +204,7 @@
         { label: "À propos", page: "apropos"  },
         { label: "Services", page: "services" },
         { label: "Contact",  page: "contact"  },
-      ] as link}
+      ] as link, i}
         <button
           class="nav-btn fade"
           class:active={currentPage === link.page}
@@ -146,6 +212,7 @@
           type="button"
           role="listitem"
           aria-current={currentPage === link.page ? "page" : undefined}
+          bind:this={btnEls[i + 1]}
           on:mousemove={handleButtonMove}
           on:click={() => navigate(link.page)}
         >
@@ -157,6 +224,7 @@
     <!-- Burger -->
     <div
       bind:this={menuButtonEl}
+      use:registerBurger
       class="nav-btn more"
       data-cursor="button"
       role="button"
@@ -186,7 +254,6 @@
     transform: translateX(-50%);
     z-index: 1000;
   }
-
   .nav-wrapper {
     padding: 0;
     background: none;
@@ -197,8 +264,6 @@
       transform 0.9s cubic-bezier(.22,.61,.36,1),
       filter    0.9s ease;
   }
-
-  /* État menu ouvert */
   .menu-open {
     opacity: 0.35;
     transform: translateX(-50%) scale(0.97);
@@ -234,17 +299,15 @@
       0 8px 10px rgba(0, 0, 0, 0.06),
       inset 0 0 0 0px rgba(255, 255, 255, 0.4);
     transition:
-      transform    1.2s cubic-bezier(.22,.61,.36,1),
-      box-shadow   1.2s cubic-bezier(.22,.61,.36,1),
-      background   1.2s cubic-bezier(.22,.61,.36,1);
+      transform  1.2s cubic-bezier(.22,.61,.36,1),
+      box-shadow 1.2s cubic-bezier(.22,.61,.36,1),
+      background 1.2s cubic-bezier(.22,.61,.36,1);
   }
-
-  /* Page active : légèrement plus opaque */
   .nav-btn.active {
     background: rgba(255, 255, 255, 0.25);
   }
 
-  /* ── Glow border (cursor-tracking) ────────────────────────────────────── */
+  /* ── Glow border ───────────────────────────────────────────────────────── */
   .nav-btn::before {
     content: "";
     position: absolute;
@@ -268,7 +331,19 @@
     filter: drop-shadow(0 0 3px rgba(212, 175, 55, 0.35));
   }
 
+  /* Hover manuel */
   .nav-btn:hover::before { opacity: 1; }
+
+  /* Auto-tour : glow visible */
+  .nav-btn.auto-glow::before {
+    opacity: 1;
+  }
+
+  /* Auto-tour : fade out */
+  .nav-btn.auto-glow-out::before {
+    opacity: 0;
+    transition: opacity 0.35s ease;
+  }
 
   /* ── Thèmes page ───────────────────────────────────────────────────────── */
   .theme-services .nav-btn::before {
@@ -281,29 +356,26 @@
     );
     filter: drop-shadow(0 0 4px rgba(95, 165, 255, 0.4));
   }
-
-.theme-projets .nav-btn::before {
-  background: radial-gradient(
-    80px circle at var(--mx, 50%) var(--my, 50%),
-    rgba(210, 210, 230, 0.98),
-    rgba(130, 110, 220, 0.7) 35%,
-    rgba(35, 30, 95, 0.55) 58%,
-    transparent 75%
-  );
-  filter: drop-shadow(0 0 4px rgba(150, 140, 230, 0.4));
-}
-
-.theme-apropos .nav-btn::before {
-  background: radial-gradient(
-    80px circle at var(--mx, 50%) var(--my, 50%),
-    rgba(255, 170, 170, 0.98),
-    rgba(255, 110, 90, 0.75) 35%,
-    rgba(150, 40, 40, 0.55) 58%,
-    transparent 75%
-  );
-  filter: drop-shadow(0 0 4px rgba(255, 110, 90, 0.4));
-}
-
+  .theme-projets .nav-btn::before {
+    background: radial-gradient(
+      80px circle at var(--mx, 50%) var(--my, 50%),
+      rgba(210, 210, 230, 0.98),
+      rgba(130, 110, 220, 0.7) 35%,
+      rgba(35, 30, 95, 0.55) 58%,
+      transparent 75%
+    );
+    filter: drop-shadow(0 0 4px rgba(150, 140, 230, 0.4));
+  }
+  .theme-apropos .nav-btn::before {
+    background: radial-gradient(
+      80px circle at var(--mx, 50%) var(--my, 50%),
+      rgba(255, 170, 170, 0.98),
+      rgba(255, 110, 90, 0.75) 35%,
+      rgba(150, 40, 40, 0.55) 58%,
+      transparent 75%
+    );
+    filter: drop-shadow(0 0 4px rgba(255, 110, 90, 0.4));
+  }
   .theme-contact .nav-btn::before {
     background: radial-gradient(
       80px circle at var(--mx, 50%) var(--my, 50%),
@@ -322,31 +394,17 @@
     transition: all 1.6s cubic-bezier(.22,.61,.36,1);
   }
 
-  /* ── Compact (scroll down) ─────────────────────────────────────────────── */
+  /* ── Compact ───────────────────────────────────────────────────────────── */
   .compact .links button {
     opacity: 0;
     transform: translateY(-18px) scale(0.95);
     pointer-events: none;
   }
-
-  .compact .links {
-    width: 0;
-    overflow: hidden;
-  }
-
-  .compact .nav-inner {
-    justify-content: center;
-    gap: 0.5rem;
-  }
+  .compact .links { width: 0; overflow: hidden; }
+  .compact .nav-inner { justify-content: center; gap: 0.5rem; }
 
   /* ── Burger ────────────────────────────────────────────────────────────── */
-  .more {
-    width: 44px;
-    padding: 0;
-    cursor: pointer;
-    gap: 3px;
-  }
-
+  .more { width: 44px; padding: 0; cursor: pointer; gap: 3px; }
   .more span {
     width: 3px;
     height: 3px;
@@ -354,21 +412,17 @@
     border-radius: 50%;
     transition: all 1s cubic-bezier(.22,.61,.36,1);
   }
-
   .more:hover span:nth-child(1) { transform: translateX(6px)  scale(1.6); }
   .more:hover span:nth-child(2) { opacity: 0; transform: scale(0); }
   .more:hover span:nth-child(3) { transform: translateX(-6px) scale(1.6); }
 
   /* ── Mobile ────────────────────────────────────────────────────────────── */
-  @media (max-width: 768px) {
-    .links { display: none; }
-  }
+  @media (max-width: 768px) { .links { display: none; } }
 
   /* ── Reduced motion ────────────────────────────────────────────────────── */
   @media (prefers-reduced-motion: reduce) {
-    .nav-wrapper,
-    .nav-btn,
-    .links,
-    .more span { transition: none; }
+    .nav-wrapper, .nav-btn, .links, .more span { transition: none; }
+    .nav-btn.auto-glow::before,
+    .nav-btn.auto-glow-out::before { display: none; }
   }
 </style>

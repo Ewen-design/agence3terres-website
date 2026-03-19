@@ -146,7 +146,7 @@
     {#if currentPage === "home"}
       <TextesIntro />
       <StickySlider />
-      <ParallaxGallery2 />
+      <ParallaxGallery2 {navigate}/>
       <ProjetsHighlight />
       <VisionSlider />
 

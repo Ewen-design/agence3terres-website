@@ -36,6 +36,13 @@
     }
   }
 
+  function handleDiscoverButtonMove(e) {
+    const btn = e.currentTarget;
+    const rect = btn.getBoundingClientRect();
+    btn.style.setProperty("--mx", `${e.clientX - rect.left}px`);
+    btn.style.setProperty("--my", `${e.clientY - rect.top}px`);
+  }
+
   function handleResize() {
     checkMobile();
     updateProgress();
@@ -107,7 +114,12 @@
       </p>
 
       <div class="actions">
-        <button class="discover-btn" on:click={smoothScrollToSlider}>
+        <button
+          class="discover-btn"
+          data-cursor="button"
+          on:mousemove={handleDiscoverButtonMove}
+          on:click={smoothScrollToSlider}
+        >
           Découvrir
         </button>
       </div>
@@ -203,30 +215,61 @@
     margin-top: 2rem;
   }
 
+  /* ── Bouton découvrir : thème services du header ───────────────────────── */
   .discover-btn {
+    position: relative;
     appearance: none;
-    border: 0.5px solid #fff;
-    background: #111;
+    border: none;
+    height: 40px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 1.5rem;
+    background: rgba(255, 255, 255, 0.15);
     color: #fff;
     font-size: 0.8rem;
     letter-spacing: 0.08em;
     text-transform: uppercase;
-    padding: 0.95rem 1.4rem;
+    white-space: nowrap;
     border-radius: 3px;
     cursor: pointer;
+    box-shadow:
+      0 8px 10px rgba(0, 0, 0, 0.06),
+      inset 0 0 0 0px rgba(255, 255, 255, 0.4);
     transition:
-      background 0.3s ease,
-      border-color 0.3s ease,
-      transform 0.3s ease;
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
+      transform 1.2s cubic-bezier(.22,.61,.36,1),
+      box-shadow 1.2s cubic-bezier(.22,.61,.36,1),
+      background 1.2s cubic-bezier(.22,.61,.36,1);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
   }
 
-  .discover-btn:hover {
-    background: #fff;
-    border-color: #fff;
-    color: #111;
-    transform: translateY(-1px);
+  .discover-btn::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    padding: 1px;
+    background: radial-gradient(
+      80px circle at var(--mx, 50%) var(--my, 50%),
+      rgba(145, 205, 255, 0.98),
+      rgba(74, 140, 255, 0.68) 35%,
+      rgba(18, 45, 120, 0.52) 58%,
+      transparent 75%
+    );
+    -webkit-mask:
+      linear-gradient(#000 0 0) content-box,
+      linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    opacity: 0;
+    transition: opacity 0.25s ease;
+    pointer-events: none;
+    filter: drop-shadow(0 0 4px rgba(95, 165, 255, 0.4));
+  }
+
+  .discover-btn:hover::before {
+    opacity: 1;
   }
 
   .side-mark {
@@ -294,7 +337,7 @@
 
     .discover-btn {
       font-size: 0.82rem;
-      padding: 0.85rem 1.15rem;
+      padding: 0 1.15rem;
     }
 
     .side-mark {
