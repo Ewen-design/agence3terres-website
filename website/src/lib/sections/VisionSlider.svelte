@@ -217,11 +217,7 @@ position: relative;
 height: 140vh;
 width: 100vw;
 margin-left: calc(50% - 50vw);
-background: linear-gradient(
-to top,
-#000 0%,
-#111 100%
-);
+background:#000;
 overflow: hidden;
 display: flex;
 flex-direction: column;

@@ -45,7 +45,7 @@
   <div class="top-header">
     <div class="header-spacer"></div>
     <div class="header-title-wrap">
-      <h2>What we do</h2>
+      <h2>Nos projets</h2>
     </div>
   </div>
 
@@ -68,9 +68,31 @@
             <span class="number">{project.number}</span>
           </div>
 
-          {#if index !== 2}
-            <div class="copy">
-              <p>{project.description}</p>
+          {#if index === 0}
+            <div class="cta-row">
+              <p class="cta-text">{project.description}</p>
+
+              <button
+                class="nav-btn cta-btn"
+                type="button"
+                on:mousemove={handleGlowMove}
+                on:click={() => navigate && navigate("projet1")}
+              >
+                Voir le projet
+              </button>
+            </div>
+          {:else if index === 1}
+            <div class="cta-row">
+              <p class="cta-text">{project.description}</p>
+
+              <button
+                class="nav-btn cta-btn"
+                type="button"
+                on:mousemove={handleGlowMove}
+                on:click={() => navigate && navigate("projet2")}
+              >
+                Voir le projet
+              </button>
             </div>
           {:else}
             <div class="cta-row">
@@ -162,7 +184,6 @@
     height: clamp(260px, 28vw, 430px);
   }
 
-  /* Glow border identique à l'esprit du header */
   .accordion-item::before {
     content: "";
     position: absolute;
@@ -262,30 +283,6 @@
     padding-top: 0.08em;
   }
 
-  .copy {
-    max-width: 42rem;
-    overflow: hidden;
-    margin-top: auto;
-  }
-
-  .copy p {
-    margin: 1rem 0 0;
-    font-size: clamp(0.98rem, 1.08vw, 1.22rem);
-    line-height: 1.48;
-    color: rgba(245, 241, 232, 0.72);
-    opacity: 0;
-    transform: translateY(18px);
-    transition:
-      opacity 480ms ease,
-      transform 780ms cubic-bezier(0.22, 1, 0.36, 1);
-  }
-
-  .accordion-item.active .copy p {
-    opacity: 1;
-    transform: translateY(0);
-    transition-delay: 90ms;
-  }
-
   .cta-row {
     margin-top: auto;
     display: flex;
@@ -313,7 +310,6 @@
     color: rgba(245, 241, 232, 0.72);
   }
 
-  /* Bouton copié dans l'esprit du header */
   .nav-btn {
     position: relative;
     height: 40px;
@@ -422,14 +418,10 @@
       font-size: clamp(1.3rem, 5.2vw, 2rem);
     }
 
-    .copy p,
     .cta-row {
       opacity: 1;
       transform: none;
       margin-top: 0.85rem;
-    }
-
-    .cta-row {
       align-items: flex-start;
     }
 
@@ -443,7 +435,6 @@
   @media (prefers-reduced-motion: reduce) {
     .accordion-item,
     .visual img,
-    .copy p,
     .cta-row,
     .nav-btn {
       transition: none !important;

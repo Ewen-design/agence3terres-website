@@ -149,7 +149,6 @@
       <StickySlider />
       <ParallaxGallery2 {navigate}/>
       <ProjetsAccordeon {navigate}/>
-      <ProjetsHighlight />
       <VisionSlider />
 
     {:else if currentPage === "travail"}
