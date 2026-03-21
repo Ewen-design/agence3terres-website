@@ -29,6 +29,7 @@
   import Transition2 from "./lib/sections/Transition2.svelte";
   import Gallery3 from "./lib/sections/Gallery3.svelte";
   import Gallery2 from "./lib/sections/Gallery2.svelte";
+  import ProjetsAccordeon from "./lib/sections/ProjetsAccordeon.svelte";
 
   import Travail from "./lib/structure/Travail.svelte";
   import Apropos from "./lib/structure/Apropos.svelte";
@@ -147,6 +148,7 @@
       <TextesIntro />
       <StickySlider />
       <ParallaxGallery2 {navigate}/>
+      <ProjetsAccordeon {navigate}/>
       <ProjetsHighlight />
       <VisionSlider />
 
