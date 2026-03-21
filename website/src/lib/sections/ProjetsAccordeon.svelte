@@ -6,7 +6,7 @@
   const projects = [
     {
       number: "01",
-      title: "Product strategy and design",
+      title: "Serein design",
       description:
         "Great products don’t just happen, they’re shaped by insight. We dig into research, audits and user testing to understand what people need, then translate those findings into clear, intuitive UX solutions where every decision has purpose.",
       image:
@@ -15,7 +15,7 @@
     },
     {
       number: "02",
-      title: "App and website design",
+      title: "Hansatsu",
       description:
         "We think outside the box to make sure your product sets itself apart and sets the bar. We build beautiful, intuitive interfaces that are compelling and consistent, powered by scalable design systems.",
       image:
@@ -24,7 +24,7 @@
     },
     {
       number: "03",
-      title: "Brand strategy and identity design",
+      title: "Bientôt votre projet ?",
       description:
         "Construisons une identité forte, désirable et durable, pensée pour marquer les esprits sur chaque point de contact.",
       image:
