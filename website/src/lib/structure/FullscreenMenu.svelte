@@ -282,8 +282,13 @@
     opacity: 0;
     transition: opacity 0.28s ease;
     background:
-      
-      linear-gradient(180deg, #151515 0%, #151515 140px, #000 100%);
+      linear-gradient(
+  to bottom,
+  #151515 0%,
+  #151515 50%,
+  #000 50%,
+  #000 100%
+);
   }
 
   .fs-menu.expanded .bg-base {
