@@ -114,18 +114,24 @@
 
 <section class="services-section" bind:this={section}>
   <div class="sticky-bg">
-    <div class="slider" bind:this={slider} on:click={handleClick}>
-      <div
+    <div class="slider" bind:this={slider} role="group" aria-label="Diaporama">
+      <button
+        type="button"
         class="zone left"
         data-cursor="prev"
         data-image={images[prevIndex]}
-      ></div>
+        aria-label="Image précédente"
+        on:click={handleClick}
+      ></button>
 
-      <div
+      <button
+        type="button"
         class="zone right"
         data-cursor="next"
         data-image={images[nextIndex]}
-      ></div>
+        aria-label="Image suivante"
+        on:click={handleClick}
+      ></button>
 
       <img src={images[index]} alt="" draggable="false" />
 
@@ -256,6 +262,10 @@
     width: 50%;
     height: 100%;
     z-index: 5;
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
   }
 
   .zone.left {

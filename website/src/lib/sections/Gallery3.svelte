@@ -424,7 +424,7 @@
               aria-label={`Choisir la finition ${finish.label}`}
               aria-pressed={selectedFinish === index}
               on:click={() => selectFinish(index)}
-            />
+            ></button>
           {/each}
         </div>
       </div>

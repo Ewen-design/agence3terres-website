@@ -173,12 +173,21 @@
   class="vision-section"
   bind:this={sectionEl}
   data-cursor="carousel"
+  role="group"
+  aria-label="Carrousel de citations"
   on:mousemove={handleZoneMove}
-  on:click={handleZoneClick}
   on:touchstart={touchStart}
   on:touchmove={touchMove}
   on:touchend={touchEnd}
 >
+  <button type="button" class="nav-zone nav-prev" aria-label="Citation précédente"
+    on:click={prev}
+    on:keydown={(e) => { if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') prev(); if (e.key === 'ArrowRight' || e.key === 'ArrowDown') next(); }}
+  ></button>
+  <button type="button" class="nav-zone nav-next" aria-label="Citation suivante"
+    on:click={next}
+    on:keydown={(e) => { if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') prev(); if (e.key === 'ArrowRight' || e.key === 'ArrowDown') next(); }}
+  ></button>
   <div class="bg" bind:this={bgEl} style="background-image:url('/images/photo.webp')"></div>
   <div class="overlay"></div>
 
@@ -196,6 +205,7 @@
         <div
           class="card"
           style="transform: rotateY({i * angleStep}deg) translateZ({radius}px); opacity: {getOpacity(i)};"
+          role="group"
           on:mousemove={handleMove}
         >
           <div class="quote">
@@ -224,6 +234,20 @@ flex-direction: column;
 align-items: center;
 justify-content: center;
 }
+.nav-zone {
+position: absolute;
+top: 0;
+width: 50%;
+height: 100%;
+z-index: 2;
+background: none;
+border: none;
+padding: 0;
+cursor: pointer;
+opacity: 0;
+}
+.nav-prev { left: 0; }
+.nav-next { right: 0; }
 .bg {
 position: absolute;
 inset: 0;
@@ -347,26 +371,6 @@ font-family: "Manrope", sans-serif;
 font-size: 0.95rem;
 color: #9b9b9b;
 }
-.controls {
-margin-top: 1rem;
-display: flex;
-gap: 1rem;
-z-index: 3;
-}
-.controls button {
-background: rgba(255,255,255,0.15);
-backdrop-filter: blur(10px);
-border: none;
-padding: 0.8rem 1.2rem;
-color: #fff;
-border-radius: 3px;
-cursor: pointer;
-font-family: "Manrope", sans-serif;
-transition: transform 0.4s ease;
-}
-.controls button:hover {
-transform: scale(1.1);
-}
 @media (max-width: 768px) {
 .carousel-wrapper {
 height: 520px;
@@ -377,9 +381,6 @@ padding: 6rem 2.5rem;
   }
 .quote p {
 font-size: 1.25rem;
-  }
-.controls {
-display: none;
   }
 .card::before {
 display: none;

@@ -35,8 +35,9 @@
 
   <!-- BLOCKS -->
   {#each services as service, i}
-    <div 
+    <div
       class="service {i % 2 === 0 ? 'left' : 'right'} {active === i ? 'active' : ''}"
+      role="article"
       on:mouseenter={() => active = i}
       on:mouseleave={() => active = null}
     >

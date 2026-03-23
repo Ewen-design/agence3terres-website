@@ -137,7 +137,7 @@ h1 {
   will-change: opacity;
 }
 
-.word {
+:global(.word) {
   display: inline-block;
   will-change: opacity, color;
 }

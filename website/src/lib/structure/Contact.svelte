@@ -41,18 +41,18 @@
       <form class="form" on:submit={handleSubmit}>
 
         <div class="field">
-          <input type="text" bind:value={name} required placeholder=" " />
-          <label>Votre nom</label>
+          <input id="contact-name" type="text" bind:value={name} required placeholder=" " />
+          <label for="contact-name">Votre nom</label>
         </div>
 
         <div class="field">
-          <input type="email" bind:value={email} required placeholder=" " />
-          <label>Email</label>
+          <input id="contact-email" type="email" bind:value={email} required placeholder=" " />
+          <label for="contact-email">Email</label>
         </div>
 
         <div class="field">
-          <textarea rows="5" bind:value={message} required placeholder=" "></textarea>
-          <label>Votre message</label>
+          <textarea id="contact-message" rows="5" bind:value={message} required placeholder=" "></textarea>
+          <label for="contact-message">Votre message</label>
         </div>
 
         <button type="submit">
@@ -67,9 +67,9 @@
     <div class="contact-info">
 
       <div class="socials">
-        <a href="#" target="_blank">Instagram</a>
-        <a href="#" target="_blank">Linkedin</a>
-        <a href="#" target="_blank">Facebook</a>
+        <a href="/" target="_blank" on:click|preventDefault={() => {}}>Instagram</a>
+        <a href="/" target="_blank" on:click|preventDefault={() => {}}>Linkedin</a>
+        <a href="/" target="_blank" on:click|preventDefault={() => {}}>Facebook</a>
       </div>
 
       <div class="email">

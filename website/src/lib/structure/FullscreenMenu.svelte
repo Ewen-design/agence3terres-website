@@ -155,7 +155,7 @@
   aria-hidden={!visible}
 >
   <div class="expander"></div>
-  <div class="bg-base" on:click={close}></div>
+  <div class="bg-base" role="button" tabindex="0" aria-label="Fermer le menu" on:click={close} on:keydown={(e) => { if (e.key === 'Enter' || e.key === ' ') close(); }}></div>
 
   <div class="topbar">
     <div class="meta">Agence 3 Terres</div>

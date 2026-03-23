@@ -210,7 +210,6 @@
           class:active={currentPage === link.page}
           data-cursor="button"
           type="button"
-          role="listitem"
           aria-current={currentPage === link.page ? "page" : undefined}
           bind:this={btnEls[i + 1]}
           on:mousemove={handleButtonMove}
