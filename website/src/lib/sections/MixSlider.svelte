@@ -1,5 +1,6 @@
 <script>
   import { onMount, onDestroy } from "svelte";
+  import { browser } from "$app/environment";
 
   const slides = [
     {
@@ -84,6 +85,7 @@
   });
 
   onDestroy(() => {
+    if (!browser) return;
     window.removeEventListener("scroll", onScroll);
     window.removeEventListener("resize", onScroll);
     if (observer) observer.disconnect();

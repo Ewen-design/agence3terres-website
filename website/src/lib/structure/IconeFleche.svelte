@@ -1,7 +1,6 @@
 <script>
   import { onMount } from "svelte";
-
-  export let currentPage = "home";
+  import { page } from "$app/stores";
 
   let progress = 0;
   let x = 50;
@@ -10,13 +9,13 @@
   let arrowColor = "white"; // couleur dynamique de la flèche
 
   $: progressGradient =
-    currentPage === "services"
+    $page.url.pathname === "/services"
       ? "rgba(145, 205, 255, 0.98), rgba(74, 140, 255, 0.68), rgba(145, 205, 255, 0.98)"
-      : currentPage === "travail"
+      : $page.url.pathname === "/travail"
       ? "rgba(214, 155, 255, 0.98), rgba(140, 92, 255, 0.75), rgba(214, 155, 255, 0.98)"
-      : currentPage === "apropos"
+      : $page.url.pathname === "/apropos"
       ? "rgba(255, 170, 170, 0.98), rgba(255, 110, 90, 0.75), rgba(255, 170, 170, 0.98)"
-      : currentPage === "contact"
+      : $page.url.pathname === "/contact"
       ? "rgba(186, 132, 255, 0.98), rgba(110, 74, 255, 0.7), rgba(186, 132, 255, 0.98)"
       : "rgba(213, 184, 89, 0.95), rgba(212, 102, 55, 0.45), rgba(213, 184, 89, 0.95)";
 

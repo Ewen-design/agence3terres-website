@@ -1,8 +1,9 @@
 <script>
   import { tick, onMount, onDestroy } from "svelte";
+  import { browser } from "$app/environment";
+  import { navigate } from "$lib/navigate.js";
 
   export let open = false;
-  export let navigate;
   export let origin = { x: 0, y: 0, width: 44, height: 40 };
 
   let visible = false;
@@ -46,9 +47,7 @@
     contentVisible = false;
     activeIndex = null;
 
-    if (typeof document !== "undefined") {
-      document.body.classList.add("menu-open");
-    }
+    document.body.classList.add("menu-open");
 
     raf1 = requestAnimationFrame(() => {
       raf2 = requestAnimationFrame(() => {
@@ -78,9 +77,7 @@
       closing = false;
       open = false;
 
-      if (typeof document !== "undefined") {
-        document.body.classList.remove("menu-open");
-      }
+      document.body.classList.remove("menu-open");
     }, isMobile ? 640 : 820);
   }
 
@@ -98,11 +95,10 @@
   });
 
   onDestroy(() => {
+    if (!browser) return;
     clearAsync();
     window.removeEventListener("resize", checkMobile);
-    if (typeof document !== "undefined") {
-      document.body.classList.remove("menu-open");
-    }
+    document.body.classList.remove("menu-open");
   });
 
   async function close() {
@@ -117,7 +113,7 @@
       return;
     }
 
-    if (navigate && link.page) {
+    if (link.page) {
       navigate(link.page);
     }
 

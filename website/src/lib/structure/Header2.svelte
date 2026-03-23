@@ -1,8 +1,7 @@
 <script>
   import { onMount } from "svelte";
   import FullscreenMenu from "./FullscreenMenu.svelte";
-
-  export let navigate;
+  import { navigate } from "$lib/navigate.js";
 
   let lastScrollY = 0;
   let scrollingDown = false;

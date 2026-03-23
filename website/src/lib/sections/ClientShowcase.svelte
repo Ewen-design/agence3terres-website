@@ -1,7 +1,8 @@
 <script>
+  import { navigate } from "$lib/navigate.js";
+
   export let client;
   export let index;
-  export let navigate;
 </script>
 
 <section class="client-section">

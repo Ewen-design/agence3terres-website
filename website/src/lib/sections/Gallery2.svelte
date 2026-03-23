@@ -1,8 +1,9 @@
 <script lang="ts">
   import { onMount, onDestroy } from "svelte";
+  import { browser } from "$app/environment";
   import { registerParallax, unregisterParallax } from "../scrollEngine.js";
+  import { navigate } from "$lib/navigate.js";
 
-  export let navigate;
   export let darkPhase = false;
 
   type Finish = {
@@ -330,6 +331,7 @@
   });
 
   onDestroy(() => {
+    if (!browser) return;
     stopLoop();
     unregisterParallax(updateParallax);
     resizeObserver?.disconnect();

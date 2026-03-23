@@ -1,5 +1,6 @@
 <script>
   import { onMount, onDestroy } from "svelte";
+  import { browser } from "$app/environment";
   import { registerParallax, unregisterParallax } from "../scrollEngine.js";
 
   let email = "";
@@ -32,6 +33,7 @@
   });
 
   onDestroy(() => {
+    if (!browser) return;
     unregisterParallax(updateParallax);
   });
 </script>

@@ -1,9 +1,9 @@
 <script>
   import { onMount, onDestroy } from "svelte";
+  import { browser } from "$app/environment";
+  import { page } from "$app/stores";
   import FullscreenMenu from "./FullscreenMenu.svelte";
-
-  export let navigate;
-  export let currentPage = "home";
+  import { navigate } from "$lib/navigate.js";
 
   // ── State ──────────────────────────────────────────────────────────────────
   let lastScrollY   = 0;
@@ -148,16 +148,16 @@
 
   function handleLogoClick() {
     menuOpen = false;
-    window.location.reload();
+    navigate("home");
   }
 
   // ── Dérivés ────────────────────────────────────────────────────────────────
   $: compact = scrollingDown && !menuOpen;
   $: themeClass =
-    currentPage === "services" ? "theme-services" :
-    currentPage === "travail"  ? "theme-projets"  :
-    currentPage === "apropos"  ? "theme-apropos"  :
-    currentPage === "contact"  ? "theme-contact"  :
+    $page.url.pathname === "/services" ? "theme-services" :
+    $page.url.pathname === "/travail"  ? "theme-projets"  :
+    $page.url.pathname === "/apropos"  ? "theme-apropos"  :
+    $page.url.pathname === "/contact"  ? "theme-contact"  :
     "";
 
   // ── Lifecycle ──────────────────────────────────────────────────────────────
@@ -171,6 +171,7 @@
   });
 
   onDestroy(() => {
+    if (!browser) return;
     window.removeEventListener("scroll", handleScroll);
     clearTimeout(tourTimer);
     cancelAnimationFrame(tourRaf);
@@ -207,10 +208,10 @@
       ] as link, i}
         <button
           class="nav-btn fade"
-          class:active={currentPage === link.page}
+          class:active={$page.url.pathname === `/${link.page}`}
           data-cursor="button"
           type="button"
-          aria-current={currentPage === link.page ? "page" : undefined}
+          aria-current={$page.url.pathname === `/${link.page}` ? "page" : undefined}
           bind:this={btnEls[i + 1]}
           on:mousemove={handleButtonMove}
           on:click={() => navigate(link.page)}
@@ -242,7 +243,7 @@
   </nav>
 </header>
 
-<FullscreenMenu bind:open={menuOpen} {navigate} origin={menuOrigin} />
+<FullscreenMenu bind:open={menuOpen} origin={menuOrigin} />
 
 <style>
   /* ── Wrapper fixé ──────────────────────────────────────────────────────── */

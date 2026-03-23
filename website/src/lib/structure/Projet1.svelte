@@ -1,7 +1,6 @@
 <script>
   import { onMount } from "svelte";
-
-  export let navigate;
+  import { navigate } from "$lib/navigate.js";
 
   let trigger;
   let progress = 0;

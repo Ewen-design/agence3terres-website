@@ -1,5 +1,6 @@
 <script>
   import { onMount, onDestroy } from "svelte";
+  import { browser } from "$app/environment";
 
   export let src = "images/photo.webp";
   export let alt = "";

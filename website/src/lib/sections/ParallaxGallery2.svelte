@@ -1,9 +1,9 @@
 <script>
   import { onMount, onDestroy } from "svelte";
+  import { browser } from "$app/environment";
   import { registerParallax, unregisterParallax } from "../scrollEngine.js";
   import ProjectOffCanvas from "./ProjectOffCanvas.svelte";
-
-  export let navigate = null;
+  import { navigate } from "$lib/navigate.js";
 
   let selected = null;
   let gallerySection;
@@ -222,6 +222,7 @@
   });
 
   onDestroy(() => {
+    if (!browser) return;
     unregisterParallax(onScroll);
     intersectionObs?.disconnect();
     resizeObs?.disconnect();
@@ -293,7 +294,7 @@
       type="button"
       data-cursor="button"
       on:mousemove={handleButtonMove}
-      on:click={() => navigate && navigate("services")}
+      on:click={() => navigate("services")}
     >
       Découvrir tous les services
     </button>

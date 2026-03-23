@@ -1,5 +1,6 @@
 <script>
   import { onMount, onDestroy } from "svelte";
+  import { browser } from "$app/environment";
   import { registerParallax, unregisterParallax } from "../scrollEngine.js";
   import { sectionIsNearViewport } from "../scrollEngine.js";
 
@@ -95,6 +96,7 @@ if (!sectionIsNearViewport(rect)) return;
   });
 
   onDestroy(() => {
+    if (!browser) return;
     unregisterParallax(onEngineUpdate);
     window.removeEventListener("resize", handleResize);
   });

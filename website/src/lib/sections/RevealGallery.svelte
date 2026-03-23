@@ -1,5 +1,6 @@
 <script>
   import { onMount, onDestroy } from "svelte";
+  import { browser } from "$app/environment";
 
   const HERO_SRC =
     "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1600&q=80";
@@ -118,6 +119,7 @@
   });
 
   onDestroy(() => {
+    if (!browser) return;
     window.removeEventListener("scroll", onScroll);
     window.removeEventListener("resize", handleResize);
   });

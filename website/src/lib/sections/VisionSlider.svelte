@@ -1,5 +1,6 @@
 <script>
   import { onMount, onDestroy } from "svelte";
+  import { browser } from "$app/environment";
   import { registerParallax, unregisterParallax } from "../scrollEngine.js";
 
   // ── Data ───────────────────────────────────────────────────────────────────
@@ -160,6 +161,7 @@
   });
 
   onDestroy(() => {
+    if (!browser) return;
     stopLoop();
     unregisterParallax(updateParallax);
     resizeObserver?.disconnect();

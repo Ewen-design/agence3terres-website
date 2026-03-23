@@ -1,8 +1,6 @@
 <script>
   import ClientShowcase from "../sections/ClientShowcase.svelte";
 
-  export let navigate;
-
   const clients = [
     {
       name: "Maison Élixir",
@@ -40,7 +38,6 @@
     <ClientShowcase
       {client}
       index={i}
-      {navigate}
     />
   {/each}
 </section>

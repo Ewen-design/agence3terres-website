@@ -1,5 +1,5 @@
 <script>
-  export let navigate;
+  import { navigate } from "$lib/navigate.js";
 
   let hoveredIndex = 0;
 
@@ -76,7 +76,7 @@
                 class="nav-btn cta-btn"
                 type="button"
                 on:mousemove={handleGlowMove}
-                on:click={() => navigate && navigate("projet1")}
+                on:click={() => navigate("projet1")}
               >
                 Voir le projet
               </button>
@@ -89,7 +89,7 @@
                 class="nav-btn cta-btn"
                 type="button"
                 on:mousemove={handleGlowMove}
-                on:click={() => navigate && navigate("projet2")}
+                on:click={() => navigate("projet2")}
               >
                 Voir le projet
               </button>
@@ -102,7 +102,7 @@
                 class="nav-btn cta-btn"
                 type="button"
                 on:mousemove={handleGlowMove}
-                on:click={() => navigate && navigate("contact")}
+                on:click={() => navigate("contact")}
               >
                 Contactez-nous
               </button>
