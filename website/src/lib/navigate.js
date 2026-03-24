@@ -17,9 +17,9 @@ let _gsap = null;
 let _lenis = null;
 let _isTransitioning = false;
 
-const DURATION  = 1.05;
-const SWITCH_AT = 0.60;
-const EASE      = 'power3.inOut';
+const DURATION_IN  = 0.65;
+const DURATION_OUT = 0.55;
+const EASE         = 'power3.inOut';
 
 /** Called once from +layout.svelte after the overlay element is bound. */
 export function registerOverlay(el) {
@@ -61,28 +61,35 @@ export async function navigate(page) {
   // GSAP starts animating (same technique as original App.svelte).
   await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
 
-  return new Promise((resolve) => {
-    _gsap.to(_overlayEl, {
-      duration: DURATION,
-      ease: EASE,
-      clipPath: 'polygon(0% -2%, 100% -2%, 100% 120%, 0% 102%)',
+  // Phase 1 — wipe in: overlay sweeps down from top to cover the screen.
+  await new Promise((resolve) => {
+    _gsap.fromTo(_overlayEl,
+      { clipPath: 'polygon(0% -2%, 100% -2%, 100% -2%, 0% -2%)' },
+      {
+        duration: DURATION_IN,
+        ease: EASE,
+        clipPath: 'polygon(0% -2%, 100% -2%, 100% 102%, 0% 102%)',
+        onComplete: resolve,
+      }
+    );
+  });
 
-      onUpdate() {
-        if (!this._switched && this.progress() >= SWITCH_AT) {
-          this._switched = true;
-          _lenis?.scrollTo(0, { immediate: true });
-          goto(url);
-        }
-      },
+  // Screen is now fully covered — safe to navigate and jump to top.
+  _lenis?.scrollTo(0, { immediate: true });
+  await goto(url, { noScroll: true });
+  await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
 
-      onComplete() {
-        // Reset clip-path so the overlay is collapsed for the next navigation.
-        _gsap.set(_overlayEl, {
-          clipPath: 'polygon(0% -2%, 100% -2%, 100% -2%, 0% -2%)',
-        });
-        _isTransitioning = false;
-        resolve();
-      },
-    });
+  // Phase 2 — wipe out: overlay lifts upward to reveal the new page.
+  _gsap.to(_overlayEl, {
+    duration: DURATION_OUT,
+    ease: EASE,
+    clipPath: 'polygon(0% -104%, 100% -104%, 100% -2%, 0% -2%)',
+    onComplete() {
+      // Snap back to the collapsed state for the next navigation.
+      _gsap.set(_overlayEl, {
+        clipPath: 'polygon(0% -2%, 100% -2%, 100% -2%, 0% -2%)',
+      });
+      _isTransitioning = false;
+    },
   });
 }

@@ -170,7 +170,7 @@
   });
 </script>
 
-<!-- Template 100% identique à ton original -->
+<!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
 <section
   class="vision-section"
   bind:this={sectionEl}
