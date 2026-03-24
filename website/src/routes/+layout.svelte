@@ -14,7 +14,7 @@
     updateScrollEngineViewport,
   } from "$lib/scrollEngine.js";
   import { registerOverlay, registerGsap, registerLenis } from "$lib/navigate.js";
-  import Lenis from "@studio-freight/lenis";
+  import Lenis from "lenis";
 
   /** @type {HTMLElement} */
   let overlayEl;

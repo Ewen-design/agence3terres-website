@@ -67,9 +67,9 @@
     <div class="contact-info">
 
       <div class="socials">
-        <a href="/" target="_blank" on:click|preventDefault={() => {}}>Instagram</a>
-        <a href="/" target="_blank" on:click|preventDefault={() => {}}>Linkedin</a>
-        <a href="/" target="_blank" on:click|preventDefault={() => {}}>Facebook</a>
+        <a href="/" target="_blank" rel="noopener noreferrer" on:click|preventDefault={() => {}}>Instagram</a>
+        <a href="/" target="_blank" rel="noopener noreferrer" on:click|preventDefault={() => {}}>Linkedin</a>
+        <a href="/" target="_blank" rel="noopener noreferrer" on:click|preventDefault={() => {}}>Facebook</a>
       </div>
 
       <div class="email">
