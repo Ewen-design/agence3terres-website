@@ -272,7 +272,7 @@ letter-spacing: 0.05em;
 margin-bottom: 1.5rem;
 }
 .vision-header p {
-font-family: "Manrope", sans-serif;
+font-family: 'General Sans', sans-serif;
 font-size: 1rem;
 opacity: 0.65;
 line-height: 1.6;
@@ -345,7 +345,7 @@ position: relative;
 text-align: center;
 }
 .quote p {
-font-family: "Manrope", sans-serif;
+font-family: 'General Sans', sans-serif;
 font-style: italic;
 font-size: 1.5rem;
 color: #fff;
@@ -369,7 +369,7 @@ right: -20px;
 .author {
 margin-top: 2rem;
 text-align: center;
-font-family: "Manrope", sans-serif;
+font-family: 'General Sans', sans-serif;
 font-size: 0.95rem;
 color: #9b9b9b;
 }

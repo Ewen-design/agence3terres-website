@@ -7,17 +7,16 @@
 
   let selected = null;
   let gallerySection;
-  let bgTitleEl;
   let isMobile = false;
   let prefersReduced = false;
 
   const items = [
     { title: "Création de logo",     date: "2024", desc: "Refonte complète de l'identité visuelle et création d'un système graphique minimaliste.", image: "/images/photo.webp"  },
-    { title: "Brand Identity",       date: "2023", desc: "Développement d'une plateforme de marque et direction artistique globale.",               image: "/images/photo2.webp" },
-    { title: "UI Design",            date: "2024", desc: "Conception d'interfaces modernes axées sur l'expérience utilisateur.",                    image: "/images/photo.webp"  },
-    { title: "UX Research",          date: "2022", desc: "Études utilisateurs et architecture d'information pour application mobile.",               image: "/images/photo.webp"  },
-    { title: "Direction Artistique", date: "2023", desc: "Supervision créative et mise en place d'un univers visuel premium.",                      image: "/images/photo2.webp" },
-    { title: "Motion Concept",       date: "2024", desc: "Concept motion design pour lancement de produit digital.",                                image: "/images/photo.webp"  },
+    { title: "Identité visuelle et stratégie",       date: "2023", desc: "Développement d'une plateforme de marque et direction artistique globale.",               image: "/images/photo2.webp" },
+    { title: "Couverture d'événements",            date: "2024", desc: "Conception d'interfaces modernes axées sur l'expérience utilisateur.",                    image: "/images/photo.webp"  },
+    { title: "Conception de site web",          date: "2022", desc: "Études utilisateurs et architecture d'information pour application mobile.",               image: "/images/photo.webp"  },
+    { title: "Accompagnement", date: "2023", desc: "Supervision créative et mise en place d'un univers visuel premium.",                      image: "/images/photo2.webp" },
+    { title: "Gestion des réseaux sociaux",       date: "2024", desc: "Concept motion design pour lancement de produit digital.",                                image: "/images/photo.webp"  },
   ];
 
   let cardEls = [];
@@ -28,7 +27,6 @@
 
   let cardMetrics = [];
   let secTop = 0, secBottom = 0;
-  let bgTop = 0, bgHeight = 0, hasBg = false;
   let measured = false;
 
   let prevWrapperY = [];
@@ -36,7 +34,6 @@
   let prevInfoTY = [];
   let prevImgDark = [];
   let prevImgScaled = [];
-  let prevBgY = null;
 
   let sectionVisible = false;
   let intersectionObs;
@@ -44,8 +41,8 @@
   let resizeTimer;
   let mediaQuery;
 
-  const SPEED_DESKTOP = -155;
-  const SPEED_MOBILE = -75;
+  const SPEED_DESKTOP = -132;
+  const SPEED_MOBILE = -64;
   const Q = 0.5;
   const quantize = (v) => Math.round(v / Q) * Q;
   const clamp = (v, lo, hi) => (v < lo ? lo : v > hi ? hi : v);
@@ -65,13 +62,6 @@
     secTop = sr.top + scrollY;
     secBottom = secTop + sr.height;
 
-    hasBg = !!bgTitleEl;
-    if (hasBg) {
-      const br = bgTitleEl.getBoundingClientRect();
-      bgTop = br.top + scrollY;
-      bgHeight = br.height;
-    }
-
     cardMetrics = [];
     for (let i = 0; i < items.length; i++) {
       const el = cardEls[i];
@@ -88,13 +78,12 @@
     prevInfoTY = new Array(items.length).fill(null);
     prevImgDark = new Array(items.length).fill(null);
     prevImgScaled = new Array(items.length).fill(null);
-    prevBgY = null;
     measured = true;
   }
 
   function onScroll(scrollY, { vh, isMobile: mob }) {
     if (!sectionVisible || prefersReduced || !measured) return;
-    if (secTop - scrollY > vh + 800 || secBottom - scrollY < -800) return;
+    if (secTop - scrollY > vh + 700 || secBottom - scrollY < -700) return;
 
     const speed = mob ? SPEED_MOBILE : SPEED_DESKTOP;
 
@@ -139,24 +128,13 @@
         info.style.transform = `translate3d(0,${qTY}px,0)`;
 
         if (dark !== prevImgDark[i]) {
-          img.style.filter = dark ? "brightness(0.6)" : "";
+          img.style.filter = dark ? "brightness(0.68)" : "";
           prevImgDark[i] = dark;
         }
         if (dark !== prevImgScaled[i]) {
-          img.style.transform = dark ? "scale(1.05) translateZ(0)" : "translateZ(0)";
+          img.style.transform = dark ? "scale(1.035) translateZ(0)" : "translateZ(0)";
           prevImgScaled[i] = dark;
         }
-      }
-    }
-
-    if (hasBg && bgTitleEl && !mob) {
-      const titleCenter = bgTop - scrollY + bgHeight * 0.5;
-      const prog = clamp((titleCenter - vh * 0.5) / vh, -1, 1);
-      const bgY = quantize(prog * -90);
-
-      if (bgY !== prevBgY) {
-        bgTitleEl.style.transform = `translate3d(0,${bgY}px,0)`;
-        prevBgY = bgY;
       }
     }
   }
@@ -165,10 +143,6 @@
     clearTimeout(resizeTimer);
     resizeTimer = setTimeout(() => {
       isMobile = window.innerWidth <= 900;
-      if (isMobile && bgTitleEl) {
-        bgTitleEl.style.transform = "";
-        prevBgY = null;
-      }
       measure();
     }, 100);
   }
@@ -205,7 +179,7 @@
       const wasVisible = sectionVisible;
       sectionVisible = entry.isIntersecting;
       if (sectionVisible && !wasVisible) measure();
-    }, { rootMargin: "600px 0px 600px 0px", threshold: 0 });
+    }, { rootMargin: "500px 0px 500px 0px", threshold: 0 });
 
     intersectionObs.observe(gallerySection);
 
@@ -234,19 +208,19 @@
 </script>
 
 <section class="gallery" bind:this={gallerySection}>
-  <div class="header-stage">
-    <div class="bg-title" bind:this={bgTitleEl} aria-hidden="true">
-      <span>NOS</span>
-      <span>SERVICES</span>
+  <div class="top-header">
+    <div class="header-spacer"></div>
+    <div class="header-title-wrap">
+      <h2>Nos services</h2>
     </div>
+  </div>
 
-    <div class="gallery-header">
-      <div class="intro-card">
-        <p>
-          Nous imaginons des identités fortes, des expériences digitales immersives
-          et des directions artistiques pensées pour laisser une empreinte durable.
-        </p>
-      </div>
+  <div class="gallery-header">
+    <div class="intro-card">
+      <p>
+        Nous imaginons des identités fortes, des expériences digitales immersives
+        et des directions artistiques pensées pour laisser une empreinte durable.
+      </p>
     </div>
   </div>
 
@@ -266,9 +240,9 @@
             bind:this={imgEls[i]}
             src={item.image}
             alt={item.title}
-            loading="lazy"
+            loading={i < 2 ? "eager" : "lazy"}
+            fetchpriority={i < 2 ? "high" : "auto"}
             decoding="async"
-            fetchpriority="low"
             draggable="false"
           />
         </div>
@@ -296,7 +270,9 @@
       on:mousemove={handleButtonMove}
       on:click={() => navigate("services")}
     >
-      Découvrir tous les services
+      <span class="services-btn-flip" data-text="Découvrir tous les services">
+        <span class="services-btn-text">Découvrir tous les services</span>
+      </span>
     </button>
   </div>
 </section>
@@ -306,73 +282,63 @@
 <style>
   .gallery {
     position: relative;
-    width: 100vw;
-    left: 50%;
-    transform: translateX(-50%);
+    width: 100%;
     background: #000;
     padding: 0 0 10rem 0;
     overflow: clip;
+    contain: layout paint;
+    isolation: isolate;
   }
 
-  .header-stage {
-    position: relative;
-    min-height: 108vh;
-    display: flex;
-    align-items: center;
-    overflow: hidden;
-    z-index: 1;
+  .top-header {
+    width: 100%;
+    min-height: clamp(120px, 16vw, 210px);
+    display: grid;
+    grid-template-columns: 48% 52%;
+    align-items: end;
+    background: #000;
   }
 
-  .bg-title {
-    position: absolute;
-    inset: 0;
-    z-index: 1;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: flex-start;
-    pointer-events: none;
-    width: min(1500px, 94%);
-    left: 0;
-    right: 0;
-    margin: 0 auto;
-    padding-left: 3%;
-    will-change: transform;
-    transform: translate3d(0, 0, 0);
-    backface-visibility: hidden;
-    -webkit-backface-visibility: hidden;
+  .header-spacer {
+    min-height: 1px;
   }
 
-  .bg-title span {
-    display: block;
+  .header-title-wrap {
+    padding: clamp(2rem, 4vw, 4rem) clamp(1.5rem, 3vw, 3rem)
+      clamp(1.2rem, 2vw, 1.8rem);
+  }
+
+  .header-title-wrap h2 {
+    margin: 0;
     font-family: "Aboreto", serif;
-    font-style: italic;
-    font-size: clamp(4.8rem, 13vw, 12rem);
-    line-height: 0.88;
-    letter-spacing: 0.04em;
-    color: rgba(255, 255, 255, 0.14);
-    white-space: nowrap;
+    font-weight: 400;
+    font-size: clamp(2.5rem, 5vw, 5.5rem);
+    line-height: 0.95;
+    letter-spacing: -0.045em;
+    color: #f5f1e8;
   }
 
   .gallery-header {
     position: relative;
-    z-index: 3;
+    z-index: 2;
     width: min(1500px, 92%);
     margin: 0 auto;
     display: flex;
     justify-content: flex-end;
+    padding-top: 0.5rem;
   }
 
   .intro-card {
     width: min(560px, 100%);
     background: #111;
     padding: 2.5rem 2.3rem;
-    box-shadow: 0 18px 60px rgba(0, 0, 0, 0.28);
+    box-shadow: 0 14px 38px rgba(0, 0, 0, 0.22);
+    contain: layout paint;
   }
 
   .intro-card p {
     margin: 0;
-    font-family: "Manrope", sans-serif;
+    font-family: "General Sans", sans-serif;
     font-size: 1rem;
     line-height: 1.8;
     color: rgba(255, 255, 255, 0.62);
@@ -380,9 +346,9 @@
 
   .gallery-grid {
     position: relative;
-    z-index: 4;
+    z-index: 3;
     width: min(1500px, 92%);
-    margin: -12vh auto 0 auto;
+    margin: 3rem auto 0 auto;
     display: grid;
     grid-template-columns: repeat(6, minmax(0, 1fr));
     grid-template-rows: repeat(4, minmax(150px, 12vw));
@@ -392,6 +358,7 @@
       "card4 card4 card2 card2 card3 card3"
       "card4 card4 card2 card2 card6 card6"
       "card4 card4 card5 card5 card6 card6";
+    contain: layout paint;
   }
 
   .card {
@@ -416,8 +383,8 @@
   .card-image-wrapper {
     position: absolute;
     inset-inline: 0;
-    top: -16%;
-    height: 132%;
+    top: -14%;
+    height: 128%;
     will-change: transform;
     transform: translate3d(0, 0, 0);
     backface-visibility: hidden;
@@ -426,8 +393,8 @@
 
   .card:nth-child(1) .card-image-wrapper,
   .card:nth-child(5) .card-image-wrapper {
-    top: -32%;
-    height: 170%;
+    top: -28%;
+    height: 158%;
   }
 
   .card img {
@@ -439,14 +406,14 @@
     will-change: transform, filter;
     backface-visibility: hidden;
     -webkit-backface-visibility: hidden;
-    transition: filter 0.4s ease, transform 0.5s ease;
+    transition: filter 0.34s ease, transform 0.42s ease;
     user-select: none;
     pointer-events: none;
   }
 
   .card:hover img {
-    filter: brightness(0.6);
-    transform: scale(1.05) translateZ(0);
+    filter: brightness(0.68);
+    transform: scale(1.035) translateZ(0);
   }
 
   .info {
@@ -457,16 +424,17 @@
     flex-direction: column;
     gap: 4px;
     padding: 10px 14px;
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    background: rgba(255, 255, 255, 0.14);
     color: #fff;
     font-size: 0.8rem;
     opacity: 0;
     transform: translate3d(0, -10px, 0);
-    transition: opacity 0.35s ease, transform 0.35s ease;
+    transition: opacity 0.28s ease, transform 0.28s ease;
     z-index: 2;
     will-change: opacity, transform;
+    contain: paint;
   }
 
   .card:hover .info {
@@ -475,23 +443,23 @@
   }
 
   .date { opacity: 0.7; }
-  .title { font-family: "Manrope", sans-serif; }
+  .title { font-family: "General Sans", sans-serif; }
 
   .card-index {
     position: absolute;
     top: 16px;
     right: 16px;
-    font-family: "Manrope", sans-serif;
+    font-family: "General Sans", sans-serif;
     font-size: 0.65rem;
     letter-spacing: 0.18em;
     color: rgba(255, 255, 255, 0.3);
     z-index: 2;
     pointer-events: none;
-    transition: color 0.35s ease;
+    transition: color 0.28s ease;
   }
 
   .card:hover .card-index {
-    color: rgba(255, 255, 255, 0.6);
+    color: rgba(255, 255, 255, 0.58);
   }
 
   .card-plus {
@@ -505,17 +473,18 @@
     justify-content: center;
     font-size: 1.2rem;
     color: #fff;
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    background: rgba(255, 255, 255, 0.15);
-    transition: transform 0.35s ease, background 0.35s ease;
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    background: rgba(255, 255, 255, 0.14);
+    transition: transform 0.28s ease, background 0.28s ease;
     z-index: 2;
     will-change: transform;
+    contain: paint;
   }
 
   .card:hover .card-plus {
-    transform: scale(1.15);
-    background: rgba(255, 255, 255, 0.25);
+    transform: scale(1.1);
+    background: rgba(255, 255, 255, 0.22);
   }
 
   .gallery-footer {
@@ -531,21 +500,57 @@
     justify-content: center;
     padding: 0 1.5rem;
     font-size: 0.9rem;
+    font-family: "General Sans", sans-serif;
     white-space: nowrap;
     color: #fff;
     border: none;
     cursor: pointer;
     background: rgba(255, 255, 255, 0.15);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
     border-radius: 3px;
     box-shadow:
-      0 8px 10px rgba(0, 0, 0, 0.06),
-      inset 0 0 0 0px rgba(255, 255, 255, 0.4);
+      0 6px 8px rgba(0, 0, 0, 0.04),
+      inset 0 1px 0 rgba(255, 255, 255, 0.08),
+      inset 0 -1px 1px rgba(0, 0, 0, 0.08);
     transition:
       transform 1.2s cubic-bezier(.22,.61,.36,1),
       box-shadow 1.2s cubic-bezier(.22,.61,.36,1),
       background 1.2s cubic-bezier(.22,.61,.36,1);
+  }
+
+  .services-btn-flip {
+    position: relative;
+    display: block;
+    overflow: hidden;
+    height: 1.2em;
+    line-height: 1.2em;
+  }
+
+  .services-btn-text {
+    display: block;
+    transform: translateY(0%);
+    transition: transform 0.45s cubic-bezier(.22,.61,.36,1);
+  }
+
+  .services-btn-flip::after {
+    content: attr(data-text);
+    position: absolute;
+    left: 0;
+    top: 0;
+    line-height: 1.2em;
+    transform: translateY(100%);
+    transition: transform 0.45s cubic-bezier(.22,.61,.36,1);
+    white-space: nowrap;
+    color: inherit;
+  }
+
+  .services-btn:hover .services-btn-text {
+    transform: translateY(-100%);
+  }
+
+  .services-btn:hover .services-btn-flip::after {
+    transform: translateY(0%);
   }
 
   .services-btn::before {
@@ -566,7 +571,7 @@
     -webkit-mask-composite: xor;
     mask-composite: exclude;
     opacity: 0;
-    transition: opacity 0.25s ease;
+    transition: opacity 0.22s ease;
     pointer-events: none;
     filter: drop-shadow(0 0 3px rgba(212, 175, 55, 0.35));
   }
@@ -576,37 +581,33 @@
   }
 
   @media (max-width: 1100px) {
-    .header-stage { min-height: 92vh; }
-    .bg-title span { font-size: clamp(4rem, 12vw, 8rem); }
-    .gallery-grid { grid-template-rows: repeat(4, minmax(120px, 15vw)); margin-top: -8vh; }
+    .top-header { min-height: 92vh; min-height: clamp(110px, 14vw, 170px); }
+    .header-title-wrap h2 { font-size: clamp(4rem, 12vw, 8rem); }
+    .gallery-grid { grid-template-rows: repeat(4, minmax(120px, 15vw)); }
     .intro-card { width: min(520px, 100%); }
   }
 
   @media (max-width: 900px) {
     .gallery { padding: 0 0 8rem 0; }
-    .header-stage { min-height: auto; padding: 7rem 0 3rem 0; display: block; }
 
-    .bg-title {
-      position: relative;
-      inset: auto;
-      width: min(92%, 760px);
-      left: auto;
-      right: auto;
-      margin: 0 0 2rem 0;
-      padding-left: 0;
-      transform: none !important;
+    .top-header {
+      grid-template-columns: 1fr;
+      min-height: auto;
     }
 
-    .bg-title span {
-      font-size: clamp(2.6rem, 13vw, 4.8rem);
-      line-height: 0.92;
-      color: rgba(255, 255, 255, 0.16);
+    .header-title-wrap {
+      padding: 1.5rem 1rem 1rem;
+    }
+
+    .header-title-wrap h2 {
+      font-size: clamp(2.4rem, 11vw, 4rem);
     }
 
     .gallery-header {
       width: min(92%, 760px);
       margin: 0 auto;
       display: block;
+      padding-top: 0;
     }
 
     .intro-card { width: 100%; padding: 1.6rem 1.4rem; }
@@ -637,27 +638,24 @@
     .card:nth-child(5) { aspect-ratio: 1.5/1; }
     .card:nth-child(6) { aspect-ratio: 1.08/1; }
 
-    .card-image-wrapper { top: -12%; height: 124%; }
+    .card-image-wrapper { top: -10%; height: 120%; }
     .card:nth-child(1) .card-image-wrapper,
-    .card:nth-child(5) .card-image-wrapper { top: -24%; height: 150%; }
+    .card:nth-child(5) .card-image-wrapper { top: -22%; height: 144%; }
 
     .card:hover img { filter: none; transform: translateZ(0); }
     .card:hover .info { opacity: 0; transform: translate3d(0, -10px, 0); }
-    .card:hover .card-plus { transform: none; background: rgba(255, 255, 255, 0.15); }
+    .card:hover .card-plus { transform: none; background: rgba(255, 255, 255, 0.14); }
 
     .gallery-footer { margin-top: 4rem; }
   }
 
   @media (max-width: 640px) {
     .gallery { padding: 0 0 6.5rem 0; }
-    .header-stage { padding: 6rem 0 2.4rem 0; }
-    .bg-title { width: min(92%, 560px); margin-bottom: 1.5rem; }
-    .bg-title span { font-size: clamp(2.15rem, 14vw, 3.4rem); }
-    .gallery-header { width: min(92%, 560px); }
+    .header-title-wrap { padding: 1.3rem 1rem 0.9rem; }
     .gallery-grid { width: min(94%, 560px); gap: 0.75rem; }
-    .card-image-wrapper { top: -10%; height: 120%; }
+    .card-image-wrapper { top: -9%; height: 118%; }
     .card:nth-child(1) .card-image-wrapper,
-    .card:nth-child(5) .card-image-wrapper { top: -20%; height: 142%; }
+    .card:nth-child(5) .card-image-wrapper { top: -18%; height: 138%; }
     .info { top: 14px; left: 14px; padding: 9px 12px; font-size: 0.74rem; }
     .card-plus { bottom: 14px; left: 14px; width: 38px; height: 38px; font-size: 1rem; }
     .card-index { top: 14px; right: 14px; }
@@ -666,16 +664,13 @@
 
   @media (max-width: 420px) {
     .gallery { padding: 0 0 5.5rem 0; }
-    .header-stage { padding: 5.4rem 0 2rem 0; }
-    .bg-title { width: min(94%, 420px); }
-    .bg-title span { font-size: clamp(1.8rem, 13vw, 2.6rem); }
-    .gallery-header { width: min(94%, 420px); }
+    .header-title-wrap { padding: 1.1rem 1rem 0.85rem; }
     .intro-card { padding: 1.25rem 1.05rem; }
     .intro-card p { font-size: 0.86rem; line-height: 1.55; }
     .gallery-grid { width: min(94%, 420px); gap: 0.65rem; }
-    .card-image-wrapper { top: -9%; height: 118%; }
+    .card-image-wrapper { top: -8%; height: 116%; }
     .card:nth-child(1) .card-image-wrapper,
-    .card:nth-child(5) .card-image-wrapper { top: -18%; height: 136%; }
+    .card:nth-child(5) .card-image-wrapper { top: -16%; height: 132%; }
     .info { top: 12px; left: 12px; padding: 8px 11px; font-size: 0.7rem; }
     .card-plus { bottom: 12px; left: 12px; width: 34px; height: 34px; font-size: 0.95rem; }
     .card-index { top: 12px; right: 12px; }
@@ -687,11 +682,12 @@
     .card img,
     .info,
     .card-plus,
-    .services-btn {
+    .services-btn,
+    .services-btn-text,
+    .services-btn-flip::after {
       transition: none;
     }
 
-    .bg-title { transform: none !important; }
     .card-image-wrapper { transform: none !important; }
   }
 </style>

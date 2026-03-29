@@ -256,9 +256,9 @@
 
 .panel.right {
 	padding: 2rem;
-	font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+	font-family:'General Sans', sans-serif;
 	font-size: 1.05rem;
-	line-height: 1.8;
+	line-height: 1.5;
 	color: #505050;
 }
 

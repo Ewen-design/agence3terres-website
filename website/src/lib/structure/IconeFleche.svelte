@@ -6,7 +6,7 @@
   let x = 50;
   let y = 50;
   let visible = false;
-  let arrowColor = "white"; // couleur dynamique de la flèche
+  let arrowColor = "white";
 
   $: progressGradient =
     $page.url.pathname === "/services"
@@ -92,74 +92,118 @@
   style="--progress:{progress}; --x:{x}%; --y:{y}%; --progress-gradient:{progressGradient}"
   aria-label="Retour en haut"
 >
-  <svg viewBox="0 0 24 24" class="arrow" stroke={arrowColor}>
-    <path d="M12 5v14M12 5l-6 6M12 5l6 6" />
-  </svg>
+  <span class="arrow-flip" aria-hidden="true">
+    <span class="arrow-face arrow-current">
+      <svg viewBox="0 0 24 24" class="arrow" stroke={arrowColor}>
+        <path d="M12 5v14M12 5l-6 6M12 5l6 6" />
+      </svg>
+    </span>
+
+    <span class="arrow-face arrow-next">
+      <svg viewBox="0 0 24 24" class="arrow" stroke={arrowColor}>
+        <path d="M12 5v14M12 5l-6 6M12 5l6 6" />
+      </svg>
+    </span>
+  </span>
 </button>
 
 <style>
-.scroll-btn {
-  position: fixed;
-  bottom: 2rem;
-  right: 2rem;
-  width: 56px;
-  height: 56px;
-  border-radius: 50%;
-  border: none;
-  cursor: pointer;
-  z-index: 2000;
-  display: grid;
-  place-items: center;
+  .scroll-btn {
+    position: fixed;
+    bottom: 2rem;
+    right: 2rem;
+    width: 48px;
+    height: 48px;
+    border-radius: 3px;
+    border: none;
+    cursor: pointer;
+    z-index: 2000;
+    display: grid;
+    place-items: center;
 
-  opacity: 0;
-  transform: translateY(20px) scale(0.95);
-  pointer-events: none;
-  transition: all 0.8s cubic-bezier(.22,.61,.36,1);
+    opacity: 0;
+    transform: translateY(20px) scale(0.95);
+    pointer-events: none;
+    transition: all 0.8s cubic-bezier(.22,.61,.36,1);
 
-  background: rgba(255,255,255,0.15);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
+    background: rgba(255,255,255,0.15);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
 
-  box-shadow:
-    0 8px 10px rgba(0,0,0,0.06),
-    inset 0 0 0 0px rgba(255,255,255,0.4);
-}
+    box-shadow:
+      0 8px 10px rgba(0,0,0,0.06),
+      inset 0 0 0 0px rgba(255,255,255,0.4);
+  }
 
-.scroll-btn.show {
-  opacity: 1;
-  transform: translateY(0) scale(1);
-  pointer-events: auto;
-}
+  .scroll-btn.show {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    pointer-events: auto;
+  }
 
-.scroll-btn::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  border-radius: 50%;
-  padding: 1px;
-  background: conic-gradient(
-    from 0deg,
-    rgba(255,255,255,0.06) 0deg,
-    var(--progress-gradient) calc(var(--progress) * 1%),
-    rgba(255,255,255,0.06) 0deg
-  );
-  -webkit-mask:
-    radial-gradient(farthest-side, transparent calc(100% - 1.5px), black 0);
-  mask:
-    radial-gradient(farthest-side, transparent calc(100% - 1.5px), black 0);
-}
+  .scroll-btn::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: 3px;
+    padding: 1px;
+    background: conic-gradient(
+      from 0deg,
+      rgba(255,255,255,0.06) 0deg,
+      var(--progress-gradient) calc(var(--progress) * 1%),
+      rgba(255,255,255,0.06) 0deg
+    );
+    -webkit-mask:
+      linear-gradient(#000 0 0) content-box,
+      linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+  }
 
-.arrow {
-  width: 20px;
-  height: 20px;
-  stroke-width: 1.5;
-  fill: none;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-  transition: transform 0.6s ease, stroke 0.3s ease;
-}
+  .arrow-flip {
+    position: relative;
+    display: block;
+    width: 20px;
+    height: 20px;
+    overflow: hidden;
+  }
 
-.scroll-btn:hover .arrow {
-  transform: translateY(-4px);
-}
+  .arrow-face {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    transition:
+      transform 0.45s cubic-bezier(.22,.61,.36,1),
+      opacity 0.28s ease;
+  }
+
+  .arrow-current {
+    transform: translateY(0%);
+    opacity: 1;
+  }
+
+  .arrow-next {
+    transform: translateY(100%);
+    opacity: 1;
+  }
+
+  .arrow {
+    width: 20px;
+    height: 20px;
+    stroke-width: 1.5;
+    fill: none;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    transition: stroke 0.3s ease;
+  }
+
+  .scroll-btn:hover .arrow-current {
+    transform: translateY(-100%);
+  }
+
+  .scroll-btn:hover .arrow-next {
+    transform: translateY(0%);
+  }
 </style>

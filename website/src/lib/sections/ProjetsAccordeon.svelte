@@ -9,8 +9,7 @@
       title: "Serein design",
       description:
         "Great products don’t just happen, they’re shaped by insight. We dig into research, audits and user testing to understand what people need, then translate those findings into clear, intuitive UX solutions where every decision has purpose.",
-      image:
-        "images/photo2.webp",
+      image: "images/photo2.webp",
       alt: "Laptop premium interface design"
     },
     {
@@ -18,8 +17,7 @@
       title: "Hansatsu",
       description:
         "We think outside the box to make sure your product sets itself apart and sets the bar. We build beautiful, intuitive interfaces that are compelling and consistent, powered by scalable design systems.",
-      image:
-        "images/photo2.webp",
+      image: "images/photo2.webp",
       alt: "Mobile app premium showcase"
     },
     {
@@ -27,8 +25,7 @@
       title: "Bientôt votre projet ?",
       description:
         "Construisons une identité forte, désirable et durable, pensée pour marquer les esprits sur chaque point de contact.",
-      image:
-        "images/photo2.webp",
+      image: "images/photo2.webp",
       alt: "Brand identity premium card mockup"
     }
   ];
@@ -58,8 +55,14 @@
         on:mousemove={handleGlowMove}
       >
         <div class="visual">
-          <img src={project.image} alt={project.alt} loading="lazy" />
-          <div class="visual-overlay"></div>
+          <img
+            src={project.image}
+            alt={project.alt}
+            loading={index === 0 ? "eager" : "lazy"}
+            fetchpriority={index === 0 ? "high" : "auto"}
+            decoding="async"
+            draggable="false"
+          />
         </div>
 
         <div class="content">
@@ -78,7 +81,9 @@
                 on:mousemove={handleGlowMove}
                 on:click={() => navigate("projet1")}
               >
-                Voir le projet
+                <span class="nav-btn-flip" data-text="Voir le projet">
+                  <span class="nav-btn-text">Voir le projet</span>
+                </span>
               </button>
             </div>
           {:else if index === 1}
@@ -91,7 +96,9 @@
                 on:mousemove={handleGlowMove}
                 on:click={() => navigate("projet2")}
               >
-                Voir le projet
+                <span class="nav-btn-flip" data-text="Voir le projet">
+                  <span class="nav-btn-text">Voir le projet</span>
+                </span>
               </button>
             </div>
           {:else}
@@ -104,7 +111,9 @@
                 on:mousemove={handleGlowMove}
                 on:click={() => navigate("contact")}
               >
-                Contactez-nous
+                <span class="nav-btn-flip" data-text="Contactez-nous">
+                  <span class="nav-btn-text">Contactez-nous</span>
+                </span>
               </button>
             </div>
           {/if}
@@ -120,6 +129,8 @@
     background: #000;
     color: #f5f1e8;
     overflow: hidden;
+    contain: layout paint;
+    isolation: isolate;
   }
 
   .top-header {
@@ -142,8 +153,8 @@
 
   .header-title-wrap h2 {
     margin: 0;
-    font-family: "Iowan Old Style", "Georgia", "Times New Roman", serif;
-    font-weight: 500;
+    font-family: "Aboreto", serif;
+    font-weight: 400;
     font-size: clamp(2.5rem, 5vw, 5.5rem);
     line-height: 0.95;
     letter-spacing: -0.045em;
@@ -152,6 +163,7 @@
 
   .accordion {
     width: 100%;
+    contain: layout paint;
   }
 
   .accordion-item {
@@ -163,9 +175,10 @@
     min-height: clamp(120px, 11vw, 170px);
     height: clamp(120px, 11vw, 170px);
     overflow: hidden;
+    contain: layout paint;
     transition:
-      height 800ms cubic-bezier(0.22, 1, 0.36, 1),
-      background-color 500ms ease;
+      height 920ms cubic-bezier(0.22, 1, 0.36, 1),
+      background-color 360ms ease;
   }
 
   .accordion-item:nth-child(1) {
@@ -201,7 +214,7 @@
     -webkit-mask-composite: xor;
     mask-composite: exclude;
     opacity: 0;
-    transition: opacity 0.25s ease;
+    transition: opacity 0.22s ease;
     pointer-events: none;
     filter: drop-shadow(0 0 3px rgba(212, 175, 55, 0.35));
     z-index: 3;
@@ -213,39 +226,33 @@
 
   .visual {
     position: relative;
-    overflow: hidden;
     height: 100%;
-    background: #0a0a0a;
+    padding: clamp(1.4rem, 2.4vw, 2.2rem) 0 0 clamp(1.4rem, 3vw, 3rem);
+    overflow: hidden;
   }
 
   .visual img {
-    width: 100%;
-    height: 100%;
+    width: calc(100% - clamp(1.4rem, 3vw, 3rem));
+    height: calc(100% - clamp(1.4rem, 2.4vw, 2.2rem));
     object-fit: cover;
-    transform: scale(1.14);
-    opacity: 0.82;
-    filter: brightness(0.72) saturate(0.88) contrast(1.04);
-    transition:
-      transform 1100ms cubic-bezier(0.22, 1, 0.36, 1),
-      opacity 700ms ease,
-      filter 700ms ease;
-    will-change: transform;
+    object-position: top;
+    display: block;
+    transform: none !important;
+    scale: 1 !important;
+    opacity: 1 !important;
+    filter: none !important;
+    transition: none !important;
+    animation: none !important;
+    box-shadow: none !important;
+    will-change: auto !important;
   }
 
-  .accordion-item.active .visual img {
-    transform: scale(1);
-    opacity: 1;
-    filter: brightness(0.92) saturate(1) contrast(1.06);
-  }
-
-  .visual-overlay {
-    position: absolute;
-    inset: 0;
-    background:
-      linear-gradient(90deg, rgba(0, 0, 0, 0.18) 0%, transparent 36%),
-      linear-gradient(180deg, rgba(255, 255, 255, 0.04) 0%, transparent 30%),
-      linear-gradient(0deg, rgba(0, 0, 0, 0.12) 0%, transparent 35%);
-    pointer-events: none;
+  .accordion-item.active .visual img,
+  .accordion-item:hover .visual img {
+    transform: none !important;
+    scale: 1 !important;
+    opacity: 1 !important;
+    filter: none !important;
   }
 
   .content {
@@ -265,8 +272,8 @@
 
   .title-row h3 {
     margin: 0;
-    font-family: "Iowan Old Style", "Georgia", "Times New Roman", serif;
-    font-weight: 500;
+    font-family: "Aboreto", serif;
+    font-weight: 400;
     font-size: clamp(1.8rem, 3vw, 4rem);
     line-height: 0.96;
     letter-spacing: -0.045em;
@@ -274,11 +281,11 @@
   }
 
   .number {
-    font-family: "Iowan Old Style", "Georgia", "Times New Roman", serif;
+    font-family: "Aboreto", sans-serif;
     font-size: clamp(1.6rem, 2.4vw, 3rem);
     line-height: 1;
     letter-spacing: -0.04em;
-    color: #f5f1e8;
+    color: #545454;
     opacity: 0.95;
     padding-top: 0.08em;
   }
@@ -286,14 +293,14 @@
   .cta-row {
     margin-top: auto;
     display: flex;
-    align-items: center;
+    flex-direction: column;
+    align-items: flex-start;
     gap: 1rem;
-    flex-wrap: wrap;
     opacity: 0;
-    transform: translateY(18px);
+    transform: translateY(14px);
     transition:
-      opacity 480ms ease,
-      transform 780ms cubic-bezier(0.22, 1, 0.36, 1);
+      opacity 280ms ease,
+      transform 620ms cubic-bezier(0.22, 1, 0.36, 1);
   }
 
   .accordion-item.active .cta-row {
@@ -305,6 +312,7 @@
   .cta-text {
     margin: 0;
     max-width: 32rem;
+    font-family: "General Sans", sans-serif;
     font-size: clamp(0.98rem, 1.08vw, 1.15rem);
     line-height: 1.48;
     color: rgba(245, 241, 232, 0.72);
@@ -318,22 +326,57 @@
     justify-content: center;
     padding: 0 1.5rem;
     font-size: 0.9rem;
-    font-family: inherit;
+    font-family: "General Sans", sans-serif;
     white-space: nowrap;
     color: inherit;
     border: none;
     cursor: pointer;
     background: rgba(255, 255, 255, 0.15);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
     border-radius: 3px;
     box-shadow:
-      0 8px 10px rgba(0, 0, 0, 0.06),
-      inset 0 0 0 0px rgba(255, 255, 255, 0.4);
+      0 6px 8px rgba(0, 0, 0, 0.04),
+      inset 0 1px 0 rgba(255, 255, 255, 0.08),
+      inset 0 -1px 1px rgba(0, 0, 0, 0.08);
     transition:
       transform 1.2s cubic-bezier(.22,.61,.36,1),
       box-shadow 1.2s cubic-bezier(.22,.61,.36,1),
       background 1.2s cubic-bezier(.22,.61,.36,1);
+  }
+
+  .nav-btn-flip {
+    position: relative;
+    display: block;
+    overflow: hidden;
+    height: 1.2em;
+    line-height: 1.2em;
+  }
+
+  .nav-btn-text {
+    display: block;
+    transform: translateY(0%);
+    transition: transform 0.45s cubic-bezier(.22,.61,.36,1);
+  }
+
+  .nav-btn-flip::after {
+    content: attr(data-text);
+    position: absolute;
+    left: 0;
+    top: 0;
+    line-height: 1.2em;
+    transform: translateY(100%);
+    transition: transform 0.45s cubic-bezier(.22,.61,.36,1);
+    white-space: nowrap;
+    color: inherit;
+  }
+
+  .nav-btn:hover .nav-btn-text {
+    transform: translateY(-100%);
+  }
+
+  .nav-btn:hover .nav-btn-flip::after {
+    transform: translateY(0%);
   }
 
   .nav-btn::before {
@@ -354,7 +397,7 @@
     -webkit-mask-composite: xor;
     mask-composite: exclude;
     opacity: 0;
-    transition: opacity 0.25s ease;
+    transition: opacity 0.22s ease;
     pointer-events: none;
     filter: drop-shadow(0 0 3px rgba(212, 175, 55, 0.35));
   }
@@ -399,11 +442,13 @@
     }
 
     .visual {
-      height: 220px;
+      padding: 1rem 1rem 0 1rem;
     }
 
-    .accordion-item.active .visual {
-      height: 280px;
+    .visual img {
+      width: 100%;
+      height: auto;
+      max-height: none;
     }
 
     .content {
@@ -434,9 +479,10 @@
 
   @media (prefers-reduced-motion: reduce) {
     .accordion-item,
-    .visual img,
     .cta-row,
-    .nav-btn {
+    .nav-btn,
+    .nav-btn-text,
+    .nav-btn-flip::after {
       transition: none !important;
     }
   }

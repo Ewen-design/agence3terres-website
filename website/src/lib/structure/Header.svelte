@@ -14,6 +14,12 @@
   let menuButtonEl;
   let menuOrigin = { x: 0, y: 0, width: 44, height: 40 };
 
+  let linksOpening = false;
+  let linksTextReady = true;
+  let linksTextFlipIn = false;
+  let openAnimTimer;
+  let flipResetTimer;
+
   const SCROLL_THRESHOLD = 10;
 
   // ── Scroll handler ─────────────────────────────────────────────────────────
@@ -56,10 +62,7 @@
   }
 
   // ── Auto-tour glow ─────────────────────────────────────────────────────────
-  // Toutes les ~4s, on choisit un bouton au hasard et on anime le glow
-  // de gauche à droite à travers lui en mettant à jour --mx / --my
-  // et en forçant opacity:1 sur ::before via une classe CSS .auto-glow.
-  let btnEls = [];      // refs sur tous les .nav-btn (logo + links + burger)
+  let btnEls = []; // refs sur tous les .nav-btn (logo + links + burger)
   let tourTimer;
   let tourRaf;
   let isTouringNow = false;
@@ -67,7 +70,6 @@
   function startTour() {
     if (isTouringNow) return;
 
-    // Choisit un bouton au hasard parmi tous les boutons (logo, liens, burger)
     const linkBtns = btnEls.filter(el => el != null);
     if (!linkBtns.length) return;
 
@@ -75,10 +77,9 @@
     const rect = btn.getBoundingClientRect();
     const h    = rect.height;
 
-    // Centre vertical fixe, mx va de -20px à rect.width+20px
     btn.style.setProperty("--my", `${h / 2}px`);
 
-    const duration = 900; // ms pour traverser le bouton
+    const duration = 900;
     const start    = performance.now();
     const fromX    = -20;
     const toX      = rect.width + 20;
@@ -86,7 +87,6 @@
     isTouringNow = true;
     btn.classList.add("auto-glow");
 
-    // Si c'est le burger, animer aussi les points
     const isBurger = btn.classList.contains("more");
     if (isBurger) {
       const spans = btn.querySelectorAll("span");
@@ -97,19 +97,16 @@
     }
 
     function animFrame(now) {
-      const t       = Math.min((now - start) / duration, 1);
-      // ease in-out
-      const ease    = t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
-      const mx      = fromX + (toX - fromX) * ease;
+      const t    = Math.min((now - start) / duration, 1);
+      const ease = t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
+      const mx   = fromX + (toX - fromX) * ease;
       btn.style.setProperty("--mx", `${mx}px`);
 
       if (t < 1) {
         tourRaf = requestAnimationFrame(animFrame);
       } else {
-        // Fade out
         btn.classList.remove("auto-glow");
         btn.classList.add("auto-glow-out");
-        // Reset burger spans
         if (isBurger) {
           const spans = btn.querySelectorAll("span");
           spans.forEach(s => { s.style.transform = ""; s.style.opacity = ""; });
@@ -126,12 +123,10 @@
   }
 
   function scheduleTour() {
-    // Intervalle aléatoire entre 3s et 6s
     const delay = 3000 + Math.random() * 3000;
     tourTimer = setTimeout(startTour, delay);
   }
 
-  // Svelte action pour enregistrer le burger dans btnEls sans double bind:this
   function registerBurger(node) {
     btnEls[5] = node;
     return { destroy() { btnEls[5] = null; } };
@@ -151,6 +146,33 @@
     navigate("home");
   }
 
+  function runLinksOpenSequence() {
+    clearTimeout(openAnimTimer);
+    clearTimeout(flipResetTimer);
+
+    linksOpening = true;
+    linksTextReady = false;
+    linksTextFlipIn = false;
+
+    openAnimTimer = setTimeout(() => {
+      linksTextReady = true;
+      linksTextFlipIn = true;
+
+      flipResetTimer = setTimeout(() => {
+        linksOpening = false;
+        linksTextFlipIn = false;
+      }, 420);
+    }, 250);
+  }
+
+  function resetLinksSequence() {
+    clearTimeout(openAnimTimer);
+    clearTimeout(flipResetTimer);
+    linksOpening = false;
+    linksTextReady = false;
+    linksTextFlipIn = false;
+  }
+
   // ── Dérivés ────────────────────────────────────────────────────────────────
   $: compact = scrollingDown && !menuOpen;
   $: themeClass =
@@ -160,13 +182,23 @@
     $page.url.pathname === "/contact"  ? "theme-contact"  :
     "";
 
-  // ── Lifecycle ──────────────────────────────────────────────────────────────
+  let previousCompact = compact;
+  $: if (browser) {
+    if (previousCompact && !compact && !menuOpen) {
+      runLinksOpenSequence();
+    } else if (compact || menuOpen) {
+      resetLinksSequence();
+    } else if (!compact && !menuOpen && previousCompact === compact) {
+      linksTextReady = true;
+    }
+    previousCompact = compact;
+  }
+
   onMount(() => {
     lastScrollY = window.scrollY;
     updateTextColor();
+    linksTextReady = !compact;
     window.addEventListener("scroll", handleScroll, { passive: true });
-
-    // Démarre le tour après un délai initial
     scheduleTour();
   });
 
@@ -174,6 +206,8 @@
     if (!browser) return;
     window.removeEventListener("scroll", handleScroll);
     clearTimeout(tourTimer);
+    clearTimeout(openAnimTimer);
+    clearTimeout(flipResetTimer);
     cancelAnimationFrame(tourRaf);
   });
 </script>
@@ -195,11 +229,19 @@
       on:mousemove={handleButtonMove}
       on:click={handleLogoClick}
     >
-      Agence 3 Terres
+      <span class="nav-btn-flip" data-text="Agence 3 Terres">
+        <span class="nav-btn-text">Agence 3 Terres</span>
+      </span>
     </button>
 
     <!-- Liens desktop -->
-    <div class="links" role="list">
+    <div
+      class="links"
+      class:opening={linksOpening}
+      class:text-ready={linksTextReady}
+      class:flip-in={linksTextFlipIn}
+      role="list"
+    >
       {#each [
         { label: "Projets",  page: "travail"  },
         { label: "À propos", page: "apropos"  },
@@ -216,7 +258,9 @@
           on:mousemove={handleButtonMove}
           on:click={() => navigate(link.page)}
         >
-          {link.label}
+          <span class="nav-btn-flip" data-text={link.label}>
+            <span class="nav-btn-text">{link.label}</span>
+          </span>
         </button>
       {/each}
     </div>
@@ -275,11 +319,12 @@
     display: flex;
     align-items: center;
     gap: 0.6rem;
-    transition: gap 1.6s cubic-bezier(.22,.61,.36,1);
+    transition: gap 0.7s cubic-bezier(.22,.9,.3,1);
   }
 
   /* ── Boutons base ──────────────────────────────────────────────────────── */
   .nav-btn {
+    font-family: "General Sans", sans-serif;
     position: relative;
     height: 40px;
     display: flex;
@@ -294,10 +339,11 @@
     background: rgba(255, 255, 255, 0.15);
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
-    border-radius: 3px;
+    border-radius: 2px;
     box-shadow:
-      0 8px 10px rgba(0, 0, 0, 0.06),
-      inset 0 0 0 0px rgba(255, 255, 255, 0.4);
+      0 6px 8px rgba(0, 0, 0, 0.04),
+      inset 0 1px 0 rgba(255, 255, 255, 0.08),
+      inset 0 -1px 1px rgba(0, 0, 0, 0.08);
     transition:
       transform  1.2s cubic-bezier(.22,.61,.36,1),
       box-shadow 1.2s cubic-bezier(.22,.61,.36,1),
@@ -305,6 +351,86 @@
   }
   .nav-btn.active {
     background: rgba(255, 255, 255, 0.25);
+  }
+
+  /* ── Hover texte flip uniquement ──────────────────────────────────────── */
+  .nav-btn-flip {
+    position: relative;
+    display: block;
+    overflow: hidden;
+    height: 1.2em;
+    line-height: 1.2em;
+  }
+
+  .nav-btn-text {
+    display: block;
+    transform: translateY(0%);
+    transition:
+      transform 0.45s cubic-bezier(.22,.61,.36,1),
+      opacity 0.28s ease;
+  }
+
+  .nav-btn-flip::after {
+    content: attr(data-text);
+    position: absolute;
+    left: 0;
+    top: 0;
+    line-height: 1.2em;
+    transform: translateY(100%);
+    transition:
+      transform 0.45s cubic-bezier(.22,.61,.36,1),
+      opacity 0.28s ease;
+    white-space: nowrap;
+    color: inherit;
+  }
+
+  .nav-btn:hover .nav-btn-text {
+    transform: translateY(-100%);
+  }
+
+  .nav-btn:hover .nav-btn-flip::after {
+    transform: translateY(0%);
+  }
+
+  /* texte caché pendant le dépliage */
+  .links:not(.text-ready) .nav-btn-text {
+    transform: translateY(115%) rotateX(-70deg);
+    transform-origin: bottom center;
+    opacity: 0;
+  }
+  .links:not(.text-ready) .nav-btn-flip::after {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+
+  /* arrivée du texte : un seul texte qui s'ouvre vers le haut */
+  .links.flip-in .nav-btn-text {
+    transform: translateY(0%) rotateX(0deg);
+    opacity: 1;
+  }
+  .links.flip-in .nav-btn-flip::after {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+
+  /* état normal après l'arrivée */
+  .links.text-ready:not(.flip-in) .nav-btn-text {
+    transform: translateY(0%);
+    opacity: 1;
+  }
+  .links.text-ready:not(.flip-in) .nav-btn-flip::after {
+    transform: translateY(100%);
+    opacity: 1;
+  }
+
+  /* ✅ hover flip réactivé explicitement pour les 4 boutons du milieu */
+  .links .nav-btn:hover .nav-btn-text {
+    transform: translateY(-100%);
+    opacity: 1;
+  }
+  .links .nav-btn:hover .nav-btn-flip::after {
+    transform: translateY(0%);
+    opacity: 1;
   }
 
   /* ── Glow border ───────────────────────────────────────────────────────── */
@@ -387,21 +513,55 @@
     filter: drop-shadow(0 0 4px rgba(77, 214, 182, 0.4));
   }
 
-  /* ── Liens desktop ─────────────────────────────────────────────────────── */
+  /* ── Liens desktop : ouverture/fermeture depuis le milieu des 4 ───────── */
   .links {
     display: flex;
     gap: 0.5rem;
-    transition: all 1.6s cubic-bezier(.22,.61,.36,1);
+    overflow: hidden;
+    max-width: 32rem;
+    opacity: 1;
+    transition:
+      max-width 0.68s cubic-bezier(.2,.85,.25,1),
+      opacity 0.12s linear;
   }
 
+  .links button {
+    flex: 0 0 auto;
+    transform-origin: center center;
+    transition:
+      transform 0.58s cubic-bezier(.2,.85,.25,1),
+      opacity 0.12s linear,
+      filter 0.58s cubic-bezier(.2,.85,.25,1);
+  }
+
+  /* ouverture : 2 et 3 d'abord, puis 1 et 4 */
+  .links button:nth-child(1) { transition-delay: 0.045s; }
+  .links button:nth-child(2) { transition-delay: 0.00s; }
+  .links button:nth-child(3) { transition-delay: 0.00s; }
+  .links button:nth-child(4) { transition-delay: 0.045s; }
+
   /* ── Compact ───────────────────────────────────────────────────────────── */
+  .compact .links {
+    max-width: 0;
+  }
+
   .compact .links button {
     opacity: 0;
-    transform: translateY(-18px) scale(0.95);
+    transform: scaleX(0.84) scaleY(0.96);
+    filter: blur(1.2px);
     pointer-events: none;
   }
-  .compact .links { width: 0; overflow: hidden; }
-  .compact .nav-inner { justify-content: center; gap: 0.5rem; }
+
+  /* fermeture : 1 et 4 d'abord, puis 2 et 3 */
+  .compact .links button:nth-child(1) { transition-delay: 0.00s; }
+  .compact .links button:nth-child(2) { transition-delay: 0.045s; }
+  .compact .links button:nth-child(3) { transition-delay: 0.045s; }
+  .compact .links button:nth-child(4) { transition-delay: 0.00s; }
+
+  .compact .nav-inner {
+    justify-content: center;
+    gap: 0.5rem;
+  }
 
   /* ── Burger ────────────────────────────────────────────────────────────── */
   .more { width: 44px; padding: 0; cursor: pointer; gap: 3px; }
@@ -421,7 +581,15 @@
 
   /* ── Reduced motion ────────────────────────────────────────────────────── */
   @media (prefers-reduced-motion: reduce) {
-    .nav-wrapper, .nav-btn, .links, .more span { transition: none; }
+    .nav-wrapper,
+    .nav-btn,
+    .links,
+    .links button,
+    .more span,
+    .nav-btn-text,
+    .nav-btn-flip::after {
+      transition: none;
+    }
     .nav-btn.auto-glow::before,
     .nav-btn.auto-glow-out::before { display: none; }
   }
