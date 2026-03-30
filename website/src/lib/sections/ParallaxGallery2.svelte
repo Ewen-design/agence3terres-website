@@ -209,10 +209,10 @@
 
 <section class="gallery" bind:this={gallerySection}>
   <div class="top-header">
-    <div class="header-spacer"></div>
     <div class="header-title-wrap">
       <h2>Nos services</h2>
     </div>
+    <div class="header-spacer"></div>
   </div>
 
   <div class="gallery-header">
@@ -294,7 +294,7 @@
     width: 100%;
     min-height: clamp(120px, 16vw, 210px);
     display: grid;
-    grid-template-columns: 48% 52%;
+    grid-template-columns: 52% 48%;
     align-items: end;
     background: #000;
   }
@@ -306,16 +306,20 @@
   .header-title-wrap {
     padding: clamp(2rem, 4vw, 4rem) clamp(1.5rem, 3vw, 3rem)
       clamp(1.2rem, 2vw, 1.8rem);
+    display: flex;
+    justify-content: flex-start;
   }
 
   .header-title-wrap h2 {
     margin: 0;
-    font-family: "Aboreto", serif;
-    font-weight: 400;
+    font-family: "Titre italic", serif;
+    font-style: italic;
+    font-weight: 100;
     font-size: clamp(2.5rem, 5vw, 5.5rem);
     line-height: 0.95;
     letter-spacing: -0.045em;
     color: #f5f1e8;
+    text-align: left;
   }
 
   .gallery-header {

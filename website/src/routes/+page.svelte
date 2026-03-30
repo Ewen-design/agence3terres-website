@@ -5,10 +5,12 @@
   import ParallaxGallery2 from "$lib/sections/ParallaxGallery2.svelte";
   import ProjetsAccordeon from "$lib/sections/ProjetsAccordeon.svelte";
   import VisionSlider from "$lib/sections/VisionSlider.svelte";
+    import GalleryColonnes from "$lib/sections/GalleryColonnes.svelte";
 </script>
 
 <TexteIntro2 />
-<StickySlider />
+<GalleryColonnes />
 <ParallaxGallery2 />
 <ProjetsAccordeon />
 <VisionSlider />
+

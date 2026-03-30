@@ -8,31 +8,25 @@
 
     <style>
       #site-intro-loader {
+        --bg: #000000;
+
+        /* lumière chaude premium */
+        --glow-white: rgba(255, 247, 238, 0.9);
+        --glow-warm: rgba(255, 220, 170, 0.5);
+        --glow-amber: rgba(218, 122, 67, 0.26);
+        --glow-deep: rgba(120, 54, 24, 0.12);
+
         position: fixed;
         inset: 0;
         z-index: 999999;
         display: flex;
         align-items: center;
         justify-content: center;
-        background:
-          radial-gradient(circle at 50% 42%, rgba(255, 215, 150, 0.06), transparent 28%),
-          radial-gradient(circle at 50% 50%, rgba(212, 102, 55, 0.045), transparent 42%),
-          #000;
+        background: #000;
         opacity: 1;
-        transition: opacity 0.7s cubic-bezier(0.22, 0.61, 0.36, 1);
+        transition: opacity 0.65s cubic-bezier(0.22, 0.61, 0.36, 1);
         pointer-events: none;
         overflow: hidden;
-      }
-
-      #site-intro-loader::before {
-        content: "";
-        position: absolute;
-        inset: -20%;
-        background:
-          radial-gradient(circle at 50% 50%, rgba(255, 210, 140, 0.035), transparent 34%),
-          radial-gradient(circle at 50% 50%, rgba(212, 175, 55, 0.02), transparent 54%);
-        filter: blur(28px);
-        pointer-events: none;
       }
 
       #site-intro-loader.is-hidden {
@@ -47,41 +41,85 @@
         overflow: visible;
         transform: translateZ(0);
         backface-visibility: hidden;
+        isolation: isolate;
       }
 
-      #site-intro-loader .trace-glow path,
-      #site-intro-loader .trace-core path {
-        fill: none;
-        stroke-linecap: round;
-        stroke-linejoin: round;
-        vector-effect: non-scaling-stroke;
+      #site-intro-loader .source-paths {
+        display: none;
       }
 
-      #site-intro-loader .trace-glow {
-        filter: url(#preloaderGlowFilter);
-        opacity: 0.95;
+      /* silhouette noire */
+      #site-intro-loader .shape-fill path {
+        fill: #000;
+        stroke: none;
       }
 
-      #site-intro-loader .trace-glow path {
-        stroke: url(#preloaderStrokeGradient);
-        stroke-width: 0.7;
+      /*
+        GLOW DERRIÈRE LA FORME
+        Ce sont des FILLS flous derrière, pas des contours.
+      */
+
+      #site-intro-loader .glow-back,
+      #site-intro-loader .glow-mid,
+      #site-intro-loader .glow-front,
+      #site-intro-loader .glow-core {
+        transform-box: fill-box;
+        transform-origin: center center;
+        will-change: transform, opacity, filter;
       }
 
-      #site-intro-loader .trace-core path {
-        stroke: url(#preloaderStrokeGradientCore);
-        stroke-width: 0.42;
+      #site-intro-loader .glow-back path,
+      #site-intro-loader .glow-mid path,
+      #site-intro-loader .glow-front path,
+      #site-intro-loader .glow-core path {
+        stroke: none;
       }
 
-      #site-intro-loader .trace-sheen {
-        mix-blend-mode: screen;
-        opacity: 0.68;
+      /* halo très large et très faible */
+      #site-intro-loader .glow-back {
+        opacity: 0;
+        filter: blur(34px);
       }
 
-      #site-intro-loader .trace-sheen path {
-        fill: none;
-        stroke: url(#preloaderSheenGradient);
-        stroke-width: 0.22;
-        vector-effect: non-scaling-stroke;
+      #site-intro-loader .glow-back path {
+        fill: var(--glow-deep);
+      }
+
+      /* halo intermédiaire */
+      #site-intro-loader .glow-mid {
+        opacity: 0;
+        filter: blur(22px);
+      }
+
+      #site-intro-loader .glow-mid path {
+        fill: var(--glow-amber);
+      }
+
+      /* halo proche */
+      #site-intro-loader .glow-front {
+        opacity: 0;
+        filter: blur(12px);
+      }
+
+      #site-intro-loader .glow-front path {
+        fill: var(--glow-warm);
+      }
+
+      /* coeur lumineux le plus proche */
+      #site-intro-loader .glow-core {
+        opacity: 0;
+        filter: blur(6px);
+      }
+
+      #site-intro-loader .glow-core path {
+        fill: var(--glow-white);
+      }
+
+      /* légère ambiance derrière l’ensemble */
+      #site-intro-loader .ambient-glow {
+        opacity: 0;
+        transform-origin: center center;
+        will-change: opacity, transform, filter;
       }
 
       @media (max-width: 768px) {
@@ -89,12 +127,20 @@
           width: min(360px, 82vw);
         }
 
-        #site-intro-loader .trace-glow path {
-          stroke-width: 2.1;
+        #site-intro-loader .glow-back {
+          filter: blur(28px);
         }
 
-        #site-intro-loader .trace-core path {
-          stroke-width: 1.04;
+        #site-intro-loader .glow-mid {
+          filter: blur(18px);
+        }
+
+        #site-intro-loader .glow-front {
+          filter: blur(10px);
+        }
+
+        #site-intro-loader .glow-core {
+          filter: blur(5px);
         }
       }
 
@@ -114,52 +160,20 @@
         focusable="false"
       >
         <defs>
-          <linearGradient id="preloaderStrokeGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stop-color="rgba(255,246,222,0.98)"></stop>
-            <stop offset="18%" stop-color="rgba(255,226,170,0.98)"></stop>
-            <stop offset="42%" stop-color="rgba(212,175,55,0.98)"></stop>
-            <stop offset="68%" stop-color="rgba(212,102,55,0.96)"></stop>
-            <stop offset="100%" stop-color="rgba(255,210,165,0.98)"></stop>
-          </linearGradient>
-
-          <linearGradient id="preloaderStrokeGradientCore" x1="12%" y1="4%" x2="88%" y2="96%">
-            <stop offset="0%" stop-color="rgba(255,250,242,1)"></stop>
-            <stop offset="28%" stop-color="rgba(255,232,185,1)"></stop>
-            <stop offset="56%" stop-color="rgba(236,192,86,1)"></stop>
-            <stop offset="82%" stop-color="rgba(220,118,62,0.98)"></stop>
-            <stop offset="100%" stop-color="rgba(255,234,206,1)"></stop>
-          </linearGradient>
-
-          <linearGradient id="preloaderSheenGradient" x1="0%" y1="50%" x2="100%" y2="50%">
-            <stop offset="0%" stop-color="rgba(255,255,255,0.0)"></stop>
-            <stop offset="40%" stop-color="rgba(255,245,225,0.72)"></stop>
-            <stop offset="52%" stop-color="rgba(255,255,255,0.95)"></stop>
-            <stop offset="64%" stop-color="rgba(255,234,196,0.72)"></stop>
-            <stop offset="100%" stop-color="rgba(255,255,255,0.0)"></stop>
-          </linearGradient>
-
-          <filter id="preloaderGlowFilter" x="-40%" y="-40%" width="180%" height="180%">
-            <feGaussianBlur in="SourceGraphic" stdDeviation="2.8" result="blur1"></feGaussianBlur>
-            <feGaussianBlur in="SourceGraphic" stdDeviation="6.8" result="blur2"></feGaussianBlur>
-            <feColorMatrix
-              in="blur2"
-              type="matrix"
-              values="1 0 0 0 0
-                      0 1 0 0 0
-                      0 0 1 0 0
-                      0 0 0 0.42 0"
-              result="softGlow"
-            ></feColorMatrix>
-            <feMerge>
-              <feMergeNode in="softGlow"></feMergeNode>
-              <feMergeNode in="blur1"></feMergeNode>
-              <feMergeNode in="SourceGraphic"></feMergeNode>
-            </feMerge>
-          </filter>
+          <radialGradient id="ambientGradient" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stop-color="rgba(255,245,232,0.16)"></stop>
+            <stop offset="20%" stop-color="rgba(255,218,160,0.09)"></stop>
+            <stop offset="42%" stop-color="rgba(214,118,62,0.05)"></stop>
+            <stop offset="70%" stop-color="rgba(214,118,62,0.015)"></stop>
+            <stop offset="100%" stop-color="rgba(0,0,0,0)"></stop>
+          </radialGradient>
         </defs>
 
-        <g id="trace-glow-group" class="trace-glow"></g>
-        <g id="trace-core-group" class="trace-core">
+        <g id="ambient-glow-group" class="ambient-glow">
+          <ellipse cx="311.755" cy="160.99" rx="180" ry="110" fill="url(#ambientGradient)"></ellipse>
+        </g>
+
+        <g id="source-paths" class="source-paths">
           <path d="M353.01,17.99c2.41-.29,6.21-1.87,8.49-3,1.66,2.25-5.21,7.4-6.48,9.01l-14.5,4.98c11.36,3.02,21.53,6.9,33.52,7.03,1.65.02,4.31-2.15,3.99.99l-5.5,3.51-14.01,4.47c11.39,3.89,21.28,12.94,33.99,12.02.79,5.23-17.19,5.25-20.99,5,38.7,35.04,16.07,65.2-23.99,82.98,30.78,6.37,53.58,31.95,54.98,63.52,3.7,73.03-68.92,108.86-131.99,113.48l33.68-10.81c82.76-30.32,80.62-167.84-23.68-148.18l1.12-14.87c26.26-5.08,64.04-16.17,72.17-45.33,5.49-16.96-1.79-32.4-16.3-41.8l13.99,2.5c-6.79-8.37-16.78-12.09-25.99-17.01,4.39-4.46,17.07,2.17,17.99-1.48-11.11-5-22.7-7.85-34.99-7.02-1.37-3.75,11.36-4.84,13.99-5-23.21-5.56-44.92-1.59-64.33,12.18-7.28,5.21-18.89,19.26-29.45,14.11-2.82-1.38-2-4.05-2.23-4.27-1.25-1.21-6.67,5.16-9.48-1.03-2.46-5.42,4.62-13.91,8.48-17.48,11.52-10.65,28.28-14.19,38.47-26.54.59-.71,2.93-7.55,3.56-2.45.38,3.1-.56,5.04-1.24,7.78-.32,1.29-1.93,1.9.7,1.7L296.01,0l-.62,4.38-6.38,9.62L324.5,1c.77.74-4.63,8.93-5.55,9.94-2.12,2.32-4.78,2.86-6.44,5.06h20.5c2.14,0,9.21-4.69,12.5-3.99l-7,5.99c4.62-.4,9.99.55,14.5,0Z"></path>
           <path d="M27.51,201c.6-1.11,17.77,7.69,16.99,4.01-6.43-2.58-30.56-16.17-31.98-22.01,20.92,7.24,46.25,14.69,68.46,16.04,1.08.07,3.79.64,3.52-1.03C51.42,185.09,18.67,159.31,0,131c53.86,44.56,134.59,37.5,180.5,92.48-41.5,14.71-123,14.59-152.99-22.48Z"></path>
           <path d="M623.51,132c-23.27,28.1-53.4,53.35-87.99,66-.25,1.71,2.38,1.06,3.48.98,23.64-1.84,46.83-8.74,69.52-14.98-8.26,7.9-18.04,16-28.99,20,.49,3.87,19.54-5.92,21.5-8.01,1.51,1.47-1.57,3.66-2.49,4.51-39.86,40.78-91.26,31.51-137.92,7.4,5.28-24.45,56.67-29.4,77.67-37.64,31.47-9.17,57.07-23.02,85.24-38.25Z"></path>
@@ -174,7 +188,12 @@
           <path d="M247.51,56c1.01-1.06,16.14,9.25,12.57-3.1-.48-1.66-7.05-5.31-1.08-5.96,9.48-1.03,11.69,21.09-5.53,16.58-2.43-.64-8.37-5.01-5.96-7.52Z"></path>
         </g>
 
-        <g id="trace-sheen-group" class="trace-sheen"></g>
+        <g id="glow-back-group" class="glow-back"></g>
+        <g id="glow-mid-group" class="glow-mid"></g>
+        <g id="glow-front-group" class="glow-front"></g>
+        <g id="glow-core-group" class="glow-core"></g>
+
+        <g id="shape-fill-group" class="shape-fill"></g>
       </svg>
     </div>
 
@@ -185,70 +204,129 @@
         const loader = document.getElementById('site-intro-loader');
         if (!loader) return;
 
-        const coreGroup = loader.querySelector('#trace-core-group');
-        const glowGroup = loader.querySelector('#trace-glow-group');
-        const sheenGroup = loader.querySelector('#trace-sheen-group');
+        const sourceGroup = loader.querySelector('#source-paths');
+        const ambientGlow = loader.querySelector('#ambient-glow-group');
+        const glowBackGroup = loader.querySelector('#glow-back-group');
+        const glowMidGroup = loader.querySelector('#glow-mid-group');
+        const glowFrontGroup = loader.querySelector('#glow-front-group');
+        const glowCoreGroup = loader.querySelector('#glow-core-group');
+        const shapeFillGroup = loader.querySelector('#shape-fill-group');
 
-        const traceDuration = 2650;
+        const revealDuration = 1900;
         const fadeDuration = 650;
         const minimumVisible = 1200;
 
         let minDone = false;
         let loadDone = document.readyState === 'complete';
 
-        const sourcePaths = Array.from(coreGroup.querySelectorAll('path'));
+        const sourcePaths = Array.from(sourceGroup.querySelectorAll('path'));
+
+        const makePath = (d, group) => {
+          const p = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+          p.setAttribute('d', d);
+          group.appendChild(p);
+          return p;
+        };
 
         sourcePaths.forEach((path) => {
-          glowGroup.appendChild(path.cloneNode(true));
-          sheenGroup.appendChild(path.cloneNode(true));
+          const d = path.getAttribute('d');
+          if (!d) return;
+
+          makePath(d, glowBackGroup);
+          makePath(d, glowMidGroup);
+          makePath(d, glowFrontGroup);
+          makePath(d, glowCoreGroup);
+          makePath(d, shapeFillGroup);
         });
 
-        const glowPaths = Array.from(glowGroup.querySelectorAll('path'));
-        const corePaths = Array.from(coreGroup.querySelectorAll('path'));
-        const sheenPaths = Array.from(sheenGroup.querySelectorAll('path'));
-        const allPaths = [...glowPaths, ...corePaths, ...sheenPaths];
+        const animateLayer = (el, keyframes, options) => {
+          if (!el) return;
+          el.animate(keyframes, { fill: 'forwards', ...options });
+        };
+
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => {
+            animateLayer(
+              ambientGlow,
+              [
+                { opacity: 0, transform: 'scale(0.82)' },
+                { opacity: 0.55, transform: 'scale(1.02)', offset: 0.58 },
+                { opacity: 0.68, transform: 'scale(1.12)' }
+              ],
+              {
+                duration: revealDuration,
+                easing: 'cubic-bezier(0.22, 1, 0.36, 1)'
+              }
+            );
+
+            animateLayer(
+              glowBackGroup,
+              [
+                { opacity: 0, transform: 'scale(0.9)' },
+                { opacity: 0.22, transform: 'scale(1.01)', offset: 0.58 },
+                { opacity: 0.34, transform: 'scale(1.1)' }
+              ],
+              {
+                duration: revealDuration,
+                delay: 20,
+                easing: 'cubic-bezier(0.22, 1, 0.36, 1)'
+              }
+            );
+
+            animateLayer(
+              glowMidGroup,
+              [
+                { opacity: 0, transform: 'scale(0.92)' },
+                { opacity: 0.28, transform: 'scale(1.0)', offset: 0.55 },
+                { opacity: 0.42, transform: 'scale(1.08)' }
+              ],
+              {
+                duration: revealDuration,
+                delay: 50,
+                easing: 'cubic-bezier(0.22, 1, 0.36, 1)'
+              }
+            );
+
+            animateLayer(
+              glowFrontGroup,
+              [
+                { opacity: 0, transform: 'scale(0.94)' },
+                { opacity: 0.32, transform: 'scale(0.995)', offset: 0.52 },
+                { opacity: 0.46, transform: 'scale(1.05)' }
+              ],
+              {
+                duration: revealDuration,
+                delay: 80,
+                easing: 'cubic-bezier(0.22, 1, 0.36, 1)'
+              }
+            );
+
+            animateLayer(
+              glowCoreGroup,
+              [
+                { opacity: 0, transform: 'scale(0.96)' },
+                { opacity: 0.18, transform: 'scale(0.99)', offset: 0.48 },
+                { opacity: 0.3, transform: 'scale(1.03)' }
+              ],
+              {
+                duration: revealDuration,
+                delay: 110,
+                easing: 'cubic-bezier(0.22, 1, 0.36, 1)'
+              }
+            );
+          });
+        });
 
         const maybeHide = () => {
           if (!minDone || !loadDone) return;
           loader.classList.add('is-hidden');
-          setTimeout(() => {
-            loader.remove();
-          }, fadeDuration);
+          setTimeout(() => loader.remove(), fadeDuration);
         };
-
-        allPaths.forEach((path) => {
-          const length = path.getTotalLength();
-          path.style.strokeDasharray = String(length);
-          path.style.strokeDashoffset = String(length);
-          path.style.willChange = 'stroke-dashoffset, opacity';
-        });
-
-        requestAnimationFrame(() => {
-          requestAnimationFrame(() => {
-            glowPaths.forEach((path) => {
-              path.style.transition =
-                'stroke-dashoffset ' + traceDuration + 'ms cubic-bezier(0.22, 0.61, 0.36, 1), opacity 700ms ease';
-              path.style.strokeDashoffset = '0';
-            });
-
-            corePaths.forEach((path) => {
-              path.style.transition =
-                'stroke-dashoffset ' + traceDuration + 'ms cubic-bezier(0.22, 0.61, 0.36, 1), opacity 700ms ease';
-              path.style.strokeDashoffset = '0';
-            });
-
-            sheenPaths.forEach((path) => {
-              path.style.transition =
-                'stroke-dashoffset ' + (traceDuration * 0.92) + 'ms cubic-bezier(0.22, 0.61, 0.36, 1), opacity 700ms ease';
-              path.style.strokeDashoffset = '0';
-            });
-          });
-        });
 
         setTimeout(() => {
           minDone = true;
           maybeHide();
-        }, Math.max(traceDuration, minimumVisible));
+        }, Math.max(revealDuration, minimumVisible));
 
         if (!loadDone) {
           window.addEventListener(

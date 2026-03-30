@@ -40,10 +40,10 @@
 
 <section class="services-accordion">
   <div class="top-header">
-    <div class="header-spacer"></div>
     <div class="header-title-wrap">
       <h2>Nos projets</h2>
     </div>
+    <div class="header-spacer"></div>
   </div>
 
   <div class="accordion">
@@ -127,7 +127,7 @@
   .services-accordion {
     width: 100%;
     background: #000;
-    color: #f5f1e8;
+    color: #f4efe6;
     overflow: hidden;
     contain: layout paint;
     isolation: isolate;
@@ -149,16 +149,25 @@
   .header-title-wrap {
     padding: clamp(2rem, 4vw, 4rem) clamp(1.5rem, 3vw, 3rem)
       clamp(1.2rem, 2vw, 1.8rem);
+    display: flex;
+    justify-content: flex-start;
+    align-items: flex-end;
   }
 
   .header-title-wrap h2 {
     margin: 0;
-    font-family: "Aboreto", serif;
-    font-weight: 400;
+    font-family: "Titre italic", serif;
+    font-weight: 100;
+    font-style: italic;
+    font-synthesis: none;
     font-size: clamp(2.5rem, 5vw, 5.5rem);
-    line-height: 0.95;
-    letter-spacing: -0.045em;
-    color: #f5f1e8;
+    line-height: 0.98;
+    letter-spacing: -0.03em;
+    color: #f4efe6;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: geometricPrecision;
+    text-align: left;
   }
 
   .accordion {
@@ -272,20 +281,21 @@
 
   .title-row h3 {
     margin: 0;
-    font-family: "Aboreto", serif;
+    font-family: "Titre", serif;
     font-weight: 400;
     font-size: clamp(1.8rem, 3vw, 4rem);
     line-height: 0.96;
     letter-spacing: -0.045em;
-    color: #f5f1e8;
+    color: #f4efe6;
   }
 
   .number {
-    font-family: "Aboreto", sans-serif;
+    font-family: "Titre italic", serif;
+    font-style: italic;
     font-size: clamp(1.6rem, 2.4vw, 3rem);
     line-height: 1;
     letter-spacing: -0.04em;
-    color: #545454;
+    color: #5f6771;
     opacity: 0.95;
     padding-top: 0.08em;
   }
@@ -315,7 +325,7 @@
     font-family: "General Sans", sans-serif;
     font-size: clamp(0.98rem, 1.08vw, 1.15rem);
     line-height: 1.48;
-    color: rgba(245, 241, 232, 0.72);
+    color: rgba(244, 239, 230, 0.72);
   }
 
   .nav-btn {

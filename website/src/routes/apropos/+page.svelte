@@ -1,9 +1,6 @@
 <script>
-  import Apropos from "$lib/structure/Apropos.svelte";
-  import ParallaxTextes from "$lib/sections/ParallaxTextes.svelte";
-  import BackgroundParallax from "$lib/sections/BackgroundParallax.svelte";
+  import StickySlider from "$lib/sections/StickySlider.svelte";
 </script>
 
-<Apropos />
-<ParallaxTextes />
-<BackgroundParallax />
+<StickySlider />
+

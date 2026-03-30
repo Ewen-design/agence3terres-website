@@ -7,47 +7,40 @@
     {
       number: "01",
       title: "Le reflet\nd'un art",
-      description:
-        "Dans le silence apaisant d'un lac, chaque détail trouve son écho. Chez 3 Terres, nous nous plaçons comme la surface limpide où se reflète l'essence de votre marque.",
+      description: "Dans le silence apaisant d'un lac, chaque détail trouve son écho. Chez 3 Terres, nous nous plaçons comme la surface limpide où se reflète l'essence de votre marque.",
       image: "images/photo.webp",
-      eyebrow: "Data so accurate",
-      accent: "it's personal",
+      eyebrow: "Data so accurate", accent: "it's personal",
       stats: [
-        { value: "99%", label: "Strategic Clarity", note: "vision aligned across teams" },
-        { value: "96%", label: "Execution Accuracy", note: "from plan to delivery" },
+        { value: "99%", label: "Strategic Clarity",     note: "vision aligned across teams" },
+        { value: "96%", label: "Execution Accuracy",    note: "from plan to delivery" },
         { value: "91%", label: "Operational Readiness", note: "systems designed to scale" },
-        { value: "84%", label: "Adoption Potential", note: "built for real use" },
+        { value: "84%", label: "Adoption Potential",    note: "built for real use" },
       ],
     },
     {
       number: "02",
       title: "Les lumières\nde la création",
-      description:
-        "Cet univers urbain est le théâtre de notre créativité : élégant, moderne, vibrant. 3 Terres puise dans l'énergie de la ville l'audace d'inventer, de façonner des univers visuels qui marient esthétisme et ingéniosité.",
-      image:
-        "https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=2000&q=80",
-      eyebrow: "Innovation with intent",
-      accent: "built to matter",
+      description: "Cet univers urbain est le théâtre de notre créativité : élégant, moderne, vibrant. 3 Terres puise dans l'énergie de la ville l'audace d'inventer, de façonner des univers visuels qui marient esthétisme et ingéniosité.",
+      image: "https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=2000&q=80",
+      eyebrow: "Innovation with intent", accent: "built to matter",
       stats: [
         { value: "98%", label: "Experience Precision", note: "designed around real behavior" },
-        { value: "94%", label: "Innovation Impact", note: "new ideas with clear value" },
-        { value: "89%", label: "Interface Quality", note: "refined across every layer" },
-        { value: "81%", label: "Launch Confidence", note: "ready for flagship release" },
+        { value: "94%", label: "Innovation Impact",    note: "new ideas with clear value" },
+        { value: "89%", label: "Interface Quality",    note: "refined across every layer" },
+        { value: "81%", label: "Launch Confidence",    note: "ready for flagship release" },
       ],
     },
     {
       number: "03",
       title: "Les sommets\nde l'ambition",
-      description:
-        "La montagne est notre troisième terre, celle de l'ambition. Nous visons le sommet pour nos clients, en créant des expériences visuelles qui inspirent et marquent les esprits.",
+      description: "La montagne est notre troisième terre, celle de l'ambition. Nous visons le sommet pour nos clients, en créant des expériences visuelles qui inspirent et marquent les esprits.",
       image: "images/montagne.webp",
-      eyebrow: "Presence with meaning",
-      accent: "designed to stay",
+      eyebrow: "Presence with meaning", accent: "designed to stay",
       stats: [
-        { value: "97%", label: "Brand Consistency", note: "across every touchpoint" },
+        { value: "97%", label: "Brand Consistency",    note: "across every touchpoint" },
         { value: "93%", label: "Creative Distinction", note: "crafted to stand apart" },
-        { value: "88%", label: "Narrative Strength", note: "clear emotional resonance" },
-        { value: "79%", label: "Cultural Recall", note: "made to be remembered" },
+        { value: "88%", label: "Narrative Strength",   note: "clear emotional resonance" },
+        { value: "79%", label: "Cultural Recall",      note: "made to be remembered" },
       ],
     },
   ];
@@ -55,56 +48,37 @@
   function tokenize(str) {
     const out = [];
     let idx = 0;
-    let lineIndex = 0;
-
     for (const line of str.split("\n")) {
-      if (out.length > 0) {
-        out.push({ br: true });
-        lineIndex++;
-      }
-
+      if (out.length > 0) out.push({ br: true });
       for (const ch of line) {
-        out.push({
-          br: false,
-          ch: ch === " " ? "\u00A0" : ch,
-          i: idx++,
-          line: lineIndex,
-        });
+        out.push({ br: false, ch: ch === " " ? "\u00A0" : ch, i: idx++ });
       }
     }
     return out;
   }
-
-  const allTokens = slides.map((s) => tokenize(s.title));
+  const allTokens = slides.map(s => tokenize(s.title));
 
   let activeIndex = 0;
-  let letterOps = slides.map((_, si) => allTokens[si].map(() => 0));
+  let letterOps   = slides.map((_,si) => allTokens[si].map(() => 0));
   let descOpacity = 0;
 
   let sections = [];
-  let secTop = [];
-  let secH = [];
+  let secTop   = [];
+  let secH     = [];
   let measured = false;
 
-  const clamp = (v, lo, hi) => (v < lo ? lo : v > hi ? hi : v);
-  const norm = (v, a, b) => clamp((v - a) / (b - a), 0, 1);
+  const clamp = (v,lo,hi) => v<lo?lo:v>hi?hi:v;
+  const norm  = (v,a,b)   => clamp((v-a)/(b-a),0,1);
 
   function measure() {
     const sy = window.lenis?.animatedScroll ?? window.scrollY ?? 0;
-    secTop = [];
-    secH = [];
-
+    secTop = []; secH = [];
     for (const el of sections) {
-      if (!el) {
-        secTop.push(0);
-        secH.push(window.innerHeight || 800);
-        continue;
-      }
+      if (!el) { secTop.push(0); secH.push(window.innerHeight||800); continue; }
       const r = el.getBoundingClientRect();
       secTop.push(r.top + sy);
       secH.push(r.height || window.innerHeight || 800);
     }
-
     measured = true;
   }
 
@@ -113,12 +87,8 @@
 
     let newActive = slides.length - 1;
     for (let i = 0; i < slides.length; i++) {
-      if (scrollY + vh * 0.5 < secTop[i] + secH[i]) {
-        newActive = i;
-        break;
-      }
+      if (scrollY + vh * 0.5 < secTop[i] + secH[i]) { newActive = i; break; }
     }
-
     if (newActive !== activeIndex) {
       activeIndex = newActive;
       descOpacity = 0;
@@ -126,28 +96,27 @@
 
     const newOps = slides.map((_, si) => {
       const tokens = allTokens[si];
-      const total = tokens.filter((t) => !t.br).length;
+      const total  = tokens.filter(t => !t.br).length;
       if (total === 0) return tokens.map(() => 0);
 
-      const sCenter = secTop[si] + secH[si] * 0.4 - scrollY;
+      const sCenter       = secTop[si] + secH[si] * 0.4 - scrollY;
       const enterProgress = norm(vh - sCenter, 0, vh * 0.45);
-      const exitProgress = norm(sCenter, vh * 0.12, -vh * 0.2);
+      const exitProgress  = norm(sCenter, vh * 0.12, -vh * 0.20);
 
-      return tokens.map((t) => {
+      return tokens.map(t => {
         if (t.br) return 0;
         const frac = t.i / (total - 1 || 1);
-        const inOp = norm(enterProgress, frac * 0.3, frac * 0.3 + 0.7);
+        const inOp  = norm(enterProgress, frac * 0.3, frac * 0.3 + 0.7);
         const outOp = 1 - norm(exitProgress, frac * 0.3, frac * 0.3 + 0.7);
         return clamp(Math.min(inOp, outOp), 0, 1);
       });
     });
-
     letterOps = newOps;
 
-    const sCenter = secTop[activeIndex] + secH[activeIndex] * 0.4 - scrollY;
-    const descFadeIn = norm(sCenter, vh * 0.52, vh * 0.3);
-    const descFadeOut = 1 - norm(sCenter, vh * 0.1, -vh * 0.2);
-    descOpacity = clamp(descFadeIn * descFadeOut, 0, 1);
+    const sCenter     = secTop[activeIndex] + secH[activeIndex] * 0.4 - scrollY;
+    const descFadeIn  = norm(sCenter, vh * 0.52, vh * 0.30);
+    const descFadeOut = 1 - norm(sCenter, vh * 0.10, -vh * 0.20);
+    descOpacity       = clamp(descFadeIn * descFadeOut, 0, 1);
   }
 
   let resizeTimer;
@@ -157,12 +126,10 @@
   }
 
   onMount(() => {
-    requestAnimationFrame(() =>
-      requestAnimationFrame(() => {
-        measure();
-        registerParallax(onScroll);
-      })
-    );
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      measure();
+      registerParallax(onScroll);
+    }));
     window.addEventListener("resize", onResize, { passive: true });
     window.addEventListener("orientationchange", onResize, { passive: true });
   });
@@ -187,7 +154,6 @@
         </div>
       {/each}
     </div>
-
     <div class="fixed-ui">
       <div class="bottom-left" style="opacity:{descOpacity.toFixed(3)}">
         <p>{slides[activeIndex].description}</p>
@@ -205,19 +171,13 @@
                 <br />
               {:else}
                 {@const op = letterOps[i]?.[t] ?? 0}
-                <span
-                  class:italicLine={token.line === 1}
-                  style="opacity:{op.toFixed(3)};transform:translateY({((1 - op) * 16).toFixed(1)}px)"
-                >
-                  {token.ch}
-                </span>
+                <span style="opacity:{op.toFixed(3)};transform:translateY({((1-op)*16).toFixed(1)}px)">{token.ch}</span>
               {/if}
             {/each}
           </h2>
         </div>
       </section>
     {/each}
-
     <div class="scroll-spacer"></div>
   </div>
 </section>
@@ -230,9 +190,7 @@
     font-family: "General Sans", sans-serif;
   }
 
-  :global(*) {
-    box-sizing: border-box;
-  }
+  :global(*) { box-sizing: border-box; }
 
   .slider {
     position: relative;
@@ -294,17 +252,17 @@
     inset: 0;
     background: linear-gradient(
       to right,
-      rgba(0, 0, 0, 0.84) 0%,
-      rgba(0, 0, 0, 0.56) 28%,
-      rgba(0, 0, 0, 0.18) 58%,
-      rgba(0, 0, 0, 0.42) 100%
+      rgba(0,0,0,.84) 0%,
+      rgba(0,0,0,.56) 28%,
+      rgba(0,0,0,.18) 58%,
+      rgba(0,0,0,.42) 100%
     );
   }
 
   .vignette {
     position: absolute;
     inset: 0;
-    background: radial-gradient(circle at 50% 50%, transparent 40%, rgba(0, 0, 0, 0.14) 100%);
+    background: radial-gradient(circle at 50% 50%, transparent 40%, rgba(0,0,0,.14) 100%);
     pointer-events: none;
   }
 
@@ -330,7 +288,7 @@
     font-size: clamp(0.82rem, 0.82vw, 0.95rem);
     line-height: 1.5;
     letter-spacing: 0.01em;
-    color: rgba(255, 255, 255, 0.84);
+    color: rgba(255,255,255,.84);
     max-width: 26rem;
   }
 
@@ -359,50 +317,46 @@
     padding-top: clamp(5rem, 8vw, 7rem);
   }
 
+  /* ✅ UNIQUEMENT LA POLICE MODIFIÉE */
   h2 {
-    font-family: "General Sans", sans-serif;
-    font-weight: 300;
-    font-size: clamp(3.6rem, 6vw, 7.2rem);
+    font-family: "Titre", serif;
+    font-weight: 100;
+    font-size: clamp(4.2rem, 7vw, 8.6rem);
     line-height: 0.9;
     white-space: pre-line;
     margin: 0;
     color: white;
-    letter-spacing: 0.05em;
-    text-transform: uppercase;
+    letter-spacing: -0.03em;
     position: relative;
     z-index: 5;
     max-width: 10ch;
     text-wrap: balance;
-    text-shadow: 0 10px 40px rgba(0, 0, 0, 0.22);
+    text-shadow: 0 10px 40px rgba(0,0,0,.22);
   }
 
   h2 span {
     display: inline;
     will-change: opacity, transform;
+    font-family: "Titre", serif;
+    font-weight: 100;
   }
 
-  .italicLine {
+  h2 br + span,
+  h2 br + span ~ span {
+    font-family: "Titre italic", serif;
     font-style: italic;
+    font-weight: 100;
   }
 
   @media (min-width: 1440px) {
-    .content {
-      width: min(100%, 820px);
-    }
+    .content { width: min(100%, 820px); }
   }
 
   @media (max-width: 1024px) {
-    .slide {
-      padding: 5rem 2.25rem;
-    }
-
-    .content {
-      width: min(100%, 680px);
-      padding-top: 6rem;
-    }
-
+    .slide { padding: 5rem 2.25rem; }
+    .content { width: min(100%, 680px); padding-top: 6rem; }
     h2 {
-      font-size: clamp(3rem, 7vw, 5.6rem);
+      font-size: clamp(3.3rem, 8vw, 6rem);
       max-width: 11ch;
     }
   }
@@ -411,10 +365,10 @@
     .overlay {
       background: linear-gradient(
         to top,
-        rgba(0, 0, 0, 0.8) 0%,
-        rgba(0, 0, 0, 0.56) 28%,
-        rgba(0, 0, 0, 0.24) 56%,
-        rgba(0, 0, 0, 0.44) 100%
+        rgba(0,0,0,.8) 0%,
+        rgba(0,0,0,.56) 28%,
+        rgba(0,0,0,.24) 56%,
+        rgba(0,0,0,.44) 100%
       );
     }
 
@@ -430,12 +384,11 @@
     }
 
     h2 {
-      font-size: clamp(2.2rem, 10vw, 4.2rem);
+      font-size: clamp(2.5rem, 12vw, 4.8rem);
       line-height: 0.92;
       max-width: 100%;
       margin-bottom: 7rem;
-      letter-spacing: -0.03em;
-      text-transform: uppercase;
+      letter-spacing: -0.035em;
     }
 
     .bottom-left {
@@ -453,12 +406,10 @@
   }
 
   @media (max-width: 480px) {
-    .slide {
-      padding: 0 1rem 7rem;
-    }
+    .slide { padding: 0 1rem 7rem; }
 
     h2 {
-      font-size: clamp(2rem, 11.5vw, 3.3rem);
+      font-size: clamp(2.15rem, 13vw, 3.4rem);
       line-height: 0.94;
       letter-spacing: -0.03em;
       margin-bottom: 6.8rem;
@@ -467,7 +418,7 @@
     .bottom-left p {
       font-size: 0.78rem;
       max-width: 15rem;
-      color: rgba(255, 255, 255, 0.82);
+      color: rgba(255,255,255,.82);
     }
   }
 </style>
