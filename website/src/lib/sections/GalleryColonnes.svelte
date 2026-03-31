@@ -179,7 +179,7 @@
   .gallery-section {
     position: relative;
     width: 100%;
-    background: #060606;
+    background: #000;
     overflow: hidden;
     color: #f5f1e8;
   }

@@ -6,9 +6,10 @@
   import ProjetsAccordeon from "$lib/sections/ProjetsAccordeon.svelte";
   import VisionSlider from "$lib/sections/VisionSlider.svelte";
     import GalleryColonnes from "$lib/sections/GalleryColonnes.svelte";
+    import Hero from "$lib/sections/Hero.svelte";
 </script>
 
-<TexteIntro2 />
+<Hero />
 <GalleryColonnes />
 <ParallaxGallery2 />
 <ProjetsAccordeon />

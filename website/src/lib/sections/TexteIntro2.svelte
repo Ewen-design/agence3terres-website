@@ -164,8 +164,9 @@
   h2 {
     margin: 0 auto;
     max-width: 11ch;
-    font-family: "Aboreto", sans-serif;
-    font-weight: 300;
+    font-family: "Titre", serif;
+    font-style: normal;
+    font-weight: 100;
     font-size: clamp(2.3rem, 4.6vw, 5rem);
     line-height: 0.95;
     letter-spacing: -0.045em;

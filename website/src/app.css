@@ -80,22 +80,14 @@ body {
 @font-face {
   font-family: "Titre bold";
   src: url("/fonts/titre-Bold.woff2") format("woff2");
-  font-weight: 100;
+  font-weight: 400;
   font-style: bold;
   font-display: swap;
 }
 @font-face {
   font-family: "Titre bold italic";
   src: url("/fonts/titre-BoldItalic.woff2") format("woff2");
-  font-weight: 100;
-  font-style: bold;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: "Titre2";
-  src: url("/fonts2/Junicode.woff2") format("woff2");
-  font-weight: 100;
-  font-style: bold;
+  font-weight: 700;
+  font-style: italic;
   font-display: swap;
 }

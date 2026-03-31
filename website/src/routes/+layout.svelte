@@ -50,6 +50,7 @@
   }
 
   $: hideFooter = ["/projet1", "/projet2", "/contact"].includes($page.url.pathname);
+  $: isTravailPage = $page.url.pathname === "/travail";
 
   function easeInOutCubic(t) {
     return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
@@ -59,7 +60,6 @@
     return 1 - Math.pow(1 - t, 3);
   }
 
-  // ── onNavigate : zoom out + fade out de l'ancienne page ──────────────────
   onNavigate(() => {
     return new Promise((resolve) => {
       const wrapper = document.querySelector('.page-wrapper');
@@ -68,7 +68,6 @@
       const duration = 420;
       const start = performance.now();
 
-      // État initial
       wrapper.style.transformOrigin = 'center top';
       wrapper.style.willChange = 'transform, opacity, filter';
 
@@ -91,21 +90,18 @@
     });
   });
 
-  // ── afterNavigate : zoom in + fade in de la nouvelle page ────────────────
   afterNavigate(() => {
     syncScrollState();
 
     const wrapper = document.querySelector('.page-wrapper');
     if (!wrapper) return;
 
-    // Commence légèrement zoomé et invisible
     wrapper.style.transformOrigin = 'center top';
     wrapper.style.willChange = 'transform, opacity, filter';
     wrapper.style.transform = 'scale(0.97)';
     wrapper.style.opacity = '0';
     wrapper.style.filter = 'blur(6px)';
 
-    // Un frame de délai pour que le navigateur applique l'état initial
     requestAnimationFrame(() => {
       const duration = 650;
       const start = performance.now();
@@ -121,7 +117,6 @@
         if (t < 1) {
           requestAnimationFrame(frame);
         } else {
-          // Nettoyage
           wrapper.style.transform = '';
           wrapper.style.opacity = '';
           wrapper.style.filter = '';
@@ -217,7 +212,7 @@
   />
 </svelte:head>
 
-<main>
+<main class:travail-soft-gradients={isTravailPage}>
   {#if !isMobile}
     <CustomCursor />
   {/if}
@@ -225,6 +220,7 @@
   <IconeFleche />
   <Header />
   <div class="top-gradient"></div>
+  <div class="bottom-gradient"></div>
 
   <div class="page-wrapper">
     <slot />
@@ -257,11 +253,47 @@
     pointer-events: none;
     background: linear-gradient(
       to bottom,
-      rgba(0, 0, 0, 0.24) 0%,
-      rgba(0, 0, 0, 0.12) 40%,
-      rgba(0, 0, 0, 0.04) 75%,
+      rgba(0, 0, 0, 0.12) 0%,
+      rgba(0, 0, 0, 0.06) 35%,
+      rgba(0, 0, 0, 0.02) 65%,
       rgba(0, 0, 0, 0) 100%
     );
     z-index: 10;
+    transition: opacity 0.35s ease;
+  }
+
+  .bottom-gradient {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 200px;
+    pointer-events: none;
+    background:
+      radial-gradient(
+        120% 95% at 50% 100%,
+        rgba(0, 0, 0, 0.16) 0%,
+        rgba(0, 0, 0, 0.10) 30%,
+        rgba(0, 0, 0, 0.05) 60%,
+        rgba(0, 0, 0, 0.015) 80%,
+        rgba(0, 0, 0, 0) 100%
+      ),
+      linear-gradient(
+        to top,
+        rgba(0, 0, 0, 0.12) 0%,
+        rgba(0, 0, 0, 0.06) 35%,
+        rgba(0, 0, 0, 0.02) 65%,
+        rgba(0, 0, 0, 0) 100%
+      );
+    z-index: 10;
+    transition: opacity 0.35s ease;
+  }
+
+  main.travail-soft-gradients .top-gradient {
+    opacity: 0.65;
+  }
+
+  main.travail-soft-gradients .bottom-gradient {
+    opacity: 0.3;
   }
 </style>

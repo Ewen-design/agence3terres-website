@@ -269,7 +269,6 @@ margin-bottom: 0rem;
 font-family: "Titre";
 font-size: clamp(2.5rem, 4vw, 4rem);
 font-weight: 100;
-letter-spacing: 0.05em;
 margin-bottom: 1.5rem;
 }
 .vision-header p {

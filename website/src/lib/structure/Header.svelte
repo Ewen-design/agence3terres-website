@@ -250,7 +250,6 @@
       ] as link, i}
         <button
           class="nav-btn fade"
-          class:active={$page.url.pathname === `/${link.page}`}
           data-cursor="button"
           type="button"
           aria-current={$page.url.pathname === `/${link.page}` ? "page" : undefined}
@@ -334,23 +333,23 @@
     font-size: 0.9rem;
     white-space: nowrap;
     color: inherit;
-    border: none;
+    border: 1px solid rgba(255, 255, 255, 0.15);
     cursor: pointer;
-    background: rgba(255, 255, 255, 0.15);
+    background: rgba(255, 255, 255, 0.10);
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
     border-radius: 2px;
-    box-shadow:
-      0 6px 8px rgba(0, 0, 0, 0.04),
-      inset 0 1px 0 rgba(255, 255, 255, 0.08),
-      inset 0 -1px 1px rgba(0, 0, 0, 0.08);
+    box-shadow: 0 6px 8px rgba(0, 0, 0, 0.04);
     transition:
       transform  1.2s cubic-bezier(.22,.61,.36,1),
       box-shadow 1.2s cubic-bezier(.22,.61,.36,1),
       background 1.2s cubic-bezier(.22,.61,.36,1);
   }
-  .nav-btn.active {
-    background: rgba(255, 255, 255, 0.25);
+
+  .logo {
+    font-family: "Titre bold", serif;
+    font-weight: 700;
+    font-style: italic;
   }
 
   /* ── Hover texte flip uniquement ──────────────────────────────────────── */
@@ -423,7 +422,7 @@
     opacity: 1;
   }
 
-  /* ✅ hover flip réactivé explicitement pour les 4 boutons du milieu */
+  /* hover flip réactivé explicitement pour les 4 boutons du milieu */
   .links .nav-btn:hover .nav-btn-text {
     transform: translateY(-100%);
     opacity: 1;
@@ -433,101 +432,163 @@
     opacity: 1;
   }
 
-  /* ── Glow border ───────────────────────────────────────────────────────── */
-  .nav-btn::before {
+  /* ── Glow sur la vraie bordure ─────────────────────────────────────────── */
+  .nav-btn::before,
+  .nav-btn::after {
     content: "";
     position: absolute;
-    inset: 0;
+    inset: -1px;
     border-radius: inherit;
-    padding: 1px;
-    background: radial-gradient(
-      80px circle at var(--mx, 50%) var(--my, 50%),
-      rgba(212, 175, 55, 0.95),
-      rgba(212, 102, 55, 0.45) 40%,
-      transparent 75%
-    );
-    -webkit-mask:
-      linear-gradient(#000 0 0) content-box,
-      linear-gradient(#000 0 0);
-    -webkit-mask-composite: xor;
-    mask-composite: exclude;
-    opacity: 0;
-    transition: opacity 0.25s ease;
     pointer-events: none;
-    filter: drop-shadow(0 0 3px rgba(212, 175, 55, 0.35));
+    opacity: 0;
+  }
+
+  /* couleur localisée sur la ligne de bordure */
+  .nav-btn::before {
+    border: 1px solid transparent;
+    border-radius: inherit;
+    border-image-slice: 1;
+    border-image-source: radial-gradient(
+      68px circle at var(--mx, 50%) var(--my, 50%),
+      rgba(255, 225, 140, 1) 0%,
+      rgba(212, 175, 55, 0.95) 22%,
+      rgba(212, 102, 55, 0.55) 45%,
+      rgba(212, 102, 55, 0.12) 62%,
+      transparent 78%
+    );
+    transition: opacity 0.25s ease;
+  }
+
+  /* halo très léger autour de cette même portion de bordure */
+  .nav-btn::after {
+    border: 1px solid transparent;
+    border-radius: inherit;
+    border-image-slice: 1;
+    border-image-source: radial-gradient(
+      78px circle at var(--mx, 50%) var(--my, 50%),
+      rgba(212, 175, 55, 0.55) 0%,
+      rgba(212, 102, 55, 0.22) 42%,
+      transparent 72%
+    );
+    filter: blur(2px);
+    transition: opacity 0.25s ease;
   }
 
   /* Hover manuel */
-  .nav-btn:hover::before { opacity: 1; }
+  .nav-btn:hover::before,
+  .nav-btn:hover::after {
+    opacity: 1;
+  }
 
   /* Auto-tour : glow visible */
-  .nav-btn.auto-glow::before {
+  .nav-btn.auto-glow::before,
+  .nav-btn.auto-glow::after {
     opacity: 1;
   }
 
   /* Auto-tour : fade out */
-  .nav-btn.auto-glow-out::before {
+  .nav-btn.auto-glow-out::before,
+  .nav-btn.auto-glow-out::after {
     opacity: 0;
     transition: opacity 0.35s ease;
   }
 
   /* ── Thèmes page ───────────────────────────────────────────────────────── */
   .theme-services .nav-btn::before {
-    background: radial-gradient(
-      80px circle at var(--mx, 50%) var(--my, 50%),
-      rgba(145, 205, 255, 0.98),
-      rgba(74, 140, 255, 0.68) 35%,
-      rgba(18, 45, 120, 0.52) 58%,
-      transparent 75%
+    border-image-source: radial-gradient(
+      68px circle at var(--mx, 50%) var(--my, 50%),
+      rgba(220, 240, 255, 1) 0%,
+      rgba(145, 205, 255, 0.98) 22%,
+      rgba(74, 140, 255, 0.62) 45%,
+      rgba(18, 45, 120, 0.14) 62%,
+      transparent 78%
     );
-    filter: drop-shadow(0 0 4px rgba(95, 165, 255, 0.4));
   }
+  .theme-services .nav-btn::after {
+    border-image-source: radial-gradient(
+      78px circle at var(--mx, 50%) var(--my, 50%),
+      rgba(95, 165, 255, 0.42) 0%,
+      rgba(74, 140, 255, 0.18) 42%,
+      transparent 72%
+    );
+  }
+
   .theme-projets .nav-btn::before {
-    background: radial-gradient(
-      80px circle at var(--mx, 50%) var(--my, 50%),
-      rgba(210, 210, 230, 0.98),
-      rgba(130, 110, 220, 0.7) 35%,
-      rgba(35, 30, 95, 0.55) 58%,
-      transparent 75%
+    border-image-source: radial-gradient(
+      68px circle at var(--mx, 50%) var(--my, 50%),
+      rgba(235, 232, 255, 1) 0%,
+      rgba(210, 210, 230, 0.98) 22%,
+      rgba(130, 110, 220, 0.62) 45%,
+      rgba(35, 30, 95, 0.14) 62%,
+      transparent 78%
     );
-    filter: drop-shadow(0 0 4px rgba(150, 140, 230, 0.4));
   }
+  .theme-projets .nav-btn::after {
+    border-image-source: radial-gradient(
+      78px circle at var(--mx, 50%) var(--my, 50%),
+      rgba(150, 140, 230, 0.42) 0%,
+      rgba(130, 110, 220, 0.18) 42%,
+      transparent 72%
+    );
+  }
+
   .theme-apropos .nav-btn::before {
-    background: radial-gradient(
-      80px circle at var(--mx, 50%) var(--my, 50%),
-      rgba(255, 170, 170, 0.98),
-      rgba(255, 110, 90, 0.75) 35%,
-      rgba(150, 40, 40, 0.55) 58%,
-      transparent 75%
+    border-image-source: radial-gradient(
+      68px circle at var(--mx, 50%) var(--my, 50%),
+      rgba(255, 226, 226, 1) 0%,
+      rgba(255, 170, 170, 0.98) 22%,
+      rgba(255, 110, 90, 0.62) 45%,
+      rgba(150, 40, 40, 0.14) 62%,
+      transparent 78%
     );
-    filter: drop-shadow(0 0 4px rgba(255, 110, 90, 0.4));
   }
-  .theme-contact .nav-btn::before {
-    background: radial-gradient(
-      80px circle at var(--mx, 50%) var(--my, 50%),
-      rgba(170, 255, 233, 0.98),
-      rgba(77, 214, 182, 0.72) 34%,
-      rgba(26, 111, 117, 0.5) 58%,
-      transparent 75%
+  .theme-apropos .nav-btn::after {
+    border-image-source: radial-gradient(
+      78px circle at var(--mx, 50%) var(--my, 50%),
+      rgba(255, 110, 90, 0.42) 0%,
+      rgba(255, 110, 90, 0.18) 42%,
+      transparent 72%
     );
-    filter: drop-shadow(0 0 4px rgba(77, 214, 182, 0.4));
+  }
+
+  .theme-contact .nav-btn::before {
+    border-image-source: radial-gradient(
+      68px circle at var(--mx, 50%) var(--my, 50%),
+      rgba(228, 255, 247, 1) 0%,
+      rgba(170, 255, 233, 0.98) 22%,
+      rgba(77, 214, 182, 0.62) 45%,
+      rgba(26, 111, 117, 0.14) 62%,
+      transparent 78%
+    );
+  }
+  .theme-contact .nav-btn::after {
+    border-image-source: radial-gradient(
+      78px circle at var(--mx, 50%) var(--my, 50%),
+      rgba(77, 214, 182, 0.42) 0%,
+      rgba(77, 214, 182, 0.18) 42%,
+      transparent 72%
+    );
   }
 
   /* ── Liens desktop : ouverture/fermeture depuis le milieu des 4 ───────── */
   .links {
     display: flex;
     gap: 0.5rem;
-    overflow: hidden;
+    overflow: visible;
     max-width: 32rem;
     opacity: 1;
+    padding: 8px 0;
+    margin: -8px 0;
     transition:
       max-width 0.68s cubic-bezier(.2,.85,.25,1),
-      opacity 0.12s linear;
+      opacity 0.12s linear,
+      clip-path 0.68s cubic-bezier(.2,.85,.25,1);
   }
 
   .links button {
     flex: 0 0 auto;
     transform-origin: center center;
+    box-shadow: 0 6px 8px rgba(0, 0, 0, 0.04);
     transition:
       transform 0.58s cubic-bezier(.2,.85,.25,1),
       opacity 0.12s linear,
@@ -543,6 +604,7 @@
   /* ── Compact ───────────────────────────────────────────────────────────── */
   .compact .links {
     max-width: 0;
+    clip-path: inset(0 100% 0 0);
   }
 
   .compact .links button {
@@ -591,6 +653,8 @@
       transition: none;
     }
     .nav-btn.auto-glow::before,
-    .nav-btn.auto-glow-out::before { display: none; }
+    .nav-btn.auto-glow::after,
+    .nav-btn.auto-glow-out::before,
+    .nav-btn.auto-glow-out::after { display: none; }
   }
 </style>
