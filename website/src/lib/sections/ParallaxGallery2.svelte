@@ -218,8 +218,8 @@
   <div class="gallery-header">
     <div class="intro-card">
       <p>
-        Nous imaginons des identités fortes, des expériences digitales immersives
-        et des directions artistiques pensées pour laisser une empreinte durable.
+        <span class="intro-main">Nous imaginons des identités fortes, des expériences digitales immersives</span>
+        <span class="intro-muted"> et des directions artistiques pensées pour laisser une empreinte durable.</span>
       </p>
     </div>
   </div>
@@ -334,18 +334,28 @@
 
   .intro-card {
     width: min(560px, 100%);
-    background: #111;
-    padding: 2.5rem 2.3rem;
-    box-shadow: 0 14px 38px rgba(0, 0, 0, 0.22);
+    padding: 0;
+    box-shadow: none;
     contain: layout paint;
   }
 
   .intro-card p {
     margin: 0;
+    max-width: 30ch;
     font-family: "General Sans", sans-serif;
-    font-size: 1rem;
-    line-height: 1.8;
-    color: rgba(255, 255, 255, 0.62);
+    font-weight: 300;
+    font-size: clamp(1.3rem, 2.8vw, 2.8rem);
+    line-height: 1.08;
+    letter-spacing: -0.02em;
+    color: #fff;
+  }
+
+  .intro-main {
+    color: #fff;
+  }
+
+  .intro-muted {
+    color: rgba(255, 255, 255, 0.7);
   }
 
   .gallery-grid {
@@ -497,6 +507,7 @@
   }
 
   .services-btn {
+    font-family: "General Sans", sans-serif;
     position: relative;
     height: 40px;
     display: inline-flex;
@@ -504,19 +515,15 @@
     justify-content: center;
     padding: 0 1.5rem;
     font-size: 0.9rem;
-    font-family: "General Sans", sans-serif;
     white-space: nowrap;
     color: #fff;
-    border: none;
+    border: 1px solid rgba(255, 255, 255, 0.15);
     cursor: pointer;
-    background: rgba(255, 255, 255, 0.15);
-    backdrop-filter: blur(6px);
-    -webkit-backdrop-filter: blur(6px);
-    border-radius: 3px;
-    box-shadow:
-      0 6px 8px rgba(0, 0, 0, 0.04),
-      inset 0 1px 0 rgba(255, 255, 255, 0.08),
-      inset 0 -1px 1px rgba(0, 0, 0, 0.08);
+    background: rgba(255, 255, 255, 0.10);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-radius: 2px;
+    box-shadow: 0 6px 8px rgba(0, 0, 0, 0.04);
     transition:
       transform 1.2s cubic-bezier(.22,.61,.36,1),
       box-shadow 1.2s cubic-bezier(.22,.61,.36,1),
@@ -557,30 +564,47 @@
     transform: translateY(0%);
   }
 
-  .services-btn::before {
+  .services-btn::before,
+  .services-btn::after {
     content: "";
     position: absolute;
-    inset: 0;
+    inset: -1px;
     border-radius: inherit;
-    padding: 1px;
-    background: radial-gradient(
-      80px circle at var(--mx, 50%) var(--my, 50%),
-      rgba(212, 175, 55, 0.95),
-      rgba(212, 102, 55, 0.45) 40%,
-      transparent 75%
-    );
-    -webkit-mask:
-      linear-gradient(#000 0 0) content-box,
-      linear-gradient(#000 0 0);
-    -webkit-mask-composite: xor;
-    mask-composite: exclude;
-    opacity: 0;
-    transition: opacity 0.22s ease;
     pointer-events: none;
-    filter: drop-shadow(0 0 3px rgba(212, 175, 55, 0.35));
+    opacity: 0;
   }
 
-  .services-btn:hover::before {
+  .services-btn::before {
+    border: 1px solid transparent;
+    border-radius: inherit;
+    border-image-slice: 1;
+    border-image-source: radial-gradient(
+      68px circle at var(--mx, 50%) var(--my, 50%),
+      rgba(255, 225, 140, 1) 0%,
+      rgba(212, 175, 55, 0.95) 22%,
+      rgba(212, 102, 55, 0.55) 45%,
+      rgba(212, 102, 55, 0.12) 62%,
+      transparent 78%
+    );
+    transition: opacity 0.25s ease;
+  }
+
+  .services-btn::after {
+    border: 1px solid transparent;
+    border-radius: inherit;
+    border-image-slice: 1;
+    border-image-source: radial-gradient(
+      78px circle at var(--mx, 50%) var(--my, 50%),
+      rgba(212, 175, 55, 0.55) 0%,
+      rgba(212, 102, 55, 0.22) 42%,
+      transparent 72%
+    );
+    filter: blur(2px);
+    transition: opacity 0.25s ease;
+  }
+
+  .services-btn:hover::before,
+  .services-btn:hover::after {
     opacity: 1;
   }
 
@@ -614,8 +638,12 @@
       padding-top: 0;
     }
 
-    .intro-card { width: 100%; padding: 1.6rem 1.4rem; }
-    .intro-card p { font-size: 0.95rem; line-height: 1.65; }
+    .intro-card { width: 100%; padding: 0; }
+    .intro-card p {
+      font-size: clamp(1.1rem, 5.2vw, 2rem);
+      line-height: 1.08;
+      max-width: 30ch;
+    }
 
     .gallery-grid {
       width: min(94%, 760px);
@@ -669,8 +697,11 @@
   @media (max-width: 420px) {
     .gallery { padding: 0 0 5.5rem 0; }
     .header-title-wrap { padding: 1.1rem 1rem 0.85rem; }
-    .intro-card { padding: 1.25rem 1.05rem; }
-    .intro-card p { font-size: 0.86rem; line-height: 1.55; }
+    .intro-card { padding: 0; }
+    .intro-card p {
+      font-size: clamp(1rem, 5vw, 1.5rem);
+      line-height: 1.08;
+    }
     .gallery-grid { width: min(94%, 420px); gap: 0.65rem; }
     .card-image-wrapper { top: -8%; height: 116%; }
     .card:nth-child(1) .card-image-wrapper,

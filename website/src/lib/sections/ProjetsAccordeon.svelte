@@ -329,6 +329,7 @@
   }
 
   .nav-btn {
+    font-family: "General Sans", sans-serif;
     position: relative;
     height: 40px;
     display: inline-flex;
@@ -336,19 +337,15 @@
     justify-content: center;
     padding: 0 1.5rem;
     font-size: 0.9rem;
-    font-family: "General Sans", sans-serif;
     white-space: nowrap;
     color: inherit;
-    border: none;
+    border: 1px solid rgba(255, 255, 255, 0.15);
     cursor: pointer;
-    background: rgba(255, 255, 255, 0.15);
-    backdrop-filter: blur(6px);
-    -webkit-backdrop-filter: blur(6px);
-    border-radius: 3px;
-    box-shadow:
-      0 6px 8px rgba(0, 0, 0, 0.04),
-      inset 0 1px 0 rgba(255, 255, 255, 0.08),
-      inset 0 -1px 1px rgba(0, 0, 0, 0.08);
+    background: rgba(255, 255, 255, 0.10);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-radius: 2px;
+    box-shadow: 0 6px 8px rgba(0, 0, 0, 0.04);
     transition:
       transform 1.2s cubic-bezier(.22,.61,.36,1),
       box-shadow 1.2s cubic-bezier(.22,.61,.36,1),
@@ -366,7 +363,9 @@
   .nav-btn-text {
     display: block;
     transform: translateY(0%);
-    transition: transform 0.45s cubic-bezier(.22,.61,.36,1);
+    transition:
+      transform 0.45s cubic-bezier(.22,.61,.36,1),
+      opacity 0.28s ease;
   }
 
   .nav-btn-flip::after {
@@ -376,7 +375,9 @@
     top: 0;
     line-height: 1.2em;
     transform: translateY(100%);
-    transition: transform 0.45s cubic-bezier(.22,.61,.36,1);
+    transition:
+      transform 0.45s cubic-bezier(.22,.61,.36,1),
+      opacity 0.28s ease;
     white-space: nowrap;
     color: inherit;
   }
@@ -389,35 +390,48 @@
     transform: translateY(0%);
   }
 
-  .nav-btn::before {
+  .nav-btn::before,
+  .nav-btn::after {
     content: "";
     position: absolute;
-    inset: 0;
+    inset: -1px;
     border-radius: inherit;
-    padding: 1px;
-    background: radial-gradient(
-      80px circle at var(--mx, 50%) var(--my, 50%),
-      rgba(212, 175, 55, 0.95),
-      rgba(212, 102, 55, 0.45) 40%,
-      transparent 75%
-    );
-    -webkit-mask:
-      linear-gradient(#000 0 0) content-box,
-      linear-gradient(#000 0 0);
-    -webkit-mask-composite: xor;
-    mask-composite: exclude;
-    opacity: 0;
-    transition: opacity 0.22s ease;
     pointer-events: none;
-    filter: drop-shadow(0 0 3px rgba(212, 175, 55, 0.35));
+    opacity: 0;
   }
 
-  .nav-btn:hover::before {
+  .nav-btn::before {
+    border: 1px solid transparent;
+    border-radius: inherit;
+    border-image-slice: 1;
+    border-image-source: radial-gradient(
+      68px circle at var(--mx, 50%) var(--my, 50%),
+      rgba(255, 225, 140, 1) 0%,
+      rgba(212, 175, 55, 0.95) 22%,
+      rgba(212, 102, 55, 0.55) 45%,
+      rgba(212, 102, 55, 0.12) 62%,
+      transparent 78%
+    );
+    transition: opacity 0.25s ease;
+  }
+
+  .nav-btn::after {
+    border: 1px solid transparent;
+    border-radius: inherit;
+    border-image-slice: 1;
+    border-image-source: radial-gradient(
+      78px circle at var(--mx, 50%) var(--my, 50%),
+      rgba(212, 175, 55, 0.55) 0%,
+      rgba(212, 102, 55, 0.22) 42%,
+      transparent 72%
+    );
+    filter: blur(2px);
+    transition: opacity 0.25s ease;
+  }
+
+  .nav-btn:hover::before,
+  .nav-btn:hover::after {
     opacity: 1;
-  }
-
-  .cta-btn:hover {
-    background: rgba(255, 255, 255, 0.2);
   }
 
   @media (max-width: 1100px) {

@@ -18,7 +18,29 @@
   const finalText =
     "Nous concevons des identités, des expériences et des univers visuels pensés pour marquer durablement les esprits.";
 
-  const letters = finalText.split("");
+  const words = finalText.split(" ");
+
+  let charCount = 0;
+  const totalChars = finalText.replace(/\s/g, "").length;
+  const halfChars = totalChars / 2;
+
+  let grayStartsAtWord = words.length;
+
+  for (let w = 0; w < words.length; w++) {
+    const nextCount = charCount + words[w].length;
+    if (nextCount >= halfChars) {
+      grayStartsAtWord = w + 1;
+      break;
+    }
+    charCount = nextCount;
+  }
+
+  const wordOffsets = [];
+  let runningOffset = 0;
+  for (const word of words) {
+    wordOffsets.push(runningOffset);
+    runningOffset += word.length;
+  }
 
   const clamp = (v, min = 0, max = 1) => Math.max(min, Math.min(max, v));
   const lerp = (a, b, t) => a + (b - a) * t;
@@ -106,7 +128,7 @@
   $: rightX = lerp(rightStartX, rightEndX, smoothMerge);
 
   function letterOpacity(i) {
-    return clamp(textReveal * 1.16 - i * 0.022, 0, 1);
+    return clamp(textReveal * 1.3 - i * 0.022, 0, 1);
   }
 
   function letterY(i) {
@@ -148,21 +170,24 @@
 
   <section class="after-section" bind:this={afterSection}>
     <div class="after-grid">
-     <div
-  class="after-text"
-  style={`opacity:${lerp(0.18, 1, textReveal)}; transform: translate3d(${lerp(24, 0, textReveal)}px,0,0);`}
->
-  <h2 aria-label={finalText}>
-    {#each letters as letter, i}
-      <span
-        class:muted={i >= Math.ceil(letters.length / 2)}
-        style={`opacity:${clamp(0.14 + letterOpacity(i), 0, 1)}; transform: translate3d(0,${letterY(i)}px,0);`}
+      <div
+        class="after-text"
+        style={`transform: translate3d(${lerp(24, 0, textReveal)}px,0,0);`}
       >
-        {letter === " " ? "\u00A0" : letter}
-      </span>
-    {/each}
-  </h2>
-</div>
+        <h2 aria-label={finalText}>
+          {#each words as word, w}
+            <span class="word" class:muted-word={w >= grayStartsAtWord}>
+              {#each word.split("") as letter, i}
+                <span
+                  style={`opacity:${clamp(0.78 + letterOpacity(wordOffsets[w] + i) * 0.22, 0, 1)}; transform: translate3d(0,${letterY(wordOffsets[w] + i)}px,0);`}
+                >
+                  {letter}
+                </span>
+              {/each}
+            </span>{#if w < words.length - 1}<span class="space">&nbsp;</span>{/if}
+          {/each}
+        </h2>
+      </div>
 
       <div
         class="after-image"
@@ -179,7 +204,7 @@
     position: relative;
     width: 100%;
     background: #000;
-    color: #fff;
+    color: #f4efe6;
     overflow: clip;
   }
 
@@ -281,29 +306,38 @@
   .after-text {
     will-change: transform, opacity;
     width: 100%;
-  min-width: 0;
+    min-width: 0;
   }
 
-.after-text h2 {
-  margin: 0;
-  width: 100%;
-  max-width: 13ch;
-  font-family: "General Sans", sans-serif;
-  font-weight: 400;
-  font-size: clamp(1.9rem, 4.3vw, 4.8rem);
-  line-height: 0.98;
-  letter-spacing: -0.05em;
-  color: #fff;
-}
+  .after-text h2 {
+    margin: 0;
+    width: 100%;
+    max-width: 30ch;
+    font-family: "General Sans", sans-serif;
+    font-weight: 300;
+    font-size: clamp(1.3rem, 2.8vw, 2.8rem);
+    line-height: 1;
+    letter-spacing: -0.05em;
+    color: #fff;
+  }
 
-  .after-text h2 span {
+  .word {
+    display: inline-block;
+    white-space: nowrap;
+  }
+
+  .word span {
     display: inline-block;
     color: #fff;
     will-change: transform, opacity;
   }
 
-  .after-text h2 span.muted {
-    color: rgba(255, 255, 255, 0.42);
+  .word.muted-word span {
+    color: rgba(255, 255, 255, 0.7);
+  }
+
+  .space {
+    display: inline;
   }
 
   .after-image {
@@ -366,9 +400,9 @@
     }
 
     .after-text h2 {
-      font-size: clamp(1.12rem, 6.6vw, 2rem);
+      font-size: clamp(1rem, 5.8vw, 1.7rem);
       line-height: 1.02;
-      max-width: 12ch;
+      max-width: 14ch;
     }
 
     .after-image {
