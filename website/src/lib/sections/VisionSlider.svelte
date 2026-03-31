@@ -5,23 +5,23 @@
 
   // ── Data ───────────────────────────────────────────────────────────────────
   const quotes = [
-    { text: "Créer avec intention, toujours.",                       author: "Aboreto" },
-    { text: "La vision précède la matière.",                         author: "Aboreto" },
-    { text: "Chaque détail raconte une histoire.",                   author: "Aboreto" },
-    { text: "Le silence est une forme de design.",                   author: "Aboreto" },
+    { text: "Créer avec intention, toujours.",                      author: "Agence 3 Terres" },
+    { text: "La vision précède la matière.",                        author: "Agence 3 Terres" },
+    { text: "Chaque détail raconte une histoire.",                  author: "Agence 3 Terres" },
+    { text: "Le silence est une forme de design.",                  author: "Agence 3 Terres" },
     { text: "Je ne perds jamais, soit je gagne, soit j'apprends.",  author: "Nelson Mandela" },
-    { text: "La profondeur crée l'émotion.",                        author: "Aboreto" },
+    { text: "La profondeur crée l'émotion.",                        author: "Agence 3 Terres" },
   ];
 
   // ── Carousel — exactement ton original ────────────────────────────────────
-  let section;          // div vide bind (utilisé par ton original pour sectionIsNearViewport)
-  let current   = 0;
+  let section;
+  let current = 0;
   const angleStep = 360 / quotes.length;
-  let radius    = 540;
+  let radius = 540;
   const radiusDesktop = 540;
-  let isMobile  = false;
-  let startX    = 0;
-  let deltaX    = 0;
+  let isMobile = false;
+  let startX = 0;
+  let deltaX = 0;
 
   function next() { current = (current + 1) % quotes.length; }
   function prev() { current = (current - 1 + quotes.length) % quotes.length; }
@@ -53,14 +53,15 @@
     if (isMobile) return;
     const rect = sectionEl.getBoundingClientRect();
     const x = e.clientX - rect.left;
-    if (x < rect.width / 2) prev(); else next();
+    if (x < rect.width / 2) prev();
+    else next();
   }
 
   function touchStart(e) { if (!isMobile) return; startX = e.touches[0].clientX; }
   function touchMove(e)  { if (!isMobile) return; deltaX = e.touches[0].clientX - startX; }
   function touchEnd() {
     if (!isMobile) return;
-    if (deltaX >  60) prev();
+    if (deltaX > 60) prev();
     if (deltaX < -60) next();
     deltaX = 0;
   }
@@ -69,20 +70,18 @@
   let sectionEl;
   let bgEl;
 
-  // ── Parallax engine (rAF + lerp — seule modification vs ton original) ─────
+  // ── Parallax engine ────────────────────────────────────────────────────────
   let currentScrollY = 0;
-  let rafId          = null;
+  let rafId = null;
   let sectionVisible = false;
 
-  // lerp state
-  let curOffset  = 0;
+  let curOffset = 0;
   let curOpacity = 0;
 
-  const clamp  = (v, lo, hi) => Math.min(Math.max(v, lo), hi);
-  const lerp   = (a, b, t)   => a + (b - a) * t;
-  const round3 = (v)         => Math.round(v * 1000) / 1000;
+  const clamp = (v, lo, hi) => Math.min(Math.max(v, lo), hi);
+  const lerp = (a, b, t) => a + (b - a) * t;
+  const round3 = (v) => Math.round(v * 1000) / 1000;
 
-  // Callback scrollEngine : stocke uniquement, zéro DOM write
   function updateParallax(scrollY) {
     currentScrollY = scrollY;
   }
@@ -93,31 +92,27 @@
     const winH = window.innerHeight;
     const rect = sectionEl.getBoundingClientRect();
 
-    // Culling
     if (rect.bottom < -400 || rect.top > winH + 400) {
       rafId = requestAnimationFrame(tick);
       return;
     }
 
-    // Cibles — logique identique à ton updateParallax original
-    const center         = rect.top + rect.height / 2;
+    const center = rect.top + rect.height / 2;
     const screenProgress = center / winH;
 
     let tgtOpacity;
-    if      (screenProgress > 0.85) tgtOpacity = 1 - (screenProgress - 0.85) * 6;
+    if (screenProgress > 0.85) tgtOpacity = 1 - (screenProgress - 0.85) * 6;
     else if (screenProgress < 0.15) tgtOpacity = screenProgress * 6;
-    else                            tgtOpacity = 1;
+    else tgtOpacity = 1;
     tgtOpacity = clamp(tgtOpacity, 0, 1);
 
     const tgtOffset = rect.top * -4 * 0.08;
 
-    // Lerp
     const factor = isMobile ? 0.10 : 0.14;
     curOpacity = lerp(curOpacity, tgtOpacity, factor);
-    curOffset  = lerp(curOffset,  tgtOffset,  factor);
+    curOffset = lerp(curOffset, tgtOffset, factor);
 
-    // Batch write
-    bgEl.style.opacity   = round3(curOpacity).toString();
+    bgEl.style.opacity = round3(curOpacity).toString();
     bgEl.style.transform = `translate3d(0,${round3(curOffset)}px,0)`;
 
     rafId = requestAnimationFrame(tick);
@@ -126,18 +121,16 @@
   function startLoop() { if (!rafId) rafId = requestAnimationFrame(tick); }
   function stopLoop()  { if (rafId) { cancelAnimationFrame(rafId); rafId = null; } }
 
-  // ── Resize — ton original + debounce ──────────────────────────────────────
   let resizeTimeout;
   function checkMobile() {
     isMobile = window.innerWidth <= 768;
-    radius   = isMobile ? 260 : radiusDesktop;
+    radius = isMobile ? 260 : radiusDesktop;
   }
   function handleResize() {
     clearTimeout(resizeTimeout);
     resizeTimeout = setTimeout(checkMobile, 120);
   }
 
-  // ── Lifecycle ──────────────────────────────────────────────────────────────
   let resizeObserver;
   let intersectionObserver;
 
@@ -178,24 +171,16 @@
   role="group"
   aria-label="Carrousel de citations"
   on:mousemove={handleZoneMove}
+  on:click={handleZoneClick}
   on:touchstart={touchStart}
   on:touchmove={touchMove}
   on:touchend={touchEnd}
 >
-  <button type="button" class="nav-zone nav-prev" aria-label="Citation précédente"
-    on:click={prev}
-    on:keydown={(e) => { if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') prev(); if (e.key === 'ArrowRight' || e.key === 'ArrowDown') next(); }}
-  ></button>
-  <button type="button" class="nav-zone nav-next" aria-label="Citation suivante"
-    on:click={next}
-    on:keydown={(e) => { if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') prev(); if (e.key === 'ArrowRight' || e.key === 'ArrowDown') next(); }}
-  ></button>
   <div class="bg" bind:this={bgEl} style="background-image:url('/images/photo.webp')"></div>
   <div class="overlay"></div>
 
   <div class="vision-header">
     <h2>Notre vision</h2>
-    <div class="line"></div>
     <p>Une collection de principes qui guident chacune de nos créations.</p>
   </div>
 
@@ -222,170 +207,184 @@
   </div>
 </section>
 
-<!-- Style 100% identique à ton original -->
 <style>
-.vision-section {
-position: relative;
-height: 140vh;
-width: 100vw;
-margin-left: calc(50% - 50vw);
-background:#000;
-overflow: hidden;
-display: flex;
-flex-direction: column;
-align-items: center;
-justify-content: center;
-}
-.nav-zone {
-position: absolute;
-top: 0;
-width: 50%;
-height: 100%;
-z-index: 2;
-background: none;
-border: none;
-padding: 0;
-cursor: pointer;
-opacity: 0;
-}
-.nav-prev { left: 0; }
-.nav-next { right: 0; }
-.bg {
-position: absolute;
-inset: 0;
-background-size: cover;
-background-position: right center;
-opacity: 0;
-will-change: transform, opacity;
-transform: translate3d(0,0,0);
-z-index: 1;
-}
-.vision-header {
-text-align: center;
-z-index: 3;
-margin-bottom: 0rem;
-}
-.vision-header h2 {
-font-family: "Titre";
-font-size: clamp(2.5rem, 4vw, 4rem);
-font-weight: 100;
-margin-bottom: 1.5rem;
-}
-.vision-header p {
-font-family: 'General Sans', sans-serif;
-font-size: 1rem;
-opacity: 0.65;
-line-height: 1.6;
-}
-.line {
-width: 120px;
-height: 1px;
-background: #fff;
-margin: 0 auto 2rem auto;
-}
-.carousel-wrapper {
-perspective: 2000px;
-width: 100%;
-height: 550px;
-position: relative;
-z-index: 3;
-}
-.carousel {
-width: 100%;
-height: 100%;
-position: absolute;
-transform-style: preserve-3d;
-transition: transform 1.6s cubic-bezier(.22,.61,.36,1);
-}
-.card {
-position: absolute;
-top: 50%;
-left: 50%;
-width: 500px;
-padding: 5.5rem;
-translate: -50% -50%;
-background: rgba(255,255,255,0.15);
-backdrop-filter: blur(10px);
--webkit-backdrop-filter: blur(10px);
-border-radius: 3px;
-box-shadow:
-0 8px 10px rgba(0,0,0,0.06),
-inset 0 0 0 0px rgba(255,255,255,0.4);
-transition: transform 1.6s cubic-bezier(.22,.61,.36,1),
-              opacity 1.2s ease;
-}
-.card::before {
-content: "";
-position: absolute;
-inset: -2px;
-border-radius: inherit;
-padding: 1px;
-background:
-radial-gradient(
-220px circle at var(--mx) var(--my),
-rgba(212,175,55,0.95),
-rgba(212,102,55,0.5) 40%,
-transparent 75%
-    );
--webkit-mask:
-linear-gradient(#000 0 0) content-box,
-linear-gradient(#000 0 0);
--webkit-mask-composite: xor;
-mask-composite: exclude;
-opacity: 0;
-transition: opacity 0.25s ease;
-pointer-events: none;
-filter: drop-shadow(0 0 12px rgba(212,175,55,0.5));
-}
-.card:hover::before {
-opacity: 1;
-}
-.quote {
-position: relative;
-text-align: center;
-}
-.quote p {
-font-family: 'General Sans', sans-serif;
-font-style: italic;
-font-size: 1.5rem;
-color: #fff;
-line-height: 1.6;
-}
-.mark {
-position: absolute;
-font-family: "Aboreto", serif;
-font-size: 3rem;
-opacity: 0.35;
-color: white;
-}
-.mark.top {
-top: -30px;
-left: -20px;
-}
-.mark.bottom {
-bottom: -40px;
-right: -20px;
-}
-.author {
-margin-top: 2rem;
-text-align: center;
-font-family: 'General Sans', sans-serif;
-font-size: 0.95rem;
-color: #9b9b9b;
-}
-@media (max-width: 768px) {
-.carousel-wrapper {
-height: 520px;
+  .vision-section {
+    position: relative;
+    height: 140vh;
+    width: 100vw;
+    margin-left: calc(50% - 50vw);
+    background: #000;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
   }
-.card {
-width: 62vw;
-padding: 6rem 2.5rem;
+
+  .bg {
+    position: absolute;
+    inset: 0;
+    background-size: cover;
+    background-position: right center;
+    opacity: 0;
+    will-change: transform, opacity;
+    transform: translate3d(0,0,0);
+    z-index: 1;
   }
-.quote p {
-font-size: 1.25rem;
+
+  .overlay {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    background: rgba(0, 0, 0, 0.42);
+    pointer-events: none;
   }
-.card::before {
-display: none;
+
+  .vision-header {
+    text-align: center;
+    z-index: 3;
+    margin-bottom: 0rem;
   }
-}
+
+  .vision-header h2 {
+    font-family: "Titre", serif;
+    font-size: clamp(2.5rem, 4vw, 4rem);
+    font-weight: 400;
+    margin-bottom: 1.5rem;
+    line-height: 0.96;
+    letter-spacing: -0.04em;
+    color: #f4efe6;
+  }
+
+  .vision-header p {
+    font-family: "General Sans", sans-serif;
+    font-size: 1rem;
+    font-weight: 300;
+    opacity: 0.65;
+    line-height: 1.6;
+    color: #fff;
+  }
+
+  .carousel-wrapper {
+    perspective: 2000px;
+    width: 100%;
+    height: 550px;
+    position: relative;
+    z-index: 3;
+  }
+
+  .carousel {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    transform-style: preserve-3d;
+    transition: transform 1.6s cubic-bezier(.22,.61,.36,1);
+  }
+
+  .card {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 500px;
+    padding: 5.5rem;
+    translate: -50% -50%;
+    background: rgba(255,255,255,0.15);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-radius: 3px;
+    box-shadow:
+      0 8px 10px rgba(0,0,0,0.06),
+      inset 0 0 0 0px rgba(255,255,255,0.4);
+    transition: transform 1.6s cubic-bezier(.22,.61,.36,1),
+                opacity 1.2s ease;
+  }
+
+  .card::before {
+    content: "";
+    position: absolute;
+    inset: -2px;
+    border-radius: inherit;
+    padding: 1px;
+    background:
+      radial-gradient(
+        220px circle at var(--mx) var(--my),
+        rgba(212,175,55,0.95),
+        rgba(212,102,55,0.5) 40%,
+        transparent 75%
+      );
+    -webkit-mask:
+      linear-gradient(#000 0 0) content-box,
+      linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    opacity: 0;
+    transition: opacity 0.25s ease;
+    pointer-events: none;
+    filter: drop-shadow(0 0 12px rgba(212,175,55,0.5));
+  }
+
+  .card:hover::before {
+    opacity: 1;
+  }
+
+  .quote {
+    position: relative;
+    text-align: center;
+  }
+
+  .quote p {
+    font-family: "Titre italic", serif;
+    font-style: italic;
+    font-weight: 100;
+    font-size: 1.5rem;
+    color: #fff;
+    line-height: 1.6;
+  }
+
+  .mark {
+    position: absolute;
+    font-family: "Titre", serif;
+    font-size: 3rem;
+    font-weight: 400;
+    opacity: 0.35;
+    color: white;
+  }
+
+  .mark.top {
+    top: -30px;
+    left: -20px;
+  }
+
+  .mark.bottom {
+    bottom: -40px;
+    right: -20px;
+  }
+
+  .author {
+    margin-top: 2rem;
+    text-align: center;
+    font-family: "General Sans", sans-serif;
+    font-size: 0.95rem;
+    font-weight: 300;
+    color: #9b9b9b;
+  }
+
+  @media (max-width: 768px) {
+    .carousel-wrapper {
+      height: 520px;
+    }
+
+    .card {
+      width: 62vw;
+      padding: 6rem 2.5rem;
+    }
+
+    .quote p {
+      font-size: 1.25rem;
+    }
+
+    .card::before {
+      display: none;
+    }
+  }
 </style>

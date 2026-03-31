@@ -340,15 +340,6 @@
   });
 </script>
 
-<svelte:head>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous" />
-  <link
-    href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&family=Cormorant+Garamond:ital,wght@1,400&display=swap"
-    rel="stylesheet"
-  />
-</svelte:head>
-
 <section
   class="lifestyles-section"
   class:dark-phase={darkPhase}
@@ -362,12 +353,12 @@
         <span class="title-accent">Serein Design</span>
       </h2>
 
-      <div class="controls">
-        <div class="select-copy" aria-label="Collection sélectionnée">
-          <span class="select-title">Horizon</span>
-          <span class="select-subtitle">Sleek, sophisticated design</span>
-        </div>
+      <p class="project-description">
+        Une direction plus raffinée, plus calme et plus contemporaine.
+        Un univers pensé pour installer une marque premium avec justesse.
+      </p>
 
+      <div class="controls">
         <div class="finish-card" aria-label="Choix de couleur">
           {#each finishes as finish, index (finish.color)}
             <button
@@ -390,7 +381,9 @@
         on:mousemove={handleProjectButtonMove}
         on:click={() => navigate("projet1")}
       >
-        Voir le projet
+        <span class="project-button-flip" data-text="Voir le projet">
+          <span class="project-button-text">Voir le projet</span>
+        </span>
       </button>
     </div>
   </div>
@@ -443,7 +436,7 @@
   }
 
   .lifestyles-section {
-    --bg: #f3efea;
+    --bg: #f4efe6;
     --bg-top: #f7f4ef;
     --text: #4e4741;
     --muted: #8d857d;
@@ -466,7 +459,7 @@
     padding-block: clamp(4.5rem, 9vw, 8.5rem);
     overflow: clip;
     background: var(--bg);
-    font-family: "Inter", sans-serif;
+    font-family: "General Sans", sans-serif;
     color: var(--text);
     contain: layout paint style;
     transition:
@@ -523,15 +516,16 @@
   }
 
   .title-main {
+    font-family: "Titre", serif;
+    font-weight: 400;
     font-size: clamp(2.8rem, 4.25vw, 3rem);
-    font-weight: 300;
     color: rgba(74, 67, 61, 0.96);
   }
 
   .title-accent {
-    font-family: "Cormorant Garamond", serif;
+    font-family: "Titre italic", serif;
     font-style: italic;
-    font-weight: 400;
+    font-weight: 100;
     font-size: clamp(2.9rem, 4.45vw, 4.15rem);
     color: rgba(79, 72, 66, 0.92);
   }
@@ -539,6 +533,19 @@
   .dark-phase .title-main,
   .dark-phase .title-accent {
     color: #fff;
+  }
+
+  .project-description {
+    margin: 0;
+    max-width: 30ch;
+    font-family: "General Sans", sans-serif;
+    font-weight: 300;
+    font-size: clamp(1.1rem, 1.6vw, 1.35rem);
+    line-height: 1.42;
+    letter-spacing: -0.02em;
+    text-align: center;
+    color: var(--panel-muted);
+    transition: color 520ms ease;
   }
 
   .controls {
@@ -549,7 +556,6 @@
     flex-wrap: wrap;
   }
 
-  .select-copy,
   .finish-card {
     border: 1px solid var(--panel-border);
     background: var(--panel-bg);
@@ -563,34 +569,9 @@
       transform 140ms ease;
   }
 
-  .select-copy,
   .finish-card {
     min-height: 2.35rem;
     border-radius: 7px;
-  }
-
-  .select-copy {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.7rem;
-    padding: 0.45rem 0.85rem 0.48rem;
-  }
-
-  .select-title {
-    font-size: 0.86rem;
-    font-weight: 500;
-    color: var(--panel-text);
-    line-height: 1;
-    transition: color 520ms ease;
-  }
-
-  .select-subtitle {
-    font-size: 0.78rem;
-    font-weight: 400;
-    color: var(--panel-muted);
-    line-height: 1;
-    white-space: nowrap;
-    transition: color 520ms ease;
   }
 
   .finish-card {
@@ -641,8 +622,8 @@
     border-color: rgba(255, 255, 255, 0.45);
   }
 
-  /* ── Bouton projet : même logique que header page travail ───────────────── */
   .project-button {
+    font-family: "General Sans", sans-serif;
     position: relative;
     min-height: 2.35rem;
     height: 40px;
@@ -650,55 +631,104 @@
     align-items: center;
     justify-content: center;
     padding: 0 1.5rem;
-    border-radius: 3px;
-    font-family: "Inter", sans-serif;
-    font-size: 0.8rem;
-    font-weight: 500;
-    letter-spacing: 0.04em;
+    font-size: 0.9rem;
     white-space: nowrap;
     color: var(--panel-text);
-    border: none;
+    border: 1px solid rgba(255, 255, 255, 0.15);
     cursor: pointer;
-    background: rgba(255, 255, 255, 0.15);
+    background: rgba(255, 255, 255, 0.10);
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
-    box-shadow:
-      0 8px 10px rgba(0, 0, 0, 0.06),
-      inset 0 0 0 0px rgba(255, 255, 255, 0.4);
+    border-radius: 2px;
+    box-shadow: 0 6px 8px rgba(0, 0, 0, 0.04);
     transition:
+      transform 1.2s cubic-bezier(.22,.61,.36,1),
+      box-shadow 1.2s cubic-bezier(.22,.61,.36,1),
       background 1.2s cubic-bezier(.22,.61,.36,1),
       color 520ms ease,
-      box-shadow 1.2s cubic-bezier(.22,.61,.36,1),
-      border-color 520ms ease,
-      transform 1.2s cubic-bezier(.22,.61,.36,1);
+      border-color 520ms ease;
     -webkit-tap-highlight-color: transparent;
   }
 
-  .project-button::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    border-radius: inherit;
-    padding: 1px;
-    background: radial-gradient(
-      80px circle at var(--mx, 50%) var(--my, 50%),
-      rgba(210, 210, 230, 0.98),
-      rgba(130, 110, 220, 0.7) 35%,
-      rgba(35, 30, 95, 0.55) 58%,
-      transparent 75%
-    );
-    -webkit-mask:
-      linear-gradient(#000 0 0) content-box,
-      linear-gradient(#000 0 0);
-    -webkit-mask-composite: xor;
-    mask-composite: exclude;
-    opacity: 0;
-    transition: opacity 0.25s ease;
-    pointer-events: none;
-    filter: drop-shadow(0 0 4px rgba(150, 140, 230, 0.4));
+  .project-button-flip {
+    position: relative;
+    display: block;
+    overflow: hidden;
+    height: 1.2em;
+    line-height: 1.2em;
   }
 
-  .project-button:hover::before {
+  .project-button-text {
+    display: block;
+    transform: translateY(0%);
+    transition:
+      transform 0.45s cubic-bezier(.22,.61,.36,1),
+      opacity 0.28s ease;
+  }
+
+  .project-button-flip::after {
+    content: attr(data-text);
+    position: absolute;
+    left: 0;
+    top: 0;
+    line-height: 1.2em;
+    transform: translateY(100%);
+    transition:
+      transform 0.45s cubic-bezier(.22,.61,.36,1),
+      opacity 0.28s ease;
+    white-space: nowrap;
+    color: inherit;
+  }
+
+  .project-button:hover .project-button-text {
+    transform: translateY(-100%);
+  }
+
+  .project-button:hover .project-button-flip::after {
+    transform: translateY(0%);
+  }
+
+  .project-button::before,
+  .project-button::after {
+    content: "";
+    position: absolute;
+    inset: -1px;
+    border-radius: inherit;
+    pointer-events: none;
+    opacity: 0;
+  }
+
+  .project-button::before {
+    border: 1px solid transparent;
+    border-radius: inherit;
+    border-image-slice: 1;
+    border-image-source: radial-gradient(
+      68px circle at var(--mx, 50%) var(--my, 50%),
+      rgba(235, 232, 255, 1) 0%,
+      rgba(210, 210, 230, 0.98) 22%,
+      rgba(130, 110, 220, 0.62) 45%,
+      rgba(35, 30, 95, 0.14) 62%,
+      transparent 78%
+    );
+    transition: opacity 0.25s ease;
+  }
+
+  .project-button::after {
+    border: 1px solid transparent;
+    border-radius: inherit;
+    border-image-slice: 1;
+    border-image-source: radial-gradient(
+      78px circle at var(--mx, 50%) var(--my, 50%),
+      rgba(150, 140, 230, 0.42) 0%,
+      rgba(130, 110, 220, 0.18) 42%,
+      transparent 72%
+    );
+    filter: blur(2px);
+    transition: opacity 0.25s ease;
+  }
+
+  .project-button:hover::before,
+  .project-button:hover::after {
     opacity: 1;
   }
 
@@ -920,12 +950,16 @@
       font-size: clamp(2.1rem, 10.3vw, 3.15rem);
     }
 
+    .project-description {
+      font-size: clamp(1rem, 4.2vw, 1.2rem);
+      max-width: 28ch;
+    }
+
     .controls {
       width: 100%;
       gap: 0.6rem;
     }
 
-    .select-copy,
     .finish-card,
     .project-button {
       width: min(100%, 22rem);
@@ -971,14 +1005,14 @@
     .lifestyles-section,
     .title-main,
     .title-accent,
-    .select-copy,
     .finish-card,
     .project-button,
-    .select-title,
-    .select-subtitle,
+    .project-button-text,
+    .project-button-flip::after,
     .swatch,
     .card img,
-    .card-info {
+    .card-info,
+    .project-description {
       transition: none;
     }
   }

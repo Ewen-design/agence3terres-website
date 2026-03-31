@@ -229,7 +229,7 @@
   -webkit-backdrop-filter: blur(10px);
 
   box-shadow:
-    0 8px 10px rgba(0, 0, 0, 0.06),
+    0 8px 10px rgba(0, 0, 0, 0.16),
     inset 0 0 0 1px rgba(255, 255, 255, 0.3);
 
   display: flex;
