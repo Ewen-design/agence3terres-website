@@ -49,7 +49,8 @@
     syncTimeout = setTimeout(() => { runSync(); }, 120);
   }
 
-  $: hideFooter = ["/projet1", "/projet2", "/contact"].includes($page.url.pathname);
+$: pathname = $page.url.pathname.replace(/\/+$/, "") || "/";
+$: hideFooter = ["/projet1", "/projet2", "/contact"].includes(pathname);
   $: isTravailPage = $page.url.pathname === "/travail";
 
   function easeInOutCubic(t) {

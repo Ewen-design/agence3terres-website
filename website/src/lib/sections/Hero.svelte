@@ -1,5 +1,5 @@
 <script>
-  import { onMount, onDestroy } from "svelte";
+  import { onMount } from "svelte";
 
   let pinSection;
   let afterSection;
@@ -14,6 +14,13 @@
   let rightW = 0;
 
   let ticking = false;
+
+  let introStarted = false;
+  let introVisible = false;
+  let hintVisible = false;
+
+  let fallbackTimeout;
+  let hintTimeout;
 
   const finalText =
     "Nous concevons des identités, des expériences et des univers visuels pensés pour marquer durablement les esprits.";
@@ -87,24 +94,51 @@
     requestAnimationFrame(updateScrollState);
   }
 
+  function startIntro() {
+    if (introStarted) return;
+    introStarted = true;
+
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        introVisible = true;
+
+        hintTimeout = setTimeout(() => {
+          hintVisible = true;
+        }, 220);
+      });
+    });
+  }
+
   onMount(() => {
     const updateAll = () => {
       measureTitles();
       updateScrollState();
     };
 
+    const handlePreloaderDone = () => {
+      startIntro();
+    };
+
     updateAll();
+    requestAnimationFrame(updateAll);
 
     window.addEventListener("scroll", requestUpdate, { passive: true });
     window.addEventListener("resize", updateAll, { passive: true });
     window.addEventListener("orientationchange", updateAll, { passive: true });
+    window.addEventListener("preloader:done", handlePreloaderDone);
 
-    requestAnimationFrame(updateAll);
+    // fallback si jamais l’event n’est pas encore branché
+    fallbackTimeout = setTimeout(() => {
+      startIntro();
+    }, 1800);
 
     return () => {
       window.removeEventListener("scroll", requestUpdate);
       window.removeEventListener("resize", updateAll);
       window.removeEventListener("orientationchange", updateAll);
+      window.removeEventListener("preloader:done", handlePreloaderDone);
+      clearTimeout(fallbackTimeout);
+      clearTimeout(hintTimeout);
     };
   });
 
@@ -126,6 +160,9 @@
 
   $: leftX = lerp(leftStartX, leftEndX, smoothMerge);
   $: rightX = lerp(rightStartX, rightEndX, smoothMerge);
+
+  $: hintScrollFade = 1 - easeOutCubic(clamp(heroProgress / 0.03, 0, 1));
+  $: scrollHintOpacity = hintVisible ? hintScrollFade : 0;
 
   function letterOpacity(i) {
     return clamp(textReveal * 1.3 - i * 0.022, 0, 1);
@@ -149,21 +186,32 @@
       </div>
 
       <div class="titles-layer">
-        <span
-          class="title-left"
-          bind:this={leftTitleEl}
-          style={`transform: translate3d(${leftX}px,-50%,0);`}
-        >
-          Agence
-        </span>
+      <span
+  class="title-left"
+  class:intro-visible={introVisible}
+  bind:this={leftTitleEl}
+  style={`--title-x:${leftX}px; transform: translate3d(${leftX}px,-50%,0);`}
+>
+  Agence
+</span>
 
-        <span
-          class="title-right"
-          bind:this={rightTitleEl}
-          style={`transform: translate3d(${rightX}px,-50%,0);`}
+<span
+  class="title-right"
+  class:intro-visible={introVisible}
+  bind:this={rightTitleEl}
+  style={`--title-x:${rightX}px; transform: translate3d(${rightX}px,-50%,0);`}
+>
+  3 Terres
+</span>
+
+        <div
+          class="scroll-hint"
+          class:hint-visible={hintVisible}
+          aria-hidden="true"
+          style={`opacity:${scrollHintOpacity}; transform: translate3d(-50%, ${lerp(14, 0, scrollHintOpacity)}px, 0); filter: blur(${lerp(10, 0, scrollHintOpacity)}px);`}
         >
-          3 Terres
-        </span>
+          Scroll pour découvrir
+        </div>
       </div>
     </div>
   </section>
@@ -269,9 +317,10 @@
     line-height: 0.94;
     letter-spacing: -0.05em;
     white-space: nowrap;
-    will-change: transform;
+    will-change: transform, opacity, filter;
     font-size: clamp(2.9rem, 7.8vw, 8.8rem);
-    transform: translate3d(0, -50%, 0);
+    opacity: 0;
+    filter: blur(18px);
     backface-visibility: hidden;
     -webkit-backface-visibility: hidden;
   }
@@ -285,6 +334,32 @@
     font-family: "Titre italic", serif;
     font-style: italic;
     font-weight: 100;
+  }
+
+  .title-left.intro-visible {
+    animation: titleEnterLeft 1.25s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  }
+
+  .title-right.intro-visible {
+    animation: titleEnterRight 1.25s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  }
+
+  .scroll-hint {
+    position: absolute;
+    left: 50%;
+    bottom: clamp(1.3rem, 3vw, 2.4rem);
+    font-family: "General Sans", sans-serif;
+    font-size: clamp(0.82rem, 0.95vw, 0.98rem);
+    font-weight: 300;
+    letter-spacing: 0.04em;
+    color: rgba(255, 255, 255, 0.76);
+    white-space: nowrap;
+    will-change: transform, opacity, filter;
+    opacity: 0;
+  }
+
+  .hint-visible {
+    transition: opacity 0.7s cubic-bezier(0.22, 1, 0.36, 1);
   }
 
   .after-section {
@@ -357,6 +432,32 @@
     transform: translateZ(0);
   }
 
+@keyframes titleEnterLeft {
+  from {
+    opacity: 0;
+    filter: blur(18px);
+    transform: translate3d(calc(var(--title-x, 0px) - 42px), -50%, 0);
+  }
+  to {
+    opacity: 1;
+    filter: blur(0);
+    transform: translate3d(var(--title-x, 0px), -50%, 0);
+  }
+}
+
+@keyframes titleEnterRight {
+  from {
+    opacity: 0;
+    filter: blur(18px);
+    transform: translate3d(calc(var(--title-x, 0px) + 42px), -50%, 0);
+  }
+  to {
+    opacity: 1;
+    filter: blur(0);
+    transform: translate3d(var(--title-x, 0px), -50%, 0);
+  }
+}
+
   @media (max-width: 900px) {
     .pin-section {
       height: 235vh;
@@ -376,6 +477,11 @@
     .after-text h2 {
       font-size: clamp(1.3rem, 6.8vw, 2.7rem);
       max-width: 11ch;
+    }
+
+    .scroll-hint {
+      bottom: 1.25rem;
+      font-size: 0.82rem;
     }
   }
 
@@ -408,6 +514,12 @@
     .after-image {
       aspect-ratio: 0.82 / 1.04;
     }
+
+    .scroll-hint {
+      bottom: 1.05rem;
+      font-size: 0.78rem;
+      letter-spacing: 0.03em;
+    }
   }
 
   @media (prefers-reduced-motion: reduce) {
@@ -415,11 +527,14 @@
     .hero-dark-layer,
     .title-left,
     .title-right,
+    .scroll-hint,
     .after-text,
     .after-image,
     .after-text h2 span {
       transition: none !important;
       animation: none !important;
+      filter: none !important;
+      opacity: 1 !important;
     }
   }
 </style>
