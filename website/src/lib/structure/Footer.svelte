@@ -1,262 +1,329 @@
 <script>
-  import { onMount, onDestroy } from "svelte";
+  import { onMount } from "svelte";
   import { browser } from "$app/environment";
-  import { registerParallax, unregisterParallax } from "../scrollEngine.js";
 
-  let email = "";
-  let bgBrand;
-
-  function submit() {
-    console.log("Email submitted:", email);
-  }
-
-  function clamp(v, min, max) {
-    return Math.max(min, Math.min(v, max));
-  }
-
-  function updateParallax() {
-    if (!bgBrand) return;
-
-    const rect = bgBrand.getBoundingClientRect();
-    const winH = window.innerHeight;
-    const center = rect.top + rect.height / 2;
-    const progress = clamp((center - winH / 2) / winH, -1, 1);
-
-    const speed = -300;
-    const offset = progress * speed;
-
-    bgBrand.style.transform = `translate(-50%, ${offset}px)`;
-  }
+  let footerEl;
+  let isVisible = false;
 
   onMount(() => {
-    registerParallax(updateParallax);
-  });
+    if (!browser || !footerEl) return;
 
-  onDestroy(() => {
-    if (!browser) return;
-    unregisterParallax(updateParallax);
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        isVisible = entry.isIntersecting;
+      },
+      {
+        threshold: 0.18,
+        rootMargin: "0px 0px -8% 0px"
+      }
+    );
+
+    observer.observe(footerEl);
+
+    return () => {
+      observer.disconnect();
+    };
   });
 </script>
 
-<footer class="footer">
-  <div class="bg-brand" bind:this={bgBrand}>3 TERRES</div>
+<footer class="footer" class:is-visible={isVisible} bind:this={footerEl}>
+  <div class="footer-bg"></div>
+  <div class="footer-overlay"></div>
 
-  <div class="container">
+  <div class="footer-content">
+    <div class="text-block">
+      <h2 class="line-1">Parlons de votre</h2>
+      <h2 class="line-2">prochain projet.</h2>
+    </div>
 
-    <div class="left">
-      <h2 class="brand">3 Terres</h2>
-      <p class="tagline">
-        Studio créatif explorant la matière, la lumière et l’espace.
+    <div class="bottom-block">
+      <img src="/images/logo-icon.png" alt="Logo Agence 3 Terres" class="logo" />
+
+      <div class="contact-block">
+        <span class="contact-title">Contact</span>
+
+        <div class="icons">
+          <a href="/" class="icon-link" aria-label="Instagram">
+            <span class="icon-box">
+              <img src="/images/instagram.png" alt="Instagram" class="icon icon-instagram" />
+            </span>
+          </a>
+
+          <a href="/" class="icon-link" aria-label="Facebook">
+            <span class="icon-box">
+              <img src="/images/facebook.png" alt="Facebook" class="icon icon-facebook" />
+            </span>
+          </a>
+
+          <a href="/" class="icon-link" aria-label="X">
+            <span class="icon-box">
+              <img src="/images/X.png" alt="X" class="icon icon-x" />
+            </span>
+          </a>
+
+          <a href="/contact" class="icon-link" aria-label="Mail">
+            <span class="icon-box">
+              <img src="/images/mail.png" alt="Mail" class="icon icon-mail" />
+            </span>
+          </a>
+        </div>
+      </div>
+
+      <p class="legal">
+      Agence 3 Terres — Tous droits réservés — Mentions légales
       </p>
-
-      <div class="socials links-group">
-        <a data-cursor="view" href="/">Instagram</a>
-        <a data-cursor="view" href="/">Behance</a>
-        <a data-cursor="view" href="/">LinkedIn</a>
-        <a data-cursor="view" href="/">Pinterest</a>
-      </div>
     </div>
-
-    <div class="nav links-group">
-      <div>
-        <h4>Navigation</h4>
-        <a data-cursor="view" href="/">Accueil</a>
-        <a data-cursor="view" href="/">Projets</a>
-        <a data-cursor="view" href="/">À propos</a>
-        <a data-cursor="view" href="/">Services</a>
-      </div>
-
-      <div>
-        <h4>Infos</h4>
-        <a data-cursor="view" href="/">Contact</a>
-        <a data-cursor="view" href="/">Mentions légales</a>
-        <a data-cursor="view" href="/">Confidentialité</a>
-      </div>
-    </div>
-
-    <div class="newsletter">
-      <h3>Recevez nos actualités</h3>
-      <p>Inspiration, projets et nouvelles créations.</p>
-
-      <div class="input-row">
-        <input type="email" placeholder="Votre email" bind:value={email} />
-        <button data-cursor="view" on:click={submit}>→</button>
-      </div>
-    </div>
-
-  </div>
-
-  <div class="bottom">
-    <span>© 2026 3 Terres — Tous droits réservés</span>
-    <span class="credit">Design & Code</span>
   </div>
 </footer>
 
 <style>
-.footer {
-  position: relative;
-  width: 100vw;
-  margin-left: 50%;
-  transform: translateX(-50%);
-  color: #f5f5f5;
-  padding: 10vw 0 4vw; /* padding vertical uniquement */
-  overflow: hidden;
-
-  /* 🌑 dégradé noir plus long */
-  background: linear-gradient(
-    to bottom,
-    #000 0%,
-    #000 35%,
-    #0e0e0e 65%,
-    #0e0e0e 100%
-  );
-}
-
-/* vraie marge interne gauche/droite */
-.container {
-  position: relative;
-  z-index: 2;
-  display: grid;
-  grid-template-columns: 1.2fr 1fr 1.2fr;
-  gap: 6vw;
-  width: min(1400px, 88%);
-  margin: 0 auto;
-}
-
-.bg-brand {
-  position: absolute;
-  bottom: -3vw;
-  left: 50%;
-  transform: translate(-50%, 0);
-  font-size: 18vw;
-  font-weight: 700;
-  letter-spacing: -0.04em;
-  color: rgba(255,255,255,0.03);
-  white-space: nowrap;
-  pointer-events: none;
-  user-select: none;
-  will-change: transform;
-}
-
-.left {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-}
-
-.brand {
-  font-family: "Aboreto", serif;
-  font-size: 2rem;
-  margin-bottom: 15px;
-}
-
-.tagline {
-  opacity: 0.7;
-  line-height: 1.6;
-  max-width: 280px;
-  margin-bottom: 30px;
-}
-
-.socials {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.nav {
-  display: flex;
-  gap: 4vw;
-}
-
-.nav div {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.nav h4 {
-  font-size: 0.9rem;
-  margin-bottom: 14px;
-  opacity: 0.5;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-}
-
-.links-group a {
-  text-decoration: none;
-  color: #f5f5f5;
-  opacity: 0.8;
-  transition: opacity 0.4s ease;
-}
-
-.links-group:hover a {
-  opacity: 0.25;
-}
-
-.links-group a:hover {
-  opacity: 1;
-}
-
-.newsletter h3 {
-  font-family: "Aboreto", serif;
-  font-size: 1.6rem;
-  margin-bottom: 10px;
-}
-
-.input-row {
-  display: flex;
-  border-bottom: 1px solid rgba(255,255,255,0.2);
-  padding-bottom: 8px;
-}
-
-input {
-  flex: 1;
-  background: transparent;
-  border: none;
-  outline: none;
-  color: white;
-  font-size: 1rem;
-}
-
-button {
-  background: none;
-  border: none;
-  color: white;
-  font-size: 1.4rem;
-  cursor: pointer;
-  transition: transform 0.3s ease;
-}
-
-button:hover {
-  transform: translateX(6px);
-}
-
-.bottom {
-  width: min(1400px, 88%);
-  margin: 6vw auto 0;
-  padding-top: 20px;
-  border-top: 1px solid rgba(255,255,255,0.08);
-  display: flex;
-  justify-content: space-between;
-  font-size: 0.85rem;
-  opacity: 0.5;
-}
-
-@media (max-width: 900px) {
-  .container {
-    grid-template-columns: 1fr;
-    gap: 50px;
+  .footer {
+    position: relative;
+    min-height: 100vh;
+    overflow: hidden;
+    background: #070707;
+    isolation: isolate;
   }
 
-  .bg-brand {
-    font-size: 28vw;
+  .footer-bg,
+  .footer-overlay {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
   }
 
-  .bottom {
+  .footer-bg {
+    background-image: url("/images/photo.webp");
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-position: center bottom;
+    filter: brightness(0.58) contrast(1.02) saturate(0.94);
+    opacity: 0.22;
+    transition: opacity 0.95s cubic-bezier(.22,.61,.36,1);
+    will-change: opacity;
+  }
+
+  .footer-overlay {
+    background: linear-gradient(
+      to bottom,
+      rgba(0, 0, 0, 0.58) 0%,
+      rgba(0, 0, 0, 0.22) 34%,
+      rgba(0, 0, 0, 0.22) 62%,
+      rgba(0, 0, 0, 0.56) 100%
+    );
+    opacity: 0.45;
+    transition: opacity 0.95s cubic-bezier(.22,.61,.36,1);
+    will-change: opacity;
+  }
+
+  .footer-content {
+    position: relative;
+    z-index: 2;
+    min-height: 100vh;
+    display: flex;
     flex-direction: column;
-    gap: 10px;
-    text-align: center;
+    justify-content: space-between;
+    padding: clamp(1.2rem, 2vw, 2rem);
   }
-}
+
+  .text-block {
+    max-width: 920px;
+    padding-top: clamp(5.5rem, 11vh, 8rem);
+    padding-left: clamp(1rem, 4vw, 4rem);
+    opacity: 0;
+    transform: translate3d(0, 26px, 0);
+    transition:
+      opacity 0.95s cubic-bezier(.22,.61,.36,1),
+      transform 0.95s cubic-bezier(.22,.61,.36,1);
+    will-change: opacity, transform;
+  }
+
+  .line-1,
+  .line-2 {
+    margin: 0;
+    line-height: 0.92;
+    letter-spacing: 0.01em;
+    font-size: clamp(2.8rem, 6.1vw, 6.2rem);
+  }
+
+  .line-1 {
+    font-family: "Titre", serif;
+    font-weight: 400;
+    color: #fff;
+  }
+
+  .line-2 {
+    font-family: "Titre italic", serif;
+    font-style: italic;
+    font-weight: 400;
+    color: rgba(255, 255, 255, 0.5);
+    margin-top: 0.04em;
+  }
+
+  .bottom-block {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.95rem;
+    padding-bottom: clamp(1rem, 2vw, 1.8rem);
+    opacity: 0;
+    transform: translate3d(0, 18px, 0);
+    transition:
+      opacity 0.95s cubic-bezier(.22,.61,.36,1) 0.08s,
+      transform 0.95s cubic-bezier(.22,.61,.36,1) 0.08s;
+    will-change: opacity, transform;
+  }
+
+  .logo {
+    width: clamp(64px, 5.2vw, 86px);
+    height: auto;
+    display: block;
+    object-fit: contain;
+  }
+
+  .contact-block {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.7rem;
+  }
+
+  .contact-title {
+    font-family: "General Sans", sans-serif;
+    font-size: 0.9rem;
+    color: rgba(255, 255, 255, 0.8);
+  }
+
+  .icons {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.95rem;
+  }
+
+  .icon-link {
+    text-decoration: none;
+    opacity: 0.9;
+    transition:
+      transform 0.35s cubic-bezier(.22,.61,.36,1),
+      opacity 0.35s ease;
+  }
+
+  .icon-link:hover {
+    transform: translateY(-2px);
+    opacity: 1;
+  }
+
+  .icon-box {
+    width: 26px;
+    height: 26px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .icon {
+    display: block;
+    object-fit: contain;
+    filter: brightness(0) invert(1);
+  }
+
+  .icon-instagram {
+    width: 22px;
+    height: 22px;
+  }
+
+  .icon-facebook {
+    width: 20px;
+    height: 20px;
+  }
+
+  .icon-x {
+    width: 21px;
+    height: 21px;
+  }
+
+  .icon-mail {
+    width: 21px;
+    height: 21px;
+  }
+
+  .legal {
+    margin: 0;
+    font-family: "General Sans", sans-serif;
+    font-size: 0.76rem;
+    color: rgba(255, 255, 255, 0.42);
+    text-align: center;
+    line-height: 1.4;
+  }
+
+  .footer.is-visible .footer-bg {
+    opacity: 1;
+  }
+
+  .footer.is-visible .footer-overlay {
+    opacity: 1;
+  }
+
+  .footer.is-visible .text-block,
+  .footer.is-visible .bottom-block {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+
+  @media (max-width: 768px) {
+    .line-1,
+    .line-2 {
+      font-size: clamp(2.1rem, 9vw, 4rem);
+      line-height: 0.98;
+    }
+
+    .footer-bg {
+      filter: brightness(0.52) contrast(1.02) saturate(0.92);
+    }
+
+    .icon-box {
+      width: 24px;
+      height: 24px;
+    }
+
+    .icon-instagram {
+      width: 20px;
+      height: 20px;
+    }
+
+    .icon-facebook {
+      width: 18px;
+      height: 18px;
+    }
+
+    .icon-x,
+    .icon-mail {
+      width: 19px;
+      height: 19px;
+    }
+
+    .legal {
+      font-size: 0.72rem;
+      max-width: 90%;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .footer-bg,
+    .footer-overlay,
+    .text-block,
+    .bottom-block,
+    .icon-link {
+      transition: none;
+    }
+
+    .footer-bg,
+    .footer-overlay,
+    .text-block,
+    .bottom-block {
+      opacity: 1;
+      transform: none;
+    }
+  }
 </style>
