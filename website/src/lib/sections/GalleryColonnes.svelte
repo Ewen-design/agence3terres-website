@@ -32,6 +32,9 @@
   let targetOpacity = 0;
   let targetTranslate = 34;
 
+  // 👉 AJOUT
+  let galleryProgress = 0;
+
   function clamp(value, min, max) {
     return Math.max(min, Math.min(max, value));
   }
@@ -80,31 +83,39 @@
     const sectionTop = rect.top;
     const sectionBottom = rect.bottom;
 
-    const startShow = vh * 0.42;
-    const fullyVisibleAt = vh * 0.22;
+    const centerY = vh * 0.5;
 
-    const endFadeStart = vh * 1.08;
-    const endFadeEnd = vh * 0.84;
-
-    const enteringRaw = clamp(
-      (startShow - sectionTop) / (startShow - fullyVisibleAt),
+    const enter = clamp(
+      (centerY - sectionTop) / (vh * 0.4),
       0,
       1
     );
 
-    const leavingRaw = clamp(
-      (endFadeStart - sectionBottom) / (endFadeStart - endFadeEnd),
+    const leave = clamp(
+      (sectionBottom - centerY) / (vh * 0.4),
       0,
       1
     );
 
-    const enteringProgress = easeInOutCubic(enteringRaw);
-    const leavingProgress = easeInOutCubic(leavingRaw);
-
-    const visibility = enteringProgress * (1 - leavingProgress);
+    const visibility = easeInOutCubic(enter) * easeInOutCubic(leave);
 
     targetOpacity = visibility;
     targetTranslate = (1 - visibility) * 34;
+
+    // 👉 AJOUT (gallery animation)
+    const gEnter = clamp(
+      (centerY - sectionTop) / (vh * 0.55),
+      0,
+      1
+    );
+
+    const gLeave = clamp(
+      (sectionBottom - centerY) / (vh * 0.55),
+      0,
+      1
+    );
+
+    galleryProgress = easeInOutCubic(gEnter) * easeInOutCubic(gLeave);
 
     startAnimationLoop();
   }
@@ -145,7 +156,13 @@
   </div>
 
   <div class="gallery-track">
-    <div class="gallery-shell">
+    <!-- 👉 MODIFICATION ICI UNIQUEMENT -->
+    <div
+      class="gallery-shell"
+      style={`opacity:${galleryProgress};
+      filter: blur(${(1 - galleryProgress) * 12}px)
+              brightness(${0.55 + galleryProgress * 0.45});`}
+    >
       <div class="gallery-grid">
         <div class="col col-left">
           {#each leftImages as image}
@@ -231,6 +248,7 @@
     margin-left: 50%;
     transform: translateX(-50%);
     padding: 10vh 0;
+    will-change: opacity, filter;
   }
 
   .gallery-grid {
@@ -299,6 +317,68 @@
 
     .title {
       font-size: clamp(1.6rem, 7vw, 2.6rem);
+    }
+  }
+
+  @media (max-width: 640px) {
+    .gallery-track {
+      min-height: auto;
+    }
+
+    .gallery-shell {
+      width: 128vw;
+      margin-left: 50%;
+      transform: translateX(-50%);
+      padding: 8vh 0 2vh;
+    }
+
+    .gallery-grid {
+      grid-template-columns: 0.9fr 1.14fr 0.9fr;
+      column-gap: 0.12rem;
+      align-items: center;
+    }
+
+    .col {
+      gap: 0.4rem;
+      justify-content: center;
+    }
+
+    .col-left,
+    .col-right,
+    .col-center {
+      padding-top: 0;
+      padding-bottom: 0;
+      margin-top: 0;
+    }
+
+    .col-left,
+    .col-right {
+      transform: none;
+    }
+
+    .col-center {
+      transform: none;
+    }
+
+    .title {
+      font-size: clamp(2rem, 9vw, 3.1rem);
+      line-height: 0.92;
+    }
+
+    .card.portrait {
+      height: calc(var(--h) * 1);
+    }
+
+    .card.landscape {
+      height: calc(var(--h) * 0.8);
+    }
+
+    .col-center .card.portrait {
+      height: calc(var(--h) * 1.1);
+    }
+
+    .col-center .card.landscape {
+      height: calc(var(--h) * 0.88);
     }
   }
 </style>

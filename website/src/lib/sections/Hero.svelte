@@ -186,23 +186,23 @@
       </div>
 
       <div class="titles-layer">
-      <span
-  class="title-left"
-  class:intro-visible={introVisible}
-  bind:this={leftTitleEl}
-  style={`--title-x:${leftX}px; transform: translate3d(${leftX}px,-50%,0);`}
->
-  Agence
-</span>
+        <span
+          class="title-left"
+          class:intro-visible={introVisible}
+          bind:this={leftTitleEl}
+          style={`--title-x:${leftX}px; transform: translate3d(${leftX}px,-50%,0);`}
+        >
+          Agence
+        </span>
 
-<span
-  class="title-right"
-  class:intro-visible={introVisible}
-  bind:this={rightTitleEl}
-  style={`--title-x:${rightX}px; transform: translate3d(${rightX}px,-50%,0);`}
->
-  3 Terres
-</span>
+        <span
+          class="title-right"
+          class:intro-visible={introVisible}
+          bind:this={rightTitleEl}
+          style={`--title-x:${rightX}px; transform: translate3d(${rightX}px,-50%,0);`}
+        >
+          3 Terres
+        </span>
 
         <div
           class="scroll-hint"
@@ -415,14 +415,15 @@
     display: inline;
   }
 
-  .after-image {
-    justify-self: end;
-    width: min(100%, 400px);
-    aspect-ratio: 0.82 / 1;
-    overflow: hidden;
-    background: #0b0b0b;
-    will-change: transform, opacity;
-  }
+ .after-image {
+  justify-self: end;
+  width: min(100%, 460px);
+  aspect-ratio: 1.45 / 1;
+  overflow: hidden;
+  background: #0b0b0b;
+  will-change: transform, opacity;
+  margin-top: clamp(4rem, 6vw, 7rem);/* ← AJOUT */
+}
 
   .after-image img {
     width: 100%;
@@ -432,31 +433,31 @@
     transform: translateZ(0);
   }
 
-@keyframes titleEnterLeft {
-  from {
-    opacity: 0;
-    filter: blur(18px);
-    transform: translate3d(calc(var(--title-x, 0px) - 42px), -50%, 0);
+  @keyframes titleEnterLeft {
+    from {
+      opacity: 0;
+      filter: blur(18px);
+      transform: translate3d(calc(var(--title-x, 0px) - 42px), -50%, 0);
+    }
+    to {
+      opacity: 1;
+      filter: blur(0);
+      transform: translate3d(var(--title-x, 0px), -50%, 0);
+    }
   }
-  to {
-    opacity: 1;
-    filter: blur(0);
-    transform: translate3d(var(--title-x, 0px), -50%, 0);
-  }
-}
 
-@keyframes titleEnterRight {
-  from {
-    opacity: 0;
-    filter: blur(18px);
-    transform: translate3d(calc(var(--title-x, 0px) + 42px), -50%, 0);
+  @keyframes titleEnterRight {
+    from {
+      opacity: 0;
+      filter: blur(18px);
+      transform: translate3d(calc(var(--title-x, 0px) + 42px), -50%, 0);
+    }
+    to {
+      opacity: 1;
+      filter: blur(0);
+      transform: translate3d(var(--title-x, 0px), -50%, 0);
+    }
   }
-  to {
-    opacity: 1;
-    filter: blur(0);
-    transform: translate3d(var(--title-x, 0px), -50%, 0);
-  }
-}
 
   @media (max-width: 900px) {
     .pin-section {
@@ -501,19 +502,28 @@
 
     .after-grid {
       width: min(94%, 520px);
-      grid-template-columns: 1fr 0.8fr;
-      gap: 0.65rem;
+      grid-template-columns: 1fr;
+      gap: 1rem;
     }
+
+      .after-text {
+    width: 78%; /* ← AVANT 66% */
+    justify-self: start;
+  }
 
     .after-text h2 {
-      font-size: clamp(1rem, 5.8vw, 1.7rem);
-      line-height: 1.02;
-      max-width: 14ch;
+      font-size: clamp(1.15rem, 6.4vw, 1.95rem);
+      line-height: 1.04;
+      max-width: none;
     }
 
-    .after-image {
-      aspect-ratio: 0.82 / 1.04;
-    }
+     .after-image {
+    width: min(78%, 340px); /* un peu plus large aussi */
+    justify-self: end;
+    aspect-ratio: 1.6 / 1;
+    margin-top: 3.5rem; /* ← image encore un peu plus basse sur mobile */
+  }
+
 
     .scroll-hint {
       bottom: 1.05rem;

@@ -7,16 +7,18 @@
 
   let selected = null;
   let gallerySection;
+  let galleryGridEl;
   let isMobile = false;
   let prefersReduced = false;
+  let activeMobileIndex = 0;
 
   const items = [
-    { title: "Création de logo",     date: "2024", desc: "Refonte complète de l'identité visuelle et création d'un système graphique minimaliste.", image: "/images/photo.webp"  },
-    { title: "Identité visuelle et stratégie",       date: "2023", desc: "Développement d'une plateforme de marque et direction artistique globale.",               image: "/images/photo2.webp" },
-    { title: "Couverture d'événements",            date: "2024", desc: "Conception d'interfaces modernes axées sur l'expérience utilisateur.",                    image: "/images/photo.webp"  },
-    { title: "Conception de site web",          date: "2022", desc: "Études utilisateurs et architecture d'information pour application mobile.",               image: "/images/photo.webp"  },
-    { title: "Accompagnement", date: "2023", desc: "Supervision créative et mise en place d'un univers visuel premium.",                      image: "/images/photo2.webp" },
-    { title: "Gestion des réseaux sociaux",       date: "2024", desc: "Concept motion design pour lancement de produit digital.",                                image: "/images/photo.webp"  },
+    { title: "Création de logo", date: "2024", desc: "Refonte complète de l'identité visuelle et création d'un système graphique minimaliste.", image: "/images/photo.webp" },
+    { title: "Identité visuelle et stratégie", date: "2023", desc: "Développement d'une plateforme de marque et direction artistique globale.", image: "/images/photo2.webp" },
+    { title: "Couverture d'événements", date: "2024", desc: "Conception d'interfaces modernes axées sur l'expérience utilisateur.", image: "/images/photo.webp" },
+    { title: "Conception de site web", date: "2022", desc: "Études utilisateurs et architecture d'information pour application mobile.", image: "/images/photo.webp" },
+    { title: "Accompagnement", date: "2023", desc: "Supervision créative et mise en place d'un univers visuel premium.", image: "/images/photo2.webp" },
+    { title: "Gestion des réseaux sociaux", date: "2024", desc: "Concept motion design pour lancement de produit digital.", image: "/images/photo.webp" },
   ];
 
   let cardEls = [];
@@ -40,6 +42,7 @@
   let resizeObs;
   let resizeTimer;
   let mediaQuery;
+  let mobileScrollRaf = null;
 
   const SPEED_DESKTOP = -132;
   const SPEED_MOBILE = -64;
@@ -81,6 +84,36 @@
     measured = true;
   }
 
+  function updateMobileActiveCard() {
+    if (!isMobile || !galleryGridEl || !cardEls.length) return;
+
+    const centerX = galleryGridEl.scrollLeft + galleryGridEl.clientWidth * 0.5;
+    let nearest = 0;
+    let nearestDist = Infinity;
+
+    for (let i = 0; i < cardEls.length; i++) {
+      const el = cardEls[i];
+      if (!el) continue;
+      const cardCenter = el.offsetLeft + el.offsetWidth * 0.5;
+      const dist = Math.abs(cardCenter - centerX);
+
+      if (dist < nearestDist) {
+        nearestDist = dist;
+        nearest = i;
+      }
+    }
+
+    activeMobileIndex = nearest;
+  }
+
+  function handleMobileGridScroll() {
+    if (!isMobile) return;
+    if (mobileScrollRaf) cancelAnimationFrame(mobileScrollRaf);
+    mobileScrollRaf = requestAnimationFrame(() => {
+      updateMobileActiveCard();
+    });
+  }
+
   function onScroll(scrollY, { vh, isMobile: mob }) {
     if (!sectionVisible || prefersReduced || !measured) return;
     if (secTop - scrollY > vh + 700 || secBottom - scrollY < -700) return;
@@ -102,7 +135,7 @@
         prevWrapperY[i] = wY;
       }
 
-      if (mob) {
+      if (mob && !galleryGridEl) {
         const info = infoEls[i];
         const img = imgEls[i];
         if (!info || !img) continue;
@@ -144,6 +177,9 @@
     resizeTimer = setTimeout(() => {
       isMobile = window.innerWidth <= 900;
       measure();
+      requestAnimationFrame(() => {
+        updateMobileActiveCard();
+      });
     }, 100);
   }
 
@@ -173,18 +209,26 @@
     requestAnimationFrame(() => {
       measure();
       registerParallax(onScroll);
+      updateMobileActiveCard();
     });
 
     intersectionObs = new IntersectionObserver(([entry]) => {
       const wasVisible = sectionVisible;
       sectionVisible = entry.isIntersecting;
-      if (sectionVisible && !wasVisible) measure();
+      if (sectionVisible && !wasVisible) {
+        measure();
+        requestAnimationFrame(() => {
+          updateMobileActiveCard();
+        });
+      }
     }, { rootMargin: "500px 0px 500px 0px", threshold: 0 });
 
     intersectionObs.observe(gallerySection);
 
     resizeObs = new ResizeObserver(handleResize);
     resizeObs.observe(gallerySection);
+
+    galleryGridEl?.addEventListener("scroll", handleMobileGridScroll, { passive: true });
 
     window.addEventListener("resize", handleResize, { passive: true });
     window.addEventListener("orientationchange", handleResize, { passive: true });
@@ -201,6 +245,8 @@
     intersectionObs?.disconnect();
     resizeObs?.disconnect();
     clearTimeout(resizeTimer);
+    if (mobileScrollRaf) cancelAnimationFrame(mobileScrollRaf);
+    galleryGridEl?.removeEventListener("scroll", handleMobileGridScroll);
     window.removeEventListener("resize", handleResize);
     window.removeEventListener("orientationchange", handleResize);
     document.body.style.overflow = "";
@@ -224,10 +270,11 @@
     </div>
   </div>
 
-  <div class="gallery-grid">
+  <div class="gallery-grid" bind:this={galleryGridEl}>
     {#each items as item, i}
       <div
         class="card"
+        class:mobile-active={isMobile && i === activeMobileIndex}
         bind:this={cardEls[i]}
         data-cursor="view"
         role="button"
@@ -329,7 +376,7 @@
     margin: 0 auto;
     display: flex;
     justify-content: flex-end;
-    padding-top: 0.5rem;
+    padding-top: clamp(1rem, 1.8vw, 1.6rem);
   }
 
   .intro-card {
@@ -344,7 +391,7 @@
     max-width: 30ch;
     font-family: "General Sans", sans-serif;
     font-weight: 300;
-    font-size: clamp(1.3rem, 2.8vw, 2.8rem);
+    font-size: clamp(1.2rem, 2.25vw, 2.3rem);
     line-height: 1.08;
     letter-spacing: -0.02em;
     color: #fff;
@@ -616,7 +663,9 @@
   }
 
   @media (max-width: 900px) {
-    .gallery { padding: 0 0 8rem 0; }
+    .gallery {
+      padding: 0 0 8rem 0;
+    }
 
     .top-header {
       grid-template-columns: 1fr;
@@ -635,23 +684,55 @@
       width: min(92%, 760px);
       margin: 0 auto;
       display: block;
-      padding-top: 0;
+      padding-top: 1.15rem;
     }
 
-    .intro-card { width: 100%; padding: 0; }
+    .intro-card {
+      width: 100%;
+      padding: 0;
+    }
+
     .intro-card p {
-      font-size: clamp(1.1rem, 5.2vw, 2rem);
+      font-size: clamp(1.2rem, 5vw, 1.55rem);
       line-height: 1.08;
       max-width: 30ch;
+      color: rgba(255, 255, 255, 0.64);
+    }
+
+    .intro-main,
+    .intro-muted {
+      color: rgba(255, 255, 255, 0.64);
     }
 
     .gallery-grid {
-      width: min(94%, 760px);
-      margin: 2rem auto 0 auto;
-      grid-template-columns: 1fr;
+      width: 100%;
+      margin: 2rem 0 0 0;
+      display: flex;
+      grid-template-columns: none;
       grid-template-rows: none;
       grid-template-areas: none;
-      gap: 0.9rem;
+      gap: 0.95rem;
+      overflow-x: auto;
+      overflow-y: visible;
+      padding-top: 0;
+      padding-bottom: 0.2rem;
+      padding-left: calc((100vw - clamp(285px, 82vw, 360px)) / 2);
+      padding-right: calc((100vw - clamp(285px, 82vw, 360px)) / 2);
+      scroll-snap-type: x mandatory;
+      scroll-snap-stop: always;
+      scroll-padding-left: calc((100vw - clamp(285px, 82vw, 360px)) / 2);
+      scroll-padding-right: calc((100vw - clamp(285px, 82vw, 360px)) / 2);
+      -webkit-overflow-scrolling: touch;
+      overscroll-behavior-x: contain;
+      scroll-behavior: smooth;
+    }
+
+    .gallery-grid::-webkit-scrollbar {
+      display: none;
+    }
+
+    .gallery-grid {
+      scrollbar-width: none;
     }
 
     .card:nth-child(1),
@@ -663,54 +744,181 @@
       grid-area: auto;
     }
 
-    .card:nth-child(1) { aspect-ratio: 1.45/1; }
-    .card:nth-child(2) { aspect-ratio: 0.92/1.18; }
-    .card:nth-child(3) { aspect-ratio: 1.1/1; }
-    .card:nth-child(4) { aspect-ratio: 0.92/1.22; }
-    .card:nth-child(5) { aspect-ratio: 1.5/1; }
-    .card:nth-child(6) { aspect-ratio: 1.08/1; }
+    .card {
+      flex: 0 0 clamp(285px, 82vw, 360px);
+      width: clamp(285px, 82vw, 360px);
+      aspect-ratio: 0.84 / 1.22;
+      scroll-snap-align: center;
+      scroll-snap-stop: always;
+    }
 
-    .card-image-wrapper { top: -10%; height: 120%; }
+    .card-image-wrapper,
     .card:nth-child(1) .card-image-wrapper,
-    .card:nth-child(5) .card-image-wrapper { top: -22%; height: 144%; }
+    .card:nth-child(5) .card-image-wrapper {
+      top: -12%;
+      height: 124%;
+    }
 
-    .card:hover img { filter: none; transform: translateZ(0); }
-    .card:hover .info { opacity: 0; transform: translate3d(0, -10px, 0); }
-    .card:hover .card-plus { transform: none; background: rgba(255, 255, 255, 0.14); }
+    .card:hover img {
+      filter: none;
+      transform: translateZ(0);
+    }
 
-    .gallery-footer { margin-top: 4rem; }
+    .card:hover .info {
+      opacity: 0;
+      transform: translate3d(0, -10px, 0);
+    }
+
+    .card:hover .card-plus {
+      transform: none;
+      background: rgba(255, 255, 255, 0.14);
+    }
+
+    .card.mobile-active img {
+      filter: brightness(0.68);
+      transform: scale(1.035) translateZ(0);
+    }
+
+    .card.mobile-active .info {
+      opacity: 1;
+      transform: translate3d(0, 0, 0);
+    }
+
+    .card.mobile-active .card-index {
+      color: rgba(255, 255, 255, 0.58);
+    }
+
+    .card.mobile-active .card-plus {
+      transform: scale(1.1);
+      background: rgba(255, 255, 255, 0.22);
+    }
+
+    .gallery-footer {
+      margin-top: 4rem;
+    }
   }
 
   @media (max-width: 640px) {
-    .gallery { padding: 0 0 6.5rem 0; }
-    .header-title-wrap { padding: 1.3rem 1rem 0.9rem; }
-    .gallery-grid { width: min(94%, 560px); gap: 0.75rem; }
-    .card-image-wrapper { top: -9%; height: 118%; }
+    .gallery {
+      padding: 0 0 6.5rem 0;
+    }
+
+    .header-title-wrap {
+      padding: 1.3rem 1rem 0.9rem;
+    }
+
+    .gallery-grid {
+      gap: 0.8rem;
+      padding-left: calc((100vw - clamp(270px, 82vw, 330px)) / 2);
+      padding-right: calc((100vw - clamp(270px, 82vw, 330px)) / 2);
+      scroll-padding-left: calc((100vw - clamp(270px, 82vw, 330px)) / 2);
+      scroll-padding-right: calc((100vw - clamp(270px, 82vw, 330px)) / 2);
+    }
+
+    .card {
+      flex-basis: clamp(270px, 82vw, 330px);
+      width: clamp(270px, 82vw, 330px);
+    }
+
+    .card-image-wrapper,
     .card:nth-child(1) .card-image-wrapper,
-    .card:nth-child(5) .card-image-wrapper { top: -18%; height: 138%; }
-    .info { top: 14px; left: 14px; padding: 9px 12px; font-size: 0.74rem; }
-    .card-plus { bottom: 14px; left: 14px; width: 38px; height: 38px; font-size: 1rem; }
-    .card-index { top: 14px; right: 14px; }
-    .services-btn { padding: 0 1.2rem; font-size: 0.8rem; }
+    .card:nth-child(5) .card-image-wrapper {
+      top: -11%;
+      height: 122%;
+    }
+
+    .info {
+      top: 14px;
+      left: 14px;
+      padding: 9px 12px;
+      font-size: 0.74rem;
+    }
+
+    .card-plus {
+      bottom: 14px;
+      left: 14px;
+      width: 38px;
+      height: 38px;
+      font-size: 1rem;
+    }
+
+    .card-index {
+      top: 14px;
+      right: 14px;
+    }
+
+    .services-btn {
+      padding: 0 1.2rem;
+      font-size: 0.8rem;
+    }
   }
 
   @media (max-width: 420px) {
-    .gallery { padding: 0 0 5.5rem 0; }
-    .header-title-wrap { padding: 1.1rem 1rem 0.85rem; }
-    .intro-card { padding: 0; }
+    .gallery {
+      padding: 0 0 5.5rem 0;
+    }
+
+    .header-title-wrap {
+      padding: 1.1rem 1rem 0.85rem;
+    }
+
+    .intro-card {
+      padding: 0;
+    }
+
     .intro-card p {
-      font-size: clamp(1rem, 5vw, 1.5rem);
+      font-size: clamp(1.15rem, 5vw, 1.35rem);
       line-height: 1.08;
     }
-    .gallery-grid { width: min(94%, 420px); gap: 0.65rem; }
-    .card-image-wrapper { top: -8%; height: 116%; }
+
+    .gallery-grid {
+      gap: 0.75rem;
+      padding-left: calc((100vw - 84vw) / 2);
+      padding-right: calc((100vw - 84vw) / 2);
+      scroll-padding-left: calc((100vw - 84vw) / 2);
+      scroll-padding-right: calc((100vw - 84vw) / 2);
+    }
+
+    .card {
+      flex-basis: 84vw;
+      width: 84vw;
+    }
+
+    .card-image-wrapper,
     .card:nth-child(1) .card-image-wrapper,
-    .card:nth-child(5) .card-image-wrapper { top: -16%; height: 132%; }
-    .info { top: 12px; left: 12px; padding: 8px 11px; font-size: 0.7rem; }
-    .card-plus { bottom: 12px; left: 12px; width: 34px; height: 34px; font-size: 0.95rem; }
-    .card-index { top: 12px; right: 12px; }
-    .gallery-footer { margin-top: 3rem; }
-    .services-btn { padding: 0 1rem; font-size: 0.72rem; }
+    .card:nth-child(5) .card-image-wrapper {
+      top: -10%;
+      height: 120%;
+    }
+
+    .info {
+      top: 12px;
+      left: 12px;
+      padding: 8px 11px;
+      font-size: 0.7rem;
+    }
+
+    .card-plus {
+      bottom: 12px;
+      left: 12px;
+      width: 34px;
+      height: 34px;
+      font-size: 0.95rem;
+    }
+
+    .card-index {
+      top: 12px;
+      right: 12px;
+    }
+
+    .gallery-footer {
+      margin-top: 3rem;
+    }
+
+    .services-btn {
+      padding: 0 1rem;
+      font-size: 0.72rem;
+    }
   }
 
   @media (prefers-reduced-motion: reduce) {
@@ -723,6 +931,12 @@
       transition: none;
     }
 
-    .card-image-wrapper { transform: none !important; }
+    .card-image-wrapper {
+      transform: none !important;
+    }
+
+    .gallery-grid {
+      scroll-behavior: auto;
+    }
   }
 </style>
