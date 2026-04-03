@@ -32,7 +32,6 @@
   let targetOpacity = 0;
   let targetTranslate = 34;
 
-  // 👉 AJOUT
   let galleryProgress = 0;
 
   function clamp(value, min, max) {
@@ -85,35 +84,16 @@
 
     const centerY = vh * 0.5;
 
-    const enter = clamp(
-      (centerY - sectionTop) / (vh * 0.4),
-      0,
-      1
-    );
-
-    const leave = clamp(
-      (sectionBottom - centerY) / (vh * 0.4),
-      0,
-      1
-    );
+    const enter = clamp((centerY - sectionTop) / (vh * 0.4), 0, 1);
+    const leave = clamp((sectionBottom - centerY) / (vh * 0.4), 0, 1);
 
     const visibility = easeInOutCubic(enter) * easeInOutCubic(leave);
 
     targetOpacity = visibility;
     targetTranslate = (1 - visibility) * 34;
 
-    // 👉 AJOUT (gallery animation)
-    const gEnter = clamp(
-      (centerY - sectionTop) / (vh * 0.55),
-      0,
-      1
-    );
-
-    const gLeave = clamp(
-      (sectionBottom - centerY) / (vh * 0.55),
-      0,
-      1
-    );
+    const gEnter = clamp((centerY - sectionTop) / (vh * 0.55), 0, 1);
+    const gLeave = clamp((sectionBottom - centerY) / (vh * 0.55), 0, 1);
 
     galleryProgress = easeInOutCubic(gEnter) * easeInOutCubic(gLeave);
 
@@ -156,7 +136,6 @@
   </div>
 
   <div class="gallery-track">
-    <!-- 👉 MODIFICATION ICI UNIQUEMENT -->
     <div
       class="gallery-shell"
       style={`opacity:${galleryProgress};
@@ -322,11 +301,11 @@
 
   @media (max-width: 640px) {
     .gallery-track {
-      min-height: auto;
+      min-height: 145vh;
     }
 
     .gallery-shell {
-      width: 128vw;
+      width: 140vw;
       margin-left: 50%;
       transform: translateX(-50%);
       padding: 8vh 0 2vh;
@@ -366,19 +345,19 @@
     }
 
     .card.portrait {
-      height: calc(var(--h) * 1);
+      height: calc(var(--h) * 1.18);
     }
 
     .card.landscape {
-      height: calc(var(--h) * 0.8);
+      height: calc(var(--h) * 0.94);
     }
 
     .col-center .card.portrait {
-      height: calc(var(--h) * 1.1);
+      height: calc(var(--h) * 1.28);
     }
 
     .col-center .card.landscape {
-      height: calc(var(--h) * 0.88);
+      height: calc(var(--h) * 1);
     }
   }
 </style>
