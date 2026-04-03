@@ -4,12 +4,17 @@
   let heroSection;
   let pinSection;
   let afterSection;
+  let afterTextEl;
+  let afterImageEl;
   let leftTitleEl;
   let rightTitleEl;
 
   let heroProgress = 0;
   let textReveal = 0;
   let imageFadeProgress = 0;
+
+  let localTextReveal = 0;
+  let localImageReveal = 0;
 
   let vw = 0;
   let leftW = 0;
@@ -44,13 +49,6 @@
     charCount = nextCount;
   }
 
-  const wordOffsets = [];
-  let runningOffset = 0;
-  for (const word of words) {
-    wordOffsets.push(runningOffset);
-    runningOffset += word.length;
-  }
-
   const clamp = (v, min = 0, max = 1) => Math.max(min, Math.min(max, v));
   const lerp = (a, b, t) => a + (b - a) * t;
 
@@ -66,6 +64,12 @@
     vw = window.innerWidth || 0;
     leftW = leftTitleEl?.offsetWidth || 0;
     rightW = rightTitleEl?.offsetWidth || 0;
+  }
+
+  function getLocalReveal(rect, vh, startMul = 0.9, endMul = 0.2) {
+    const start = vh * startMul;
+    const end = vh * endMul;
+    return clamp((start - rect.top) / (start - end), 0, 1);
   }
 
   function updateScrollState() {
@@ -92,6 +96,16 @@
     const heroRect = heroSection.getBoundingClientRect();
     const heroScrollable = Math.max(heroSection.offsetHeight - vh, 1);
     imageFadeProgress = clamp(-heroRect.top / heroScrollable, 0, 1);
+
+    if (afterTextEl) {
+      const rect = afterTextEl.getBoundingClientRect();
+      localTextReveal = easeOutCubic(getLocalReveal(rect, vh, 0.92, 0.16));
+    }
+
+    if (afterImageEl) {
+      const rect = afterImageEl.getBoundingClientRect();
+      localImageReveal = easeInOutSine(getLocalReveal(rect, vh, 0.98, 0.12));
+    }
   }
 
   function requestUpdate() {
@@ -150,9 +164,6 @@
   $: mergeProgress = clamp(heroProgress / 0.9, 0, 1);
   $: smoothMerge = easeInOutSine(mergeProgress);
 
-  // Fade image sur tout le composant :
-  // - légère montée de noir tout du long
-  // - vraie fermeture seulement dans la toute fin
   $: globalFade = easeInOutSine(clamp(imageFadeProgress, 0, 1));
   $: endFade = Math.pow(clamp((imageFadeProgress - 0.78) / 0.22, 0, 1), 1.7);
 
@@ -178,13 +189,15 @@
   $: hintScrollFade = 1 - easeOutCubic(clamp(heroProgress / 0.03, 0, 1));
   $: scrollHintOpacity = hintVisible ? hintScrollFade : 0;
 
-  function letterOpacity(i) {
-    return clamp(textReveal * 1.3 - i * 0.022, 0, 1);
-  }
+  // Texte : retour à la version d’avant
+  $: textBlockOpacity = lerp(0.18, 1, localTextReveal);
+  $: textBlockY = lerp(18, 0, localTextReveal);
+  $: textRevealEdge = lerp(0, 118, localTextReveal);
+  $: textBlockBlur = lerp(8, 0, localTextReveal);
 
-  function letterY(i) {
-    return (1 - letterOpacity(i)) * 14;
-  }
+  // Image : agrandissement visible, sans fade
+  $: smallImageScale = lerp(0.885, 1.02, localImageReveal);
+  $: smallImageY = lerp(22, 0, localImageReveal);
 </script>
 
 <section class="hero-join-clean" bind:this={heroSection}>
@@ -236,18 +249,13 @@
     <div class="after-grid">
       <div
         class="after-text"
-        style={`transform: translate3d(${lerp(24, 0, textReveal)}px,0,0);`}
+        bind:this={afterTextEl}
+        style={`opacity:${textBlockOpacity}; filter: blur(${textBlockBlur}px); transform: translate3d(${lerp(24, 0, textReveal)}px, ${textBlockY}px, 0); --text-reveal-edge:${textRevealEdge}%;`}
       >
         <h2 aria-label={finalText}>
           {#each words as word, w}
             <span class="word" class:muted-word={w >= grayStartsAtWord}>
-              {#each word.split("") as letter, i}
-                <span
-                  style={`opacity:${clamp(0.78 + letterOpacity(wordOffsets[w] + i) * 0.22, 0, 1)}; transform: translate3d(0,${letterY(wordOffsets[w] + i)}px,0);`}
-                >
-                  {letter}
-                </span>
-              {/each}
+              {word}
             </span>{#if w < words.length - 1}<span class="space">&nbsp;</span>{/if}
           {/each}
         </h2>
@@ -255,7 +263,8 @@
 
       <div
         class="after-image"
-        style={`opacity:${textReveal}; transform: translate3d(0,${lerp(26, 0, textReveal)}px,0);`}
+        bind:this={afterImageEl}
+        style={`transform: translate3d(0,${smallImageY}px,0) scale(${smallImageScale});`}
       >
         <img src="images/photo.webp" alt="Visuel 3 Terres" />
       </div>
@@ -405,9 +414,29 @@
   }
 
   .after-text {
-    will-change: transform, opacity;
+    will-change: transform, opacity, filter;
     width: 100%;
     min-width: 0;
+    -webkit-mask-image: linear-gradient(
+      to bottom,
+      rgba(0, 0, 0, 1) 0%,
+      rgba(0, 0, 0, 1) calc(var(--text-reveal-edge) - 12%),
+      rgba(0, 0, 0, 0.75) calc(var(--text-reveal-edge) + 2%),
+      rgba(0, 0, 0, 0.2) calc(var(--text-reveal-edge) + 14%),
+      rgba(0, 0, 0, 0) calc(var(--text-reveal-edge) + 28%)
+    );
+    mask-image: linear-gradient(
+      to bottom,
+      rgba(0, 0, 0, 1) 0%,
+      rgba(0, 0, 0, 1) calc(var(--text-reveal-edge) - 12%),
+      rgba(0, 0, 0, 0.75) calc(var(--text-reveal-edge) + 2%),
+      rgba(0, 0, 0, 0.2) calc(var(--text-reveal-edge) + 14%),
+      rgba(0, 0, 0, 0) calc(var(--text-reveal-edge) + 28%)
+    );
+    -webkit-mask-repeat: no-repeat;
+    mask-repeat: no-repeat;
+    -webkit-mask-size: 100% 140%;
+    mask-size: 100% 140%;
   }
 
   .after-text h2 {
@@ -425,15 +454,10 @@
   .word {
     display: inline-block;
     white-space: nowrap;
-  }
-
-  .word span {
-    display: inline-block;
     color: #fff;
-    will-change: transform, opacity;
   }
 
-  .word.muted-word span {
+  .word.muted-word {
     color: rgba(255, 255, 255, 0.7);
   }
 
@@ -447,8 +471,11 @@
     aspect-ratio: 1.45 / 1;
     overflow: hidden;
     background: #0b0b0b;
-    will-change: transform, opacity;
+    will-change: transform;
     margin-top: clamp(4rem, 6vw, 7rem);
+    transform-origin: 50% 50%;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
   }
 
   .after-image img {
@@ -564,12 +591,14 @@
     .title-right,
     .scroll-hint,
     .after-text,
-    .after-image,
-    .after-text h2 span {
+    .after-image {
       transition: none !important;
       animation: none !important;
       filter: none !important;
       opacity: 1 !important;
+      -webkit-mask-image: none !important;
+      mask-image: none !important;
+      transform: none !important;
     }
   }
 </style>
