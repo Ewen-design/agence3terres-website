@@ -1,6 +1,7 @@
 <script>
   import { onMount } from "svelte";
 
+  let heroSection;
   let pinSection;
   let afterSection;
   let leftTitleEl;
@@ -8,6 +9,7 @@
 
   let heroProgress = 0;
   let textReveal = 0;
+  let imageFadeProgress = 0;
 
   let vw = 0;
   let leftW = 0;
@@ -68,7 +70,7 @@
 
   function updateScrollState() {
     ticking = false;
-    if (!pinSection || !afterSection) return;
+    if (!pinSection || !afterSection || !heroSection) return;
 
     const vh = window.innerHeight;
 
@@ -86,6 +88,10 @@
       1
     );
     textReveal = easeOutCubic(rawReveal);
+
+    const heroRect = heroSection.getBoundingClientRect();
+    const heroScrollable = Math.max(heroSection.offsetHeight - vh, 1);
+    imageFadeProgress = clamp(-heroRect.top / heroScrollable, 0, 1);
   }
 
   function requestUpdate() {
@@ -127,7 +133,6 @@
     window.addEventListener("orientationchange", updateAll, { passive: true });
     window.addEventListener("preloader:done", handlePreloaderDone);
 
-    // fallback si jamais l’event n’est pas encore branché
     fallbackTimeout = setTimeout(() => {
       startIntro();
     }, 1800);
@@ -145,9 +150,18 @@
   $: mergeProgress = clamp(heroProgress / 0.9, 0, 1);
   $: smoothMerge = easeInOutSine(mergeProgress);
 
-  $: darkProgress = easeInOutSine(clamp(heroProgress / 0.96, 0, 1));
-  $: imageDark = lerp(0, 0.93, darkProgress);
-  $: imageScale = lerp(1.06, 1.01, darkProgress);
+  // Fade image sur tout le composant :
+  // - légère montée de noir tout du long
+  // - vraie fermeture seulement dans la toute fin
+  $: globalFade = easeInOutSine(clamp(imageFadeProgress, 0, 1));
+  $: endFade = Math.pow(clamp((imageFadeProgress - 0.78) / 0.22, 0, 1), 1.7);
+
+  $: imageDark = clamp(globalFade * 0.42 + endFade * 0.58, 0, 1);
+
+  $: midBrightness = lerp(1, 0.58, globalFade);
+  $: imageBrightness = lerp(midBrightness, 0, endFade);
+
+  $: imageScale = lerp(1.06, 1.025, globalFade);
 
   $: sideMargin = Math.min(vw * 0.085, 118);
   $: joinGap = Math.min(vw * 0.012, 14);
@@ -173,18 +187,20 @@
   }
 </script>
 
-<section class="hero-join-clean">
+<section class="hero-join-clean" bind:this={heroSection}>
+  <div class="hero-media-sticky" aria-hidden="true">
+    <div class="hero-media">
+      <img
+        src="images/photo.webp"
+        alt=""
+        style={`transform: scale(${imageScale}); filter: brightness(${imageBrightness});`}
+      />
+      <div class="hero-dark-layer" style={`opacity:${imageDark};`}></div>
+    </div>
+  </div>
+
   <section class="pin-section" bind:this={pinSection}>
     <div class="sticky-stage">
-      <div class="hero-media">
-        <img
-          src="images/photo.webp"
-          alt="Agence 3 Terres"
-          style={`transform: scale(${imageScale}); filter: brightness(${1 - imageDark});`}
-        />
-        <div class="hero-dark-layer" style={`opacity:${imageDark};`}></div>
-      </div>
-
       <div class="titles-layer">
         <span
           class="title-left"
@@ -256,18 +272,14 @@
     overflow: clip;
   }
 
-  .pin-section {
-    position: relative;
-    height: 265vh;
-  }
-
-  .sticky-stage {
+  .hero-media-sticky {
     position: sticky;
     top: 0;
     height: 100vh;
     height: 100svh;
-    overflow: hidden;
-    background: #000;
+    margin-bottom: -100vh;
+    z-index: 0;
+    pointer-events: none;
   }
 
   .hero-media {
@@ -294,13 +306,27 @@
     background:
       radial-gradient(
         circle at 50% 50%,
-        rgba(0, 0, 0, 0.01) 0%,
-        rgba(0, 0, 0, 0.08) 38%,
-        rgba(0, 0, 0, 0.22) 62%,
-        rgba(0, 0, 0, 0.84) 100%
+        rgba(0, 0, 0, 0) 0%,
+        rgba(0, 0, 0, 0.02) 40%,
+        rgba(0, 0, 0, 0.08) 68%,
+        rgba(0, 0, 0, 0.40) 100%
       );
     pointer-events: none;
     will-change: opacity;
+  }
+
+  .pin-section {
+    position: relative;
+    height: 265vh;
+    z-index: 2;
+  }
+
+  .sticky-stage {
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    height: 100svh;
+    overflow: hidden;
   }
 
   .titles-layer {
@@ -365,7 +391,7 @@
   .after-section {
     position: relative;
     z-index: 3;
-    background: #000;
+    background: transparent;
     padding: 16vh 0 18vh;
   }
 
@@ -415,15 +441,15 @@
     display: inline;
   }
 
- .after-image {
-  justify-self: end;
-  width: min(100%, 460px);
-  aspect-ratio: 1.45 / 1;
-  overflow: hidden;
-  background: #0b0b0b;
-  will-change: transform, opacity;
-  margin-top: clamp(4rem, 6vw, 7rem);/* ← AJOUT */
-}
+  .after-image {
+    justify-self: end;
+    width: min(100%, 460px);
+    aspect-ratio: 1.45 / 1;
+    overflow: hidden;
+    background: #0b0b0b;
+    will-change: transform, opacity;
+    margin-top: clamp(4rem, 6vw, 7rem);
+  }
 
   .after-image img {
     width: 100%;
@@ -506,10 +532,10 @@
       gap: 1rem;
     }
 
-      .after-text {
-    width: 78%; /* ← AVANT 66% */
-    justify-self: start;
-  }
+    .after-text {
+      width: 78%;
+      justify-self: start;
+    }
 
     .after-text h2 {
       font-size: clamp(1.15rem, 6.4vw, 1.95rem);
@@ -517,13 +543,12 @@
       max-width: none;
     }
 
-     .after-image {
-    width: min(78%, 340px); /* un peu plus large aussi */
-    justify-self: end;
-    aspect-ratio: 1.6 / 1;
-    margin-top: 3.5rem; /* ← image encore un peu plus basse sur mobile */
-  }
-
+    .after-image {
+      width: min(78%, 340px);
+      justify-self: end;
+      aspect-ratio: 1.6 / 1;
+      margin-top: 3.5rem;
+    }
 
     .scroll-hint {
       bottom: 1.05rem;

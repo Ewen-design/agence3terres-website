@@ -14,7 +14,6 @@
   let text = "";
   let mode = "dot";
   let isActive = false;
-  let isDesktop = false;
 
   let previewImage = "";
   let direction = "next";
@@ -25,6 +24,8 @@
   let isLeaving = false;
 
   let rafId;
+  let isDesktop = false;
+  let mediaQuery;
 
   const LERP = 0.15;
 
@@ -77,38 +78,27 @@
       mode = "button";
       scale = 1;
       currentSliderEl = null;
-    }
-
-    else if (type === "close") {
+    } else if (type === "close") {
       text = "Fermer";
       mode = "button";
       scale = 1;
       currentSliderEl = null;
-    }
-
-    else if (type === "button") {
+    } else if (type === "button") {
       text = "Voir";
       mode = "button";
       scale = 1;
       currentSliderEl = null;
-    }
-
-    else if (type === "next" || type === "prev") {
+    } else if (type === "next" || type === "prev") {
       mode = "slider";
       previewImage = el.dataset.image;
       direction = type;
       scale = 1;
       currentSliderEl = el;
-    }
-
-    else if (type === "carousel") {
+    } else if (type === "carousel") {
       mode = "carousel";
       scale = 1;
       currentSliderEl = null;
-    }
-
-    // ✅ curseur flèche vers le bas pour le hero
-    else if (type === "down") {
+    } else if (type === "down") {
       mode = "down";
       scale = 1;
       currentSliderEl = null;
@@ -119,7 +109,7 @@
     isActive = true;
 
     if (mode !== "slider" && mode !== "carousel") {
-      scale = 1.08;
+      scale = 1.04;
     }
   }
 
@@ -141,24 +131,21 @@
     carouselDirection = e.detail;
   }
 
-  onMount(() => {
-    isDesktop = window.matchMedia("(pointer: fine)").matches;
-    if (!isDesktop) return;
-
+  function addListeners() {
     window.addEventListener("mousemove", move);
     window.addEventListener("mouseover", handleHover);
     window.addEventListener("mousedown", down);
     window.addEventListener("mouseup", up);
-
     window.addEventListener("slider-index-changed", refreshSliderPreview);
     window.addEventListener("carousel-direction", updateCarouselDirection);
 
-    animate();
-  });
+    document.body.classList.add("hide-native-cursor");
 
-  onDestroy(() => {
-    if (!browser || !isDesktop) return;
+    cancelAnimationFrame(rafId);
+    rafId = requestAnimationFrame(animate);
+  }
 
+  function removeListeners() {
     window.removeEventListener("mousemove", move);
     window.removeEventListener("mouseover", handleHover);
     window.removeEventListener("mousedown", down);
@@ -166,7 +153,63 @@
     window.removeEventListener("slider-index-changed", refreshSliderPreview);
     window.removeEventListener("carousel-direction", updateCarouselDirection);
 
+    document.body.classList.remove("hide-native-cursor");
+
     cancelAnimationFrame(rafId);
+
+    scale = 1;
+    text = "";
+    mode = "dot";
+    previewImage = "";
+    currentSliderEl = null;
+    isActive = false;
+    isLeaving = false;
+  }
+
+  function updateCursorMode() {
+    const nextIsDesktop = mediaQuery?.matches ?? false;
+
+    if (nextIsDesktop === isDesktop) return;
+    isDesktop = nextIsDesktop;
+
+    if (isDesktop) {
+      addListeners();
+    } else {
+      removeListeners();
+    }
+  }
+
+  onMount(() => {
+    if (!browser) return;
+
+    // Active seulement sur les vrais écrans desktop avec souris précise
+    // et désactive le custom cursor sous 769px
+    mediaQuery = window.matchMedia("(hover: hover) and (pointer: fine) and (min-width: 769px)");
+
+    updateCursorMode();
+
+    const onMediaChange = () => updateCursorMode();
+
+    if (mediaQuery.addEventListener) {
+      mediaQuery.addEventListener("change", onMediaChange);
+    } else {
+      mediaQuery.addListener(onMediaChange);
+    }
+
+    return () => {
+      if (mediaQuery?.removeEventListener) {
+        mediaQuery.removeEventListener("change", onMediaChange);
+      } else if (mediaQuery?.removeListener) {
+        mediaQuery.removeListener(onMediaChange);
+      }
+
+      removeListeners();
+    };
+  });
+
+  onDestroy(() => {
+    if (!browser) return;
+    removeListeners();
   });
 </script>
 
@@ -189,16 +232,16 @@
     {:else if mode === "carousel"}
       <div class="arrow {carouselDirection}">
         <svg viewBox="0 0 60 20" fill="none">
-          <path d="M0 10H50" stroke="white" stroke-width="1.5"/>
-          <path d="M40 2L50 10L40 18" stroke="white" stroke-width="1.5"/>
+          <path d="M0 10H50" stroke="white" stroke-width="1.5" />
+          <path d="M40 2L50 10L40 18" stroke="white" stroke-width="1.5" />
         </svg>
       </div>
 
     {:else if mode === "down"}
       <div class="down-arrow">
         <svg viewBox="0 0 28 28" fill="none">
-          <path d="M14 4V22" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
-          <path d="M8 16L14 22L20 16" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M14 4V22" stroke="white" stroke-width="1.5" stroke-linecap="round" />
+          <path d="M8 16L14 22L20 16" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
         </svg>
       </div>
 
@@ -209,7 +252,7 @@
 {/if}
 
 <style>
-:global(body) {
+:global(body.hide-native-cursor) {
   cursor: none;
 }
 

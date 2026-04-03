@@ -10,14 +10,23 @@
   let expanded = false;
   let contentVisible = false;
   let closing = false;
+  let navigating = false;
+  let retracting = false;
   let activeIndex = null;
   let isMobile = false;
 
   let raf1;
   let raf2;
-  let closeTimer;
-  let contentTimer;
-  let retractTimer;
+  let openContentTimer;
+  let navigateTimer;
+  let wipeRetractTimer;
+  let finalCloseTimer;
+  let releaseTransitionTimer;
+
+  const OPEN_CONTENT_DELAY = 1080;
+  const CONTENT_OUT_BEFORE_WIPE = 760;
+  const CLOSE_WIPE_MS = 1180;
+  const NAVIGATE_DELAY = 140;
 
   const links = [
     { label: "L'envol", page: "home", image: "images/photo.webp" },
@@ -34,17 +43,47 @@
   function clearAsync() {
     cancelAnimationFrame(raf1);
     cancelAnimationFrame(raf2);
-    clearTimeout(closeTimer);
-    clearTimeout(contentTimer);
-    clearTimeout(retractTimer);
+    clearTimeout(openContentTimer);
+    clearTimeout(navigateTimer);
+    clearTimeout(wipeRetractTimer);
+    clearTimeout(finalCloseTimer);
+    clearTimeout(releaseTransitionTimer);
+  }
+
+  function setMenuTransitionSuppressed(value) {
+    if (!browser) return;
+
+    if (value) {
+      document.documentElement.classList.add("fs-menu-route-transition");
+    } else {
+      document.documentElement.classList.remove("fs-menu-route-transition");
+    }
+  }
+
+  function finishClose() {
+    visible = false;
+    expanded = false;
+    contentVisible = false;
+    closing = false;
+    navigating = false;
+    retracting = false;
+    open = false;
+    document.body.classList.remove("menu-open");
+
+    releaseTransitionTimer = setTimeout(() => {
+      setMenuTransitionSuppressed(false);
+    }, 80);
   }
 
   function startOpen() {
     clearAsync();
+
     visible = true;
-    closing = false;
     expanded = false;
     contentVisible = false;
+    closing = false;
+    navigating = false;
+    retracting = false;
     activeIndex = null;
 
     document.body.classList.add("menu-open");
@@ -55,37 +94,36 @@
       });
     });
 
-    contentTimer = setTimeout(() => {
+    openContentTimer = setTimeout(() => {
       contentVisible = true;
-    }, isMobile ? 220 : 300);
+    }, isMobile ? 1020 : OPEN_CONTENT_DELAY);
   }
 
   function startClose() {
-    if (!visible || closing) return;
+    if (!visible || closing || navigating) return;
 
     clearAsync();
+
     closing = true;
+    retracting = false;
     contentVisible = false;
     activeIndex = null;
 
-    retractTimer = setTimeout(() => {
+    wipeRetractTimer = setTimeout(() => {
+      retracting = true;
       expanded = false;
-    }, isMobile ? 120 : 160);
+    }, isMobile ? 720 : CONTENT_OUT_BEFORE_WIPE);
 
-    closeTimer = setTimeout(() => {
-      visible = false;
-      closing = false;
-      open = false;
-
-      document.body.classList.remove("menu-open");
-    }, isMobile ? 640 : 820);
+    finalCloseTimer = setTimeout(() => {
+      finishClose();
+    }, (isMobile ? 720 : CONTENT_OUT_BEFORE_WIPE) + (isMobile ? 1080 : CLOSE_WIPE_MS));
   }
 
   $: if (open && !visible) {
     startOpen();
   }
 
-  $: if (!open && visible && !closing) {
+  $: if (!open && visible && !closing && !navigating) {
     startClose();
   }
 
@@ -99,25 +137,53 @@
     clearAsync();
     window.removeEventListener("resize", checkMobile);
     document.body.classList.remove("menu-open");
+    setMenuTransitionSuppressed(false);
   });
 
   async function close() {
-    if (closing) return;
+    if (closing || navigating) return;
     open = false;
     await tick();
   }
 
-  function handleClick(link, index) {
+  async function handleClick(link, index) {
+    if (closing || navigating) return;
+
     if (isMobile && activeIndex !== index) {
       activeIndex = index;
       return;
     }
 
-    if (link.page) {
-      navigate(link.page);
+    if (!link.page) {
+      close();
+      return;
     }
 
-    close();
+    clearAsync();
+
+    navigating = true;
+    closing = true;
+    retracting = false;
+    activeIndex = null;
+    contentVisible = false;
+
+    setMenuTransitionSuppressed(true);
+
+    navigateTimer = setTimeout(() => {
+      navigate(link.page);
+    }, isMobile ? 120 : NAVIGATE_DELAY);
+
+    wipeRetractTimer = setTimeout(() => {
+      retracting = true;
+      expanded = false;
+    }, isMobile ? 720 : CONTENT_OUT_BEFORE_WIPE);
+
+    finalCloseTimer = setTimeout(() => {
+      finishClose();
+    }, (isMobile ? 720 : CONTENT_OUT_BEFORE_WIPE) + (isMobile ? 1080 : CLOSE_WIPE_MS));
+
+    open = false;
+    await tick();
   }
 
   function handleEnter(index) {
@@ -146,14 +212,26 @@
 </script>
 
 <div
-  class="fs-menu {visible ? 'is-visible' : ''} {expanded ? 'expanded' : ''} {contentVisible ? 'content-visible' : ''} {closing ? 'is-closing' : ''} {isMobile ? 'mobile' : ''}"
+  class="fs-menu {visible ? 'is-visible' : ''} {expanded ? 'expanded' : ''} {contentVisible ? 'content-visible' : ''} {closing ? 'is-closing' : ''} {navigating ? 'is-navigating' : ''} {retracting ? 'is-retracting' : ''} {isMobile ? 'mobile' : ''}"
   style={originStyle}
   aria-hidden={!visible}
 >
-  <div class="expander"></div>
-  <div class="bg-base" role="button" tabindex="0" aria-label="Fermer le menu" on:click={close} on:keydown={(e) => { if (e.key === 'Enter' || e.key === ' ') close(); }}></div>
+  <div
+    class="bg-hit"
+    role="button"
+    tabindex="0"
+    aria-label="Fermer le menu"
+    on:click={close}
+    on:keydown={(e) => {
+      if (e.key === "Enter" || e.key === " ") close();
+    }}
+  ></div>
 
-  <div class="topbar">
+  <div class="menu-scrim"></div>
+  <div class="menu-blur"></div>
+  <div class="wipe-panel"></div>
+
+  <div class="topbar ui-el">
     <div class="meta">Agence 3 Terres</div>
 
     <button
@@ -170,7 +248,7 @@
     </button>
   </div>
 
-  <nav class="menu-accordion" aria-label="Navigation principale">
+  <nav class="menu-accordion ui-el" aria-label="Navigation principale">
     {#each links as link, i}
       <button
         class="menu-item"
@@ -195,7 +273,7 @@
     {/each}
   </nav>
 
-  <div class="bottom-bar">
+  <div class="bottom-bar ui-el">
     <div class="bottom-col">
       <div class="bottom-label">Email</div>
       <a href="mailto:contact@agence3terres.com">contact@agence3terres.com</a>
@@ -223,6 +301,12 @@
     touch-action: none;
   }
 
+  :global(html.fs-menu-route-transition .route-transition-layer) {
+    opacity: 0 !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
+  }
+
   .fs-menu {
     position: fixed;
     inset: 0;
@@ -232,7 +316,7 @@
     opacity: 0;
     visibility: hidden;
     pointer-events: none;
-    background: #000;
+    background: transparent;
   }
 
   .fs-menu.is-visible {
@@ -241,54 +325,113 @@
     pointer-events: auto;
   }
 
-  .expander {
-    position: absolute;
-    left: var(--origin-x);
-    top: var(--origin-y);
-    width: var(--origin-w);
-    height: var(--origin-h);
-    background:
-      linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0)),
-      #151515;
-    border: 1px solid rgba(255,255,255,0.08);
-    backdrop-filter: blur(18px);
-    -webkit-backdrop-filter: blur(18px);
-    transform: translate(-50%, -50%) scale(1);
-    transform-origin: center center;
-    border-radius: 10px;
-    z-index: 5;
-    pointer-events: none;
-    will-change: transform, border-radius, opacity;
-    transition:
-      transform 0.82s cubic-bezier(.22,1,.36,1),
-      border-radius 0.82s cubic-bezier(.22,1,.36,1),
-      opacity 0.24s ease;
-  }
-
-  .fs-menu.expanded .expander {
-    transform: translate(-50%, -50%) scale(58);
-    border-radius: 0;
-    opacity: 0;
-  }
-
-  .bg-base {
+  .bg-hit {
     position: absolute;
     inset: 0;
     z-index: 1;
-    opacity: 0;
-    transition: opacity 0.28s ease;
-    background:
-      linear-gradient(
-  to bottom,
-  #151515 0%,
-  #151515 50%,
-  #000 50%,
-  #000 100%
-);
+    background: transparent;
   }
 
-  .fs-menu.expanded .bg-base {
+  .menu-scrim {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    opacity: 0;
+    background: rgba(0, 0, 0, 0.44);
+    transition: opacity 1.1s cubic-bezier(.23, 1, .32, 1);
+    pointer-events: none;
+  }
+
+  .menu-blur {
+    position: absolute;
+    inset: 0;
+    z-index: 3;
+    opacity: 0;
+    backdrop-filter: blur(0px);
+    -webkit-backdrop-filter: blur(0px);
+    transition:
+      opacity 1.1s cubic-bezier(.23, 1, .32, 1),
+      backdrop-filter 1.1s cubic-bezier(.23, 1, .32, 1),
+      -webkit-backdrop-filter 1.1s cubic-bezier(.23, 1, .32, 1);
+    pointer-events: none;
+  }
+
+  .wipe-panel {
+    position: absolute;
+    left: -10vw;
+    top: -140px;
+    width: 120vw;
+    height: calc(100vh + 280px);
+    z-index: 4;
+    opacity: 0;
+    background: linear-gradient(
+      to bottom,
+      #111 0%,
+      #101010 24%,
+      #0a0a0a 58%,
+      #000 100%
+    );
+    transform: translate3d(0, calc(-100% - 140px), 0);
+    will-change: transform, opacity;
+    pointer-events: none;
+    transition:
+      transform 1.18s cubic-bezier(.2, .88, .22, 1),
+      opacity 0.36s ease;
+  }
+
+  .fs-menu.expanded .menu-scrim {
     opacity: 1;
+  }
+
+  .fs-menu.expanded .menu-blur {
+    opacity: 1;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+  }
+
+  .fs-menu.expanded .wipe-panel {
+    opacity: 1;
+    transform: translate3d(0, 140px, 0);
+  }
+
+  .ui-el {
+    opacity: 0;
+    filter: blur(16px);
+    transform: translate3d(0, 30px, 0);
+    transition:
+      opacity 1s ease,
+      filter 1.28s cubic-bezier(.22, 1, .36, 1),
+      transform 1.28s cubic-bezier(.22, 1, .36, 1);
+  }
+
+  .fs-menu.content-visible .ui-el {
+    opacity: 1;
+    filter: blur(0px);
+    transform: translate3d(0, 0, 0);
+  }
+
+  .fs-menu.is-closing .ui-el,
+  .fs-menu.is-navigating .ui-el {
+    opacity: 0;
+    filter: blur(16px);
+    transform: translate3d(0, -28px, 0);
+  }
+
+  .fs-menu.is-retracting .wipe-panel {
+    transform: translate3d(0, calc(-100% - 140px), 0);
+    transition:
+      transform 1.18s cubic-bezier(.2, .88, .22, 1),
+      opacity 0.36s ease;
+  }
+
+  .fs-menu.is-retracting .menu-scrim {
+    opacity: 0;
+  }
+
+  .fs-menu.is-retracting .menu-blur {
+    opacity: 0;
+    backdrop-filter: blur(0px);
+    -webkit-backdrop-filter: blur(0px);
   }
 
   .topbar {
@@ -303,22 +446,6 @@
     justify-content: space-between;
     padding: 0 2rem;
     pointer-events: none;
-  }
-
-  .meta,
-  .close-block,
-  .bottom-col {
-    opacity: 0;
-    transform: translateY(-14px);
-    transition:
-      opacity 0.28s ease,
-      transform 0.38s cubic-bezier(.22,1,.36,1);
-  }
-
-  .fs-menu.content-visible .meta,
-  .fs-menu.content-visible .close-block {
-    opacity: 1;
-    transform: translateY(0);
   }
 
   .meta {
@@ -427,39 +554,14 @@
     background: transparent;
     cursor: pointer;
     overflow: hidden;
-    opacity: 0;
-    transform: translateY(16px);
-    transition:
-      opacity 0.28s ease,
-      transform 0.42s cubic-bezier(.22,1,.36,1),
-      height 560ms cubic-bezier(.22,1,.36,1);
-    transition-delay: calc(var(--i) * 0.025s);
+    transition: height 560ms cubic-bezier(.22,1,.36,1);
   }
 
-  .fs-menu.content-visible .menu-item {
-    opacity: 1;
-    transform: translateY(0);
-  }
-
-  .menu-item:nth-child(1) {
-    background: #151515;
-  }
-
-  .menu-item:nth-child(2) {
-    background: #111;
-  }
-
-  .menu-item:nth-child(3) {
-    background: #0c0c0c;
-  }
-
-  .menu-item:nth-child(4) {
-    background: #070707;
-  }
-
-  .menu-item:nth-child(5) {
-    background: #000;
-  }
+  .menu-item:nth-child(1) { background: #151515; }
+  .menu-item:nth-child(2) { background: #111; }
+  .menu-item:nth-child(3) { background: #0c0c0c; }
+  .menu-item:nth-child(4) { background: #070707; }
+  .menu-item:nth-child(5) { background: #000; }
 
   .menu-item.active {
     height: clamp(170px, 21vh, 250px);
@@ -614,11 +716,6 @@
     pointer-events: none;
   }
 
-  .fs-menu.content-visible .bottom-col {
-    opacity: 1;
-    transform: translateY(0);
-  }
-
   .bottom-col {
     display: flex;
     flex-direction: column;
@@ -668,19 +765,6 @@
   }
 
   @media (max-width: 900px) {
-    .expander {
-      backdrop-filter: none;
-      -webkit-backdrop-filter: none;
-      transition:
-        transform 0.66s cubic-bezier(.22,1,.36,1),
-        border-radius 0.66s cubic-bezier(.22,1,.36,1),
-        opacity 0.2s ease;
-    }
-
-    .fs-menu.expanded .expander {
-      transform: translate(-50%, -50%) scale(88);
-    }
-
     .topbar {
       height: 84px;
       padding: 0 1rem;
@@ -743,18 +827,18 @@
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .expander,
-    .bg-base,
-    .meta,
-    .close-block,
+    .menu-scrim,
+    .menu-blur,
+    .wipe-panel,
+    .ui-el,
     .menu-item,
     .menu-item-bg img,
     .menu-item-overlay,
     .menu-label,
-    .close-icon,
-    .bottom-col {
+    .close-icon {
       transition: none !important;
       animation: none !important;
+      filter: none !important;
     }
   }
 </style>

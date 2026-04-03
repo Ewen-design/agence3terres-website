@@ -6,10 +6,10 @@
   import { navigate } from "$lib/navigate.js";
 
   // ── State ──────────────────────────────────────────────────────────────────
-  let lastScrollY   = 0;
+  let lastScrollY = 0;
   let scrollingDown = false;
-  let menuOpen      = false;
-  let textColor     = "white";
+  let menuOpen = false;
+  let textColor = "white";
   let headerEl;
   let menuButtonEl;
   let menuOrigin = { x: 0, y: 0, width: 44, height: 40 };
@@ -20,6 +20,12 @@
   let openAnimTimer;
   let flipResetTimer;
 
+  let headerIntroStarted = false;
+  let headerIntroVisible = false;
+  let headerIntroDone = false;
+  let headerIntroFallback;
+  let headerIntroCleanup;
+
   const SCROLL_THRESHOLD = 10;
 
   // ── Scroll handler ─────────────────────────────────────────────────────────
@@ -27,35 +33,43 @@
   function handleScroll() {
     if (ticking) return;
     ticking = true;
-    requestAnimationFrame(() => { processScroll(); ticking = false; });
+    requestAnimationFrame(() => {
+      processScroll();
+      ticking = false;
+    });
   }
+
   function processScroll() {
     const currentY = window.scrollY;
-    const delta    = currentY - lastScrollY;
+    const delta = currentY - lastScrollY;
+
     if (Math.abs(delta) >= SCROLL_THRESHOLD) {
       scrollingDown = delta > 0 && currentY > 80 ? true : delta < 0 ? false : scrollingDown;
-      lastScrollY   = currentY;
+      lastScrollY = currentY;
     }
+
     updateTextColor();
   }
 
   function updateTextColor() {
     if (!headerEl) return;
     const headerMid = headerEl.getBoundingClientRect().top + headerEl.offsetHeight / 2;
-    const sections  = document.querySelectorAll(
+    const sections = document.querySelectorAll(
       "section.hero-wrapper, section.creative-section, section.services, section.dna-section, section.lifestyles-section"
     );
+
     let overLight = false;
     sections.forEach((section) => {
       const rect = section.getBoundingClientRect();
       if (headerMid >= rect.top && headerMid <= rect.bottom) overLight = true;
     });
+
     textColor = overLight ? "black" : "white";
   }
 
   // ── Glow cursor (hover manuel) ─────────────────────────────────────────────
   function handleButtonMove(e) {
-    const btn  = e.currentTarget;
+    const btn = e.currentTarget;
     const rect = btn.getBoundingClientRect();
     btn.style.setProperty("--mx", `${e.clientX - rect.left}px`);
     btn.style.setProperty("--my", `${e.clientY - rect.top}px`);
@@ -70,19 +84,19 @@
   function startTour() {
     if (isTouringNow) return;
 
-    const linkBtns = btnEls.filter(el => el != null);
+    const linkBtns = btnEls.filter((el) => el != null);
     if (!linkBtns.length) return;
 
     const btn = linkBtns[Math.floor(Math.random() * linkBtns.length)];
     const rect = btn.getBoundingClientRect();
-    const h    = rect.height;
+    const h = rect.height;
 
     btn.style.setProperty("--my", `${h / 2}px`);
 
     const duration = 900;
-    const start    = performance.now();
-    const fromX    = -20;
-    const toX      = rect.width + 20;
+    const start = performance.now();
+    const fromX = -20;
+    const toX = rect.width + 20;
 
     isTouringNow = true;
     btn.classList.add("auto-glow");
@@ -97,9 +111,9 @@
     }
 
     function animFrame(now) {
-      const t    = Math.min((now - start) / duration, 1);
+      const t = Math.min((now - start) / duration, 1);
       const ease = t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
-      const mx   = fromX + (toX - fromX) * ease;
+      const mx = fromX + (toX - fromX) * ease;
       btn.style.setProperty("--mx", `${mx}px`);
 
       if (t < 1) {
@@ -109,7 +123,10 @@
         btn.classList.add("auto-glow-out");
         if (isBurger) {
           const spans = btn.querySelectorAll("span");
-          spans.forEach(s => { s.style.transform = ""; s.style.opacity = ""; });
+          spans.forEach((s) => {
+            s.style.transform = "";
+            s.style.opacity = "";
+          });
         }
         setTimeout(() => {
           btn.classList.remove("auto-glow-out");
@@ -129,14 +146,23 @@
 
   function registerBurger(node) {
     btnEls[5] = node;
-    return { destroy() { btnEls[5] = null; } };
+    return {
+      destroy() {
+        btnEls[5] = null;
+      }
+    };
   }
 
   // ── Menu ───────────────────────────────────────────────────────────────────
   function openMenu() {
     if (menuButtonEl) {
       const rect = menuButtonEl.getBoundingClientRect();
-      menuOrigin = { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2, width: rect.width, height: rect.height };
+      menuOrigin = {
+        x: rect.left + rect.width / 2,
+        y: rect.top + rect.height / 2,
+        width: rect.width,
+        height: rect.height
+      };
     }
     menuOpen = true;
   }
@@ -173,13 +199,29 @@
     linksTextFlipIn = false;
   }
 
+  function startHeaderIntro() {
+    if (headerIntroStarted) return;
+    headerIntroStarted = true;
+
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        headerIntroVisible = true;
+
+        clearTimeout(headerIntroCleanup);
+        headerIntroCleanup = setTimeout(() => {
+          headerIntroDone = true;
+        }, 1100);
+      });
+    });
+  }
+
   // ── Dérivés ────────────────────────────────────────────────────────────────
   $: compact = scrollingDown && !menuOpen;
   $: themeClass =
     $page.url.pathname === "/services" ? "theme-services" :
-    $page.url.pathname === "/travail"  ? "theme-projets"  :
-    $page.url.pathname === "/apropos"  ? "theme-apropos"  :
-    $page.url.pathname === "/contact"  ? "theme-contact"  :
+    $page.url.pathname === "/travail" ? "theme-projets" :
+    $page.url.pathname === "/apropos" ? "theme-apropos" :
+    $page.url.pathname === "/contact" ? "theme-contact" :
     "";
 
   let previousCompact = compact;
@@ -199,7 +241,23 @@
     updateTextColor();
     linksTextReady = !compact;
     window.addEventListener("scroll", handleScroll, { passive: true });
+
+    const handlePreloaderDone = () => {
+      startHeaderIntro();
+    };
+
+    window.addEventListener("preloader:done", handlePreloaderDone);
+
+    // fallback aligné avec ton autre composant
+    headerIntroFallback = setTimeout(() => {
+      startHeaderIntro();
+    }, 1800);
+
     scheduleTour();
+
+    return () => {
+      window.removeEventListener("preloader:done", handlePreloaderDone);
+    };
   });
 
   onDestroy(() => {
@@ -208,17 +266,18 @@
     clearTimeout(tourTimer);
     clearTimeout(openAnimTimer);
     clearTimeout(flipResetTimer);
+    clearTimeout(headerIntroFallback);
+    clearTimeout(headerIntroCleanup);
     cancelAnimationFrame(tourRaf);
   });
 </script>
 
 <header
-  class="nav-wrapper {compact ? 'compact' : ''} {menuOpen ? 'menu-open' : ''} {themeClass}"
+  class="nav-wrapper {compact ? 'compact' : ''} {menuOpen ? 'menu-open' : ''} {themeClass} {headerIntroVisible ? 'intro-visible' : 'intro-hidden'} {headerIntroVisible && !headerIntroDone ? 'intro-animating' : ''}"
   style="color:{textColor}"
   bind:this={headerEl}
 >
   <nav class="nav-inner" aria-label="Navigation principale">
-
     <!-- Logo -->
     <button
       class="nav-btn logo"
@@ -243,10 +302,10 @@
       role="list"
     >
       {#each [
-        { label: "Projets",  page: "travail"  },
-        { label: "À propos", page: "apropos"  },
+        { label: "Projets", page: "travail" },
+        { label: "À propos", page: "apropos" },
         { label: "Services", page: "services" },
-        { label: "Contact",  page: "contact"  },
+        { label: "Contact", page: "contact" }
       ] as link, i}
         <button
           class="nav-btn fade"
@@ -282,7 +341,6 @@
       <span></span>
       <span></span>
     </div>
-
   </nav>
 </header>
 
@@ -297,16 +355,48 @@
     transform: translateX(-50%);
     z-index: 1000;
   }
+
   .nav-wrapper {
     padding: 0;
     background: none;
     backdrop-filter: none;
     box-shadow: none;
     transition:
-      opacity   0.9s ease,
+      opacity 0.9s ease,
       transform 0.9s cubic-bezier(.22,.61,.36,1),
-      filter    0.9s ease;
+      filter 0.9s ease;
   }
+
+  .nav-wrapper.intro-hidden {
+    opacity: 0;
+    transform: translateX(-50%);
+    pointer-events: none;
+  }
+
+  .nav-wrapper.intro-visible {
+    opacity: 1;
+    transform: translateX(-50%);
+    filter: none;
+    pointer-events: auto;
+  }
+
+  .nav-wrapper.intro-animating {
+    animation: headerIntroReveal 1s cubic-bezier(.22,1,.36,1) both;
+  }
+
+  @keyframes headerIntroReveal {
+    from {
+      opacity: 0;
+      filter: blur(10px);
+      transform: translateX(-50%) translate3d(0, -10px, 0) scale(0.985);
+    }
+    to {
+      opacity: 1;
+      filter: blur(0);
+      transform: translateX(-50%) translate3d(0, 0, 0) scale(1);
+    }
+  }
+
   .menu-open {
     opacity: 0.35;
     transform: translateX(-50%) scale(0.97);
@@ -341,7 +431,7 @@
     border-radius: 2px;
     box-shadow: 0 6px 8px rgba(0, 0, 0, 0.04);
     transition:
-      transform  1.2s cubic-bezier(.22,.61,.36,1),
+      transform 1.2s cubic-bezier(.22,.61,.36,1),
       box-shadow 1.2s cubic-bezier(.22,.61,.36,1),
       background 1.2s cubic-bezier(.22,.61,.36,1);
   }
@@ -397,6 +487,7 @@
     transform-origin: bottom center;
     opacity: 0;
   }
+
   .links:not(.text-ready) .nav-btn-flip::after {
     transform: translateY(100%);
     opacity: 0;
@@ -407,6 +498,7 @@
     transform: translateY(0%) rotateX(0deg);
     opacity: 1;
   }
+
   .links.flip-in .nav-btn-flip::after {
     transform: translateY(100%);
     opacity: 0;
@@ -417,6 +509,7 @@
     transform: translateY(0%);
     opacity: 1;
   }
+
   .links.text-ready:not(.flip-in) .nav-btn-flip::after {
     transform: translateY(100%);
     opacity: 1;
@@ -427,6 +520,7 @@
     transform: translateY(-100%);
     opacity: 1;
   }
+
   .links .nav-btn:hover .nav-btn-flip::after {
     transform: translateY(0%);
     opacity: 1;
@@ -504,6 +598,7 @@
       transparent 78%
     );
   }
+
   .theme-services .nav-btn::after {
     border-image-source: radial-gradient(
       78px circle at var(--mx, 50%) var(--my, 50%),
@@ -523,6 +618,7 @@
       transparent 78%
     );
   }
+
   .theme-projets .nav-btn::after {
     border-image-source: radial-gradient(
       78px circle at var(--mx, 50%) var(--my, 50%),
@@ -542,6 +638,7 @@
       transparent 78%
     );
   }
+
   .theme-apropos .nav-btn::after {
     border-image-source: radial-gradient(
       78px circle at var(--mx, 50%) var(--my, 50%),
@@ -561,6 +658,7 @@
       transparent 78%
     );
   }
+
   .theme-contact .nav-btn::after {
     border-image-source: radial-gradient(
       78px circle at var(--mx, 50%) var(--my, 50%),
@@ -597,8 +695,8 @@
 
   /* ouverture : 2 et 3 d'abord, puis 1 et 4 */
   .links button:nth-child(1) { transition-delay: 0.045s; }
-  .links button:nth-child(2) { transition-delay: 0.00s; }
-  .links button:nth-child(3) { transition-delay: 0.00s; }
+  .links button:nth-child(2) { transition-delay: 0s; }
+  .links button:nth-child(3) { transition-delay: 0s; }
   .links button:nth-child(4) { transition-delay: 0.045s; }
 
   /* ── Compact ───────────────────────────────────────────────────────────── */
@@ -615,10 +713,10 @@
   }
 
   /* fermeture : 1 et 4 d'abord, puis 2 et 3 */
-  .compact .links button:nth-child(1) { transition-delay: 0.00s; }
+  .compact .links button:nth-child(1) { transition-delay: 0s; }
   .compact .links button:nth-child(2) { transition-delay: 0.045s; }
   .compact .links button:nth-child(3) { transition-delay: 0.045s; }
-  .compact .links button:nth-child(4) { transition-delay: 0.00s; }
+  .compact .links button:nth-child(4) { transition-delay: 0s; }
 
   .compact .nav-inner {
     justify-content: center;
@@ -626,7 +724,13 @@
   }
 
   /* ── Burger ────────────────────────────────────────────────────────────── */
-  .more { width: 44px; padding: 0; cursor: pointer; gap: 3px; }
+  .more {
+    width: 44px;
+    padding: 0;
+    cursor: pointer;
+    gap: 3px;
+  }
+
   .more span {
     width: 3px;
     height: 3px;
@@ -634,12 +738,15 @@
     border-radius: 50%;
     transition: all 1s cubic-bezier(.22,.61,.36,1);
   }
-  .more:hover span:nth-child(1) { transform: translateX(6px)  scale(1.6); }
+
+  .more:hover span:nth-child(1) { transform: translateX(6px) scale(1.6); }
   .more:hover span:nth-child(2) { opacity: 0; transform: scale(0); }
   .more:hover span:nth-child(3) { transform: translateX(-6px) scale(1.6); }
 
   /* ── Mobile ────────────────────────────────────────────────────────────── */
-  @media (max-width: 768px) { .links { display: none; } }
+  @media (max-width: 768px) {
+    .links { display: none; }
+  }
 
   /* ── Reduced motion ────────────────────────────────────────────────────── */
   @media (prefers-reduced-motion: reduce) {
@@ -652,9 +759,22 @@
     .nav-btn-flip::after {
       transition: none;
     }
+
+    .nav-wrapper.intro-hidden,
+    .nav-wrapper.intro-visible,
+    .nav-wrapper.intro-animating {
+      opacity: 1;
+      transform: translateX(-50%);
+      filter: none;
+      animation: none;
+      pointer-events: auto;
+    }
+
     .nav-btn.auto-glow::before,
     .nav-btn.auto-glow::after,
     .nav-btn.auto-glow-out::before,
-    .nav-btn.auto-glow-out::after { display: none; }
+    .nav-btn.auto-glow-out::after {
+      display: none;
+    }
   }
 </style>
