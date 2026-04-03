@@ -1,7 +1,18 @@
 <script>
+  import { onMount, onDestroy } from "svelte";
+  import { browser } from "$app/environment";
+  import { registerParallax, unregisterParallax } from "../scrollEngine.js";
   import { navigate } from "$lib/navigate.js";
+  import { sharedLightPhase, setExitedLightZone } from "$lib/sectionThemeSync.js";
 
   let hoveredIndex = 0;
+  let sectionEl;
+  let sectionTop = 0;
+  let sectionHeight = 0;
+  let resizeObserver;
+  let resizeTimer = null;
+  let sectionVisible = false;
+  let intersectionObserver;
 
   const projects = [
     {
@@ -36,9 +47,70 @@
     el.style.setProperty("--mx", `${e.clientX - rect.left}px`);
     el.style.setProperty("--my", `${e.clientY - rect.top}px`);
   }
+
+  function measure() {
+    if (!sectionEl) return;
+    const scrollY = window.lenis?.animatedScroll ?? window.scrollY ?? 0;
+    const rect = sectionEl.getBoundingClientRect();
+    sectionTop = rect.top + scrollY;
+    sectionHeight = rect.height;
+  }
+
+  function onScroll(scrollY, { vh }) {
+    if (!sectionVisible || !sectionHeight) return;
+
+    const sectionBottom = sectionTop + sectionHeight;
+    const revertTrigger = sectionBottom - vh * 1.16;
+    setExitedLightZone(scrollY >= revertTrigger);
+  }
+
+  function handleResize() {
+    if (resizeTimer) clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(() => {
+      measure();
+    }, 80);
+  }
+
+  onMount(() => {
+    requestAnimationFrame(() => {
+      measure();
+      registerParallax(onScroll, { priority: 2 });
+    });
+
+    resizeObserver = new ResizeObserver(() => handleResize());
+    if (sectionEl) resizeObserver.observe(sectionEl);
+
+    intersectionObserver = new IntersectionObserver(
+      ([entry]) => {
+        sectionVisible = entry.isIntersecting;
+        if (sectionVisible) measure();
+      },
+      { rootMargin: "400px 0px 400px 0px" }
+    );
+
+    if (sectionEl) intersectionObserver.observe(sectionEl);
+
+    window.addEventListener("resize", handleResize, { passive: true });
+    window.addEventListener("orientationchange", handleResize, { passive: true });
+  });
+
+  onDestroy(() => {
+    if (!browser) return;
+    unregisterParallax(onScroll);
+    resizeObserver?.disconnect();
+    intersectionObserver?.disconnect();
+    if (resizeTimer) clearTimeout(resizeTimer);
+    window.removeEventListener("resize", handleResize);
+    window.removeEventListener("orientationchange", handleResize);
+    setExitedLightZone(false);
+  });
 </script>
 
-<section class="services-accordion">
+<section
+  class="services-accordion"
+  class:light-phase={$sharedLightPhase}
+  bind:this={sectionEl}
+>
   <div class="top-header">
     <div class="header-title-wrap">
       <h2>Nos projets</h2>
@@ -125,12 +197,41 @@
 
 <style>
   .services-accordion {
+    --section-bg: #000;
+    --section-text: #f4efe6;
+    --item-1: #151515;
+    --item-2: #111;
+    --item-3: #000;
+    --project-title: #f4efe6;
+    --number-color: #5f6771;
+    --cta-text-color: rgba(244, 239, 230, 0.72);
+    --btn-text: #f4efe6;
+    --btn-border: rgba(255, 255, 255, 0.15);
+    --btn-bg: rgba(255, 255, 255, 0.10);
+
     width: 100%;
-    background: #000;
-    color: #f4efe6;
+    background: var(--section-bg);
+    color: var(--section-text);
     overflow: hidden;
     contain: layout paint;
     isolation: isolate;
+    transition:
+      background-color 620ms cubic-bezier(0.22, 1, 0.36, 1),
+      color 620ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .services-accordion.light-phase {
+    --section-bg: #f5f1e8;
+    --section-text: #111;
+    --item-1: #e7dfd3;
+    --item-2: #e1d9cd;
+    --item-3: #d9d0c3;
+    --project-title: #111;
+    --number-color: #756c60;
+    --cta-text-color: rgba(17, 17, 17, 0.68);
+    --btn-text: #111;
+    --btn-border: rgba(17, 17, 17, 0.14);
+    --btn-bg: rgba(17, 17, 17, 0.06);
   }
 
   .top-header {
@@ -139,7 +240,8 @@
     display: grid;
     grid-template-columns: 48% 52%;
     align-items: end;
-    background: #000;
+    background: var(--section-bg);
+    transition: background-color 620ms cubic-bezier(0.22, 1, 0.36, 1);
   }
 
   .header-spacer {
@@ -163,11 +265,12 @@
     font-size: clamp(2.5rem, 5vw, 5.5rem);
     line-height: 0.98;
     letter-spacing: -0.03em;
-    color: #f4efe6;
+    color: var(--project-title);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     text-rendering: geometricPrecision;
     text-align: left;
+    transition: color 620ms cubic-bezier(0.22, 1, 0.36, 1);
   }
 
   .accordion {
@@ -187,19 +290,19 @@
     contain: layout paint;
     transition:
       height 920ms cubic-bezier(0.22, 1, 0.36, 1),
-      background-color 360ms ease;
+      background-color 620ms cubic-bezier(0.22, 1, 0.36, 1);
   }
 
   .accordion-item:nth-child(1) {
-    background: #151515;
+    background: var(--item-1);
   }
 
   .accordion-item:nth-child(2) {
-    background: #111;
+    background: var(--item-2);
   }
 
   .accordion-item:nth-child(3) {
-    background: #000;
+    background: var(--item-3);
   }
 
   .accordion-item.active {
@@ -286,7 +389,8 @@
     font-size: clamp(1.8rem, 3vw, 4rem);
     line-height: 0.96;
     letter-spacing: -0.045em;
-    color: #f4efe6;
+    color: var(--project-title);
+    transition: color 620ms cubic-bezier(0.22, 1, 0.36, 1);
   }
 
   .number {
@@ -295,9 +399,10 @@
     font-size: clamp(1.6rem, 2.4vw, 3rem);
     line-height: 1;
     letter-spacing: -0.04em;
-    color: #5f6771;
+    color: var(--number-color);
     opacity: 0.95;
     padding-top: 0.08em;
+    transition: color 620ms cubic-bezier(0.22, 1, 0.36, 1);
   }
 
   .cta-row {
@@ -325,7 +430,8 @@
     font-family: "General Sans", sans-serif;
     font-size: clamp(0.98rem, 1.08vw, 1.15rem);
     line-height: 1.48;
-    color: rgba(244, 239, 230, 0.72);
+    color: var(--cta-text-color);
+    transition: color 620ms cubic-bezier(0.22, 1, 0.36, 1);
   }
 
   .nav-btn {
@@ -338,10 +444,10 @@
     padding: 0 1.5rem;
     font-size: 0.9rem;
     white-space: nowrap;
-    color: inherit;
-    border: 1px solid rgba(255, 255, 255, 0.15);
+    color: var(--btn-text);
+    border: 1px solid var(--btn-border);
     cursor: pointer;
-    background: rgba(255, 255, 255, 0.10);
+    background: var(--btn-bg);
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
     border-radius: 2px;
@@ -349,7 +455,9 @@
     transition:
       transform 1.2s cubic-bezier(.22,.61,.36,1),
       box-shadow 1.2s cubic-bezier(.22,.61,.36,1),
-      background 1.2s cubic-bezier(.22,.61,.36,1);
+      background 1.2s cubic-bezier(.22,.61,.36,1),
+      color 620ms cubic-bezier(0.22, 1, 0.36, 1),
+      border-color 620ms cubic-bezier(0.22, 1, 0.36, 1);
   }
 
   .nav-btn-flip {

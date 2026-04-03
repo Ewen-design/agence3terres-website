@@ -1,5 +1,12 @@
 <script>
-  import { onMount } from "svelte";
+  import { onMount, onDestroy } from "svelte";
+  import { browser } from "$app/environment";
+  import { registerParallax, unregisterParallax } from "../scrollEngine.js";
+  import {
+    sharedLightPhase,
+    setEnteredLightZone,
+    resetSharedLightPhase
+  } from "$lib/sectionThemeSync.js";
 
   const leftImages = [
     { ratio: "portrait", height: 34 },
@@ -31,8 +38,12 @@
   let rafId = null;
   let targetOpacity = 0;
   let targetTranslate = 34;
-
   let galleryProgress = 0;
+
+  let sectionTop = 0;
+  let sectionHeight = 0;
+  let resizeObserver;
+  let resizeTimer = null;
 
   function clamp(value, min, max) {
     return Math.max(min, Math.min(max, value));
@@ -46,6 +57,14 @@
 
   function lerp(start, end, factor) {
     return start + (end - start) * factor;
+  }
+
+  function measure() {
+    if (!sectionEl) return;
+    const scrollY = window.lenis?.animatedScroll ?? window.scrollY ?? 0;
+    const rect = sectionEl.getBoundingClientRect();
+    sectionTop = rect.top + scrollY;
+    sectionHeight = rect.height;
   }
 
   function animateText() {
@@ -73,51 +92,70 @@
     }
   }
 
-  function updateTextVisibility() {
-    if (!sectionEl) return;
+  function updateFromScroll(scrollY, { vh }) {
+    if (!sectionEl || !sectionHeight) return;
 
-    const rect = sectionEl.getBoundingClientRect();
-    const vh = window.innerHeight;
-
-    const sectionTop = rect.top;
-    const sectionBottom = rect.bottom;
-
+    const topInViewport = sectionTop - scrollY;
+    const bottomInViewport = topInViewport + sectionHeight;
     const centerY = vh * 0.5;
 
-    const enter = clamp((centerY - sectionTop) / (vh * 0.4), 0, 1);
-    const leave = clamp((sectionBottom - centerY) / (vh * 0.4), 0, 1);
-
+    const enter = clamp((centerY - topInViewport) / (vh * 0.4), 0, 1);
+    const leave = clamp((bottomInViewport - centerY) / (vh * 0.4), 0, 1);
     const visibility = easeInOutCubic(enter) * easeInOutCubic(leave);
 
     targetOpacity = visibility;
     targetTranslate = (1 - visibility) * 34;
 
-    const gEnter = clamp((centerY - sectionTop) / (vh * 0.55), 0, 1);
-    const gLeave = clamp((sectionBottom - centerY) / (vh * 0.55), 0, 1);
-
+    const gEnter = clamp((centerY - topInViewport) / (vh * 0.55), 0, 1);
+    const gLeave = clamp((bottomInViewport - centerY) / (vh * 0.55), 0, 1);
     galleryProgress = easeInOutCubic(gEnter) * easeInOutCubic(gLeave);
+
+    const lightTrigger = sectionTop + sectionHeight - vh * 0.06;
+    setEnteredLightZone(scrollY >= lightTrigger);
 
     startAnimationLoop();
   }
 
+  function handleResize() {
+    if (resizeTimer) clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(() => {
+      measure();
+    }, 80);
+  }
+
   onMount(() => {
-    updateTextVisibility();
+    resetSharedLightPhase();
 
-    const onScroll = () => updateTextVisibility();
-    const onResize = () => updateTextVisibility();
+    requestAnimationFrame(() => {
+      measure();
+    });
 
-    window.addEventListener("scroll", onScroll, { passive: true });
-    window.addEventListener("resize", onResize);
+    registerParallax(updateFromScroll, { priority: 2 });
 
-    return () => {
-      window.removeEventListener("scroll", onScroll);
-      window.removeEventListener("resize", onResize);
-      if (rafId !== null) cancelAnimationFrame(rafId);
-    };
+    resizeObserver = new ResizeObserver(() => handleResize());
+    if (sectionEl) resizeObserver.observe(sectionEl);
+
+    window.addEventListener("resize", handleResize, { passive: true });
+    window.addEventListener("orientationchange", handleResize, { passive: true });
+  });
+
+  onDestroy(() => {
+    if (!browser) return;
+    unregisterParallax(updateFromScroll);
+    resizeObserver?.disconnect();
+    if (resizeTimer) clearTimeout(resizeTimer);
+    if (rafId !== null) cancelAnimationFrame(rafId);
+    window.removeEventListener("resize", handleResize);
+    window.removeEventListener("orientationchange", handleResize);
+    resetSharedLightPhase();
   });
 </script>
 
-<section class="gallery-section" bind:this={sectionEl}>
+<section
+  class="gallery-section"
+  class:light-phase={$sharedLightPhase}
+  bind:this={sectionEl}
+>
   <div
     class="fixed-text"
     class:is-visible={textVisible}
@@ -173,11 +211,24 @@
 
 <style>
   .gallery-section {
+    --section-bg: #000;
+    --section-text: #f5f1e8;
+    --card-bg: #111;
+
     position: relative;
     width: 100%;
-    background: #000;
+    background: var(--section-bg);
     overflow: hidden;
-    color: #f5f1e8;
+    color: var(--section-text);
+    transition:
+      background-color 620ms cubic-bezier(0.22, 1, 0.36, 1),
+      color 620ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .gallery-section.light-phase {
+    --section-bg: #f5f1e8;
+    --section-text: #111;
+    --card-bg: #ddd5ca;
   }
 
   .fixed-text {
@@ -209,8 +260,9 @@
     line-height: 0.95;
     letter-spacing: -0.04em;
     text-align: center;
-    color: #f5f1e8;
+    color: var(--section-text);
     text-wrap: balance;
+    transition: color 620ms cubic-bezier(0.22, 1, 0.36, 1);
   }
 
   .letter {
@@ -262,7 +314,8 @@
 
   .card {
     overflow: hidden;
-    background: #111;
+    background: var(--card-bg);
+    transition: background-color 620ms cubic-bezier(0.22, 1, 0.36, 1);
   }
 
   .card img {
@@ -331,10 +384,7 @@
     }
 
     .col-left,
-    .col-right {
-      transform: none;
-    }
-
+    .col-right,
     .col-center {
       transform: none;
     }
