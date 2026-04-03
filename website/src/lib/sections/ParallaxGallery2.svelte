@@ -538,7 +538,7 @@
   .gallery-grid {
     position: relative;
     z-index: 3;
-    width: min(1500px, 92%);
+    width: 98%;
     margin: 3rem auto 0 auto;
     display: grid;
     grid-template-columns: repeat(6, minmax(0, 1fr));

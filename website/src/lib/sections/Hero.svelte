@@ -326,7 +326,7 @@
 
   .pin-section {
     position: relative;
-    height: 265vh;
+    height: 160vh;
     z-index: 2;
   }
 
