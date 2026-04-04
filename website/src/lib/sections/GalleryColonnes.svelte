@@ -9,24 +9,21 @@
   } from "$lib/sectionThemeSync.js";
 
   const leftImages = [
-    { ratio: "portrait", height: 34 },
-    { ratio: "landscape", height: 23 },
     { ratio: "portrait", height: 38 },
-    { ratio: "landscape", height: 24 }
+    { ratio: "landscape", height: 23 },
+    { ratio: "portrait", height: 34 }
   ];
 
   const centerImages = [
     { ratio: "landscape", height: 28 },
     { ratio: "portrait", height: 42 },
-    { ratio: "landscape", height: 24 },
     { ratio: "portrait", height: 36 }
   ];
 
   const rightImages = [
-    { ratio: "portrait", height: 35 },
-    { ratio: "landscape", height: 22 },
-    { ratio: "portrait", height: 39 },
-    { ratio: "landscape", height: 25 }
+    { ratio: "portrait", height: 38 },
+    { ratio: "landscape", height: 23 },
+    { ratio: "portrait", height: 34 }
   ];
 
   const text = "Nos instants visuels".split("");
@@ -40,10 +37,36 @@
   let targetTranslate = 34;
   let galleryProgress = 0;
 
+  let galleryExitCut = 0;
+  let galleryExitFeather = 18;
+
   let sectionTop = 0;
   let sectionHeight = 0;
   let resizeObserver;
   let resizeTimer = null;
+  let isMobile = false;
+
+  // ===== RÉGLAGES TIMING =====
+  // Desktop
+  const DESKTOP_TEXT_CENTER = 0.56;
+  const DESKTOP_TEXT_ENTER_RANGE = 0.42;
+  const DESKTOP_TEXT_LEAVE_RANGE = 0.98;
+  const DESKTOP_GALLERY_CENTER = 0.58;
+  const DESKTOP_GALLERY_RANGE = 0.62;
+
+  // Mobile
+  const MOBILE_TEXT_CENTER = 0.60;
+  const MOBILE_TEXT_ENTER_RANGE = 0.34;
+  const MOBILE_TEXT_LEAVE_RANGE = 0.91;
+  const MOBILE_GALLERY_CENTER = 0.72;
+  const MOBILE_GALLERY_RANGE = 0.72;
+
+  // Disparition progressive bas -> haut
+  const DESKTOP_EXIT_START = 1.08;
+  const DESKTOP_EXIT_END = 0.18;
+  const MOBILE_EXIT_START = 1.02;
+  const MOBILE_EXIT_END = 0.24;
+  // ==========================
 
   function clamp(value, min, max) {
     return Math.max(min, Math.min(max, value));
@@ -57,6 +80,10 @@
 
   function lerp(start, end, factor) {
     return start + (end - start) * factor;
+  }
+
+  function updateDeviceState() {
+    isMobile = window.innerWidth <= 640;
   }
 
   function measure() {
@@ -97,18 +124,38 @@
 
     const topInViewport = sectionTop - scrollY;
     const bottomInViewport = topInViewport + sectionHeight;
-    const centerY = vh * 0.5;
 
-    const enter = clamp((centerY - topInViewport) / (vh * 0.4), 0, 1);
-    const leave = clamp((bottomInViewport - centerY) / (vh * 0.4), 0, 1);
+    const textCenterY = vh * (isMobile ? MOBILE_TEXT_CENTER : DESKTOP_TEXT_CENTER);
+    const textEnterRange = vh * (isMobile ? MOBILE_TEXT_ENTER_RANGE : DESKTOP_TEXT_ENTER_RANGE);
+    const textLeaveRange = vh * (isMobile ? MOBILE_TEXT_LEAVE_RANGE : DESKTOP_TEXT_LEAVE_RANGE);
+
+    const enter = clamp((textCenterY - topInViewport) / textEnterRange, 0, 1);
+    const leave = clamp((bottomInViewport - textCenterY) / textLeaveRange, 0, 1);
     const visibility = easeInOutCubic(enter) * easeInOutCubic(leave);
 
     targetOpacity = visibility;
     targetTranslate = (1 - visibility) * 34;
 
-    const gEnter = clamp((centerY - topInViewport) / (vh * 0.55), 0, 1);
-    const gLeave = clamp((bottomInViewport - centerY) / (vh * 0.55), 0, 1);
+    const galleryCenterY = vh * (isMobile ? MOBILE_GALLERY_CENTER : DESKTOP_GALLERY_CENTER);
+    const galleryRange = vh * (isMobile ? MOBILE_GALLERY_RANGE : DESKTOP_GALLERY_RANGE);
+
+    const gEnter = clamp((galleryCenterY - topInViewport) / galleryRange, 0, 1);
+    const gLeave = clamp((bottomInViewport - galleryCenterY) / galleryRange, 0, 1);
     galleryProgress = easeInOutCubic(gEnter) * easeInOutCubic(gLeave);
+
+    // Début précoce et très doux de la disparition depuis le bas
+    const exitStart = vh * (isMobile ? MOBILE_EXIT_START : DESKTOP_EXIT_START);
+    const exitEnd = vh * (isMobile ? MOBILE_EXIT_END : DESKTOP_EXIT_END);
+
+    const rawExit = clamp((exitStart - bottomInViewport) / (exitStart - exitEnd), 0, 1);
+
+    // départ très doux, puis montée progressive
+    const slowStart = Math.pow(rawExit, 2.15);
+    const reinforcedMid = 1 - Math.pow(1 - rawExit, 2.4);
+    const blendedExit = slowStart * 0.68 + reinforcedMid * 0.32;
+
+    galleryExitCut = blendedExit * 78;
+    galleryExitFeather = 16 + blendedExit * 10;
 
     const lightTrigger = sectionTop + sectionHeight - vh * 0.06;
     setEnteredLightZone(scrollY >= lightTrigger);
@@ -119,6 +166,7 @@
   function handleResize() {
     if (resizeTimer) clearTimeout(resizeTimer);
     resizeTimer = setTimeout(() => {
+      updateDeviceState();
       measure();
     }, 80);
   }
@@ -127,6 +175,7 @@
     resetSharedLightPhase();
 
     requestAnimationFrame(() => {
+      updateDeviceState();
       measure();
     });
 
@@ -178,7 +227,9 @@
       class="gallery-shell"
       style={`opacity:${galleryProgress};
       filter: blur(${(1 - galleryProgress) * 12}px)
-              brightness(${0.55 + galleryProgress * 0.45});`}
+              brightness(${0.55 + galleryProgress * 0.45});
+      --exit-cut:${galleryExitCut}%;
+      --exit-feather:${galleryExitFeather}%;`}
     >
       <div class="gallery-grid">
         <div class="col col-left">
@@ -279,29 +330,44 @@
     margin-left: 50%;
     transform: translateX(-50%);
     padding: 10vh 0;
-    will-change: opacity, filter;
+    will-change: opacity, filter, mask-image, -webkit-mask-image;
+    -webkit-mask-image: linear-gradient(
+      to top,
+      transparent 0%,
+      transparent var(--exit-cut, 0%),
+      rgba(0, 0, 0, 0.2) calc(var(--exit-cut, 0%) + calc(var(--exit-feather, 18%) * 0.18)),
+      rgba(0, 0, 0, 0.55) calc(var(--exit-cut, 0%) + calc(var(--exit-feather, 18%) * 0.42)),
+      rgba(0, 0, 0, 0.82) calc(var(--exit-cut, 0%) + calc(var(--exit-feather, 18%) * 0.72)),
+      #000 calc(var(--exit-cut, 0%) + var(--exit-feather, 18%)),
+      #000 100%
+    );
+    mask-image: linear-gradient(
+      to top,
+      transparent 0%,
+      transparent var(--exit-cut, 0%),
+      rgba(0, 0, 0, 0.2) calc(var(--exit-cut, 0%) + calc(var(--exit-feather, 18%) * 0.18)),
+      rgba(0, 0, 0, 0.55) calc(var(--exit-cut, 0%) + calc(var(--exit-feather, 18%) * 0.42)),
+      rgba(0, 0, 0, 0.82) calc(var(--exit-cut, 0%) + calc(var(--exit-feather, 18%) * 0.72)),
+      #000 calc(var(--exit-cut, 0%) + var(--exit-feather, 18%)),
+      #000 100%
+    );
+    -webkit-mask-repeat: no-repeat;
+    mask-repeat: no-repeat;
   }
 
   .gallery-grid {
     display: grid;
     grid-template-columns: 0.95fr 1.1fr 0.95fr;
     column-gap: 0.15rem;
+    align-items: center;
   }
 
   .col {
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
-  }
-
-  .col-left,
-  .col-right {
-    padding-top: 8vh;
-  }
-
-  .col-center {
-    margin-top: 2vh;
-    padding-bottom: 8vh;
+    justify-content: center;
+    align-self: center;
   }
 
   .col-left {
@@ -333,6 +399,22 @@
     height: clamp(180px, calc(var(--h) * 0.8), 500px);
   }
 
+  .card.square {
+    height: clamp(210px, calc(var(--h) * 0.95), 520px);
+  }
+
+  .col-center .card.portrait {
+    height: clamp(300px, calc(var(--h) * 1.08), 760px);
+  }
+
+  .col-center .card.landscape {
+    height: clamp(190px, calc(var(--h) * 0.86), 540px);
+  }
+
+  .col-center .card.square {
+    height: clamp(220px, calc(var(--h) * 1.02), 560px);
+  }
+
   @media (max-width: 900px) {
     .gallery-grid {
       grid-template-columns: 0.9fr 1.05fr 0.9fr;
@@ -354,14 +436,14 @@
 
   @media (max-width: 640px) {
     .gallery-track {
-      min-height: 145vh;
+      min-height: 146vh;
     }
 
     .gallery-shell {
-      width: 140vw;
+      width: 145vw;
       margin-left: 50%;
       transform: translateX(-50%);
-      padding: 8vh 0 2vh;
+      padding: 6vh 0 0;
     }
 
     .gallery-grid {
@@ -371,16 +453,9 @@
     }
 
     .col {
-      gap: 0.4rem;
+      gap: 0.45rem;
       justify-content: center;
-    }
-
-    .col-left,
-    .col-right,
-    .col-center {
-      padding-top: 0;
-      padding-bottom: 0;
-      margin-top: 0;
+      align-self: center;
     }
 
     .col-left,
@@ -395,19 +470,27 @@
     }
 
     .card.portrait {
-      height: calc(var(--h) * 1.18);
+      height: calc(var(--h) * 1.34);
     }
 
     .card.landscape {
-      height: calc(var(--h) * 0.94);
+      height: calc(var(--h) * 1);
+    }
+
+    .card.square {
+      height: calc(var(--h) * 1.08);
     }
 
     .col-center .card.portrait {
-      height: calc(var(--h) * 1.28);
+      height: calc(var(--h) * 1.44);
     }
 
     .col-center .card.landscape {
-      height: calc(var(--h) * 1);
+      height: calc(var(--h) * 1.06);
+    }
+
+    .col-center .card.square {
+      height: calc(var(--h) * 1.12);
     }
   }
 </style>

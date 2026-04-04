@@ -14,6 +14,12 @@
   let sectionVisible = false;
   let intersectionObserver;
 
+  let hoverIntentTimer = null;
+  let leaveIntentTimer = null;
+
+  const HOVER_OPEN_DELAY = 90;
+  const HOVER_CLOSE_DELAY = 120;
+
   const projects = [
     {
       number: "01",
@@ -46,6 +52,51 @@
     const rect = el.getBoundingClientRect();
     el.style.setProperty("--mx", `${e.clientX - rect.left}px`);
     el.style.setProperty("--my", `${e.clientY - rect.top}px`);
+  }
+
+  function clearHoverTimers() {
+    if (hoverIntentTimer) {
+      clearTimeout(hoverIntentTimer);
+      hoverIntentTimer = null;
+    }
+    if (leaveIntentTimer) {
+      clearTimeout(leaveIntentTimer);
+      leaveIntentTimer = null;
+    }
+  }
+
+  function handleItemEnter(index) {
+    if (!browser) return;
+
+    if (leaveIntentTimer) {
+      clearTimeout(leaveIntentTimer);
+      leaveIntentTimer = null;
+    }
+
+    if (hoveredIndex === index) return;
+
+    if (hoverIntentTimer) clearTimeout(hoverIntentTimer);
+
+    hoverIntentTimer = setTimeout(() => {
+      hoveredIndex = index;
+      hoverIntentTimer = null;
+    }, HOVER_OPEN_DELAY);
+  }
+
+  function handleAccordionLeave() {
+    if (!browser) return;
+
+    if (hoverIntentTimer) {
+      clearTimeout(hoverIntentTimer);
+      hoverIntentTimer = null;
+    }
+
+    if (leaveIntentTimer) clearTimeout(leaveIntentTimer);
+
+    leaveIntentTimer = setTimeout(() => {
+      hoveredIndex = 0;
+      leaveIntentTimer = null;
+    }, HOVER_CLOSE_DELAY);
   }
 
   function measure() {
@@ -100,6 +151,7 @@
     resizeObserver?.disconnect();
     intersectionObserver?.disconnect();
     if (resizeTimer) clearTimeout(resizeTimer);
+    clearHoverTimers();
     window.removeEventListener("resize", handleResize);
     window.removeEventListener("orientationchange", handleResize);
     setExitedLightZone(false);
@@ -118,13 +170,12 @@
     <div class="header-spacer"></div>
   </div>
 
-  <div class="accordion">
+  <div class="accordion" on:pointerleave={handleAccordionLeave}>
     {#each projects as project, index}
       <article
         class="accordion-item"
         class:active={hoveredIndex === index}
-        on:mouseenter={() => (hoveredIndex = index)}
-        on:mousemove={handleGlowMove}
+        on:pointerenter={() => handleItemEnter(index)}
       >
         <div class="visual">
           <img
@@ -288,8 +339,9 @@
     height: clamp(120px, 11vw, 170px);
     overflow: hidden;
     contain: layout paint;
+    will-change: height;
     transition:
-      height 920ms cubic-bezier(0.22, 1, 0.36, 1),
+      height 760ms cubic-bezier(0.22, 1, 0.36, 1),
       background-color 620ms cubic-bezier(0.22, 1, 0.36, 1);
   }
 
@@ -307,33 +359,6 @@
 
   .accordion-item.active {
     height: clamp(260px, 28vw, 430px);
-  }
-
-  .accordion-item::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    padding: 1px;
-    background: radial-gradient(
-      80px circle at var(--mx, 50%) var(--my, 50%),
-      rgba(212, 175, 55, 0.95),
-      rgba(212, 102, 55, 0.45) 40%,
-      transparent 75%
-    );
-    -webkit-mask:
-      linear-gradient(#000 0 0) content-box,
-      linear-gradient(#000 0 0);
-    -webkit-mask-composite: xor;
-    mask-composite: exclude;
-    opacity: 0;
-    transition: opacity 0.22s ease;
-    pointer-events: none;
-    filter: drop-shadow(0 0 3px rgba(212, 175, 55, 0.35));
-    z-index: 3;
-  }
-
-  .accordion-item:hover::before {
-    opacity: 1;
   }
 
   .visual {
