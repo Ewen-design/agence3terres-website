@@ -58,7 +58,7 @@
   const MOBILE_TEXT_CENTER = 0.60;
   const MOBILE_TEXT_ENTER_RANGE = 0.34;
   const MOBILE_TEXT_LEAVE_RANGE = 0.91;
-  const MOBILE_GALLERY_CENTER = 0.72;
+  const MOBILE_GALLERY_CENTER = 0.98;
   const MOBILE_GALLERY_RANGE = 0.72;
 
   // Disparition progressive bas -> haut
