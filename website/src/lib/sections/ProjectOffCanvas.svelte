@@ -1,9 +1,7 @@
 <script>
   import { createEventDispatcher } from "svelte";
-  import { onMount, onDestroy } from "svelte";
+  import { onMount, onDestroy, tick } from "svelte";
   import { browser } from "$app/environment";
-  import { fade, fly } from "svelte/transition";
-  import { cubicOut } from "svelte/easing";
 
   export let selected;
   export let items = [];
@@ -12,27 +10,73 @@
 
   let currentIndex = 0;
   let direction = 1;
+  let prefersReduced = false;
+  let mediaQuery;
+  let removeMotionListener;
+
+  let displayItem = null;
+  let cardStage = "idle";
+  let isSwitching = false;
+
+  const DURATION = 820;
+  const EXIT_DURATION = 520;
 
   $: if (selected && items.length) {
     currentIndex = items.findIndex((item) => item === selected);
+  }
+
+  $: if (selected && !displayItem) {
+    displayItem = selected;
+  }
+
+  $: if (selected && displayItem && selected !== displayItem && !isSwitching) {
+    switchItem(selected);
   }
 
   function close() {
     dispatch("close");
   }
 
+  async function switchItem(nextItem) {
+    if (!nextItem || prefersReduced) {
+      displayItem = nextItem;
+      cardStage = "idle";
+      return;
+    }
+
+    isSwitching = true;
+    cardStage = "is-exiting";
+    await wait(EXIT_DURATION);
+
+    displayItem = nextItem;
+    cardStage = "is-enter-prep";
+    await tick();
+
+    requestAnimationFrame(() => {
+      cardStage = "is-entering";
+      requestAnimationFrame(() => {
+        cardStage = "idle";
+        isSwitching = false;
+      });
+    });
+  }
+
   function prev() {
     if (currentIndex > 0) {
-      direction = -1.5;
+      direction = -1;
       selected = items[currentIndex - 1];
     }
   }
 
   function next() {
     if (currentIndex < items.length - 1) {
-      direction = 1.5;
+      direction = 1;
       selected = items[currentIndex + 1];
     }
+  }
+
+  function wait(ms) {
+    return new Promise((resolve) => setTimeout(resolve, ms));
   }
 
   function handleButtonMove(e) {
@@ -54,25 +98,56 @@
     }
   }
 
+  function preloadAdjacent() {
+    if (!selected || !items.length || !browser) return;
+
+    const index = items.findIndex((item) => item === selected);
+    const sources = [];
+
+    if (index > 0) sources.push(items[index - 1]?.image);
+    if (index < items.length - 1) sources.push(items[index + 1]?.image);
+
+    for (const src of sources) {
+      if (!src) continue;
+      const img = new Image();
+      img.decoding = "async";
+      img.src = src;
+    }
+  }
+
   onMount(() => {
     if (!browser) return;
-    window.addEventListener("keydown", handleKeydown);
 
-    return () => {
-      window.removeEventListener("keydown", handleKeydown);
+    mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
+    prefersReduced = mediaQuery.matches;
+
+    const onMotion = (e) => {
+      prefersReduced = e.matches;
     };
+
+    if (mediaQuery.addEventListener) {
+      mediaQuery.addEventListener("change", onMotion);
+      removeMotionListener = () => mediaQuery.removeEventListener("change", onMotion);
+    } else {
+      mediaQuery.addListener(onMotion);
+      removeMotionListener = () => mediaQuery.removeListener(onMotion);
+    }
+
+    window.addEventListener("keydown", handleKeydown, { passive: false });
   });
 
   onDestroy(() => {
     if (!browser) return;
     window.removeEventListener("keydown", handleKeydown);
+    removeMotionListener?.();
   });
+
+  $: if (selected) preloadAdjacent();
 </script>
 
 {#if selected}
-  <div class="overlay" transition:fade>
-    <div class="panel" in:fly={{ x: 200, duration: 500 }} out:fly={{ x: 200, duration: 400 }}>
-      
+  <div class="overlay">
+    <div class="panel">
       <button
         class="nav-btn close"
         data-cursor="close"
@@ -95,7 +170,6 @@
           aria-label="Projet précédent"
           on:mousemove={handleButtonMove}
           on:click={prev}
-          transition:fade
         >
           <span class="btn-inner">
             <span class="nav-btn-sideflip" data-text="←">
@@ -112,7 +186,6 @@
           aria-label="Projet suivant"
           on:mousemove={handleButtonMove}
           on:click={next}
-          transition:fade
         >
           <span class="btn-inner">
             <span class="nav-btn-sideflip" data-text="→">
@@ -122,36 +195,31 @@
         </button>
       {/if}
 
-      {#key selected}
+      {#if displayItem}
         <div
-          class="card animated"
-          in:fly|local={{ x: direction * 1200, duration: 900, opacity: 1, easing: cubicOut }}
-          out:fly|local={{ x: direction * -1200, duration: 900, opacity: 1, easing: cubicOut }}
+          class="card animated {cardStage}"
+          class:dir-left={direction < 0}
+          class:dir-right={direction > 0}
+          style={`--card-duration:${DURATION}ms; --card-exit-duration:${EXIT_DURATION}ms;`}
         >
-          <div
-            class="background parallax-bg"
-            style="background-image: url({selected.image || '/images/photo.webp'})"
-            in:fly|local={{
-              x: direction * -700,
-              duration: 900,
-              opacity: 1,
-              easing: cubicOut
-            }}
-            out:fly|local={{
-              x: direction * 700,
-              duration: 900,
-              opacity: 1,
-              easing: cubicOut
-            }}
-          ></div>
+          <div class="media-layer">
+            <img
+              class="background-img"
+              src={displayItem.image || "/images/photo.webp"}
+              alt={displayItem.title}
+              decoding="async"
+              draggable="false"
+            />
+            <div class="background-overlay"></div>
+          </div>
 
           <div class="info">
-            <span class="date">{selected.date}</span>
-            <h2>{selected.title}</h2>
-            <p>{selected.desc}</p>
+            <span class="date">{displayItem.date}</span>
+            <h2>{displayItem.title}</h2>
+            <p>{displayItem.desc}</p>
           </div>
         </div>
-      {/key}
+      {/if}
     </div>
   </div>
 {/if}
@@ -160,10 +228,11 @@
   .overlay {
     position: fixed;
     inset: 0;
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
     background: rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
     z-index: 1000;
+    animation: overlayIn 340ms ease both;
   }
 
   .panel {
@@ -175,7 +244,6 @@
     justify-content: center;
   }
 
-  /* ── Boutons ─────────────────────────────────────────────────────────── */
   .nav-btn {
     font-family: "General Sans", sans-serif;
     position: relative;
@@ -201,6 +269,7 @@
       box-shadow 1.2s cubic-bezier(.22,.61,.36,1),
       background 1.2s cubic-bezier(.22,.61,.36,1);
     isolation: isolate;
+    transform: translateZ(0);
   }
 
   .btn-inner {
@@ -227,7 +296,6 @@
 
   .nav-btn::before {
     border: 1px solid transparent;
-    border-radius: inherit;
     border-image-slice: 1;
     border-image-source: radial-gradient(
       68px circle at var(--mx, 50%) var(--my, 50%),
@@ -242,7 +310,6 @@
 
   .nav-btn::after {
     border: 1px solid transparent;
-    border-radius: inherit;
     border-image-slice: 1;
     border-image-source: radial-gradient(
       78px circle at var(--mx, 50%) var(--my, 50%),
@@ -369,8 +436,8 @@
   .arrow {
     position: absolute;
     top: 50%;
-    transform: translateY(-50%);
     z-index: 1002;
+    transform: translateY(-50%);
   }
 
   .arrow:hover {
@@ -385,12 +452,6 @@
     right: 40px;
   }
 
-  .card.animated {
-    position: absolute;
-    width: 80%;
-    height: 80vh;
-  }
-
   .card {
     position: relative;
     width: 80%;
@@ -400,22 +461,37 @@
     overflow: hidden;
     display: flex;
     align-items: flex-end;
+    transform: translate3d(0, 0, 0);
+    opacity: 1;
+    will-change: transform, opacity;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
   }
 
-  .parallax-bg {
-    will-change: transform;
-    transform: scale(1.15);
+  .animated {
+    position: absolute;
   }
 
-  .background {
+  .media-layer {
     position: absolute;
     inset: -5%;
-    background-size: cover;
-    background-position: right center;
+    overflow: hidden;
   }
 
-  .background::after {
-    content: "";
+  .background-img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: right center;
+    transform: scale(1.14);
+    will-change: transform, opacity;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+  }
+
+  .background-overlay {
     position: absolute;
     inset: 0;
     background: linear-gradient(
@@ -456,9 +532,72 @@
     letter-spacing: 1px;
   }
 
+  .card.is-enter-prep.dir-right {
+    transform: translate3d(7vw, 0, 0);
+    opacity: 0.999;
+  }
+
+  .card.is-enter-prep.dir-left {
+    transform: translate3d(-7vw, 0, 0);
+    opacity: 0.999;
+  }
+
+  .card.is-enter-prep .background-img {
+    transform: scale(1.14) translate3d(calc(var(--bg-shift, 0px) * -1), 0, 0);
+  }
+
+  .card.is-entering,
+  .card.idle {
+    transition:
+      transform var(--card-duration) cubic-bezier(.22,.61,.36,1),
+      opacity var(--card-duration) cubic-bezier(.22,.61,.36,1);
+    transform: translate3d(0, 0, 0);
+    opacity: 1;
+  }
+
+  .card.is-entering .background-img,
+  .card.idle .background-img {
+    transition: transform var(--card-duration) cubic-bezier(.22,.61,.36,1);
+    transform: scale(1.14) translate3d(0, 0, 0);
+  }
+
+  .card.is-exiting.dir-right {
+    transform: translate3d(-7vw, 0, 0);
+    opacity: 0.999;
+    transition:
+      transform var(--card-exit-duration) cubic-bezier(.22,.61,.36,1),
+      opacity var(--card-exit-duration) cubic-bezier(.22,.61,.36,1);
+  }
+
+  .card.is-exiting.dir-left {
+    transform: translate3d(7vw, 0, 0);
+    opacity: 0.999;
+    transition:
+      transform var(--card-exit-duration) cubic-bezier(.22,.61,.36,1),
+      opacity var(--card-exit-duration) cubic-bezier(.22,.61,.36,1);
+  }
+
+  .card.is-exiting.dir-right .background-img {
+    transform: scale(1.14) translate3d(3vw, 0, 0);
+    transition: transform var(--card-exit-duration) cubic-bezier(.22,.61,.36,1);
+  }
+
+  .card.is-exiting.dir-left .background-img {
+    transform: scale(1.14) translate3d(-3vw, 0, 0);
+    transition: transform var(--card-exit-duration) cubic-bezier(.22,.61,.36,1);
+  }
+
+  @keyframes overlayIn {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+
   @media (max-width: 900px) {
-    .card,
-    .card.animated {
+    .card {
       width: 92%;
       height: 78vh;
     }
@@ -498,7 +637,7 @@
       max-width: 100%;
     }
 
-    .background::after {
+    .background-overlay {
       background: linear-gradient(
         to top,
         rgba(17,17,17,1) 8%,
@@ -511,12 +650,16 @@
   }
 
   @media (prefers-reduced-motion: reduce) {
+    .overlay,
+    .card,
+    .background-img,
     .nav-btn,
     .nav-btn-text,
     .nav-btn-flip::after,
     .nav-btn-side-text,
     .nav-btn-sideflip::after {
-      transition: none;
+      transition: none !important;
+      animation: none !important;
     }
   }
 </style>

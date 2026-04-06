@@ -3,6 +3,13 @@
   import { browser } from "$app/environment";
   import ProjectOffCanvas from "./ProjectOffCanvas.svelte";
   import { navigate } from "$lib/navigate.js";
+  import {
+    registerParallax,
+    unregisterParallax,
+    registerWrite,
+    unregisterWrite,
+    forceScrollEngineUpdate
+  } from "../scrollEngine.js";
 
   let selected = null;
   let gallerySection;
@@ -58,16 +65,23 @@
   ];
 
   let cardEls = [];
-  let infoEls = [];
-  let imgEls = [];
   let servicesBtnEl;
 
   let resizeObs;
   let resizeTimer;
   let mediaQuery;
+  let removeMotionListener;
   let mobileScrollRaf = null;
 
-  let introReveal = 0;
+  let introTop = 0;
+  let introHeight = 0;
+  let pendingIntro = null;
+  let dirtyIntro = false;
+
+  let applied = {
+    opacity: -1,
+    y: -999
+  };
 
   function handleButtonMove(e) {
     const btn = e.currentTarget;
@@ -88,17 +102,57 @@
     return 1 - Math.pow(1 - t, 3);
   }
 
-  function updateIntroReveal() {
+  function currentScrollY() {
+    return window.lenis?.animatedScroll ?? window.scrollY ?? 0;
+  }
+
+  function q(value, step) {
+    return Math.round(value / step) * step;
+  }
+
+  function updateDeviceState() {
+    isMobile = window.innerWidth <= 900;
+  }
+
+  function measureIntro() {
     if (!introCardEl) return;
-
+    const scrollY = currentScrollY();
     const rect = introCardEl.getBoundingClientRect();
-    const vh = window.innerHeight || 1;
+    introTop = rect.top + scrollY;
+    introHeight = rect.height;
+  }
 
+  function computeIntro(scrollY, { vh }) {
+    if (!introCardEl || !introHeight) return;
+
+    const topInViewport = introTop - scrollY;
     const start = vh * 0.92;
     const end = vh * 0.2;
-    const raw = clamp((start - rect.top) / Math.max(start - end, 1), 0, 1);
+    const raw = clamp((start - topInViewport) / Math.max(start - end, 1), 0, 1);
+    const reveal = prefersReduced ? 1 : easeOutCubic(raw);
 
-    introReveal = prefersReduced ? 1 : easeOutCubic(raw);
+    pendingIntro = {
+      opacity: q(lerp(0.18, 1, reveal), 0.001),
+      y: q(lerp(18, 0, reveal), 0.1)
+    };
+
+    dirtyIntro = true;
+  }
+
+  function applyIntro() {
+    if (!dirtyIntro || !pendingIntro || !introCardEl) return;
+
+    if (pendingIntro.opacity !== applied.opacity) {
+      introCardEl.style.opacity = `${pendingIntro.opacity}`;
+      applied.opacity = pendingIntro.opacity;
+    }
+
+    if (pendingIntro.y !== applied.y) {
+      introCardEl.style.transform = `translate3d(0, ${pendingIntro.y}px, 0)`;
+      applied.y = pendingIntro.y;
+    }
+
+    dirtyIntro = false;
   }
 
   function updateMobileActiveCard() {
@@ -121,7 +175,7 @@
       }
     }
 
-    activeMobileIndex = nearest;
+    if (nearest !== activeMobileIndex) activeMobileIndex = nearest;
   }
 
   function handleMobileGridScroll() {
@@ -130,20 +184,18 @@
 
     mobileScrollRaf = requestAnimationFrame(() => {
       updateMobileActiveCard();
+      mobileScrollRaf = null;
     });
   }
 
   function handleResize() {
     clearTimeout(resizeTimer);
     resizeTimer = setTimeout(() => {
-      isMobile = window.innerWidth <= 900;
-      updateIntroReveal();
+      updateDeviceState();
+      measureIntro();
       updateMobileActiveCard();
-    }, 90);
-  }
-
-  function handleScroll() {
-    updateIntroReveal();
+      forceScrollEngineUpdate();
+    }, 70);
   }
 
   function openProject(item) {
@@ -159,58 +211,63 @@
   onMount(() => {
     if (!browser) return;
 
-    isMobile = window.innerWidth <= 900;
+    updateDeviceState();
 
     mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
     prefersReduced = mediaQuery.matches;
 
     const onMotion = (e) => {
       prefersReduced = e.matches;
-      updateIntroReveal();
+      forceScrollEngineUpdate();
     };
 
-    if (mediaQuery.addEventListener) mediaQuery.addEventListener("change", onMotion);
-    else mediaQuery.addListener(onMotion);
+    if (mediaQuery.addEventListener) {
+      mediaQuery.addEventListener("change", onMotion);
+      removeMotionListener = () => mediaQuery.removeEventListener("change", onMotion);
+    } else {
+      mediaQuery.addListener(onMotion);
+      removeMotionListener = () => mediaQuery.removeListener(onMotion);
+    }
 
     requestAnimationFrame(() => {
-      updateIntroReveal();
+      measureIntro();
+      if (introCardEl) {
+        introCardEl.style.opacity = "0.18";
+        introCardEl.style.transform = "translate3d(0, 18px, 0)";
+      }
       updateMobileActiveCard();
+      forceScrollEngineUpdate();
     });
+
+    registerParallax(computeIntro, { priority: 2 });
+    registerWrite(applyIntro, { priority: 2 });
 
     resizeObs = new ResizeObserver(handleResize);
     if (gallerySection) resizeObs.observe(gallerySection);
+    if (introCardEl) resizeObs.observe(introCardEl);
 
     galleryGridEl?.addEventListener("scroll", handleMobileGridScroll, { passive: true });
-    window.addEventListener("scroll", handleScroll, { passive: true });
     window.addEventListener("resize", handleResize, { passive: true });
     window.addEventListener("orientationchange", handleResize, { passive: true });
-
-    return () => {
-      if (mediaQuery?.removeEventListener) mediaQuery.removeEventListener("change", onMotion);
-      else if (mediaQuery?.removeListener) mediaQuery.removeListener(onMotion);
-    };
   });
 
   onDestroy(() => {
     if (!browser) return;
 
+    unregisterParallax(computeIntro);
+    unregisterWrite(applyIntro);
     resizeObs?.disconnect();
+    removeMotionListener?.();
 
     clearTimeout(resizeTimer);
     if (mobileScrollRaf) cancelAnimationFrame(mobileScrollRaf);
 
     galleryGridEl?.removeEventListener("scroll", handleMobileGridScroll);
-    window.removeEventListener("scroll", handleScroll);
     window.removeEventListener("resize", handleResize);
     window.removeEventListener("orientationchange", handleResize);
 
     document.body.style.overflow = "";
   });
-
-  $: introBlockOpacity = lerp(0.18, 1, introReveal);
-  $: introBlockY = lerp(18, 0, introReveal);
-  $: introRevealEdge = lerp(0, 118, introReveal);
-  $: introBlockBlur = lerp(8, 0, introReveal);
 </script>
 
 <section class="gallery" bind:this={gallerySection}>
@@ -222,11 +279,7 @@
   </div>
 
   <div class="gallery-header">
-    <div
-      class="intro-card"
-      bind:this={introCardEl}
-      style={`opacity:${introBlockOpacity}; filter: blur(${introBlockBlur}px); transform: translate3d(0, ${introBlockY}px, 0); --intro-reveal-edge:${introRevealEdge}%;`}
-    >
+    <div class="intro-card" bind:this={introCardEl}>
       <p>
         <span class="intro-main">Nous imaginons des identités fortes, des expériences digitales immersives</span>
         <span class="intro-muted"> et des directions artistiques pensées pour laisser une empreinte durable.</span>
@@ -263,7 +316,6 @@
         <div class="card-media">
           <div class="card-image-wrapper">
             <img
-              bind:this={imgEls[i]}
               src={item.image}
               alt={item.title}
               loading={i < 2 ? "eager" : "lazy"}
@@ -274,7 +326,7 @@
           </div>
         </div>
 
-        <div class="info" bind:this={infoEls[i]}>
+        <div class="info">
           <span class="info-chip info-primary">{item.hoverInfo[0]}</span>
           <span class="info-chip info-secondary">{item.hoverInfo[1]}</span>
           <span class="info-chip info-secondary">{item.hoverInfo[2]}</span>
@@ -369,27 +421,11 @@
     width: min(560px, 100%);
     padding: 0;
     box-shadow: none;
-    will-change: transform, opacity, filter;
-    -webkit-mask-image: linear-gradient(
-      to bottom,
-      rgba(0, 0, 0, 1) 0%,
-      rgba(0, 0, 0, 1) calc(var(--intro-reveal-edge) - 12%),
-      rgba(0, 0, 0, 0.75) calc(var(--intro-reveal-edge) + 2%),
-      rgba(0, 0, 0, 0.2) calc(var(--intro-reveal-edge) + 14%),
-      rgba(0, 0, 0, 0) calc(var(--intro-reveal-edge) + 28%)
-    );
-    mask-image: linear-gradient(
-      to bottom,
-      rgba(0, 0, 0, 1) 0%,
-      rgba(0, 0, 0, 1) calc(var(--intro-reveal-edge) - 12%),
-      rgba(0, 0, 0, 0.75) calc(var(--intro-reveal-edge) + 2%),
-      rgba(0, 0, 0, 0.2) calc(var(--intro-reveal-edge) + 14%),
-      rgba(0, 0, 0, 0) calc(var(--intro-reveal-edge) + 28%)
-    );
-    -webkit-mask-repeat: no-repeat;
-    mask-repeat: no-repeat;
-    -webkit-mask-size: 100% 140%;
-    mask-size: 100% 140%;
+    opacity: 0.18;
+    transform: translate3d(0, 18px, 0);
+    will-change: transform, opacity;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
   }
 
   .intro-card p {
@@ -438,6 +474,7 @@
     backface-visibility: hidden;
     -webkit-backface-visibility: hidden;
     border-radius: 3px;
+    contain: layout paint;
   }
 
   .card:nth-child(1) { grid-area: card1; }
@@ -475,6 +512,7 @@
       opacity 0.34s ease;
     user-select: none;
     pointer-events: none;
+    will-change: transform, filter;
   }
 
   .card:hover img {
@@ -791,15 +829,11 @@
       scroll-padding-right: calc((100vw - clamp(285px, 82vw, 360px)) / 2);
       -webkit-overflow-scrolling: touch;
       overscroll-behavior-x: contain;
-      scroll-behavior: smooth;
+      scrollbar-width: none;
     }
 
     .gallery-grid::-webkit-scrollbar {
       display: none;
-    }
-
-    .gallery-grid {
-      scrollbar-width: none;
     }
 
     .card:nth-child(1),
@@ -1042,15 +1076,8 @@
     }
 
     .intro-card {
-      filter: none !important;
-      -webkit-mask-image: none !important;
-      mask-image: none !important;
       transform: none !important;
       opacity: 1 !important;
-    }
-
-    .gallery-grid {
-      scroll-behavior: auto;
     }
   }
 </style>

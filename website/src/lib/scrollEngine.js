@@ -22,7 +22,7 @@ let rafId = 0;
 let scheduled = false;
 
 /* -------------------------------------------------------------------------- */
-/* Registries                                                                  */
+/* Registries                                                                 */
 /* -------------------------------------------------------------------------- */
 
 const parallaxCallbacks = [];
@@ -30,7 +30,7 @@ const readCallbacks = [];
 const writeCallbacks = [];
 
 /* -------------------------------------------------------------------------- */
-/* Utils                                                                       */
+/* Utils                                                                      */
 /* -------------------------------------------------------------------------- */
 
 function readViewport() {
@@ -48,7 +48,12 @@ function lerp(a, b, t) {
 }
 
 function getThreshold() {
-  return isMobile ? 0.45 : 0.2;
+  return isMobile ? 0.35 : 0.15;
+}
+
+function quantize(value, step) {
+  if (!step) return value;
+  return Math.round(value / step) * step;
 }
 
 function sortByPriority(list) {
@@ -94,50 +99,45 @@ function safeCallWrite(fn, ctx) {
 }
 
 /* -------------------------------------------------------------------------- */
-/* Core frame                                                                  */
+/* Core frame                                                                 */
 /* -------------------------------------------------------------------------- */
 
 function runFrame(now) {
   scheduled = false;
 
-  const dt = lastFrameTime ? Math.max(1, now - lastFrameTime) : 16.67;
+  const dt = lastFrameTime ? clamp(now - lastFrameTime, 8, 34) : 16.67;
   lastFrameTime = now;
 
   const nextY = Number.isFinite(targetY) ? targetY : 0;
   const rawDelta = nextY - lastY;
   const threshold = getThreshold();
 
-  if (Math.abs(rawDelta) < threshold && nextY === currentY) {
+  if (Math.abs(rawDelta) < threshold && Math.abs(nextY - currentY) < threshold) {
     return;
   }
 
-  currentY = nextY;
+  currentY = quantize(nextY, isMobile ? 0.02 : 0.01);
   delta = currentY - lastY;
   direction = delta > 0 ? 1 : delta < 0 ? -1 : 0;
 
   const instantVelocity = dt > 0 ? delta / dt : 0;
   velocity = instantVelocity;
-
-  // Lissage pour éviter les réactions trop "nerveuses"
-  smoothVelocity = lerp(smoothVelocity, instantVelocity, isMobile ? 0.12 : 0.18);
+  smoothVelocity = lerp(smoothVelocity, instantVelocity, isMobile ? 0.1 : 0.16);
 
   const ctx = buildContext(dt);
 
-  // READ phase
   for (let i = 0; i < readCallbacks.length; i++) {
     const item = readCallbacks[i];
     if (!item.active) continue;
     safeCallRead(item.cb, ctx);
   }
 
-  // MAIN phase
   for (let i = 0; i < parallaxCallbacks.length; i++) {
     const item = parallaxCallbacks[i];
     if (!item.active) continue;
     safeCall(item.cb, ctx);
   }
 
-  // WRITE phase
   for (let i = 0; i < writeCallbacks.length; i++) {
     const item = writeCallbacks[i];
     if (!item.active) continue;
@@ -154,7 +154,7 @@ function schedule() {
 }
 
 /* -------------------------------------------------------------------------- */
-/* Public API                                                                  */
+/* Public API                                                                 */
 /* -------------------------------------------------------------------------- */
 
 export function initScrollEngine() {
@@ -215,6 +215,9 @@ export function updateScrollEngine(y) {
 }
 
 export function forceScrollEngineUpdate() {
+  currentY = Number.isFinite(targetY) ? targetY : currentY;
+  lastY = currentY;
+
   const ctx = buildContext(16.67);
 
   for (let i = 0; i < readCallbacks.length; i++) {
@@ -245,7 +248,7 @@ export function getScrollContext() {
 }
 
 /* -------------------------------------------------------------------------- */
-/* Registration helpers                                                        */
+/* Registration helpers                                                       */
 /* -------------------------------------------------------------------------- */
 
 function createEntry(cb, priority = 0) {
@@ -291,6 +294,11 @@ export function registerRead(cb, options = {}) {
   };
 }
 
+export function unregisterRead(cb) {
+  const index = readCallbacks.findIndex((item) => item.cb === cb);
+  if (index !== -1) readCallbacks.splice(index, 1);
+}
+
 export function registerWrite(cb, options = {}) {
   const entry = createEntry(cb, options.priority || 0);
   writeCallbacks.push(entry);
@@ -302,6 +310,11 @@ export function registerWrite(cb, options = {}) {
     const index = writeCallbacks.indexOf(entry);
     if (index !== -1) writeCallbacks.splice(index, 1);
   };
+}
+
+export function unregisterWrite(cb) {
+  const index = writeCallbacks.findIndex((item) => item.cb === cb);
+  if (index !== -1) writeCallbacks.splice(index, 1);
 }
 
 export function setParallaxActive(cb, active) {

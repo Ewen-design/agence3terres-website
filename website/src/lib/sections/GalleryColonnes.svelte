@@ -1,7 +1,13 @@
 <script>
   import { onMount, onDestroy } from "svelte";
   import { browser } from "$app/environment";
-  import { registerParallax, unregisterParallax } from "../scrollEngine.js";
+  import {
+    registerParallax,
+    unregisterParallax,
+    registerWrite,
+    unregisterWrite,
+    forceScrollEngineUpdate
+  } from "../scrollEngine.js";
 
   const leftImages = [
     { ratio: "portrait", height: 38 },
@@ -24,22 +30,29 @@
   const text = "Nos instants visuels".split("");
 
   let sectionEl;
-  let textVisible = false;
-  let textOpacity = 0;
-  let textTranslate = 34;
-  let rafId = null;
-  let targetOpacity = 0;
-  let targetTranslate = 34;
-  let galleryProgress = 0;
+  let fixedTextEl;
+  let galleryShellEl;
 
-  let galleryExitCut = 0;
-  let galleryExitFeather = 18;
-
-  let sectionTop = 0;
-  let sectionHeight = 0;
   let resizeObserver;
   let resizeTimer = null;
   let isMobile = false;
+
+  let sectionTop = 0;
+  let sectionHeight = 0;
+  let visibleState = false;
+
+  let pending = null;
+  let dirty = false;
+
+  let applied = {
+    textOpacity: -1,
+    textTranslate: -999,
+    galleryOpacity: -1,
+    galleryBlur: -999,
+    galleryBrightness: -999,
+    galleryExitCut: -999,
+    galleryExitFeather: -999
+  };
 
   const DESKTOP_TEXT_CENTER = 0.56;
   const DESKTOP_TEXT_ENTER_RANGE = 0.42;
@@ -51,7 +64,7 @@
   const MOBILE_TEXT_ENTER_RANGE = 0.34;
   const MOBILE_TEXT_LEAVE_RANGE = 0.91;
   const MOBILE_GALLERY_CENTER = 0.98;
-  const MOBILE_GALLERY_RANGE = 0.72;
+  const MOBILE_GALLERY_RANGE = 0.32;
 
   const DESKTOP_EXIT_START = 1.08;
   const DESKTOP_EXIT_END = 0.18;
@@ -68,12 +81,12 @@
       : 1 - Math.pow(-2 * t + 2, 3) / 2;
   }
 
-  function lerp(start, end, factor) {
-    return start + (end - start) * factor;
-  }
-
   function currentScrollY() {
     return window.lenis?.animatedScroll ?? window.scrollY ?? 0;
+  }
+
+  function q(value, step) {
+    return Math.round(value / step) * step;
   }
 
   function updateDeviceState() {
@@ -88,32 +101,7 @@
     sectionHeight = rect.height;
   }
 
-  function animateText() {
-    textOpacity = lerp(textOpacity, targetOpacity, 0.11);
-    textTranslate = lerp(textTranslate, targetTranslate, 0.11);
-
-    textVisible = textOpacity > 0.015;
-
-    const opacityDiff = Math.abs(textOpacity - targetOpacity);
-    const translateDiff = Math.abs(textTranslate - targetTranslate);
-
-    if (opacityDiff > 0.001 || translateDiff > 0.001) {
-      rafId = requestAnimationFrame(animateText);
-    } else {
-      textOpacity = targetOpacity;
-      textTranslate = targetTranslate;
-      textVisible = textOpacity > 0.015;
-      rafId = null;
-    }
-  }
-
-  function startAnimationLoop() {
-    if (rafId === null) {
-      rafId = requestAnimationFrame(animateText);
-    }
-  }
-
-  function updateFromScroll(scrollY, { vh }) {
+  function computeFromScroll(scrollY, { vh }) {
     if (!sectionEl || !sectionHeight) return;
 
     const topInViewport = sectionTop - scrollY;
@@ -127,15 +115,12 @@
     const leave = clamp((bottomInViewport - textCenterY) / Math.max(textLeaveRange, 1), 0, 1);
     const visibility = easeInOutCubic(enter) * easeInOutCubic(leave);
 
-    targetOpacity = visibility;
-    targetTranslate = (1 - visibility) * 34;
-
     const galleryCenterY = vh * (isMobile ? MOBILE_GALLERY_CENTER : DESKTOP_GALLERY_CENTER);
     const galleryRange = vh * (isMobile ? MOBILE_GALLERY_RANGE : DESKTOP_GALLERY_RANGE);
 
     const gEnter = clamp((galleryCenterY - topInViewport) / Math.max(galleryRange, 1), 0, 1);
     const gLeave = clamp((bottomInViewport - galleryCenterY) / Math.max(galleryRange, 1), 0, 1);
-    galleryProgress = easeInOutCubic(gEnter) * easeInOutCubic(gLeave);
+    const galleryProgress = easeInOutCubic(gEnter) * easeInOutCubic(gLeave);
 
     const exitStart = vh * (isMobile ? MOBILE_EXIT_START : DESKTOP_EXIT_START);
     const exitEnd = vh * (isMobile ? MOBILE_EXIT_END : DESKTOP_EXIT_END);
@@ -145,10 +130,68 @@
     const reinforcedMid = 1 - Math.pow(1 - rawExit, 2.4);
     const blendedExit = slowStart * 0.68 + reinforcedMid * 0.32;
 
-    galleryExitCut = blendedExit * 78;
-    galleryExitFeather = 16 + blendedExit * 10;
+    pending = {
+      textOpacity: q(visibility, 0.001),
+      textTranslate: q((1 - visibility) * 34, 0.1),
+      galleryOpacity: q(galleryProgress, 0.001),
+      galleryBlur: q((1 - galleryProgress) * 12, 0.1),
+      galleryBrightness: q(0.55 + galleryProgress * 0.45, 0.001),
+      galleryExitCut: q(blendedExit * 78, 0.1),
+      galleryExitFeather: q(16 + blendedExit * 10, 0.1)
+    };
 
-    startAnimationLoop();
+    dirty = true;
+  }
+
+  function applyPending() {
+    if (!dirty || !pending) return;
+
+    if (fixedTextEl) {
+      if (pending.textOpacity !== applied.textOpacity) {
+        fixedTextEl.style.opacity = `${pending.textOpacity}`;
+        applied.textOpacity = pending.textOpacity;
+      }
+
+      if (pending.textTranslate !== applied.textTranslate) {
+        fixedTextEl.style.transform = `translate3d(0, ${pending.textTranslate}px, 0)`;
+        applied.textTranslate = pending.textTranslate;
+      }
+
+      const shouldBeVisible = pending.textOpacity > 0.015;
+      if (shouldBeVisible !== visibleState) {
+        visibleState = shouldBeVisible;
+        fixedTextEl.classList.toggle("is-visible", shouldBeVisible);
+      }
+    }
+
+    if (galleryShellEl) {
+      if (pending.galleryOpacity !== applied.galleryOpacity) {
+        galleryShellEl.style.opacity = `${pending.galleryOpacity}`;
+        applied.galleryOpacity = pending.galleryOpacity;
+      }
+
+      if (pending.galleryBlur !== applied.galleryBlur) {
+        galleryShellEl.style.setProperty("--gallery-blur", `${pending.galleryBlur}px`);
+        applied.galleryBlur = pending.galleryBlur;
+      }
+
+      if (pending.galleryBrightness !== applied.galleryBrightness) {
+        galleryShellEl.style.setProperty("--gallery-brightness", `${pending.galleryBrightness}`);
+        applied.galleryBrightness = pending.galleryBrightness;
+      }
+
+      if (pending.galleryExitCut !== applied.galleryExitCut) {
+        galleryShellEl.style.setProperty("--exit-cut", `${pending.galleryExitCut}%`);
+        applied.galleryExitCut = pending.galleryExitCut;
+      }
+
+      if (pending.galleryExitFeather !== applied.galleryExitFeather) {
+        galleryShellEl.style.setProperty("--exit-feather", `${pending.galleryExitFeather}%`);
+        applied.galleryExitFeather = pending.galleryExitFeather;
+      }
+    }
+
+    dirty = false;
   }
 
   function handleResize() {
@@ -156,8 +199,8 @@
     resizeTimer = setTimeout(() => {
       updateDeviceState();
       measure();
-      updateFromScroll(currentScrollY(), { vh: window.innerHeight || 1 });
-    }, 80);
+      forceScrollEngineUpdate();
+    }, 70);
   }
 
   onMount(() => {
@@ -166,10 +209,22 @@
     requestAnimationFrame(() => {
       updateDeviceState();
       measure();
-      updateFromScroll(currentScrollY(), { vh: window.innerHeight || 1 });
+      if (fixedTextEl) {
+        fixedTextEl.style.opacity = "0";
+        fixedTextEl.style.transform = "translate3d(0, 34px, 0)";
+      }
+      if (galleryShellEl) {
+        galleryShellEl.style.opacity = "0";
+        galleryShellEl.style.setProperty("--gallery-blur", "12px");
+        galleryShellEl.style.setProperty("--gallery-brightness", "0.55");
+        galleryShellEl.style.setProperty("--exit-cut", "0%");
+        galleryShellEl.style.setProperty("--exit-feather", "18%");
+      }
+      forceScrollEngineUpdate();
     });
 
-    registerParallax(updateFromScroll, { priority: 2 });
+    registerParallax(computeFromScroll, { priority: 2 });
+    registerWrite(applyPending, { priority: 2 });
 
     resizeObserver = new ResizeObserver(handleResize);
     if (sectionEl) resizeObserver.observe(sectionEl);
@@ -181,11 +236,11 @@
   onDestroy(() => {
     if (!browser) return;
 
-    unregisterParallax(updateFromScroll);
+    unregisterParallax(computeFromScroll);
+    unregisterWrite(applyPending);
     resizeObserver?.disconnect();
 
     if (resizeTimer) clearTimeout(resizeTimer);
-    if (rafId !== null) cancelAnimationFrame(rafId);
 
     window.removeEventListener("resize", handleResize);
     window.removeEventListener("orientationchange", handleResize);
@@ -193,32 +248,16 @@
 </script>
 
 <section class="gallery-section" bind:this={sectionEl}>
-  <div
-    class="fixed-text"
-    class:is-visible={textVisible}
-    style={`opacity:${textOpacity}; transform: translateY(${textTranslate}px);`}
-  >
+  <div class="fixed-text" bind:this={fixedTextEl}>
     <h2 class="title">
-      {#each text as letter, i}
-        <span
-          class="letter"
-          style={`--i:${i}; opacity:${textOpacity}; transform: translateY(${textTranslate}px);`}
-        >
-          {letter === " " ? "\u00A0" : letter}
-        </span>
+      {#each text as letter}
+        <span class="letter">{letter === " " ? "\u00A0" : letter}</span>
       {/each}
     </h2>
   </div>
 
   <div class="gallery-track">
-    <div
-      class="gallery-shell"
-      style={`opacity:${galleryProgress};
-      filter: blur(${(1 - galleryProgress) * 12}px)
-              brightness(${0.55 + galleryProgress * 0.45});
-      --exit-cut:${galleryExitCut}%;
-      --exit-feather:${galleryExitFeather}%;`}
-    >
+    <div class="gallery-shell" bind:this={galleryShellEl}>
       <div class="gallery-grid">
         <div class="col col-left">
           {#each leftImages as image}
@@ -253,7 +292,6 @@
     --section-bg: #000;
     --section-text: #f5f1e8;
     --card-bg: #111;
-
     position: relative;
     width: 100%;
     background: var(--section-bg);
@@ -269,8 +307,10 @@
     z-index: 999;
     pointer-events: none;
     opacity: 0;
-    transform: translateY(34px);
-    will-change: opacity, transform;
+    transform: translate3d(0, 34px, 0);
+    will-change: transform, opacity;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
   }
 
   .fixed-text:not(.is-visible) {
@@ -296,7 +336,6 @@
 
   .letter {
     display: inline-block;
-    will-change: opacity, transform;
   }
 
   .gallery-track {
@@ -306,9 +345,13 @@
   .gallery-shell {
     width: 120vw;
     margin-left: 50%;
-    transform: translateX(-50%);
+    transform: translate3d(-50%, 0, 0);
     padding: 10vh 0;
-    will-change: opacity, filter, mask-image, -webkit-mask-image;
+    opacity: 0;
+    filter: blur(var(--gallery-blur, 12px)) brightness(var(--gallery-brightness, 0.55));
+    will-change: opacity, filter;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
     -webkit-mask-image: linear-gradient(
       to top,
       transparent 0%,
@@ -349,16 +392,19 @@
   }
 
   .col-left {
-    transform: translateX(-3vw);
+    transform: translate3d(-3vw, 0, 0);
   }
 
   .col-right {
-    transform: translateX(3vw);
+    transform: translate3d(3vw, 0, 0);
   }
 
   .card {
     overflow: hidden;
     background: var(--card-bg);
+    transform: translateZ(0);
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
   }
 
   .card img {
@@ -366,6 +412,9 @@
     height: 100%;
     display: block;
     object-fit: cover;
+    transform: translateZ(0);
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
   }
 
   .card.portrait {
@@ -419,7 +468,7 @@
     .gallery-shell {
       width: 145vw;
       margin-left: 50%;
-      transform: translateX(-50%);
+      transform: translate3d(-50%, 0, 0);
       padding: 6vh 0 0;
     }
 
@@ -447,27 +496,27 @@
     }
 
     .card.portrait {
-      height: calc(var(--h) * 1.34);
+      height: calc(var(--h) * 1.6);
     }
 
     .card.landscape {
-      height: calc(var(--h) * 1);
+      height: calc(var(--h) * 1.18);
     }
 
     .card.square {
-      height: calc(var(--h) * 1.08);
+      height: calc(var(--h) * 1.24);
     }
 
     .col-center .card.portrait {
-      height: calc(var(--h) * 1.44);
+      height: calc(var(--h) * 1.72);
     }
 
     .col-center .card.landscape {
-      height: calc(var(--h) * 1.06);
+      height: calc(var(--h) * 1.24);
     }
 
     .col-center .card.square {
-      height: calc(var(--h) * 1.12);
+      height: calc(var(--h) * 1.28);
     }
   }
 </style>

@@ -269,7 +269,7 @@
 <section class="story-slider" bind:this={sectionEl}>
   <div class="story-slider__intro">
     <div class="story-slider__intro-title-wrap">
-      <h2 class="story-slider__intro-title">Nos services</h2>
+      <h2 class="story-slider__intro-title">Nos projets</h2>
     </div>
 
     <div class="story-slider__intro-text-wrap">
