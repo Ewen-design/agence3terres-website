@@ -1,20 +1,12 @@
 <script>
   import { onMount, onDestroy } from "svelte";
   import { browser } from "$app/environment";
-  import ProjectOffCanvas from "./ProjectOffCanvas.svelte";
   import { navigate } from "$lib/navigate.js";
-  import {
-    registerParallax,
-    unregisterParallax,
-    registerWrite,
-    unregisterWrite,
-    forceScrollEngineUpdate
-  } from "../scrollEngine.js";
 
-  let selected = null;
-  let gallerySection;
   let galleryGridEl;
   let introCardEl;
+  let servicesBtnEl;
+
   let isMobile = false;
   let prefersReduced = false;
   let activeMobileIndex = 0;
@@ -64,24 +56,18 @@
     }
   ];
 
-  let cardEls = [];
-  let servicesBtnEl;
-
-  let resizeObs;
-  let resizeTimer;
-  let mediaQuery;
-  let removeMotionListener;
+  let resizeTimeout;
+  let scrollRaf = null;
   let mobileScrollRaf = null;
+  let removeMotionListener;
 
-  let introTop = 0;
-  let introHeight = 0;
-  let pendingIntro = null;
-  let dirtyIntro = false;
+  function clamp(v, lo = 0, hi = 1) {
+    return Math.max(lo, Math.min(hi, v));
+  }
 
-  let applied = {
-    opacity: -1,
-    y: -999
-  };
+  function easeOutCubic(t) {
+    return 1 - Math.pow(1 - t, 3);
+  }
 
   function handleButtonMove(e) {
     const btn = e.currentTarget;
@@ -90,98 +76,71 @@
     btn.style.setProperty("--my", `${e.clientY - rect.top}px`);
   }
 
-  function clamp(v, lo = 0, hi = 1) {
-    return Math.max(lo, Math.min(hi, v));
-  }
-
-  function lerp(a, b, t) {
-    return a + (b - a) * t;
-  }
-
-  function easeOutCubic(t) {
-    return 1 - Math.pow(1 - t, 3);
-  }
-
-  function currentScrollY() {
-    return window.lenis?.animatedScroll ?? window.scrollY ?? 0;
-  }
-
-  function q(value, step) {
-    return Math.round(value / step) * step;
-  }
-
   function updateDeviceState() {
     isMobile = window.innerWidth <= 900;
   }
 
-  function measureIntro() {
+  function updateIntro() {
     if (!introCardEl) return;
-    const scrollY = currentScrollY();
+
+    if (prefersReduced) {
+      introCardEl.style.opacity = "1";
+      introCardEl.style.transform = "translate3d(0, 0, 0)";
+      return;
+    }
+
     const rect = introCardEl.getBoundingClientRect();
-    introTop = rect.top + scrollY;
-    introHeight = rect.height;
-  }
+    const vh = window.innerHeight || 1;
 
-  function computeIntro(scrollY, { vh }) {
-    if (!introCardEl || !introHeight) return;
-
-    const topInViewport = introTop - scrollY;
     const start = vh * 0.92;
     const end = vh * 0.2;
-    const raw = clamp((start - topInViewport) / Math.max(start - end, 1), 0, 1);
-    const reveal = prefersReduced ? 1 : easeOutCubic(raw);
+    const raw = clamp((start - rect.top) / Math.max(start - end, 1), 0, 1);
+    const reveal = easeOutCubic(raw);
 
-    pendingIntro = {
-      opacity: q(lerp(0.18, 1, reveal), 0.001),
-      y: q(lerp(18, 0, reveal), 0.1)
-    };
+    const opacity = 0.18 + (1 - 0.18) * reveal;
+    const y = 18 * (1 - reveal);
 
-    dirtyIntro = true;
-  }
-
-  function applyIntro() {
-    if (!dirtyIntro || !pendingIntro || !introCardEl) return;
-
-    if (pendingIntro.opacity !== applied.opacity) {
-      introCardEl.style.opacity = `${pendingIntro.opacity}`;
-      applied.opacity = pendingIntro.opacity;
-    }
-
-    if (pendingIntro.y !== applied.y) {
-      introCardEl.style.transform = `translate3d(0, ${pendingIntro.y}px, 0)`;
-      applied.y = pendingIntro.y;
-    }
-
-    dirtyIntro = false;
+    introCardEl.style.opacity = opacity.toFixed(3);
+    introCardEl.style.transform = `translate3d(0, ${y.toFixed(2)}px, 0)`;
   }
 
   function updateMobileActiveCard() {
-    if (!isMobile || !galleryGridEl || !cardEls.length) return;
+    if (!isMobile || !galleryGridEl) return;
+
+    const cards = galleryGridEl.querySelectorAll(".card");
+    if (!cards.length) return;
 
     const centerX = galleryGridEl.scrollLeft + galleryGridEl.clientWidth * 0.5;
+
     let nearest = 0;
     let nearestDist = Infinity;
 
-    for (let i = 0; i < cardEls.length; i++) {
-      const el = cardEls[i];
-      if (!el) continue;
-
-      const cardCenter = el.offsetLeft + el.offsetWidth * 0.5;
+    cards.forEach((card, index) => {
+      const cardCenter = card.offsetLeft + card.offsetWidth * 0.5;
       const dist = Math.abs(cardCenter - centerX);
 
       if (dist < nearestDist) {
         nearestDist = dist;
-        nearest = i;
+        nearest = index;
       }
-    }
+    });
 
-    if (nearest !== activeMobileIndex) activeMobileIndex = nearest;
+    activeMobileIndex = nearest;
+  }
+
+  function scheduleIntroUpdate() {
+    if (scrollRaf) return;
+
+    scrollRaf = requestAnimationFrame(() => {
+      updateIntro();
+      scrollRaf = null;
+    });
   }
 
   function handleMobileGridScroll() {
     if (!isMobile) return;
-    if (mobileScrollRaf) cancelAnimationFrame(mobileScrollRaf);
 
+    if (mobileScrollRaf) cancelAnimationFrame(mobileScrollRaf);
     mobileScrollRaf = requestAnimationFrame(() => {
       updateMobileActiveCard();
       mobileScrollRaf = null;
@@ -189,23 +148,12 @@
   }
 
   function handleResize() {
-    clearTimeout(resizeTimer);
-    resizeTimer = setTimeout(() => {
+    clearTimeout(resizeTimeout);
+    resizeTimeout = setTimeout(() => {
       updateDeviceState();
-      measureIntro();
+      updateIntro();
       updateMobileActiveCard();
-      forceScrollEngineUpdate();
     }, 70);
-  }
-
-  function openProject(item) {
-    selected = item;
-    document.body.style.overflow = "hidden";
-  }
-
-  function closeProject() {
-    selected = null;
-    document.body.style.overflow = "";
   }
 
   onMount(() => {
@@ -213,64 +161,52 @@
 
     updateDeviceState();
 
-    mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
     prefersReduced = mediaQuery.matches;
 
-    const onMotion = (e) => {
+    const onMotionChange = (e) => {
       prefersReduced = e.matches;
-      forceScrollEngineUpdate();
+      updateIntro();
     };
 
     if (mediaQuery.addEventListener) {
-      mediaQuery.addEventListener("change", onMotion);
-      removeMotionListener = () => mediaQuery.removeEventListener("change", onMotion);
+      mediaQuery.addEventListener("change", onMotionChange);
+      removeMotionListener = () =>
+        mediaQuery.removeEventListener("change", onMotionChange);
     } else {
-      mediaQuery.addListener(onMotion);
-      removeMotionListener = () => mediaQuery.removeListener(onMotion);
+      mediaQuery.addListener(onMotionChange);
+      removeMotionListener = () =>
+        mediaQuery.removeListener(onMotionChange);
     }
 
     requestAnimationFrame(() => {
-      measureIntro();
-      if (introCardEl) {
-        introCardEl.style.opacity = "0.18";
-        introCardEl.style.transform = "translate3d(0, 18px, 0)";
-      }
+      updateIntro();
       updateMobileActiveCard();
-      forceScrollEngineUpdate();
     });
 
-    registerParallax(computeIntro, { priority: 2 });
-    registerWrite(applyIntro, { priority: 2 });
-
-    resizeObs = new ResizeObserver(handleResize);
-    if (gallerySection) resizeObs.observe(gallerySection);
-    if (introCardEl) resizeObs.observe(introCardEl);
-
-    galleryGridEl?.addEventListener("scroll", handleMobileGridScroll, { passive: true });
+    window.addEventListener("scroll", scheduleIntroUpdate, { passive: true });
     window.addEventListener("resize", handleResize, { passive: true });
     window.addEventListener("orientationchange", handleResize, { passive: true });
+    galleryGridEl?.addEventListener("scroll", handleMobileGridScroll, { passive: true });
   });
 
   onDestroy(() => {
     if (!browser) return;
 
-    unregisterParallax(computeIntro);
-    unregisterWrite(applyIntro);
-    resizeObs?.disconnect();
-    removeMotionListener?.();
-
-    clearTimeout(resizeTimer);
-    if (mobileScrollRaf) cancelAnimationFrame(mobileScrollRaf);
-
-    galleryGridEl?.removeEventListener("scroll", handleMobileGridScroll);
+    window.removeEventListener("scroll", scheduleIntroUpdate);
     window.removeEventListener("resize", handleResize);
     window.removeEventListener("orientationchange", handleResize);
+    galleryGridEl?.removeEventListener("scroll", handleMobileGridScroll);
 
-    document.body.style.overflow = "";
+    removeMotionListener?.();
+    clearTimeout(resizeTimeout);
+
+    if (scrollRaf) cancelAnimationFrame(scrollRaf);
+    if (mobileScrollRaf) cancelAnimationFrame(mobileScrollRaf);
   });
 </script>
 
-<section class="gallery" bind:this={gallerySection}>
+<section class="gallery">
   <div class="top-header">
     <div class="header-title-wrap">
       <h2>Nos services</h2>
@@ -294,12 +230,6 @@
         class:mobile-active={isMobile && i === activeMobileIndex}
         class:top-row={!isMobile && i < 3}
         class:bottom-row={!isMobile && i >= 3}
-        bind:this={cardEls[i]}
-        data-cursor="view"
-        role="button"
-        tabindex="0"
-        on:click={() => openProject(item)}
-        on:keydown={(e) => e.key === "Enter" && openProject(item)}
       >
         <div
           class="card-index-wrap"
@@ -352,8 +282,6 @@
     </button>
   </div>
 </section>
-
-<ProjectOffCanvas {selected} {items} on:close={closeProject} />
 
 <style>
   .gallery {
@@ -467,7 +395,7 @@
   .card {
     position: relative;
     overflow: visible;
-    cursor: pointer;
+    cursor: default;
     background: transparent;
     min-height: 0;
     transform: translateZ(0);
@@ -653,6 +581,7 @@
     transition: transform 0.28s ease, background 0.28s ease;
     z-index: 2;
     border-radius: 3px;
+    pointer-events: none;
   }
 
   .card:hover .card-plus {
