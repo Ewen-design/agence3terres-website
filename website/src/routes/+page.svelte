@@ -7,11 +7,14 @@
   import VisionSlider from "$lib/sections/VisionSlider.svelte";
     import GalleryColonnes from "$lib/sections/GalleryColonnes.svelte";
     import Hero from "$lib/sections/Hero.svelte";
+    import SliderNarratif from "$lib/sections/SliderNarratif.svelte";
 </script>
 
 <Hero />
 <GalleryColonnes />
 <ParallaxGallery2 />
-<ProjetsAccordeon />
+<SliderNarratif />
+
 <VisionSlider />
+
 

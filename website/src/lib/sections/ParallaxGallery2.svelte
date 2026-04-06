@@ -1,10 +1,8 @@
 <script>
   import { onMount, onDestroy } from "svelte";
   import { browser } from "$app/environment";
-  import { registerParallax, unregisterParallax } from "../scrollEngine.js";
   import ProjectOffCanvas from "./ProjectOffCanvas.svelte";
   import { navigate } from "$lib/navigate.js";
-  import { sharedLightPhase } from "$lib/sectionThemeSync.js";
 
   let selected = null;
   let gallerySection;
@@ -60,35 +58,16 @@
   ];
 
   let cardEls = [];
-  let wrapperEls = [];
   let infoEls = [];
   let imgEls = [];
   let servicesBtnEl;
 
-  let cardMetrics = [];
-  let secTop = 0, secBottom = 0;
-  let measured = false;
-
-  let prevWrapperY = [];
-  let prevInfoOp = [];
-  let prevInfoTY = [];
-  let prevImgDark = [];
-  let prevImgScaled = [];
-
-  let sectionVisible = false;
-  let intersectionObs;
   let resizeObs;
   let resizeTimer;
   let mediaQuery;
   let mobileScrollRaf = null;
 
-  let localIntroReveal = 0;
-
-  const SPEED_DESKTOP = -132;
-  const SPEED_MOBILE = -64;
-  const Q = 0.5;
-  const quantize = (v) => Math.round(v / Q) * Q;
-  const clamp = (v, lo, hi) => (v < lo ? lo : v > hi ? hi : v);
+  let introReveal = 0;
 
   function handleButtonMove(e) {
     const btn = e.currentTarget;
@@ -97,45 +76,29 @@
     btn.style.setProperty("--my", `${e.clientY - rect.top}px`);
   }
 
-  function easeOutCubic(t) {
-    return 1 - Math.pow(1 - t, 3);
+  function clamp(v, lo = 0, hi = 1) {
+    return Math.max(lo, Math.min(hi, v));
   }
 
   function lerp(a, b, t) {
     return a + (b - a) * t;
   }
 
-  function getLocalReveal(rect, vh, startMul = 0.9, endMul = 0.2) {
-    const start = vh * startMul;
-    const end = vh * endMul;
-    return clamp((start - rect.top) / (start - end), 0, 1);
+  function easeOutCubic(t) {
+    return 1 - Math.pow(1 - t, 3);
   }
 
-  function measure() {
-    if (!gallerySection) return;
-    const scrollY = (window.lenis?.animatedScroll ?? window.scrollY) || 0;
+  function updateIntroReveal() {
+    if (!introCardEl) return;
 
-    const sr = gallerySection.getBoundingClientRect();
-    secTop = sr.top + scrollY;
-    secBottom = secTop + sr.height;
+    const rect = introCardEl.getBoundingClientRect();
+    const vh = window.innerHeight || 1;
 
-    cardMetrics = [];
-    for (let i = 0; i < items.length; i++) {
-      const el = cardEls[i];
-      if (!el) {
-        cardMetrics.push({ top: 0, height: 0 });
-        continue;
-      }
-      const r = el.getBoundingClientRect();
-      cardMetrics.push({ top: r.top + scrollY, height: r.height });
-    }
+    const start = vh * 0.92;
+    const end = vh * 0.2;
+    const raw = clamp((start - rect.top) / Math.max(start - end, 1), 0, 1);
 
-    prevWrapperY = new Array(items.length).fill(null);
-    prevInfoOp = new Array(items.length).fill(null);
-    prevInfoTY = new Array(items.length).fill(null);
-    prevImgDark = new Array(items.length).fill(null);
-    prevImgScaled = new Array(items.length).fill(null);
-    measured = true;
+    introReveal = prefersReduced ? 1 : easeOutCubic(raw);
   }
 
   function updateMobileActiveCard() {
@@ -148,6 +111,7 @@
     for (let i = 0; i < cardEls.length; i++) {
       const el = cardEls[i];
       if (!el) continue;
+
       const cardCenter = el.offsetLeft + el.offsetWidth * 0.5;
       const dist = Math.abs(cardCenter - centerX);
 
@@ -163,83 +127,23 @@
   function handleMobileGridScroll() {
     if (!isMobile) return;
     if (mobileScrollRaf) cancelAnimationFrame(mobileScrollRaf);
+
     mobileScrollRaf = requestAnimationFrame(() => {
       updateMobileActiveCard();
     });
-  }
-
-  function onScroll(scrollY, { vh, isMobile: mob }) {
-    if (!sectionVisible || prefersReduced || !measured) return;
-    if (secTop - scrollY > vh + 700 || secBottom - scrollY < -700) return;
-
-    const speed = mob ? SPEED_MOBILE : SPEED_DESKTOP;
-
-    if (introCardEl) {
-      const rect = introCardEl.getBoundingClientRect();
-      localIntroReveal = easeOutCubic(getLocalReveal(rect, vh, 0.93, 0.2));
-    }
-
-    for (let i = 0; i < items.length; i++) {
-      const wrapper = wrapperEls[i];
-      if (!wrapper) continue;
-      const m = cardMetrics[i];
-      if (!m?.height) continue;
-
-      const center = m.top - scrollY + m.height * 0.5;
-      const progress = clamp((center - vh * 0.5) / vh, -1, 1);
-      const wY = quantize(progress * speed);
-
-      if (wY !== prevWrapperY[i]) {
-        wrapper.style.transform = `translate3d(0,${wY}px,0)`;
-        prevWrapperY[i] = wY;
-      }
-
-      if (mob && !galleryGridEl) {
-        const info = infoEls[i];
-        const img = imgEls[i];
-        if (!info || !img) continue;
-
-        const dist = Math.abs(center - vh * 0.5);
-        const active = dist < m.height * 0.42;
-        const tgtOp = active ? 1 : 0;
-        const tgtTY = active ? 0 : -10;
-
-        const curOp = prevInfoOp[i] !== null ? prevInfoOp[i] : tgtOp;
-        const curTY = prevInfoTY[i] !== null ? prevInfoTY[i] : tgtTY;
-        const newOp = curOp + (tgtOp - curOp) * 0.18;
-        const newTY = curTY + (tgtTY - curTY) * 0.18;
-
-        prevInfoOp[i] = newOp;
-        prevInfoTY[i] = newTY;
-
-        const qOp = Math.round(newOp * 40) / 40;
-        const qTY = quantize(newTY);
-        const dark = newOp > 0.5;
-
-        info.style.opacity = qOp;
-        info.style.transform = `translate3d(0,${qTY}px,0)`;
-
-        if (dark !== prevImgDark[i]) {
-          img.style.filter = dark ? "brightness(0.68)" : "";
-          prevImgDark[i] = dark;
-        }
-        if (dark !== prevImgScaled[i]) {
-          img.style.transform = dark ? "scale(1.035) translateZ(0)" : "translateZ(0)";
-          prevImgScaled[i] = dark;
-        }
-      }
-    }
   }
 
   function handleResize() {
     clearTimeout(resizeTimer);
     resizeTimer = setTimeout(() => {
       isMobile = window.innerWidth <= 900;
-      measure();
-      requestAnimationFrame(() => {
-        updateMobileActiveCard();
-      });
-    }, 100);
+      updateIntroReveal();
+      updateMobileActiveCard();
+    }, 90);
+  }
+
+  function handleScroll() {
+    updateIntroReveal();
   }
 
   function openProject(item) {
@@ -253,6 +157,8 @@
   }
 
   onMount(() => {
+    if (!browser) return;
+
     isMobile = window.innerWidth <= 900;
 
     mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -260,35 +166,22 @@
 
     const onMotion = (e) => {
       prefersReduced = e.matches;
+      updateIntroReveal();
     };
 
     if (mediaQuery.addEventListener) mediaQuery.addEventListener("change", onMotion);
     else mediaQuery.addListener(onMotion);
 
     requestAnimationFrame(() => {
-      measure();
-      registerParallax(onScroll);
+      updateIntroReveal();
       updateMobileActiveCard();
     });
 
-    intersectionObs = new IntersectionObserver(([entry]) => {
-      const wasVisible = sectionVisible;
-      sectionVisible = entry.isIntersecting;
-      if (sectionVisible && !wasVisible) {
-        measure();
-        requestAnimationFrame(() => {
-          updateMobileActiveCard();
-        });
-      }
-    }, { rootMargin: "500px 0px 500px 0px", threshold: 0 });
-
-    intersectionObs.observe(gallerySection);
-
     resizeObs = new ResizeObserver(handleResize);
-    resizeObs.observe(gallerySection);
+    if (gallerySection) resizeObs.observe(gallerySection);
 
     galleryGridEl?.addEventListener("scroll", handleMobileGridScroll, { passive: true });
-
+    window.addEventListener("scroll", handleScroll, { passive: true });
     window.addEventListener("resize", handleResize, { passive: true });
     window.addEventListener("orientationchange", handleResize, { passive: true });
 
@@ -300,24 +193,27 @@
 
   onDestroy(() => {
     if (!browser) return;
-    unregisterParallax(onScroll);
-    intersectionObs?.disconnect();
+
     resizeObs?.disconnect();
+
     clearTimeout(resizeTimer);
     if (mobileScrollRaf) cancelAnimationFrame(mobileScrollRaf);
+
     galleryGridEl?.removeEventListener("scroll", handleMobileGridScroll);
+    window.removeEventListener("scroll", handleScroll);
     window.removeEventListener("resize", handleResize);
     window.removeEventListener("orientationchange", handleResize);
+
     document.body.style.overflow = "";
   });
 
-  $: introBlockOpacity = lerp(0.18, 1, localIntroReveal);
-  $: introBlockY = lerp(18, 0, localIntroReveal);
-  $: introRevealEdge = lerp(0, 118, localIntroReveal);
-  $: introBlockBlur = lerp(8, 0, localIntroReveal);
+  $: introBlockOpacity = lerp(0.18, 1, introReveal);
+  $: introBlockY = lerp(18, 0, introReveal);
+  $: introRevealEdge = lerp(0, 118, introReveal);
+  $: introBlockBlur = lerp(8, 0, introReveal);
 </script>
 
-<section class="gallery" class:light-phase={$sharedLightPhase} bind:this={gallerySection}>
+<section class="gallery" bind:this={gallerySection}>
   <div class="top-header">
     <div class="header-title-wrap">
       <h2>Nos services</h2>
@@ -365,7 +261,7 @@
         </div>
 
         <div class="card-media">
-          <div class="card-image-wrapper" bind:this={wrapperEls[i]}>
+          <div class="card-image-wrapper">
             <img
               bind:this={imgEls[i]}
               src={item.image}
@@ -424,21 +320,7 @@
     background: var(--section-bg);
     padding: 0 0 10rem 0;
     overflow: clip;
-    contain: layout paint;
     isolation: isolate;
-    transition: background-color 620ms cubic-bezier(0.22, 1, 0.36, 1);
-  }
-
-  .gallery.light-phase {
-    --section-bg: #f5f1e8;
-    --title-color: #111;
-    --intro-body: rgba(17, 17, 17, 0.66);
-    --intro-main: #111;
-    --intro-muted: rgba(17, 17, 17, 0.56);
-    --index-color: rgba(17, 17, 17, 0.88);
-    --services-btn-text: #111;
-    --services-btn-border: rgba(17, 17, 17, 0.14);
-    --services-btn-bg: rgba(17, 17, 17, 0.06);
   }
 
   .top-header {
@@ -448,7 +330,6 @@
     grid-template-columns: 52% 48%;
     align-items: end;
     background: var(--section-bg);
-    transition: background-color 620ms cubic-bezier(0.22, 1, 0.36, 1);
   }
 
   .header-spacer {
@@ -472,7 +353,6 @@
     letter-spacing: -0.045em;
     color: var(--title-color);
     text-align: left;
-    transition: color 620ms cubic-bezier(0.22, 1, 0.36, 1);
   }
 
   .gallery-header {
@@ -489,7 +369,6 @@
     width: min(560px, 100%);
     padding: 0;
     box-shadow: none;
-    contain: layout paint;
     will-change: transform, opacity, filter;
     -webkit-mask-image: linear-gradient(
       to bottom,
@@ -522,17 +401,14 @@
     line-height: 1.08;
     letter-spacing: -0.02em;
     color: var(--intro-body);
-    transition: color 620ms cubic-bezier(0.22, 1, 0.36, 1);
   }
 
   .intro-main {
     color: var(--intro-main);
-    transition: color 620ms cubic-bezier(0.22, 1, 0.36, 1);
   }
 
   .intro-muted {
     color: var(--intro-muted);
-    transition: color 620ms cubic-bezier(0.22, 1, 0.36, 1);
   }
 
   .gallery-grid {
@@ -549,7 +425,6 @@
       "card4 card4 card2 card2 card3 card3"
       "card4 card4 card2 card2 card6 card6"
       "card4 card4 card5 card5 card6 card6";
-    contain: layout;
     overflow: visible;
   }
 
@@ -559,7 +434,6 @@
     cursor: pointer;
     background: transparent;
     min-height: 0;
-    contain: layout;
     transform: translateZ(0);
     backface-visibility: hidden;
     -webkit-backface-visibility: hidden;
@@ -583,19 +457,8 @@
 
   .card-image-wrapper {
     position: absolute;
-    inset-inline: 0;
-    top: -14%;
-    height: 128%;
-    will-change: transform;
-    transform: translate3d(0, 0, 0);
-    backface-visibility: hidden;
-    -webkit-backface-visibility: hidden;
-  }
-
-  .card:nth-child(1) .card-image-wrapper,
-  .card:nth-child(5) .card-image-wrapper {
-    top: -28%;
-    height: 158%;
+    inset: 0;
+    transform: translateZ(0);
   }
 
   .card img {
@@ -604,17 +467,19 @@
     object-fit: cover;
     display: block;
     transform: translateZ(0);
-    will-change: transform, filter;
     backface-visibility: hidden;
     -webkit-backface-visibility: hidden;
-    transition: filter 0.34s ease, transform 0.42s ease;
+    transition:
+      filter 0.34s ease,
+      transform 0.42s ease,
+      opacity 0.34s ease;
     user-select: none;
     pointer-events: none;
   }
 
   .card:hover img {
     filter: brightness(0.68);
-    transform: scale(1.035) translateZ(0);
+    transform: scale(1.02) translateZ(0);
   }
 
   .info {
@@ -629,8 +494,6 @@
     transform: translate3d(0, -10px, 0);
     transition: opacity 0.28s ease, transform 0.28s ease;
     z-index: 2;
-    will-change: opacity, transform;
-    contain: paint;
     pointer-events: none;
   }
 
@@ -714,11 +577,9 @@
     letter-spacing: -0.02em;
     color: var(--index-color);
     opacity: 0;
-    will-change: transform, opacity;
     transition:
       transform 0.42s cubic-bezier(.22,.61,.36,1),
-      opacity 0.32s ease,
-      color 620ms cubic-bezier(0.22, 1, 0.36, 1);
+      opacity 0.32s ease;
   }
 
   .index-top .card-index-inner {
@@ -753,13 +614,11 @@
     background: rgba(255, 255, 255, 0.14);
     transition: transform 0.28s ease, background 0.28s ease;
     z-index: 2;
-    will-change: transform;
-    contain: paint;
     border-radius: 3px;
   }
 
   .card:hover .card-plus {
-    transform: scale(1.1);
+    transform: scale(1.08);
     background: rgba(255, 255, 255, 0.22);
   }
 
@@ -789,9 +648,7 @@
     transition:
       transform 1.2s cubic-bezier(.22,.61,.36,1),
       box-shadow 1.2s cubic-bezier(.22,.61,.36,1),
-      background 1.2s cubic-bezier(.22,.61,.36,1),
-      color 620ms cubic-bezier(0.22, 1, 0.36, 1),
-      border-color 620ms cubic-bezier(0.22, 1, 0.36, 1);
+      background 1.2s cubic-bezier(.22,.61,.36,1);
   }
 
   .services-btn-flip {
@@ -840,7 +697,6 @@
 
   .services-btn::before {
     border: 1px solid transparent;
-    border-radius: inherit;
     border-image-slice: 1;
     border-image-source: radial-gradient(
       68px circle at var(--mx, 50%) var(--my, 50%),
@@ -855,7 +711,6 @@
 
   .services-btn::after {
     border: 1px solid transparent;
-    border-radius: inherit;
     border-image-slice: 1;
     border-image-source: radial-gradient(
       78px circle at var(--mx, 50%) var(--my, 50%),
@@ -916,14 +771,6 @@
       color: var(--intro-body);
     }
 
-    .intro-main {
-      color: var(--intro-main);
-    }
-
-    .intro-muted {
-      color: var(--intro-muted);
-    }
-
     .gallery-grid {
       width: 100%;
       margin: 2rem 0 0 0;
@@ -973,13 +820,6 @@
       overflow: visible;
     }
 
-    .card-image-wrapper,
-    .card:nth-child(1) .card-image-wrapper,
-    .card:nth-child(5) .card-image-wrapper {
-      top: -12%;
-      height: 124%;
-    }
-
     .card:hover img {
       filter: none;
       transform: translateZ(0);
@@ -1002,7 +842,7 @@
 
     .card.mobile-active img {
       filter: brightness(0.68);
-      transform: scale(1.035) translateZ(0);
+      transform: scale(1.02) translateZ(0);
     }
 
     .card.mobile-active .info {
@@ -1020,7 +860,7 @@
     .card.mobile-active .info-chip:nth-child(3) { transition-delay: 0.1s; }
 
     .card.mobile-active .card-plus {
-      transform: scale(1.1);
+      transform: scale(1.08);
       background: rgba(255, 255, 255, 0.22);
     }
 
@@ -1075,13 +915,6 @@
       width: clamp(270px, 82vw, 330px);
     }
 
-    .card-image-wrapper,
-    .card:nth-child(1) .card-image-wrapper,
-    .card:nth-child(5) .card-image-wrapper {
-      top: -11%;
-      height: 122%;
-    }
-
     .info {
       top: 12px;
       left: 12px;
@@ -1110,10 +943,7 @@
       font-size: 1rem;
     }
 
-    .card-index-wrap {
-      bottom: -28px;
-    }
-
+    .card-index-wrap,
     .index-mobile {
       bottom: -28px;
     }
@@ -1137,10 +967,6 @@
       padding: 1.1rem 1rem 0.85rem;
     }
 
-    .intro-card {
-      padding: 0;
-    }
-
     .intro-card p {
       font-size: clamp(1.15rem, 5vw, 1.35rem);
       line-height: 1.08;
@@ -1158,13 +984,6 @@
     .card {
       flex-basis: 84vw;
       width: 84vw;
-    }
-
-    .card-image-wrapper,
-    .card:nth-child(1) .card-image-wrapper,
-    .card:nth-child(5) .card-image-wrapper {
-      top: -10%;
-      height: 120%;
     }
 
     .info {
@@ -1194,10 +1013,7 @@
       font-size: 0.95rem;
     }
 
-    .card-index-wrap {
-      bottom: -26px;
-    }
-
+    .card-index-wrap,
     .index-mobile {
       bottom: -26px;
     }
@@ -1225,23 +1041,16 @@
       transition: none;
     }
 
-    .card-image-wrapper {
-      transform: none !important;
-    }
-
-    .gallery-grid {
-      scroll-behavior: auto;
-    }
-
-    .intro-card,
-    .info,
-    .info-chip,
-    .card-index-inner {
+    .intro-card {
       filter: none !important;
       -webkit-mask-image: none !important;
       mask-image: none !important;
       transform: none !important;
       opacity: 1 !important;
+    }
+
+    .gallery-grid {
+      scroll-behavior: auto;
     }
   }
 </style>

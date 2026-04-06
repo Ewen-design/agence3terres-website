@@ -55,7 +55,7 @@
     if (!headerEl) return;
     const headerMid = headerEl.getBoundingClientRect().top + headerEl.offsetHeight / 2;
     const sections = document.querySelectorAll(
-      "section.hero-wrapper, section.creative-section, section.services, section.dna-section, section.lifestyles-section, section.gallery"
+      "section.hero-wrapper, section.creative-section, section.services, section.dna-section, section.lifestyles-section"
     );
 
     let overLight = false;

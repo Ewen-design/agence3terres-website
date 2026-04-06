@@ -2,11 +2,6 @@
   import { onMount, onDestroy } from "svelte";
   import { browser } from "$app/environment";
   import { registerParallax, unregisterParallax } from "../scrollEngine.js";
-  import {
-    sharedLightPhase,
-    setEnteredLightZone,
-    resetSharedLightPhase
-  } from "$lib/sectionThemeSync.js";
 
   const leftImages = [
     { ratio: "portrait", height: 38 },
@@ -46,27 +41,22 @@
   let resizeTimer = null;
   let isMobile = false;
 
-  // ===== RÉGLAGES TIMING =====
-  // Desktop
   const DESKTOP_TEXT_CENTER = 0.56;
   const DESKTOP_TEXT_ENTER_RANGE = 0.42;
   const DESKTOP_TEXT_LEAVE_RANGE = 0.98;
   const DESKTOP_GALLERY_CENTER = 0.58;
   const DESKTOP_GALLERY_RANGE = 0.62;
 
-  // Mobile
   const MOBILE_TEXT_CENTER = 0.60;
   const MOBILE_TEXT_ENTER_RANGE = 0.34;
   const MOBILE_TEXT_LEAVE_RANGE = 0.91;
   const MOBILE_GALLERY_CENTER = 0.98;
   const MOBILE_GALLERY_RANGE = 0.72;
 
-  // Disparition progressive bas -> haut
   const DESKTOP_EXIT_START = 1.08;
   const DESKTOP_EXIT_END = 0.18;
   const MOBILE_EXIT_START = 1.02;
   const MOBILE_EXIT_END = 0.24;
-  // ==========================
 
   function clamp(value, min, max) {
     return Math.max(min, Math.min(max, value));
@@ -82,13 +72,17 @@
     return start + (end - start) * factor;
   }
 
+  function currentScrollY() {
+    return window.lenis?.animatedScroll ?? window.scrollY ?? 0;
+  }
+
   function updateDeviceState() {
     isMobile = window.innerWidth <= 640;
   }
 
   function measure() {
     if (!sectionEl) return;
-    const scrollY = window.lenis?.animatedScroll ?? window.scrollY ?? 0;
+    const scrollY = currentScrollY();
     const rect = sectionEl.getBoundingClientRect();
     sectionTop = rect.top + scrollY;
     sectionHeight = rect.height;
@@ -129,8 +123,8 @@
     const textEnterRange = vh * (isMobile ? MOBILE_TEXT_ENTER_RANGE : DESKTOP_TEXT_ENTER_RANGE);
     const textLeaveRange = vh * (isMobile ? MOBILE_TEXT_LEAVE_RANGE : DESKTOP_TEXT_LEAVE_RANGE);
 
-    const enter = clamp((textCenterY - topInViewport) / textEnterRange, 0, 1);
-    const leave = clamp((bottomInViewport - textCenterY) / textLeaveRange, 0, 1);
+    const enter = clamp((textCenterY - topInViewport) / Math.max(textEnterRange, 1), 0, 1);
+    const leave = clamp((bottomInViewport - textCenterY) / Math.max(textLeaveRange, 1), 0, 1);
     const visibility = easeInOutCubic(enter) * easeInOutCubic(leave);
 
     targetOpacity = visibility;
@@ -139,26 +133,20 @@
     const galleryCenterY = vh * (isMobile ? MOBILE_GALLERY_CENTER : DESKTOP_GALLERY_CENTER);
     const galleryRange = vh * (isMobile ? MOBILE_GALLERY_RANGE : DESKTOP_GALLERY_RANGE);
 
-    const gEnter = clamp((galleryCenterY - topInViewport) / galleryRange, 0, 1);
-    const gLeave = clamp((bottomInViewport - galleryCenterY) / galleryRange, 0, 1);
+    const gEnter = clamp((galleryCenterY - topInViewport) / Math.max(galleryRange, 1), 0, 1);
+    const gLeave = clamp((bottomInViewport - galleryCenterY) / Math.max(galleryRange, 1), 0, 1);
     galleryProgress = easeInOutCubic(gEnter) * easeInOutCubic(gLeave);
 
-    // Début précoce et très doux de la disparition depuis le bas
     const exitStart = vh * (isMobile ? MOBILE_EXIT_START : DESKTOP_EXIT_START);
     const exitEnd = vh * (isMobile ? MOBILE_EXIT_END : DESKTOP_EXIT_END);
+    const rawExit = clamp((exitStart - bottomInViewport) / Math.max(exitStart - exitEnd, 1), 0, 1);
 
-    const rawExit = clamp((exitStart - bottomInViewport) / (exitStart - exitEnd), 0, 1);
-
-    // départ très doux, puis montée progressive
     const slowStart = Math.pow(rawExit, 2.15);
     const reinforcedMid = 1 - Math.pow(1 - rawExit, 2.4);
     const blendedExit = slowStart * 0.68 + reinforcedMid * 0.32;
 
     galleryExitCut = blendedExit * 78;
     galleryExitFeather = 16 + blendedExit * 10;
-
-    const lightTrigger = sectionTop + sectionHeight - vh * 0.06;
-    setEnteredLightZone(scrollY >= lightTrigger);
 
     startAnimationLoop();
   }
@@ -168,20 +156,22 @@
     resizeTimer = setTimeout(() => {
       updateDeviceState();
       measure();
+      updateFromScroll(currentScrollY(), { vh: window.innerHeight || 1 });
     }, 80);
   }
 
   onMount(() => {
-    resetSharedLightPhase();
+    if (!browser) return;
 
     requestAnimationFrame(() => {
       updateDeviceState();
       measure();
+      updateFromScroll(currentScrollY(), { vh: window.innerHeight || 1 });
     });
 
     registerParallax(updateFromScroll, { priority: 2 });
 
-    resizeObserver = new ResizeObserver(() => handleResize());
+    resizeObserver = new ResizeObserver(handleResize);
     if (sectionEl) resizeObserver.observe(sectionEl);
 
     window.addEventListener("resize", handleResize, { passive: true });
@@ -190,21 +180,19 @@
 
   onDestroy(() => {
     if (!browser) return;
+
     unregisterParallax(updateFromScroll);
     resizeObserver?.disconnect();
+
     if (resizeTimer) clearTimeout(resizeTimer);
     if (rafId !== null) cancelAnimationFrame(rafId);
+
     window.removeEventListener("resize", handleResize);
     window.removeEventListener("orientationchange", handleResize);
-    resetSharedLightPhase();
   });
 </script>
 
-<section
-  class="gallery-section"
-  class:light-phase={$sharedLightPhase}
-  bind:this={sectionEl}
->
+<section class="gallery-section" bind:this={sectionEl}>
   <div
     class="fixed-text"
     class:is-visible={textVisible}
@@ -271,15 +259,6 @@
     background: var(--section-bg);
     overflow: hidden;
     color: var(--section-text);
-    transition:
-      background-color 620ms cubic-bezier(0.22, 1, 0.36, 1),
-      color 620ms cubic-bezier(0.22, 1, 0.36, 1);
-  }
-
-  .gallery-section.light-phase {
-    --section-bg: #f5f1e8;
-    --section-text: #111;
-    --card-bg: #ddd5ca;
   }
 
   .fixed-text {
@@ -313,7 +292,6 @@
     text-align: center;
     color: var(--section-text);
     text-wrap: balance;
-    transition: color 620ms cubic-bezier(0.22, 1, 0.36, 1);
   }
 
   .letter {
@@ -381,7 +359,6 @@
   .card {
     overflow: hidden;
     background: var(--card-bg);
-    transition: background-color 620ms cubic-bezier(0.22, 1, 0.36, 1);
   }
 
   .card img {

@@ -1,11 +1,11 @@
 import { writable } from "svelte/store";
 
-export const storyDarkPhase = writable(false);
+export const sharedLightPhase = writable(false);
 
-export function setStoryDarkPhase(value) {
-  storyDarkPhase.set(!!value);
+export function setEnteredLightZone(value) {
+  sharedLightPhase.set(!!value);
 }
 
-export function resetStoryDarkPhase() {
-  storyDarkPhase.set(false);
+export function resetSharedLightPhase() {
+  sharedLightPhase.set(false);
 }

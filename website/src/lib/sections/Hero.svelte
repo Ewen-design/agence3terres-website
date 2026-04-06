@@ -28,6 +28,7 @@
 
   let fallbackTimeout;
   let hintTimeout;
+  let resizeObserver;
 
   const finalText =
     "Nous concevons des identités, des expériences et des univers visuels pensés pour marquer durablement les esprits.";
@@ -139,13 +140,51 @@
       startIntro();
     };
 
-    updateAll();
-    requestAnimationFrame(updateAll);
+    const handleWindowLoad = () => {
+      updateAll();
+      requestAnimationFrame(updateAll);
+    };
+
+    const handlePageShow = () => {
+      updateAll();
+      requestAnimationFrame(updateAll);
+    };
+
+    const boot = async () => {
+      updateAll();
+
+      if (document.fonts?.ready) {
+        try {
+          await document.fonts.ready;
+        } catch {}
+      }
+
+      requestAnimationFrame(() => {
+        updateAll();
+        requestAnimationFrame(() => {
+          updateAll();
+          requestAnimationFrame(updateAll);
+        });
+      });
+    };
+
+    boot();
 
     window.addEventListener("scroll", requestUpdate, { passive: true });
     window.addEventListener("resize", updateAll, { passive: true });
     window.addEventListener("orientationchange", updateAll, { passive: true });
+    window.addEventListener("load", handleWindowLoad);
+    window.addEventListener("pageshow", handlePageShow);
     window.addEventListener("preloader:done", handlePreloaderDone);
+
+    if (typeof ResizeObserver !== "undefined") {
+      resizeObserver = new ResizeObserver(() => {
+        updateAll();
+      });
+
+      if (leftTitleEl) resizeObserver.observe(leftTitleEl);
+      if (rightTitleEl) resizeObserver.observe(rightTitleEl);
+    }
 
     fallbackTimeout = setTimeout(() => {
       startIntro();
@@ -155,9 +194,12 @@
       window.removeEventListener("scroll", requestUpdate);
       window.removeEventListener("resize", updateAll);
       window.removeEventListener("orientationchange", updateAll);
+      window.removeEventListener("load", handleWindowLoad);
+      window.removeEventListener("pageshow", handlePageShow);
       window.removeEventListener("preloader:done", handlePreloaderDone);
       clearTimeout(fallbackTimeout);
       clearTimeout(hintTimeout);
+      if (resizeObserver) resizeObserver.disconnect();
     };
   });
 
