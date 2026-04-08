@@ -5,21 +5,12 @@ let initialized = false;
 /* -------------------------------------------------------------------------- */
 
 let currentY = 0;
-let targetY = 0;
-let lastY = 0;
-
-let delta = 0;
-let direction = 0;
-let velocity = 0;
-let smoothVelocity = 0;
-
 let cachedVh = 0;
 let cachedVw = 0;
 let isMobile = false;
 
-let lastFrameTime = 0;
 let rafId = 0;
-let scheduled = false;
+let ticking = false;
 
 /* -------------------------------------------------------------------------- */
 /* Registries                                                                 */
@@ -28,6 +19,22 @@ let scheduled = false;
 const parallaxCallbacks = [];
 const readCallbacks = [];
 const writeCallbacks = [];
+
+/* -------------------------------------------------------------------------- */
+/* Shared context                                                             */
+/* -------------------------------------------------------------------------- */
+
+const sharedCtx = {
+  y: 0,
+  delta: 0,
+  direction: 0,
+  velocity: 0,
+  smoothVelocity: 0,
+  vh: 0,
+  vw: 0,
+  isMobile: false,
+  dt: 16.67
+};
 
 /* -------------------------------------------------------------------------- */
 /* Utils                                                                      */
@@ -39,39 +46,25 @@ function readViewport() {
   isMobile = cachedVw <= 900;
 }
 
-function clamp(value, min, max) {
-  return Math.max(min, Math.min(max, value));
-}
-
-function lerp(a, b, t) {
-  return a + (b - a) * t;
-}
-
-function getThreshold() {
-  return isMobile ? 0.35 : 0.15;
-}
-
-function quantize(value, step) {
-  if (!step) return value;
-  return Math.round(value / step) * step;
+function getNativeScrollY() {
+  return window.scrollY || window.pageYOffset || 0;
 }
 
 function sortByPriority(list) {
   list.sort((a, b) => (b.priority || 0) - (a.priority || 0));
 }
 
-function buildContext(dt) {
-  return {
-    y: currentY,
-    delta,
-    direction,
-    velocity,
-    smoothVelocity,
-    vh: cachedVh,
-    vw: cachedVw,
-    isMobile,
-    dt
-  };
+function updateSharedContext() {
+  sharedCtx.y = currentY;
+  sharedCtx.delta = 0;
+  sharedCtx.direction = 0;
+  sharedCtx.velocity = 0;
+  sharedCtx.smoothVelocity = 0;
+  sharedCtx.vh = cachedVh;
+  sharedCtx.vw = cachedVw;
+  sharedCtx.isMobile = isMobile;
+  sharedCtx.dt = 16.67;
+  return sharedCtx;
 }
 
 function safeCall(fn, ctx) {
@@ -98,59 +91,64 @@ function safeCallWrite(fn, ctx) {
   }
 }
 
-/* -------------------------------------------------------------------------- */
-/* Core frame                                                                 */
-/* -------------------------------------------------------------------------- */
-
-function runFrame(now) {
-  scheduled = false;
-
-  const dt = lastFrameTime ? clamp(now - lastFrameTime, 8, 34) : 16.67;
-  lastFrameTime = now;
-
-  const nextY = Number.isFinite(targetY) ? targetY : 0;
-  const rawDelta = nextY - lastY;
-  const threshold = getThreshold();
-
-  if (Math.abs(rawDelta) < threshold && Math.abs(nextY - currentY) < threshold) {
-    return;
-  }
-
-  currentY = quantize(nextY, isMobile ? 0.02 : 0.01);
-  delta = currentY - lastY;
-  direction = delta > 0 ? 1 : delta < 0 ? -1 : 0;
-
-  const instantVelocity = dt > 0 ? delta / dt : 0;
-  velocity = instantVelocity;
-  smoothVelocity = lerp(smoothVelocity, instantVelocity, isMobile ? 0.1 : 0.16);
-
-  const ctx = buildContext(dt);
-
+function runReadPhase(ctx) {
   for (let i = 0; i < readCallbacks.length; i++) {
     const item = readCallbacks[i];
-    if (!item.active) continue;
-    safeCallRead(item.cb, ctx);
+    if (item.active) safeCallRead(item.cb, ctx);
   }
-
-  for (let i = 0; i < parallaxCallbacks.length; i++) {
-    const item = parallaxCallbacks[i];
-    if (!item.active) continue;
-    safeCall(item.cb, ctx);
-  }
-
-  for (let i = 0; i < writeCallbacks.length; i++) {
-    const item = writeCallbacks[i];
-    if (!item.active) continue;
-    safeCallWrite(item.cb, ctx);
-  }
-
-  lastY = currentY;
 }
 
-function schedule() {
-  if (scheduled) return;
-  scheduled = true;
-  rafId = requestAnimationFrame(runFrame);
+function runParallaxPhase(ctx) {
+  for (let i = 0; i < parallaxCallbacks.length; i++) {
+    const item = parallaxCallbacks[i];
+    if (item.active) safeCall(item.cb, ctx);
+  }
+}
+
+function runWritePhase(ctx) {
+  for (let i = 0; i < writeCallbacks.length; i++) {
+    const item = writeCallbacks[i];
+    if (item.active) safeCallWrite(item.cb, ctx);
+  }
+}
+
+function runAllPhases() {
+  const ctx = updateSharedContext();
+  runReadPhase(ctx);
+  runParallaxPhase(ctx);
+  runWritePhase(ctx);
+}
+
+function ensureViewportReady() {
+  if (!cachedVh || !cachedVw) {
+    readViewport();
+    updateSharedContext();
+  }
+}
+
+/* -------------------------------------------------------------------------- */
+/* Native loop                                                                */
+/* -------------------------------------------------------------------------- */
+
+function flush() {
+  ticking = false;
+  currentY = getNativeScrollY();
+  runAllPhases();
+}
+
+function requestFlush() {
+  if (!initialized || ticking) return;
+  ticking = true;
+  rafId = requestAnimationFrame(flush);
+}
+
+function handleNativeScroll() {
+  requestFlush();
+}
+
+function handleNativeResize() {
+  readViewport();
+  requestFlush();
 }
 
 /* -------------------------------------------------------------------------- */
@@ -159,19 +157,19 @@ function schedule() {
 
 export function initScrollEngine() {
   if (initialized) return;
+
   initialized = true;
 
   readViewport();
-  lastFrameTime = performance.now();
-  currentY = 0;
-  targetY = 0;
-  lastY = 0;
-  delta = 0;
-  direction = 0;
-  velocity = 0;
-  smoothVelocity = 0;
+  currentY = getNativeScrollY();
+  rafId = 0;
+  ticking = false;
 
-  window.addEventListener("resize", updateScrollEngineViewport, { passive: true });
+  updateSharedContext();
+
+  window.addEventListener("scroll", handleNativeScroll, { passive: true });
+  window.addEventListener("resize", handleNativeResize, { passive: true });
+  window.addEventListener("orientationchange", handleNativeResize, { passive: true });
 }
 
 export function destroyScrollEngine() {
@@ -179,72 +177,56 @@ export function destroyScrollEngine() {
 
   initialized = false;
 
-  window.removeEventListener("resize", updateScrollEngineViewport);
+  window.removeEventListener("scroll", handleNativeScroll);
+  window.removeEventListener("resize", handleNativeResize);
+  window.removeEventListener("orientationchange", handleNativeResize);
 
   if (rafId) {
     cancelAnimationFrame(rafId);
     rafId = 0;
   }
 
-  scheduled = false;
+  ticking = false;
 
   parallaxCallbacks.length = 0;
   readCallbacks.length = 0;
   writeCallbacks.length = 0;
 
   currentY = 0;
-  targetY = 0;
-  lastY = 0;
-  delta = 0;
-  direction = 0;
-  velocity = 0;
-  smoothVelocity = 0;
   cachedVh = 0;
   cachedVw = 0;
   isMobile = false;
-  lastFrameTime = 0;
+
+  updateSharedContext();
 }
 
 export function updateScrollEngineViewport() {
+  if (!initialized) return;
   readViewport();
+  runAllPhases();
 }
 
 export function updateScrollEngine(y) {
-  targetY = Number.isFinite(y) ? y : 0;
-  schedule();
+  if (!initialized) return;
+
+  currentY = Number.isFinite(y) ? y : getNativeScrollY();
+  runAllPhases();
 }
 
 export function forceScrollEngineUpdate() {
-  currentY = Number.isFinite(targetY) ? targetY : currentY;
-  lastY = currentY;
+  if (!initialized) return;
 
-  const ctx = buildContext(16.67);
-
-  for (let i = 0; i < readCallbacks.length; i++) {
-    const item = readCallbacks[i];
-    if (!item.active) continue;
-    safeCallRead(item.cb, ctx);
-  }
-
-  for (let i = 0; i < parallaxCallbacks.length; i++) {
-    const item = parallaxCallbacks[i];
-    if (!item.active) continue;
-    safeCall(item.cb, ctx);
-  }
-
-  for (let i = 0; i < writeCallbacks.length; i++) {
-    const item = writeCallbacks[i];
-    if (!item.active) continue;
-    safeCallWrite(item.cb, ctx);
-  }
+  currentY = getNativeScrollY();
+  runAllPhases();
 }
 
 export function getScrollY() {
-  return currentY;
+  return getNativeScrollY();
 }
 
 export function getScrollContext() {
-  return buildContext(16.67);
+  currentY = getNativeScrollY();
+  return updateSharedContext();
 }
 
 /* -------------------------------------------------------------------------- */
@@ -264,11 +246,8 @@ export function registerParallax(cb, options = {}) {
   parallaxCallbacks.push(entry);
   sortByPriority(parallaxCallbacks);
 
-  if (!cachedVh || !cachedVw) {
-    readViewport();
-  }
-
-  safeCall(cb, buildContext(16.67));
+  ensureViewportReady();
+  safeCall(cb, updateSharedContext());
 
   return () => {
     const index = parallaxCallbacks.indexOf(entry);
@@ -286,7 +265,8 @@ export function registerRead(cb, options = {}) {
   readCallbacks.push(entry);
   sortByPriority(readCallbacks);
 
-  safeCallRead(cb, buildContext(16.67));
+  ensureViewportReady();
+  safeCallRead(cb, updateSharedContext());
 
   return () => {
     const index = readCallbacks.indexOf(entry);
@@ -304,7 +284,8 @@ export function registerWrite(cb, options = {}) {
   writeCallbacks.push(entry);
   sortByPriority(writeCallbacks);
 
-  safeCallWrite(cb, buildContext(16.67));
+  ensureViewportReady();
+  safeCallWrite(cb, updateSharedContext());
 
   return () => {
     const index = writeCallbacks.indexOf(entry);

@@ -17,11 +17,8 @@
     forceScrollEngineUpdate
   } from "$lib/scrollEngine.js";
 
-  import { registerLenis } from "$lib/navigate.js";
-  import Lenis from "lenis";
+  import { installDesktopWheelDamping } from "$lib/desktopWheelDamping.js";
 
-  let lenis;
-  let rafId;
   let isMobile = false;
   let onLoad, onResize, onRouteSettled;
   let syncRaf1, syncRaf2, syncTimeout;
@@ -33,13 +30,47 @@
   let transitionDarkness;
   let transitionWipe;
 
+  let wheelDamping = null;
+
+  const ENABLE_DESKTOP_WHEEL_DAMPING = true;
+  const DESKTOP_WHEEL_FACTOR = 0.77;
+  const DESKTOP_WHEEL_LERP = 0.1;
+  const DESKTOP_WHEEL_MIN_WIDTH = 1100;
+
   function checkMobile() {
     isMobile = window.innerWidth <= 768;
   }
 
+  function isRealDesktop() {
+    if (typeof window === "undefined") return false;
+
+    const hasFinePointer = window.matchMedia("(pointer: fine)").matches;
+    const hasHover = window.matchMedia("(hover: hover)").matches;
+    const wideEnough = window.innerWidth >= DESKTOP_WHEEL_MIN_WIDTH;
+
+    return hasFinePointer && hasHover && wideEnough;
+  }
+
+  function syncWheelDamping() {
+    const shouldEnable =
+      ENABLE_DESKTOP_WHEEL_DAMPING &&
+      isRealDesktop();
+
+    if (shouldEnable) {
+      if (!wheelDamping) {
+        wheelDamping = installDesktopWheelDamping({
+          factor: DESKTOP_WHEEL_FACTOR,
+          lerp: DESKTOP_WHEEL_LERP
+        });
+      }
+    } else {
+      wheelDamping?.destroy?.();
+      wheelDamping = null;
+    }
+  }
+
   function runSync() {
     updateScrollEngineViewport();
-    lenis?.resize();
     forceScrollEngineUpdate();
     updateScrollEngine(window.scrollY || window.pageYOffset || 0);
   }
@@ -258,33 +289,16 @@
       initScrollEngine();
       updateScrollEngineViewport();
 
-      lenis = new Lenis({
-        duration: 1.35,
-        easing: (t) => 1 - Math.pow(1 - t, 3),
-        smoothWheel: window.innerWidth > 768,
-        smoothTouch: false,
-        wheelMultiplier: 1,
-        touchMultiplier: 1,
-        syncTouch: false
-      });
+      window.lenis = null;
 
-      window.lenis = lenis;
-      registerLenis(lenis);
-
-      lenis.on("scroll", (e) => {
-        updateScrollEngine(e.animatedScroll);
-      });
-
-      const raf = (time) => {
-        if (!lenis) return;
-        lenis.raf(time);
-        rafId = requestAnimationFrame(raf);
-      };
-      rafId = requestAnimationFrame(raf);
+      syncWheelDamping();
 
       onLoad = () => syncScrollState();
       onResize = () => {
         checkMobile();
+        wheelDamping?.destroy?.();
+        wheelDamping = null;
+        syncWheelDamping();
         syncScrollState();
       };
       onRouteSettled = () => syncScrollState();
@@ -312,7 +326,7 @@
 
     return () => {
       destroyed = true;
-      cancelAnimationFrame(rafId);
+
       cancelAnimationFrame(syncRaf1);
       cancelAnimationFrame(syncRaf2);
       cancelAnimationFrame(transitionRaf);
@@ -322,8 +336,10 @@
       if (onResize) window.removeEventListener("resize", onResize);
       if (onRouteSettled) window.removeEventListener("app:route-settled", onRouteSettled);
 
+      wheelDamping?.destroy?.();
+      wheelDamping = null;
+
       cleanupResizeObserver?.();
-      lenis?.destroy();
       destroyScrollEngine();
       window.lenis = null;
     };

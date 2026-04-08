@@ -1,5 +1,13 @@
 <script>
-  import { onMount } from "svelte";
+  import { onMount, onDestroy } from "svelte";
+  import { browser } from "$app/environment";
+  import {
+    registerParallax,
+    unregisterParallax,
+    registerWrite,
+    unregisterWrite,
+    forceScrollEngineUpdate
+  } from "../scrollEngine.js";
 
   let heroSection;
   let pinSection;
@@ -8,19 +16,22 @@
   let afterImageEl;
   let leftTitleEl;
   let rightTitleEl;
-
-  let heroProgress = 0;
-  let textReveal = 0;
-  let imageFadeProgress = 0;
-
-  let localTextReveal = 0;
-  let localImageReveal = 0;
+  let heroMediaImgEl;
+  let heroDarkLayerEl;
+  let scrollHintEl;
 
   let vw = 0;
+  let vh = 1;
   let leftW = 0;
   let rightW = 0;
 
-  let ticking = false;
+  let heroTop = 0;
+  let heroHeight = 1;
+  let pinTop = 0;
+  let pinHeight = 1;
+  let afterTop = 0;
+  let afterTextTop = 0;
+  let afterImageTop = 0;
 
   let introStarted = false;
   let introVisible = false;
@@ -29,6 +40,28 @@
   let fallbackTimeout;
   let hintTimeout;
   let resizeObserver;
+  let resizeTimer;
+
+  let isActive = true;
+  let pendingFrame = null;
+  let dirty = false;
+
+  let applied = {
+    imageScale: -1,
+    imageBrightness: -1,
+    imageDark: -1,
+    leftX: -9999,
+    rightX: -9999,
+    hintOpacity: -1,
+    hintY: -9999,
+    hintBlur: -1,
+    textOpacity: -1,
+    textX: -9999,
+    textY: -9999,
+    textEdge: -9999,
+    smallImageScale: -1,
+    smallImageY: -9999
+  };
 
   const finalText =
     "Nous concevons des identités, des expériences et des univers visuels pensés pour marquer durablement les esprits.";
@@ -52,67 +85,220 @@
 
   const clamp = (v, min = 0, max = 1) => Math.max(min, Math.min(max, v));
   const lerp = (a, b, t) => a + (b - a) * t;
+  const q = (v, step) => Math.round(v / step) * step;
 
   function easeInOutSine(t) {
-    return -(Math.cos(Math.PI * t) - 1) / 2;
+    const x = clamp(t, 0, 1);
+    return -(Math.cos(Math.PI * x) - 1) / 2;
   }
 
   function easeOutCubic(t) {
-    return 1 - Math.pow(1 - t, 3);
+    const x = clamp(t, 0, 1);
+    return 1 - Math.pow(1 - x, 3);
+  }
+
+  function easeOutQuart(t) {
+    const x = clamp(t, 0, 1);
+    return 1 - Math.pow(1 - x, 4);
+  }
+
+  function getScrollY() {
+    return window.scrollY || window.pageYOffset || 0;
+  }
+
+  function getAbsoluteTop(el) {
+    if (!el) return 0;
+    const rect = el.getBoundingClientRect();
+    return rect.top + getScrollY();
   }
 
   function measureTitles() {
     vw = window.innerWidth || 0;
-    leftW = leftTitleEl?.offsetWidth || 0;
-    rightW = rightTitleEl?.offsetWidth || 0;
+    leftW = Math.round(leftTitleEl?.getBoundingClientRect().width || 0);
+    rightW = Math.round(rightTitleEl?.getBoundingClientRect().width || 0);
   }
 
-  function getLocalReveal(rect, vh, startMul = 0.9, endMul = 0.2) {
+  function measureLayout() {
+    vh = window.innerHeight || 1;
+
+    heroTop = getAbsoluteTop(heroSection);
+    pinTop = getAbsoluteTop(pinSection);
+    afterTop = getAbsoluteTop(afterSection);
+    afterTextTop = getAbsoluteTop(afterTextEl);
+    afterImageTop = getAbsoluteTop(afterImageEl);
+
+    heroHeight = Math.max(heroSection?.offsetHeight || 1, 1);
+    pinHeight = Math.max(pinSection?.offsetHeight || 1, 1);
+  }
+
+  function updateAllMeasures() {
+    measureTitles();
+    measureLayout();
+  }
+
+  function getLocalRevealFromAbsolute(scrollY, absTop, startMul = 0.9, endMul = 0.2) {
+    const topInViewport = absTop - scrollY;
     const start = vh * startMul;
     const end = vh * endMul;
-    return clamp((start - rect.top) / (start - end), 0, 1);
+    return clamp((start - topInViewport) / Math.max(start - end, 1), 0, 1);
   }
 
-  function updateScrollState() {
-    ticking = false;
-    if (!pinSection || !afterSection || !heroSection) return;
+  function computeFrame(y) {
+    if (!pinSection || !afterSection || !heroSection || !isActive) return;
 
-    const vh = window.innerHeight;
+    const pinScrollable = Math.max(pinHeight - vh, 1);
+    const heroProgress = clamp((y - pinTop) / pinScrollable, 0, 1);
 
-    const pinRect = pinSection.getBoundingClientRect();
-    const pinScrollable = Math.max(pinSection.offsetHeight - vh, 1);
-    const pinRaw = clamp(-pinRect.top / pinScrollable, 0, 1);
-    heroProgress = pinRaw;
+    const heroScrollable = Math.max(heroHeight - vh, 1);
+    const imageFadeProgress = clamp((y - heroTop) / heroScrollable, 0, 1);
 
-    const afterRect = afterSection.getBoundingClientRect();
-    const revealStart = vh * 0.92;
-    const revealEnd = vh * 0.18;
-    const rawReveal = clamp(
-      (revealStart - afterRect.top) / (revealStart - revealEnd),
-      0,
-      1
+    const localTextReveal = easeOutQuart(
+      getLocalRevealFromAbsolute(y, afterTextTop, 0.92, 0.16)
     );
-    textReveal = easeOutCubic(rawReveal);
 
-    const heroRect = heroSection.getBoundingClientRect();
-    const heroScrollable = Math.max(heroSection.offsetHeight - vh, 1);
-    imageFadeProgress = clamp(-heroRect.top / heroScrollable, 0, 1);
+    const localImageReveal = easeInOutSine(
+      getLocalRevealFromAbsolute(y, afterImageTop, 0.98, 0.12)
+    );
+
+    const mergeProgress = clamp(heroProgress / 0.9, 0, 1);
+    const smoothMerge = easeInOutSine(mergeProgress);
+
+    const globalFade = easeInOutSine(imageFadeProgress);
+    const endFade = Math.pow(clamp((imageFadeProgress - 0.78) / 0.22, 0, 1), 1.7);
+
+    const imageDark = clamp(globalFade * 0.42 + endFade * 0.58, 0, 1);
+    const midBrightness = lerp(1, 0.58, globalFade);
+    const imageBrightness = lerp(midBrightness, 0, endFade);
+    const imageScale = lerp(1.06, 1.025, globalFade);
+
+    const sideMargin = Math.min(vw * 0.085, 118);
+    const joinGap = Math.min(vw * 0.012, 14);
+
+    const leftStartX = sideMargin;
+    const leftEndX = vw * 0.5 - leftW - joinGap * 0.5;
+
+    const rightStartX = vw - rightW - sideMargin;
+    const rightEndX = vw * 0.5 + joinGap * 0.5;
+
+    const leftX = lerp(leftStartX, leftEndX, smoothMerge);
+    const rightX = lerp(rightStartX, rightEndX, smoothMerge);
+
+    const hintScrollFade = 1 - easeOutCubic(clamp(heroProgress / 0.03, 0, 1));
+    const scrollHintOpacity = hintVisible ? hintScrollFade : 0;
+
+    const textBlockOpacity = lerp(0.14, 1, localTextReveal);
+    const textBlockY = lerp(18, 0, localTextReveal);
+    const textBlockX = lerp(24, 0, localTextReveal);
+    const textRevealEdge = lerp(0, 118, localTextReveal);
+
+    const smallImageScale = lerp(0.885, 1.02, localImageReveal);
+    const smallImageY = lerp(22, 0, localImageReveal);
+
+    pendingFrame = {
+      imageScale: q(imageScale, 0.001),
+      imageBrightness: q(imageBrightness, 0.001),
+      imageDark: q(imageDark, 0.001),
+      leftX: q(leftX, 0.1),
+      rightX: q(rightX, 0.1),
+      hintOpacity: q(scrollHintOpacity, 0.001),
+      hintY: q(lerp(14, 0, scrollHintOpacity), 0.1),
+      hintBlur: q(lerp(10, 0, scrollHintOpacity), 0.1),
+      textOpacity: q(textBlockOpacity, 0.001),
+      textX: q(textBlockX, 0.1),
+      textY: q(textBlockY, 0.1),
+      textEdge: q(textRevealEdge, 0.1),
+      smallImageScale: q(smallImageScale, 0.001),
+      smallImageY: q(smallImageY, 0.1)
+    };
+
+    dirty = true;
+  }
+
+  function applyFrame() {
+    if (!dirty || !pendingFrame) return;
+
+    const f = pendingFrame;
+
+    if (heroMediaImgEl) {
+      if (f.imageScale !== applied.imageScale || f.imageBrightness !== applied.imageBrightness) {
+        heroMediaImgEl.style.transform = `scale(${f.imageScale})`;
+        heroMediaImgEl.style.filter = `brightness(${f.imageBrightness})`;
+        applied.imageScale = f.imageScale;
+        applied.imageBrightness = f.imageBrightness;
+      }
+    }
+
+    if (heroDarkLayerEl && f.imageDark !== applied.imageDark) {
+      heroDarkLayerEl.style.opacity = `${f.imageDark}`;
+      applied.imageDark = f.imageDark;
+    }
+
+    if (leftTitleEl && f.leftX !== applied.leftX) {
+      leftTitleEl.style.setProperty("--title-x", `${f.leftX}px`);
+      leftTitleEl.style.transform = `translate3d(${f.leftX}px,-50%,0)`;
+      applied.leftX = f.leftX;
+    }
+
+    if (rightTitleEl && f.rightX !== applied.rightX) {
+      rightTitleEl.style.setProperty("--title-x", `${f.rightX}px`);
+      rightTitleEl.style.transform = `translate3d(${f.rightX}px,-50%,0)`;
+      applied.rightX = f.rightX;
+    }
+
+    if (scrollHintEl) {
+      if (
+        f.hintOpacity !== applied.hintOpacity ||
+        f.hintY !== applied.hintY ||
+        f.hintBlur !== applied.hintBlur
+      ) {
+        scrollHintEl.style.opacity = `${f.hintOpacity}`;
+        scrollHintEl.style.transform = `translate3d(-50%, ${f.hintY}px, 0)`;
+        scrollHintEl.style.filter = `blur(${f.hintBlur}px)`;
+        applied.hintOpacity = f.hintOpacity;
+        applied.hintY = f.hintY;
+        applied.hintBlur = f.hintBlur;
+      }
+    }
 
     if (afterTextEl) {
-      const rect = afterTextEl.getBoundingClientRect();
-      localTextReveal = easeOutCubic(getLocalReveal(rect, vh, 0.92, 0.16));
+      if (
+        f.textOpacity !== applied.textOpacity ||
+        f.textX !== applied.textX ||
+        f.textY !== applied.textY ||
+        f.textEdge !== applied.textEdge
+      ) {
+        afterTextEl.style.opacity = `${f.textOpacity}`;
+        afterTextEl.style.transform = `translate3d(${f.textX}px, ${f.textY}px, 0)`;
+        afterTextEl.style.setProperty("--text-reveal-edge", `${f.textEdge}%`);
+        applied.textOpacity = f.textOpacity;
+        applied.textX = f.textX;
+        applied.textY = f.textY;
+        applied.textEdge = f.textEdge;
+      }
     }
 
     if (afterImageEl) {
-      const rect = afterImageEl.getBoundingClientRect();
-      localImageReveal = easeInOutSine(getLocalReveal(rect, vh, 0.98, 0.12));
+      if (
+        f.smallImageScale !== applied.smallImageScale ||
+        f.smallImageY !== applied.smallImageY
+      ) {
+        afterImageEl.style.transform = `translate3d(0,${f.smallImageY}px,0) scale(${f.smallImageScale})`;
+        applied.smallImageScale = f.smallImageScale;
+        applied.smallImageY = f.smallImageY;
+      }
     }
+
+    dirty = false;
   }
 
-  function requestUpdate() {
-    if (ticking) return;
-    ticking = true;
-    requestAnimationFrame(updateScrollState);
+  function handleParallax(y) {
+    if (!isActive) return;
+    computeFrame(y);
+  }
+
+  function handleWrite() {
+    if (!isActive) return;
+    applyFrame();
   }
 
   function startIntro() {
@@ -125,33 +311,39 @@
 
         hintTimeout = setTimeout(() => {
           hintVisible = true;
+          forceScrollEngineUpdate();
         }, 220);
       });
     });
   }
 
-  onMount(() => {
-    const updateAll = () => {
-      measureTitles();
-      updateScrollState();
-    };
+  function scheduleResizeUpdate() {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(() => {
+      updateAllMeasures();
+      forceScrollEngineUpdate();
+    }, 70);
+  }
 
-    const handlePreloaderDone = () => {
-      startIntro();
-    };
+  onMount(() => {
+    if (!browser) return;
+
+    let destroyed = false;
+
+    const handlePreloaderDone = () => startIntro();
 
     const handleWindowLoad = () => {
-      updateAll();
-      requestAnimationFrame(updateAll);
+      updateAllMeasures();
+      forceScrollEngineUpdate();
     };
 
     const handlePageShow = () => {
-      updateAll();
-      requestAnimationFrame(updateAll);
+      updateAllMeasures();
+      forceScrollEngineUpdate();
     };
 
     const boot = async () => {
-      updateAll();
+      updateAllMeasures();
 
       if (document.fonts?.ready) {
         try {
@@ -159,31 +351,38 @@
         } catch {}
       }
 
+      if (destroyed) return;
+
       requestAnimationFrame(() => {
-        updateAll();
+        updateAllMeasures();
         requestAnimationFrame(() => {
-          updateAll();
-          requestAnimationFrame(updateAll);
+          updateAllMeasures();
+          forceScrollEngineUpdate();
         });
       });
     };
 
     boot();
 
-    window.addEventListener("scroll", requestUpdate, { passive: true });
-    window.addEventListener("resize", updateAll, { passive: true });
-    window.addEventListener("orientationchange", updateAll, { passive: true });
+    registerParallax(handleParallax, { priority: 2 });
+    registerWrite(handleWrite, { priority: 2 });
+
+    window.addEventListener("resize", scheduleResizeUpdate, { passive: true });
+    window.addEventListener("orientationchange", scheduleResizeUpdate, { passive: true });
     window.addEventListener("load", handleWindowLoad);
     window.addEventListener("pageshow", handlePageShow);
     window.addEventListener("preloader:done", handlePreloaderDone);
 
     if (typeof ResizeObserver !== "undefined") {
       resizeObserver = new ResizeObserver(() => {
-        updateAll();
+        scheduleResizeUpdate();
       });
 
+      if (heroSection) resizeObserver.observe(heroSection);
       if (leftTitleEl) resizeObserver.observe(leftTitleEl);
       if (rightTitleEl) resizeObserver.observe(rightTitleEl);
+      if (afterTextEl) resizeObserver.observe(afterTextEl);
+      if (afterImageEl) resizeObserver.observe(afterImageEl);
     }
 
     fallbackTimeout = setTimeout(() => {
@@ -191,66 +390,31 @@
     }, 1800);
 
     return () => {
-      window.removeEventListener("scroll", requestUpdate);
-      window.removeEventListener("resize", updateAll);
-      window.removeEventListener("orientationchange", updateAll);
+      destroyed = true;
+      unregisterParallax(handleParallax);
+      unregisterWrite(handleWrite);
+      window.removeEventListener("resize", scheduleResizeUpdate);
+      window.removeEventListener("orientationchange", scheduleResizeUpdate);
       window.removeEventListener("load", handleWindowLoad);
       window.removeEventListener("pageshow", handlePageShow);
       window.removeEventListener("preloader:done", handlePreloaderDone);
       clearTimeout(fallbackTimeout);
       clearTimeout(hintTimeout);
-      if (resizeObserver) resizeObserver.disconnect();
+      clearTimeout(resizeTimer);
+      resizeObserver?.disconnect();
     };
   });
-
-  $: mergeProgress = clamp(heroProgress / 0.9, 0, 1);
-  $: smoothMerge = easeInOutSine(mergeProgress);
-
-  $: globalFade = easeInOutSine(clamp(imageFadeProgress, 0, 1));
-  $: endFade = Math.pow(clamp((imageFadeProgress - 0.78) / 0.22, 0, 1), 1.7);
-
-  $: imageDark = clamp(globalFade * 0.42 + endFade * 0.58, 0, 1);
-
-  $: midBrightness = lerp(1, 0.58, globalFade);
-  $: imageBrightness = lerp(midBrightness, 0, endFade);
-
-  $: imageScale = lerp(1.06, 1.025, globalFade);
-
-  $: sideMargin = Math.min(vw * 0.085, 118);
-  $: joinGap = Math.min(vw * 0.012, 14);
-
-  $: leftStartX = sideMargin;
-  $: leftEndX = vw * 0.5 - leftW - joinGap * 0.5;
-
-  $: rightStartX = vw - rightW - sideMargin;
-  $: rightEndX = vw * 0.5 + joinGap * 0.5;
-
-  $: leftX = lerp(leftStartX, leftEndX, smoothMerge);
-  $: rightX = lerp(rightStartX, rightEndX, smoothMerge);
-
-  $: hintScrollFade = 1 - easeOutCubic(clamp(heroProgress / 0.03, 0, 1));
-  $: scrollHintOpacity = hintVisible ? hintScrollFade : 0;
-
-  // Texte : retour à la version d’avant
-  $: textBlockOpacity = lerp(0.18, 1, localTextReveal);
-  $: textBlockY = lerp(18, 0, localTextReveal);
-  $: textRevealEdge = lerp(0, 118, localTextReveal);
-  $: textBlockBlur = lerp(8, 0, localTextReveal);
-
-  // Image : agrandissement visible, sans fade
-  $: smallImageScale = lerp(0.885, 1.02, localImageReveal);
-  $: smallImageY = lerp(22, 0, localImageReveal);
 </script>
 
 <section class="hero-join-clean" bind:this={heroSection}>
   <div class="hero-media-sticky" aria-hidden="true">
     <div class="hero-media">
       <img
-        src="images/photo.webp"
+        bind:this={heroMediaImgEl}
+        src="images/telephone.webp"
         alt=""
-        style={`transform: scale(${imageScale}); filter: brightness(${imageBrightness});`}
       />
-      <div class="hero-dark-layer" style={`opacity:${imageDark};`}></div>
+      <div class="hero-dark-layer" bind:this={heroDarkLayerEl}></div>
     </div>
   </div>
 
@@ -261,7 +425,6 @@
           class="title-left"
           class:intro-visible={introVisible}
           bind:this={leftTitleEl}
-          style={`--title-x:${leftX}px; transform: translate3d(${leftX}px,-50%,0);`}
         >
           Agence
         </span>
@@ -270,7 +433,6 @@
           class="title-right"
           class:intro-visible={introVisible}
           bind:this={rightTitleEl}
-          style={`--title-x:${rightX}px; transform: translate3d(${rightX}px,-50%,0);`}
         >
           3 Terres
         </span>
@@ -279,7 +441,7 @@
           class="scroll-hint"
           class:hint-visible={hintVisible}
           aria-hidden="true"
-          style={`opacity:${scrollHintOpacity}; transform: translate3d(-50%, ${lerp(14, 0, scrollHintOpacity)}px, 0); filter: blur(${lerp(10, 0, scrollHintOpacity)}px);`}
+          bind:this={scrollHintEl}
         >
           Scroll pour découvrir
         </div>
@@ -292,7 +454,6 @@
       <div
         class="after-text"
         bind:this={afterTextEl}
-        style={`opacity:${textBlockOpacity}; filter: blur(${textBlockBlur}px); transform: translate3d(${lerp(24, 0, textReveal)}px, ${textBlockY}px, 0); --text-reveal-edge:${textRevealEdge}%;`}
       >
         <h2 aria-label={finalText}>
           {#each words as word, w}
@@ -306,9 +467,8 @@
       <div
         class="after-image"
         bind:this={afterImageEl}
-        style={`transform: translate3d(0,${smallImageY}px,0) scale(${smallImageScale});`}
       >
-        <img src="images/photo.webp" alt="Visuel 3 Terres" />
+        <img src="images/ordinateur.webp" alt="Visuel 3 Terres" />
       </div>
     </div>
   </section>
@@ -346,7 +506,8 @@
     height: 100%;
     object-fit: cover;
     will-change: transform, filter;
-    transform: translateZ(0);
+    transform: scale(1.06);
+    filter: brightness(1);
     backface-visibility: hidden;
     -webkit-backface-visibility: hidden;
   }
@@ -364,6 +525,7 @@
       );
     pointer-events: none;
     will-change: opacity;
+    opacity: 0;
   }
 
   .pin-section {
@@ -433,6 +595,7 @@
     white-space: nowrap;
     will-change: transform, opacity, filter;
     opacity: 0;
+    transform: translate3d(-50%, 14px, 0);
   }
 
   .hint-visible {
@@ -456,24 +619,26 @@
   }
 
   .after-text {
-    will-change: transform, opacity, filter;
+    will-change: transform, opacity;
     width: 100%;
     min-width: 0;
+    opacity: 0.14;
+    transform: translate3d(24px, 18px, 0);
     -webkit-mask-image: linear-gradient(
       to bottom,
       rgba(0, 0, 0, 1) 0%,
-      rgba(0, 0, 0, 1) calc(var(--text-reveal-edge) - 12%),
-      rgba(0, 0, 0, 0.75) calc(var(--text-reveal-edge) + 2%),
-      rgba(0, 0, 0, 0.2) calc(var(--text-reveal-edge) + 14%),
-      rgba(0, 0, 0, 0) calc(var(--text-reveal-edge) + 28%)
+      rgba(0, 0, 0, 1) calc(var(--text-reveal-edge, 0%) - 12%),
+      rgba(0, 0, 0, 0.75) calc(var(--text-reveal-edge, 0%) + 2%),
+      rgba(0, 0, 0, 0.2) calc(var(--text-reveal-edge, 0%) + 14%),
+      rgba(0, 0, 0, 0) calc(var(--text-reveal-edge, 0%) + 28%)
     );
     mask-image: linear-gradient(
       to bottom,
       rgba(0, 0, 0, 1) 0%,
-      rgba(0, 0, 0, 1) calc(var(--text-reveal-edge) - 12%),
-      rgba(0, 0, 0, 0.75) calc(var(--text-reveal-edge) + 2%),
-      rgba(0, 0, 0, 0.2) calc(var(--text-reveal-edge) + 14%),
-      rgba(0, 0, 0, 0) calc(var(--text-reveal-edge) + 28%)
+      rgba(0, 0, 0, 1) calc(var(--text-reveal-edge, 0%) - 12%),
+      rgba(0, 0, 0, 0.75) calc(var(--text-reveal-edge, 0%) + 2%),
+      rgba(0, 0, 0, 0.2) calc(var(--text-reveal-edge, 0%) + 14%),
+      rgba(0, 0, 0, 0) calc(var(--text-reveal-edge, 0%) + 28%)
     );
     -webkit-mask-repeat: no-repeat;
     mask-repeat: no-repeat;
@@ -518,6 +683,7 @@
     transform-origin: 50% 50%;
     backface-visibility: hidden;
     -webkit-backface-visibility: hidden;
+    transform: translate3d(0, 22px, 0) scale(0.885);
   }
 
   .after-image img {

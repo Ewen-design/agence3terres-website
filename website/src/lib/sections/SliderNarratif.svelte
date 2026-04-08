@@ -1,43 +1,38 @@
 <script>
   import { onMount, onDestroy } from "svelte";
   import { browser } from "$app/environment";
-  import { registerParallax, unregisterParallax } from "../scrollEngine.js";
+  import {
+    registerParallax,
+    unregisterParallax,
+    registerWrite,
+    unregisterWrite,
+    forceScrollEngineUpdate
+  } from "$lib/scrollEngine.js";
 
   const slides = [
     {
       title: "Serein Design",
       lead: "Un univers objet premium, calme et fonctionnel.",
       rest: "Une direction pensée pour traduire une élégance sobre, technologique et durable à travers une identité visuelle claire et sensible.",
-      image: "/images/photo.webp"
+      image: "/images/telephone.webp"
     },
     {
       title: "Hansatsu",
       lead: "Une présence plus sensorielle, plus singulière.",
       rest: "Un travail d’image et de narration conçu pour installer une esthétique précise, immersive et raffinée autour du produit.",
-      image: "/images/parfum2.webp"
+      image: "/images/parfum_rouge.webp"
     },
     {
       title: "Votre projet ?",
       lead: "Une approche sur mesure pour révéler votre singularité.",
       rest: "Identité, direction artistique, expérience visuelle ou territoire de marque : chaque projet est pensé avec exigence, cohérence et impact.",
-      image: "/images/photo.webp"
+      image: "/images/ordinateur.webp"
     }
   ];
 
   const SLIDE_COUNT = slides.length;
 
   let sectionEl;
-  let sectionVisible = false;
-
-  let sectionTop = 0;
-  let sectionHeight = 1;
-  let viewportH = 1;
-
-  let resizeObserver;
-  let intersectionObserver;
-  let resizeTimer = null;
-  let preloadImages = [];
-
   let bgImgEls = [];
   let titleEl;
   let titleTextEl;
@@ -47,7 +42,23 @@
   let progressFillEl;
   let progressIndexEl;
 
+  let resizeObserver;
+  let intersectionObserver;
+  let resizeTimer = null;
+  let preloadImages = [];
+
+  let sectionTop = 0;
+  let sectionHeight = 1;
+  let viewportH = 1;
+
+  let sectionVisible = false;
+  let sectionActive = false;
+  let measured = false;
+
   let currentIndex = -1;
+  let lastFrameKey = "";
+
+  let pendingFrame = null;
 
   const clamp = (v, min = 0, max = 1) => Math.min(max, Math.max(min, v));
 
@@ -74,20 +85,15 @@
     return a + (b - a) * t;
   }
 
-  function currentScrollY() {
-    return window.lenis?.animatedScroll ?? window.scrollY ?? 0;
-  }
-
   function warmImages() {
     if (!browser) return;
 
     preloadImages = slides.map((slide, i) => {
       const img = new Image();
       img.decoding = "async";
-      img.loading = i < 2 ? "eager" : "lazy";
-      if (i < 2) img.fetchPriority = "high";
+      img.loading = i === 0 ? "eager" : "lazy";
+      if (i === 0) img.fetchPriority = "high";
       img.src = slide.image;
-      if (img.decode) img.decode().catch(() => {});
       return img;
     });
   }
@@ -103,6 +109,18 @@
     progressIndexEl.textContent = String(index + 1).padStart(2, "0");
   }
 
+  function measure() {
+    if (!browser || !sectionEl) return;
+
+    const scrollY = window.scrollY || window.pageYOffset || 0;
+    const rect = sectionEl.getBoundingClientRect();
+
+    sectionTop = rect.top + scrollY;
+    sectionHeight = Math.max(rect.height, 1);
+    viewportH = Math.max(window.innerHeight, 1);
+    measured = true;
+  }
+
   function setImagePair(index, fade) {
     if (!bgImgEls.length) return;
 
@@ -113,34 +131,27 @@
     }
 
     const currentEl = bgImgEls[index];
-    if (currentEl) currentEl.style.opacity = `${1 - fade}`;
+    if (!currentEl) return;
 
-    const hasNext = index < SLIDE_COUNT - 1;
-    if (hasNext) {
+    if (index < SLIDE_COUNT - 1) {
+      currentEl.style.opacity = `${1 - fade}`;
       const nextEl = bgImgEls[index + 1];
       if (nextEl) nextEl.style.opacity = `${fade}`;
-    } else if (currentEl) {
+    } else {
       currentEl.style.opacity = "1";
     }
   }
 
-  function applyFrame(frame) {
-    if (!titleEl || !textEl || !progressFillEl) return;
-
-    titleEl.style.opacity = `${frame.titleOpacity}`;
-    titleEl.style.transform = `translate3d(0, ${frame.titleY}px, 0)`;
-
-    textEl.style.opacity = `${frame.textOpacity}`;
-    textEl.style.transform = `translate3d(0, ${frame.textY}px, 0)`;
-
-    progressFillEl.style.transform = `scaleX(${frame.progress})`;
+  function queueFrame(frame) {
+    pendingFrame = frame;
   }
 
-  function compute(scrollY, vh = viewportH) {
-    if (!sectionEl || !sectionVisible) return;
+  function compute(y, ctx) {
+    if (!sectionActive || !measured || !sectionEl) return;
 
+    const vh = ctx?.vh || viewportH || window.innerHeight || 1;
     const maxScroll = Math.max(sectionHeight - vh, 1);
-    const overallProgress = clamp((scrollY - sectionTop) / maxScroll);
+    const overallProgress = clamp((y - sectionTop) / maxScroll);
 
     const segment = 1 / SLIDE_COUNT;
     const raw = overallProgress / segment;
@@ -170,9 +181,9 @@
       ? easeInOutCubic(invLerp(imageFadeStart, imageFadeEnd, local))
       : 0;
 
-    setImagePair(index, fade);
-
-    applyFrame({
+    queueFrame({
+      index,
+      fade,
       titleOpacity,
       textOpacity,
       titleY: lerp(26, 0, titleOpacity),
@@ -183,29 +194,45 @@
     });
   }
 
-  function measure() {
-    if (!browser || !sectionEl) return;
+  function applyFrame() {
+    if (!pendingFrame || !titleEl || !textEl || !progressFillEl) return;
 
-    const scrollY = currentScrollY();
-    const rect = sectionEl.getBoundingClientRect();
+    const frame = pendingFrame;
+    pendingFrame = null;
 
-    sectionTop = rect.top + scrollY;
-    sectionHeight = Math.max(rect.height, 1);
-    viewportH = Math.max(window.innerHeight, 1);
+    const key =
+      `${frame.index}|${frame.fade.toFixed(3)}|${frame.titleOpacity.toFixed(3)}|` +
+      `${frame.textOpacity.toFixed(3)}|${frame.titleY.toFixed(2)}|${frame.textY.toFixed(2)}|${frame.progress.toFixed(3)}`;
 
-    compute(scrollY, viewportH);
+    if (key === lastFrameKey) return;
+    lastFrameKey = key;
+
+    titleEl.style.opacity = `${frame.titleOpacity}`;
+    titleEl.style.transform = `translate3d(0, ${frame.titleY}px, 0)`;
+
+    textEl.style.opacity = `${frame.textOpacity}`;
+    textEl.style.transform = `translate3d(0, ${frame.textY}px, 0)`;
+
+    progressFillEl.style.transform = `scaleX(${frame.progress})`;
+
+    setImagePair(frame.index, frame.fade);
   }
 
-  function onScroll(scrollY, { vh }) {
-    if (!sectionVisible) return;
-    viewportH = Math.max(vh || window.innerHeight, 1);
-    compute(scrollY, viewportH);
+  function handleParallax(y, ctx) {
+    if (!sectionActive) return;
+    compute(y, ctx);
+  }
+
+  function handleWrite() {
+    if (!sectionActive) return;
+    applyFrame();
   }
 
   function handleResize() {
     if (resizeTimer) clearTimeout(resizeTimer);
     resizeTimer = setTimeout(() => {
       measure();
+      forceScrollEngineUpdate();
     }, 80);
   }
 
@@ -215,77 +242,64 @@
     warmImages();
 
     requestAnimationFrame(() => {
+      measure();
       setSlideContent(0);
-      setImagePair(0, 0);
-
-      applyFrame({
+      queueFrame({
+        index: 0,
+        fade: 0,
         titleOpacity: 0,
         textOpacity: 0,
         titleY: 26,
         textY: 20,
         progress: 0
       });
-
-      measure();
-      registerParallax(onScroll, { priority: 2 });
+      applyFrame();
+      forceScrollEngineUpdate();
     });
 
-    resizeObserver = new ResizeObserver(handleResize);
+    resizeObserver = new ResizeObserver(() => {
+      handleResize();
+    });
+
     if (sectionEl) resizeObserver.observe(sectionEl);
 
     intersectionObserver = new IntersectionObserver(
       ([entry]) => {
-        const wasVisible = sectionVisible;
         sectionVisible = entry.isIntersecting;
-        if (sectionVisible && !wasVisible) {
+        sectionActive =
+          entry.isIntersecting ||
+          entry.boundingClientRect.top < window.innerHeight + 220;
+
+        if (sectionActive) {
           measure();
+          forceScrollEngineUpdate();
         }
       },
-      { rootMargin: "500px 0px 500px 0px", threshold: 0 }
+      { rootMargin: "220px 0px 220px 0px", threshold: 0 }
     );
 
     if (sectionEl) intersectionObserver.observe(sectionEl);
 
-    window.addEventListener("resize", handleResize, { passive: true });
-    window.addEventListener("orientationchange", handleResize, { passive: true });
+    registerParallax(handleParallax, { priority: -1 });
+    registerWrite(handleWrite, { priority: -1 });
   });
 
   onDestroy(() => {
     if (!browser) return;
 
-    unregisterParallax(onScroll);
+    unregisterParallax(handleParallax);
+    unregisterWrite(handleWrite);
+
     resizeObserver?.disconnect();
     intersectionObserver?.disconnect();
 
     if (resizeTimer) clearTimeout(resizeTimer);
-
-    window.removeEventListener("resize", handleResize);
-    window.removeEventListener("orientationchange", handleResize);
 
     preloadImages = [];
   });
 </script>
 
 <section class="story-slider" bind:this={sectionEl}>
-  <div class="story-slider__intro">
-    <div class="story-slider__intro-title-wrap">
-      <h2 class="story-slider__intro-title">Nos projets</h2>
-    </div>
-
-    <div class="story-slider__intro-text-wrap">
-      <div class="story-slider__intro-card">
-        <p class="story-slider__intro-text">
-          <span class="story-slider__intro-main">
-            Nous imaginons des identités fortes, des expériences digitales immersives
-          </span>
-          <span class="story-slider__intro-muted">
-            {" "}et des directions artistiques pensées pour laisser une empreinte durable.
-          </span>
-        </p>
-      </div>
-    </div>
-  </div>
-
   <div class="story-slider__sticky">
     <div class="story-slider__bg">
       {#each slides as slide, i}
@@ -296,8 +310,8 @@
           alt=""
           aria-hidden="true"
           decoding="async"
-          fetchpriority={i < 2 ? "high" : "auto"}
-          loading={i < 2 ? "eager" : "lazy"}
+          fetchpriority={i === 0 ? "high" : "auto"}
+          loading={i === 0 ? "eager" : "lazy"}
           draggable="false"
         />
       {/each}
@@ -349,82 +363,11 @@
 <style>
   .story-slider {
     --section-bg: #000;
-    --intro-title: #111;
-    --intro-text: rgba(17, 17, 17, 0.66);
-    --intro-main: #111;
-    --intro-muted: rgba(17, 17, 17, 0.56);
-
     position: relative;
-    height: 900vh;
+    height: 720vh;
     background: var(--section-bg);
     overflow: clip;
     isolation: isolate;
-  }
-
-  .story-slider__intro {
-    position: relative;
-    z-index: 3;
-    min-height: clamp(120px, 16vw, 210px);
-    display: grid;
-    grid-template-columns: 52% 48%;
-    align-items: start;
-    background: var(--section-bg);
-    padding: 0;
-  }
-
-  .story-slider__intro-title-wrap {
-    padding:
-      clamp(2rem, 4vw, 4rem)
-      clamp(1.5rem, 3vw, 3rem)
-      clamp(1.2rem, 2vw, 1.8rem);
-    display: flex;
-    justify-content: flex-start;
-  }
-
-  .story-slider__intro-title {
-    margin: 0;
-    font-family: "Titre italic", serif;
-    font-style: italic;
-    font-weight: 100;
-    font-size: clamp(2.5rem, 5vw, 5.5rem);
-    line-height: 0.95;
-    letter-spacing: -0.045em;
-    color: #f5f1e8;
-    text-align: left;
-  }
-
-  .story-slider__intro-text-wrap {
-    width: min(1500px, 92%);
-    margin: 0 auto;
-    display: flex;
-    justify-content: flex-end;
-    padding-top: clamp(5rem, 10vw, 9rem);
-    padding-bottom: clamp(1.5rem, 2.8vw, 2.4rem);
-    align-self: start;
-  }
-
-  .story-slider__intro-card {
-    width: min(560px, 100%);
-    padding: 0;
-  }
-
-  .story-slider__intro-text {
-    margin: 0;
-    max-width: 30ch;
-    font-family: "General Sans", sans-serif;
-    font-weight: 300;
-    font-size: clamp(1.2rem, 2.25vw, 2.3rem);
-    line-height: 1.08;
-    letter-spacing: -0.02em;
-    color: var(--intro-text);
-  }
-
-  .story-slider__intro-main {
-    color: #f5f1e8;
-  }
-
-  .story-slider__intro-muted {
-    color: rgb(157, 156, 156);
   }
 
   .story-slider__sticky {
@@ -520,9 +463,6 @@
     letter-spacing: -0.045em;
     opacity: 0;
     transform: translate3d(0, 26px, 0);
-    transition:
-      opacity 140ms linear,
-      transform 140ms linear;
     will-change: opacity, transform;
   }
 
@@ -551,9 +491,6 @@
     letter-spacing: -0.022em;
     opacity: 0;
     transform: translate3d(0, 20px, 0);
-    transition:
-      opacity 140ms linear,
-      transform 140ms linear;
     will-change: opacity, transform;
   }
 
@@ -602,6 +539,7 @@
     background: rgba(245, 241, 232, 0.95);
     transform-origin: left center;
     transform: scaleX(0);
+    will-change: transform;
   }
 
   .story-slider__arrow {
@@ -626,9 +564,6 @@
     inset: 0;
     display: grid;
     place-items: center;
-    transition:
-      transform 0.45s cubic-bezier(.22, .61, .36, 1),
-      opacity 0.28s ease;
   }
 
   .arrow-current {
@@ -651,138 +586,41 @@
     stroke-linejoin: round;
   }
 
-  @media (max-width: 1100px) {
-    .story-slider {
-      height: 980vh;
-    }
-
-    .story-slider__intro {
-      min-height: clamp(110px, 14vw, 170px);
-    }
-
-    .story-slider__intro-title {
-      font-size: clamp(4rem, 12vw, 8rem);
-    }
-
-    .story-slider__intro-card {
-      width: min(520px, 100%);
-    }
-
-    .story-slider__slide-title {
-      font-size: clamp(3.1rem, 10vw, 6.2rem);
-    }
-
-    .story-slider__slide-text {
-      width: min(32rem, 64vw);
-    }
-  }
-
   @media (max-width: 900px) {
-    .story-slider__intro {
-      grid-template-columns: 1fr;
-      min-height: auto;
-    }
-
-    .story-slider__intro-title-wrap {
-      padding: 1.5rem 1rem 1rem;
-    }
-
-    .story-slider__intro-title {
-      font-size: clamp(2.4rem, 11vw, 4rem);
-    }
-
-    .story-slider__intro-text-wrap {
-      width: min(92%, 760px);
-      margin: 0 auto;
-      display: block;
-      padding-top: 1.15rem;
-      padding-bottom: 1.2rem;
-    }
-
-    .story-slider__intro-card {
-      width: 100%;
-      padding: 0;
-    }
-
-    .story-slider__intro-text {
-      font-size: clamp(1.2rem, 5vw, 1.55rem);
-      line-height: 1.08;
-      max-width: 30ch;
-    }
-  }
-
-  @media (max-width: 820px) {
     .story-slider {
-      height: 1040vh;
-    }
-
-    .story-slider__content {
-      padding: 1.1rem 1rem 1.1rem;
-    }
-
-    .story-slider__slide-title-wrap {
-      width: 100%;
-      padding-left: 0;
+      height: 540vh;
     }
 
     .story-slider__slide-title {
-      font-size: clamp(2.5rem, 12vw, 4.7rem);
+      font-size: clamp(2.8rem, 11vw, 5.4rem);
       line-height: 0.98;
-      max-width: 95%;
     }
 
     .story-slider__slide-title span {
       white-space: normal;
+      text-wrap: balance;
     }
 
     .story-slider__slide-text-wrap {
       justify-content: flex-start;
       padding-right: 0;
-      padding-bottom: 4.2rem;
+      padding-bottom: clamp(4.5rem, 8vw, 6rem);
     }
 
     .story-slider__slide-text {
-      width: min(28rem, 92vw);
+      width: min(32rem, 100%);
       max-width: 24ch;
-      font-size: clamp(1rem, 4.3vw, 1.28rem);
-      line-height: 1.15;
+      font-size: clamp(1rem, 4.8vw, 1.45rem);
+      line-height: 1.12;
     }
 
     .story-slider__progress {
-      left: 1rem;
-      bottom: 2.9rem;
-      width: min(200px, 58vw);
-      gap: 0.7rem;
+      width: min(180px, 48vw);
+      bottom: clamp(2.6rem, 6vw, 3.2rem);
     }
 
     .story-slider__arrow {
-      left: 1rem;
-      bottom: 1rem;
-    }
-
-    .story-slider__bottom-gradient {
-      height: 48vh;
-    }
-  }
-
-  @media (max-width: 640px) {
-    .story-slider__intro-title-wrap {
-      padding: 1.3rem 1rem 0.9rem;
-    }
-  }
-
-  @media (max-width: 420px) {
-    .story-slider__intro-title-wrap {
-      padding: 1.1rem 1rem 0.85rem;
-    }
-
-    .story-slider__intro-card {
-      padding: 0;
-    }
-
-    .story-slider__intro-text {
-      font-size: clamp(1.15rem, 5vw, 1.35rem);
-      line-height: 1.08;
+      bottom: clamp(1rem, 3.2vw, 1.4rem);
     }
   }
 

@@ -1,11 +1,15 @@
 <script>
-  import { onMount, onDestroy } from "svelte";
+  import { onMount, onDestroy, tick } from "svelte";
   import { browser } from "$app/environment";
   import { page } from "$app/stores";
   import FullscreenMenu from "./FullscreenMenu.svelte";
   import { navigate } from "$lib/navigate.js";
+  import {
+    registerRead,
+    unregisterRead,
+    forceScrollEngineUpdate
+  } from "$lib/scrollEngine.js";
 
-  // ── State ──────────────────────────────────────────────────────────────────
   let lastScrollY = 0;
   let scrollingDown = false;
   let menuOpen = false;
@@ -26,25 +30,40 @@
   let headerIntroFallback;
   let headerIntroCleanup;
 
-  const SCROLL_THRESHOLD = 10;
+  let btnEls = [];
+  let tourTimer;
+  let tourRaf;
+  let isTouringNow = false;
 
-  // ── Scroll handler ─────────────────────────────────────────────────────────
-  let ticking = false;
-  function handleScroll() {
-    if (ticking) return;
-    ticking = true;
-    requestAnimationFrame(() => {
-      processScroll();
-      ticking = false;
+  let themedSections = [];
+  let refreshSectionsRaf = 0;
+
+  const SCROLL_THRESHOLD = 10;
+  const SECTION_SELECTOR =
+    "section.hero-wrapper, section.creative-section, section.services, section.dna-section, section.lifestyles-section";
+
+  function refreshThemeSections() {
+    if (!browser) return;
+    themedSections = Array.from(document.querySelectorAll(SECTION_SELECTOR));
+  }
+
+  function scheduleThemeSectionsRefresh() {
+    cancelAnimationFrame(refreshSectionsRaf);
+    refreshSectionsRaf = requestAnimationFrame(async () => {
+      await tick();
+      refreshThemeSections();
+      forceScrollEngineUpdate();
     });
   }
 
-  function processScroll() {
-    const currentY = window.scrollY;
+  function processScrollState(state) {
+    const currentY = state?.currentY ?? window.scrollY ?? 0;
     const delta = currentY - lastScrollY;
 
     if (Math.abs(delta) >= SCROLL_THRESHOLD) {
-      scrollingDown = delta > 0 && currentY > 80 ? true : delta < 0 ? false : scrollingDown;
+      if (delta > 0 && currentY > 80) scrollingDown = true;
+      else if (delta < 0) scrollingDown = false;
+
       lastScrollY = currentY;
     }
 
@@ -52,22 +71,25 @@
   }
 
   function updateTextColor() {
-    if (!headerEl) return;
-    const headerMid = headerEl.getBoundingClientRect().top + headerEl.offsetHeight / 2;
-    const sections = document.querySelectorAll(
-      "section.hero-wrapper, section.creative-section, section.services, section.dna-section, section.lifestyles-section"
-    );
+    if (!headerEl || !themedSections.length) return;
+
+    const rect = headerEl.getBoundingClientRect();
+    const headerMid = rect.top + rect.height * 0.5;
 
     let overLight = false;
-    sections.forEach((section) => {
-      const rect = section.getBoundingClientRect();
-      if (headerMid >= rect.top && headerMid <= rect.bottom) overLight = true;
-    });
 
-    textColor = overLight ? "black" : "white";
+    for (let i = 0; i < themedSections.length; i++) {
+      const sectionRect = themedSections[i].getBoundingClientRect();
+      if (headerMid >= sectionRect.top && headerMid <= sectionRect.bottom) {
+        overLight = true;
+        break;
+      }
+    }
+
+    const nextColor = overLight ? "black" : "white";
+    if (nextColor !== textColor) textColor = nextColor;
   }
 
-  // ── Glow cursor (hover manuel) ─────────────────────────────────────────────
   function handleButtonMove(e) {
     const btn = e.currentTarget;
     const rect = btn.getBoundingClientRect();
@@ -75,16 +97,10 @@
     btn.style.setProperty("--my", `${e.clientY - rect.top}px`);
   }
 
-  // ── Auto-tour glow ─────────────────────────────────────────────────────────
-  let btnEls = []; // refs sur tous les .nav-btn (logo + links + burger)
-  let tourTimer;
-  let tourRaf;
-  let isTouringNow = false;
-
   function startTour() {
     if (isTouringNow) return;
 
-    const linkBtns = btnEls.filter((el) => el != null);
+    const linkBtns = btnEls.filter(Boolean);
     if (!linkBtns.length) return;
 
     const btn = linkBtns[Math.floor(Math.random() * linkBtns.length)];
@@ -105,8 +121,10 @@
     if (isBurger) {
       const spans = btn.querySelectorAll("span");
       if (spans[0]) spans[0].style.transform = "translateX(6px) scale(1.6)";
-      if (spans[1]) spans[1].style.opacity = "0";
-      if (spans[1]) spans[1].style.transform = "scale(0)";
+      if (spans[1]) {
+        spans[1].style.opacity = "0";
+        spans[1].style.transform = "scale(0)";
+      }
       if (spans[2]) spans[2].style.transform = "translateX(-6px) scale(1.6)";
     }
 
@@ -121,6 +139,7 @@
       } else {
         btn.classList.remove("auto-glow");
         btn.classList.add("auto-glow-out");
+
         if (isBurger) {
           const spans = btn.querySelectorAll("span");
           spans.forEach((s) => {
@@ -128,6 +147,7 @@
             s.style.opacity = "";
           });
         }
+
         setTimeout(() => {
           btn.classList.remove("auto-glow-out");
           isTouringNow = false;
@@ -140,6 +160,7 @@
   }
 
   function scheduleTour() {
+    clearTimeout(tourTimer);
     const delay = 3000 + Math.random() * 3000;
     tourTimer = setTimeout(startTour, delay);
   }
@@ -153,7 +174,6 @@
     };
   }
 
-  // ── Menu ───────────────────────────────────────────────────────────────────
   function openMenu() {
     if (menuButtonEl) {
       const rect = menuButtonEl.getBoundingClientRect();
@@ -164,6 +184,7 @@
         height: rect.height
       };
     }
+
     menuOpen = true;
   }
 
@@ -215,8 +236,8 @@
     });
   }
 
-  // ── Dérivés ────────────────────────────────────────────────────────────────
   $: compact = scrollingDown && !menuOpen;
+
   $: themeClass =
     $page.url.pathname === "/services" ? "theme-services" :
     $page.url.pathname === "/travail" ? "theme-projets" :
@@ -233,14 +254,21 @@
     } else if (!compact && !menuOpen && previousCompact === compact) {
       linksTextReady = true;
     }
+
     previousCompact = compact;
   }
 
+  $: if (browser && $page.url.pathname) {
+    scheduleThemeSectionsRefresh();
+  }
+
   onMount(() => {
-    lastScrollY = window.scrollY;
-    updateTextColor();
+    lastScrollY = window.scrollY || 0;
+    refreshThemeSections();
     linksTextReady = !compact;
-    window.addEventListener("scroll", handleScroll, { passive: true });
+
+    registerRead(processScrollState);
+    forceScrollEngineUpdate();
 
     const handlePreloaderDone = () => {
       startHeaderIntro();
@@ -248,27 +276,34 @@
 
     window.addEventListener("preloader:done", handlePreloaderDone);
 
-    // fallback aligné avec ton autre composant
     headerIntroFallback = setTimeout(() => {
       startHeaderIntro();
     }, 1800);
 
+    window.addEventListener("resize", scheduleThemeSectionsRefresh, { passive: true });
+
     scheduleTour();
 
     return () => {
+      unregisterRead(processScrollState);
       window.removeEventListener("preloader:done", handlePreloaderDone);
+      window.removeEventListener("resize", scheduleThemeSectionsRefresh);
     };
   });
 
   onDestroy(() => {
     if (!browser) return;
-    window.removeEventListener("scroll", handleScroll);
+
+    unregisterRead(processScrollState);
+
     clearTimeout(tourTimer);
     clearTimeout(openAnimTimer);
     clearTimeout(flipResetTimer);
     clearTimeout(headerIntroFallback);
     clearTimeout(headerIntroCleanup);
+
     cancelAnimationFrame(tourRaf);
+    cancelAnimationFrame(refreshSectionsRaf);
   });
 </script>
 
@@ -278,7 +313,6 @@
   bind:this={headerEl}
 >
   <nav class="nav-inner" aria-label="Navigation principale">
-    <!-- Logo -->
     <button
       class="nav-btn logo"
       data-cursor="button"
@@ -293,7 +327,6 @@
       </span>
     </button>
 
-    <!-- Liens desktop -->
     <div
       class="links"
       class:opening={linksOpening}
@@ -323,7 +356,6 @@
       {/each}
     </div>
 
-    <!-- Burger -->
     <div
       bind:this={menuButtonEl}
       use:registerBurger
@@ -347,7 +379,6 @@
 <FullscreenMenu bind:open={menuOpen} origin={menuOrigin} />
 
 <style>
-  /* ── Wrapper fixé ──────────────────────────────────────────────────────── */
   header {
     position: fixed;
     top: 1rem;
@@ -403,7 +434,6 @@
     filter: blur(6px);
   }
 
-  /* ── Nav inner ─────────────────────────────────────────────────────────── */
   .nav-inner {
     display: flex;
     align-items: center;
@@ -411,7 +441,6 @@
     transition: gap 0.7s cubic-bezier(.22,.9,.3,1);
   }
 
-  /* ── Boutons base ──────────────────────────────────────────────────────── */
   .nav-btn {
     font-family: "General Sans", sans-serif;
     position: relative;
@@ -442,7 +471,6 @@
     font-style: italic;
   }
 
-  /* ── Hover texte flip uniquement ──────────────────────────────────────── */
   .nav-btn-flip {
     position: relative;
     display: block;
@@ -481,7 +509,6 @@
     transform: translateY(0%);
   }
 
-  /* texte caché pendant le dépliage */
   .links:not(.text-ready) .nav-btn-text {
     transform: translateY(115%) rotateX(-70deg);
     transform-origin: bottom center;
@@ -493,7 +520,6 @@
     opacity: 0;
   }
 
-  /* arrivée du texte : un seul texte qui s'ouvre vers le haut */
   .links.flip-in .nav-btn-text {
     transform: translateY(0%) rotateX(0deg);
     opacity: 1;
@@ -504,7 +530,6 @@
     opacity: 0;
   }
 
-  /* état normal après l'arrivée */
   .links.text-ready:not(.flip-in) .nav-btn-text {
     transform: translateY(0%);
     opacity: 1;
@@ -515,7 +540,6 @@
     opacity: 1;
   }
 
-  /* hover flip réactivé explicitement pour les 4 boutons du milieu */
   .links .nav-btn:hover .nav-btn-text {
     transform: translateY(-100%);
     opacity: 1;
@@ -526,7 +550,6 @@
     opacity: 1;
   }
 
-  /* ── Glow sur la vraie bordure ─────────────────────────────────────────── */
   .nav-btn::before,
   .nav-btn::after {
     content: "";
@@ -537,7 +560,6 @@
     opacity: 0;
   }
 
-  /* couleur localisée sur la ligne de bordure */
   .nav-btn::before {
     border: 1px solid transparent;
     border-radius: inherit;
@@ -553,7 +575,6 @@
     transition: opacity 0.25s ease;
   }
 
-  /* halo très léger autour de cette même portion de bordure */
   .nav-btn::after {
     border: 1px solid transparent;
     border-radius: inherit;
@@ -568,26 +589,22 @@
     transition: opacity 0.25s ease;
   }
 
-  /* Hover manuel */
   .nav-btn:hover::before,
   .nav-btn:hover::after {
     opacity: 1;
   }
 
-  /* Auto-tour : glow visible */
   .nav-btn.auto-glow::before,
   .nav-btn.auto-glow::after {
     opacity: 1;
   }
 
-  /* Auto-tour : fade out */
   .nav-btn.auto-glow-out::before,
   .nav-btn.auto-glow-out::after {
     opacity: 0;
     transition: opacity 0.35s ease;
   }
 
-  /* ── Thèmes page ───────────────────────────────────────────────────────── */
   .theme-services .nav-btn::before {
     border-image-source: radial-gradient(
       68px circle at var(--mx, 50%) var(--my, 50%),
@@ -668,7 +685,6 @@
     );
   }
 
-  /* ── Liens desktop : ouverture/fermeture depuis le milieu des 4 ───────── */
   .links {
     display: flex;
     gap: 0.5rem;
@@ -693,13 +709,11 @@
       filter 0.58s cubic-bezier(.2,.85,.25,1);
   }
 
-  /* ouverture : 2 et 3 d'abord, puis 1 et 4 */
   .links button:nth-child(1) { transition-delay: 0.045s; }
   .links button:nth-child(2) { transition-delay: 0s; }
   .links button:nth-child(3) { transition-delay: 0s; }
   .links button:nth-child(4) { transition-delay: 0.045s; }
 
-  /* ── Compact ───────────────────────────────────────────────────────────── */
   .compact .links {
     max-width: 0;
     clip-path: inset(0 100% 0 0);
@@ -712,7 +726,6 @@
     pointer-events: none;
   }
 
-  /* fermeture : 1 et 4 d'abord, puis 2 et 3 */
   .compact .links button:nth-child(1) { transition-delay: 0s; }
   .compact .links button:nth-child(2) { transition-delay: 0.045s; }
   .compact .links button:nth-child(3) { transition-delay: 0.045s; }
@@ -723,7 +736,6 @@
     gap: 0.5rem;
   }
 
-  /* ── Burger ────────────────────────────────────────────────────────────── */
   .more {
     width: 44px;
     padding: 0;
@@ -743,12 +755,10 @@
   .more:hover span:nth-child(2) { opacity: 0; transform: scale(0); }
   .more:hover span:nth-child(3) { transform: translateX(-6px) scale(1.6); }
 
-  /* ── Mobile ────────────────────────────────────────────────────────────── */
   @media (max-width: 768px) {
     .links { display: none; }
   }
 
-  /* ── Reduced motion ────────────────────────────────────────────────────── */
   @media (prefers-reduced-motion: reduce) {
     .nav-wrapper,
     .nav-btn,

@@ -34,12 +34,14 @@
   let galleryShellEl;
 
   let resizeObserver;
+  let intersectionObserver;
   let resizeTimer = null;
+
   let isMobile = false;
+  let isActive = false;
 
   let sectionTop = 0;
-  let sectionHeight = 0;
-  let visibleState = false;
+  let sectionHeight = 1;
 
   let pending = null;
   let dirty = false;
@@ -48,96 +50,115 @@
     textOpacity: -1,
     textTranslate: -999,
     galleryOpacity: -1,
-    galleryBlur: -999,
-    galleryBrightness: -999,
     galleryExitCut: -999,
     galleryExitFeather: -999
   };
 
   const DESKTOP_TEXT_CENTER = 0.56;
-  const DESKTOP_TEXT_ENTER_RANGE = 0.42;
-  const DESKTOP_TEXT_LEAVE_RANGE = 0.98;
+  const DESKTOP_TEXT_ENTER_RANGE = 0.5;
+  const DESKTOP_TEXT_LEAVE_RANGE = 1.08;
   const DESKTOP_GALLERY_CENTER = 0.58;
-  const DESKTOP_GALLERY_RANGE = 0.62;
+  const DESKTOP_GALLERY_RANGE = 0.72;
 
-  const MOBILE_TEXT_CENTER = 0.60;
-  const MOBILE_TEXT_ENTER_RANGE = 0.34;
-  const MOBILE_TEXT_LEAVE_RANGE = 0.91;
-  const MOBILE_GALLERY_CENTER = 0.98;
-  const MOBILE_GALLERY_RANGE = 0.32;
+  const MOBILE_TEXT_CENTER = 0.6;
+  const MOBILE_TEXT_ENTER_RANGE = 0.42;
+  const MOBILE_TEXT_LEAVE_RANGE = 1.0;
+  const MOBILE_GALLERY_CENTER = 0.96;
+  const MOBILE_GALLERY_RANGE = 0.42;
 
-  const DESKTOP_EXIT_START = 1.08;
-  const DESKTOP_EXIT_END = 0.18;
-  const MOBILE_EXIT_START = 1.02;
-  const MOBILE_EXIT_END = 0.24;
+  const DESKTOP_EXIT_START = 1.12;
+  const DESKTOP_EXIT_END = 0.08;
+  const MOBILE_EXIT_START = 1.08;
+  const MOBILE_EXIT_END = 0.12;
 
   function clamp(value, min, max) {
     return Math.max(min, Math.min(max, value));
   }
 
-  function easeInOutCubic(t) {
-    return t < 0.5
-      ? 4 * t * t * t
-      : 1 - Math.pow(-2 * t + 2, 3) / 2;
-  }
-
-  function currentScrollY() {
-    return window.lenis?.animatedScroll ?? window.scrollY ?? 0;
+  function mix(a, b, t) {
+    return a + (b - a) * t;
   }
 
   function q(value, step) {
     return Math.round(value / step) * step;
   }
 
-  function updateDeviceState() {
-    isMobile = window.innerWidth <= 640;
+  function smooth01(t) {
+    const x = clamp(t, 0, 1);
+    return x * x * (3 - 2 * x);
+  }
+
+  function smoother01(t) {
+    const x = clamp(t, 0, 1);
+    return x * x * x * (x * (x * 6 - 15) + 10);
+  }
+
+  function getScrollY() {
+    return window.scrollY || window.pageYOffset || 0;
+  }
+
+  function updateDeviceState(vw = window.innerWidth || 0) {
+    isMobile = vw <= 640;
   }
 
   function measure() {
     if (!sectionEl) return;
-    const scrollY = currentScrollY();
+
+    const scrollY = getScrollY();
     const rect = sectionEl.getBoundingClientRect();
+
     sectionTop = rect.top + scrollY;
-    sectionHeight = rect.height;
+    sectionHeight = Math.max(rect.height, 1);
   }
 
-  function computeFromScroll(scrollY, { vh }) {
-    if (!sectionEl || !sectionHeight) return;
+  function computeFromScroll(y, ctx) {
+    if (!sectionEl || !isActive || !sectionHeight) return;
 
-    const topInViewport = sectionTop - scrollY;
+    const vh = ctx?.vh || window.innerHeight || 1;
+
+    const topInViewport = sectionTop - y;
     const bottomInViewport = topInViewport + sectionHeight;
 
     const textCenterY = vh * (isMobile ? MOBILE_TEXT_CENTER : DESKTOP_TEXT_CENTER);
     const textEnterRange = vh * (isMobile ? MOBILE_TEXT_ENTER_RANGE : DESKTOP_TEXT_ENTER_RANGE);
     const textLeaveRange = vh * (isMobile ? MOBILE_TEXT_LEAVE_RANGE : DESKTOP_TEXT_LEAVE_RANGE);
 
-    const enter = clamp((textCenterY - topInViewport) / Math.max(textEnterRange, 1), 0, 1);
-    const leave = clamp((bottomInViewport - textCenterY) / Math.max(textLeaveRange, 1), 0, 1);
-    const visibility = easeInOutCubic(enter) * easeInOutCubic(leave);
+    const enterRaw = (textCenterY - topInViewport) / Math.max(textEnterRange, 1);
+    const leaveRaw = (bottomInViewport - textCenterY) / Math.max(textLeaveRange, 1);
+
+    const textEnter = smoother01(enterRaw);
+    const textLeave = smoother01(leaveRaw);
+    const textVisibility = textEnter * textLeave;
 
     const galleryCenterY = vh * (isMobile ? MOBILE_GALLERY_CENTER : DESKTOP_GALLERY_CENTER);
     const galleryRange = vh * (isMobile ? MOBILE_GALLERY_RANGE : DESKTOP_GALLERY_RANGE);
 
-    const gEnter = clamp((galleryCenterY - topInViewport) / Math.max(galleryRange, 1), 0, 1);
-    const gLeave = clamp((bottomInViewport - galleryCenterY) / Math.max(galleryRange, 1), 0, 1);
-    const galleryProgress = easeInOutCubic(gEnter) * easeInOutCubic(gLeave);
+    const gEnterRaw = (galleryCenterY - topInViewport) / Math.max(galleryRange, 1);
+    const gLeaveRaw = (bottomInViewport - galleryCenterY) / Math.max(galleryRange, 1);
+
+    const galleryEnter = smoother01(gEnterRaw);
+    const galleryLeave = smoother01(gLeaveRaw);
+    const galleryProgress = galleryEnter * galleryLeave;
 
     const exitStart = vh * (isMobile ? MOBILE_EXIT_START : DESKTOP_EXIT_START);
     const exitEnd = vh * (isMobile ? MOBILE_EXIT_END : DESKTOP_EXIT_END);
-    const rawExit = clamp((exitStart - bottomInViewport) / Math.max(exitStart - exitEnd, 1), 0, 1);
 
-    const slowStart = Math.pow(rawExit, 2.15);
-    const reinforcedMid = 1 - Math.pow(1 - rawExit, 2.4);
-    const blendedExit = slowStart * 0.68 + reinforcedMid * 0.32;
+    const rawExit = clamp(
+      (exitStart - bottomInViewport) / Math.max(exitStart - exitEnd, 1),
+      0,
+      1
+    );
+
+    const exitEaseA = Math.pow(rawExit, 1.85);
+    const exitEaseB = 1 - Math.pow(1 - rawExit, 2.8);
+    const blendedExit = mix(exitEaseA, exitEaseB, 0.34);
 
     pending = {
-      textOpacity: q(visibility, 0.001),
-      textTranslate: q((1 - visibility) * 34, 0.1),
+      textOpacity: q(textVisibility, 0.001),
+      textTranslate: q((1 - textVisibility) * (isMobile ? 26 : 34), 0.1),
       galleryOpacity: q(galleryProgress, 0.001),
-      galleryBlur: q((1 - galleryProgress) * 12, 0.1),
-      galleryBrightness: q(0.55 + galleryProgress * 0.45, 0.001),
-      galleryExitCut: q(blendedExit * 78, 0.1),
-      galleryExitFeather: q(16 + blendedExit * 10, 0.1)
+      galleryExitCut: q(blendedExit * (isMobile ? 70 : 74), 0.1),
+      galleryExitFeather: q((isMobile ? 21 : 20) + blendedExit * (isMobile ? 18 : 20), 0.1)
     };
 
     dirty = true;
@@ -157,27 +178,13 @@
         applied.textTranslate = pending.textTranslate;
       }
 
-      const shouldBeVisible = pending.textOpacity > 0.015;
-      if (shouldBeVisible !== visibleState) {
-        visibleState = shouldBeVisible;
-        fixedTextEl.classList.toggle("is-visible", shouldBeVisible);
-      }
+      fixedTextEl.style.visibility = pending.textOpacity > 0.008 ? "visible" : "hidden";
     }
 
     if (galleryShellEl) {
       if (pending.galleryOpacity !== applied.galleryOpacity) {
         galleryShellEl.style.opacity = `${pending.galleryOpacity}`;
         applied.galleryOpacity = pending.galleryOpacity;
-      }
-
-      if (pending.galleryBlur !== applied.galleryBlur) {
-        galleryShellEl.style.setProperty("--gallery-blur", `${pending.galleryBlur}px`);
-        applied.galleryBlur = pending.galleryBlur;
-      }
-
-      if (pending.galleryBrightness !== applied.galleryBrightness) {
-        galleryShellEl.style.setProperty("--gallery-brightness", `${pending.galleryBrightness}`);
-        applied.galleryBrightness = pending.galleryBrightness;
       }
 
       if (pending.galleryExitCut !== applied.galleryExitCut) {
@@ -196,6 +203,7 @@
 
   function handleResize() {
     if (resizeTimer) clearTimeout(resizeTimer);
+
     resizeTimer = setTimeout(() => {
       updateDeviceState();
       measure();
@@ -209,17 +217,19 @@
     requestAnimationFrame(() => {
       updateDeviceState();
       measure();
+
       if (fixedTextEl) {
         fixedTextEl.style.opacity = "0";
-        fixedTextEl.style.transform = "translate3d(0, 34px, 0)";
+        fixedTextEl.style.visibility = "hidden";
+        fixedTextEl.style.transform = `translate3d(0, ${isMobile ? 26 : 34}px, 0)`;
       }
+
       if (galleryShellEl) {
         galleryShellEl.style.opacity = "0";
-        galleryShellEl.style.setProperty("--gallery-blur", "12px");
-        galleryShellEl.style.setProperty("--gallery-brightness", "0.55");
         galleryShellEl.style.setProperty("--exit-cut", "0%");
-        galleryShellEl.style.setProperty("--exit-feather", "18%");
+        galleryShellEl.style.setProperty("--exit-feather", isMobile ? "21%" : "20%");
       }
+
       forceScrollEngineUpdate();
     });
 
@@ -228,6 +238,25 @@
 
     resizeObserver = new ResizeObserver(handleResize);
     if (sectionEl) resizeObserver.observe(sectionEl);
+
+    intersectionObserver = new IntersectionObserver(
+      ([entry]) => {
+        isActive =
+          entry.isIntersecting ||
+          entry.boundingClientRect.top < window.innerHeight + 260;
+
+        if (isActive) {
+          measure();
+          forceScrollEngineUpdate();
+        }
+      },
+      {
+        rootMargin: "260px 0px 260px 0px",
+        threshold: 0
+      }
+    );
+
+    if (sectionEl) intersectionObserver.observe(sectionEl);
 
     window.addEventListener("resize", handleResize, { passive: true });
     window.addEventListener("orientationchange", handleResize, { passive: true });
@@ -238,7 +267,9 @@
 
     unregisterParallax(computeFromScroll);
     unregisterWrite(applyPending);
+
     resizeObserver?.disconnect();
+    intersectionObserver?.disconnect();
 
     if (resizeTimer) clearTimeout(resizeTimer);
 
@@ -262,7 +293,13 @@
         <div class="col col-left">
           {#each leftImages as image}
             <figure class={`card ${image.ratio}`} style={`--h:${image.height}vw`}>
-              <img src="images/photo.webp" alt="" />
+              <img
+                src="images/telephone.webp"
+                alt=""
+                loading="lazy"
+                decoding="async"
+                draggable="false"
+              />
             </figure>
           {/each}
         </div>
@@ -270,7 +307,13 @@
         <div class="col col-center">
           {#each centerImages as image}
             <figure class={`card ${image.ratio}`} style={`--h:${image.height}vw`}>
-              <img src="images/photo.webp" alt="" />
+              <img
+                src="images/telephone.webp"
+                alt=""
+                loading="lazy"
+                decoding="async"
+                draggable="false"
+              />
             </figure>
           {/each}
         </div>
@@ -278,7 +321,13 @@
         <div class="col col-right">
           {#each rightImages as image}
             <figure class={`card ${image.ratio}`} style={`--h:${image.height}vw`}>
-              <img src="images/photo.webp" alt="" />
+              <img
+                src="images/telephone.webp"
+                alt=""
+                loading="lazy"
+                decoding="async"
+                draggable="false"
+              />
             </figure>
           {/each}
         </div>
@@ -307,18 +356,11 @@
     z-index: 999;
     pointer-events: none;
     opacity: 0;
+    visibility: hidden;
     transform: translate3d(0, 34px, 0);
     will-change: transform, opacity;
     backface-visibility: hidden;
     -webkit-backface-visibility: hidden;
-  }
-
-  .fixed-text:not(.is-visible) {
-    visibility: hidden;
-  }
-
-  .fixed-text.is-visible {
-    visibility: visible;
   }
 
   .title {
@@ -348,28 +390,30 @@
     transform: translate3d(-50%, 0, 0);
     padding: 10vh 0;
     opacity: 0;
-    filter: blur(var(--gallery-blur, 12px)) brightness(var(--gallery-brightness, 0.55));
-    will-change: opacity, filter;
+    will-change: opacity;
     backface-visibility: hidden;
     -webkit-backface-visibility: hidden;
+    contain: layout paint;
     -webkit-mask-image: linear-gradient(
       to top,
       transparent 0%,
       transparent var(--exit-cut, 0%),
-      rgba(0, 0, 0, 0.2) calc(var(--exit-cut, 0%) + calc(var(--exit-feather, 18%) * 0.18)),
-      rgba(0, 0, 0, 0.55) calc(var(--exit-cut, 0%) + calc(var(--exit-feather, 18%) * 0.42)),
-      rgba(0, 0, 0, 0.82) calc(var(--exit-cut, 0%) + calc(var(--exit-feather, 18%) * 0.72)),
-      #000 calc(var(--exit-cut, 0%) + var(--exit-feather, 18%)),
+      rgba(0, 0, 0, 0.1) calc(var(--exit-cut, 0%) + calc(var(--exit-feather, 20%) * 0.14)),
+      rgba(0, 0, 0, 0.28) calc(var(--exit-cut, 0%) + calc(var(--exit-feather, 20%) * 0.34)),
+      rgba(0, 0, 0, 0.56) calc(var(--exit-cut, 0%) + calc(var(--exit-feather, 20%) * 0.58)),
+      rgba(0, 0, 0, 0.82) calc(var(--exit-cut, 0%) + calc(var(--exit-feather, 20%) * 0.82)),
+      #000 calc(var(--exit-cut, 0%) + var(--exit-feather, 20%)),
       #000 100%
     );
     mask-image: linear-gradient(
       to top,
       transparent 0%,
       transparent var(--exit-cut, 0%),
-      rgba(0, 0, 0, 0.2) calc(var(--exit-cut, 0%) + calc(var(--exit-feather, 18%) * 0.18)),
-      rgba(0, 0, 0, 0.55) calc(var(--exit-cut, 0%) + calc(var(--exit-feather, 18%) * 0.42)),
-      rgba(0, 0, 0, 0.82) calc(var(--exit-cut, 0%) + calc(var(--exit-feather, 18%) * 0.72)),
-      #000 calc(var(--exit-cut, 0%) + var(--exit-feather, 18%)),
+      rgba(0, 0, 0, 0.1) calc(var(--exit-cut, 0%) + calc(var(--exit-feather, 20%) * 0.14)),
+      rgba(0, 0, 0, 0.28) calc(var(--exit-cut, 0%) + calc(var(--exit-feather, 20%) * 0.34)),
+      rgba(0, 0, 0, 0.56) calc(var(--exit-cut, 0%) + calc(var(--exit-feather, 20%) * 0.58)),
+      rgba(0, 0, 0, 0.82) calc(var(--exit-cut, 0%) + calc(var(--exit-feather, 20%) * 0.82)),
+      #000 calc(var(--exit-cut, 0%) + var(--exit-feather, 20%)),
       #000 100%
     );
     -webkit-mask-repeat: no-repeat;
@@ -405,6 +449,7 @@
     transform: translateZ(0);
     backface-visibility: hidden;
     -webkit-backface-visibility: hidden;
+    contain: paint;
   }
 
   .card img {
@@ -415,6 +460,8 @@
     transform: translateZ(0);
     backface-visibility: hidden;
     -webkit-backface-visibility: hidden;
+    user-select: none;
+    -webkit-user-drag: none;
   }
 
   .card.portrait {
@@ -462,14 +509,14 @@
 
   @media (max-width: 640px) {
     .gallery-track {
-      min-height: 146vh;
+      min-height: 170vh;
     }
 
     .gallery-shell {
-      width: 145vw;
+      width: 154vw;
       margin-left: 50%;
       transform: translate3d(-50%, 0, 0);
-      padding: 6vh 0 0;
+      padding: 7vh 0 3vh;
     }
 
     .gallery-grid {
@@ -479,7 +526,7 @@
     }
 
     .col {
-      gap: 0.45rem;
+      gap: 0.5rem;
       justify-content: center;
       align-self: center;
     }
@@ -496,27 +543,37 @@
     }
 
     .card.portrait {
-      height: calc(var(--h) * 1.6);
+      height: calc(var(--h) * 1.84);
     }
 
     .card.landscape {
-      height: calc(var(--h) * 1.18);
+      height: calc(var(--h) * 1.36);
     }
 
     .card.square {
-      height: calc(var(--h) * 1.24);
+      height: calc(var(--h) * 1.42);
     }
 
     .col-center .card.portrait {
-      height: calc(var(--h) * 1.72);
+      height: calc(var(--h) * 1.98);
     }
 
     .col-center .card.landscape {
-      height: calc(var(--h) * 1.24);
+      height: calc(var(--h) * 1.42);
     }
 
     .col-center .card.square {
-      height: calc(var(--h) * 1.28);
+      height: calc(var(--h) * 1.48);
+    }
+  }
+
+  @media (max-width: 420px) {
+    .gallery-track {
+      min-height: 178vh;
+    }
+
+    .gallery-shell {
+      width: 160vw;
     }
   }
 </style>

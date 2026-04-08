@@ -93,7 +93,7 @@
   }
 
   .footer-bg {
-    background-image: url("/images/photo.webp");
+    background-image: url("/images/telephone.webp");
     background-size: cover;
     background-repeat: no-repeat;
     background-position: center bottom;
