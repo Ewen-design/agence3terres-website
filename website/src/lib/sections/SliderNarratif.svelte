@@ -368,6 +368,7 @@
     background: var(--section-bg);
     overflow: clip;
     isolation: isolate;
+    z-index: 1;
   }
 
   .story-slider__sticky {

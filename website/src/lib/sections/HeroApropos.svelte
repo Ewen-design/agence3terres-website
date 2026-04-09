@@ -10,30 +10,16 @@
   } from "../scrollEngine.js";
 
   let heroSection;
-  let pinSection;
-  let afterSection;
-  let afterTextEl;
-  let afterImageEl;
-  let leftTitleEl;
-  let rightTitleEl;
   let heroMediaImgEl;
   let heroDarkLayerEl;
   let scrollHintEl;
+  let afterTextEl;
 
-  let vw = 0;
   let vh = 1;
-  let leftW = 0;
-  let rightW = 0;
-
   let heroTop = 0;
   let heroHeight = 1;
-  let pinTop = 0;
-  let pinHeight = 1;
-  let afterTop = 0;
   let afterTextTop = 0;
-  let afterImageTop = 0;
 
-  let introStarted = false;
   let introVisible = false;
   let hintVisible = false;
 
@@ -43,25 +29,10 @@
   let resizeTimer;
 
   let isActive = true;
-  let pendingFrame = null;
   let dirty = false;
+  let pendingFrame = null;
 
-  let applied = {
-    imageScale: -1,
-    imageBrightness: -1,
-    imageDark: -1,
-    leftX: -9999,
-    rightX: -9999,
-    hintOpacity: -1,
-    hintY: -9999,
-    hintBlur: -1,
-    textOpacity: -1,
-    textX: -9999,
-    textY: -9999,
-    textEdge: -9999,
-    smallImageScale: -1,
-    smallImageY: -9999
-  };
+  const title = "À propos";
 
   const finalText =
     "Nous concevons des identités, des expériences et des univers visuels pensés pour marquer durablement les esprits.";
@@ -82,6 +53,19 @@
     }
     charCount = nextCount;
   }
+
+  let applied = {
+    imageScale: -1,
+    imageBrightness: -1,
+    imageDark: -1,
+    hintOpacity: -1,
+    hintY: -9999,
+    hintBlur: -1,
+    textOpacity: -1,
+    textX: -9999,
+    textY: -9999,
+    textEdge: -9999
+  };
 
   const clamp = (v, min = 0, max = 1) => Math.max(min, Math.min(max, v));
   const lerp = (a, b, t) => a + (b - a) * t;
@@ -112,31 +96,18 @@
     return rect.top + getScrollY();
   }
 
-  function measureTitles() {
-    vw = window.innerWidth || 0;
-    leftW = Math.round(leftTitleEl?.getBoundingClientRect().width || 0);
-    rightW = Math.round(rightTitleEl?.getBoundingClientRect().width || 0);
-  }
-
   function measureLayout() {
     vh = window.innerHeight || 1;
-
     heroTop = getAbsoluteTop(heroSection);
-    pinTop = getAbsoluteTop(pinSection);
-    afterTop = getAbsoluteTop(afterSection);
     afterTextTop = getAbsoluteTop(afterTextEl);
-    afterImageTop = getAbsoluteTop(afterImageEl);
-
     heroHeight = Math.max(heroSection?.offsetHeight || 1, 1);
-    pinHeight = Math.max(pinSection?.offsetHeight || 1, 1);
   }
 
   function updateAllMeasures() {
-    measureTitles();
     measureLayout();
   }
 
-  function getLocalRevealFromAbsolute(scrollY, absTop, startMul = 0.9, endMul = 0.2) {
+  function getLocalRevealFromAbsolute(scrollY, absTop, startMul = 0.92, endMul = 0.14) {
     const topInViewport = absTop - scrollY;
     const start = vh * startMul;
     const end = vh * endMul;
@@ -144,25 +115,10 @@
   }
 
   function computeFrame(y) {
-    if (!pinSection || !afterSection || !heroSection || !isActive) return;
-
-    const pinScrollable = Math.max(pinHeight - vh, 1);
-    const heroProgress = clamp((y - pinTop) / pinScrollable, 0, 1);
+    if (!heroSection || !afterTextEl || !isActive) return;
 
     const heroScrollable = Math.max(heroHeight - vh, 1);
     const imageFadeProgress = clamp((y - heroTop) / heroScrollable, 0, 1);
-
-    const localTextReveal = easeOutQuart(
-      getLocalRevealFromAbsolute(y, afterTextTop, 0.92, 0.16)
-    );
-
-    const localImageReveal = easeInOutSine(
-      getLocalRevealFromAbsolute(y, afterImageTop, 0.98, 0.12)
-    );
-
-    const mergeProgress = clamp(heroProgress / 0.9, 0, 1);
-    const smoothMerge = easeInOutSine(mergeProgress);
-
     const globalFade = easeInOutSine(imageFadeProgress);
     const endFade = Math.pow(clamp((imageFadeProgress - 0.78) / 0.22, 0, 1), 1.7);
 
@@ -171,19 +127,11 @@
     const imageBrightness = lerp(midBrightness, 0, endFade);
     const imageScale = lerp(1.06, 1.025, globalFade);
 
-    const sideMargin = Math.min(vw * 0.085, 118);
-    const joinGap = Math.min(vw * 0.012, 14);
+    const localTextReveal = easeOutQuart(
+      getLocalRevealFromAbsolute(y, afterTextTop, 0.92, 0.14)
+    );
 
-    const leftStartX = sideMargin;
-    const leftEndX = vw * 0.5 - leftW - joinGap * 0.5;
-
-    const rightStartX = vw - rightW - sideMargin;
-    const rightEndX = vw * 0.5 + joinGap * 0.5;
-
-    const leftX = lerp(leftStartX, leftEndX, smoothMerge);
-    const rightX = lerp(rightStartX, rightEndX, smoothMerge);
-
-    const hintScrollFade = 1 - easeOutCubic(clamp(heroProgress / 0.03, 0, 1));
+    const hintScrollFade = 1 - easeOutCubic(clamp(imageFadeProgress / 0.06, 0, 1));
     const scrollHintOpacity = hintVisible ? hintScrollFade : 0;
 
     const textBlockOpacity = lerp(0.14, 1, localTextReveal);
@@ -191,24 +139,17 @@
     const textBlockX = 0;
     const textRevealEdge = lerp(0, 118, localTextReveal);
 
-    const smallImageScale = lerp(0.885, 1.02, localImageReveal);
-    const smallImageY = lerp(22, 0, localImageReveal);
-
     pendingFrame = {
       imageScale: q(imageScale, 0.001),
       imageBrightness: q(imageBrightness, 0.001),
       imageDark: q(imageDark, 0.001),
-      leftX: q(leftX, 0.1),
-      rightX: q(rightX, 0.1),
       hintOpacity: q(scrollHintOpacity, 0.001),
       hintY: q(lerp(14, 0, scrollHintOpacity), 0.1),
       hintBlur: q(lerp(10, 0, scrollHintOpacity), 0.1),
       textOpacity: q(textBlockOpacity, 0.001),
       textX: q(textBlockX, 0.1),
       textY: q(textBlockY, 0.1),
-      textEdge: q(textRevealEdge, 0.1),
-      smallImageScale: q(smallImageScale, 0.001),
-      smallImageY: q(smallImageY, 0.1)
+      textEdge: q(textRevealEdge, 0.1)
     };
 
     dirty = true;
@@ -231,18 +172,6 @@
     if (heroDarkLayerEl && f.imageDark !== applied.imageDark) {
       heroDarkLayerEl.style.opacity = `${f.imageDark}`;
       applied.imageDark = f.imageDark;
-    }
-
-    if (leftTitleEl && f.leftX !== applied.leftX) {
-      leftTitleEl.style.setProperty("--title-x", `${f.leftX}px`);
-      leftTitleEl.style.transform = `translate3d(${f.leftX}px,-50%,0)`;
-      applied.leftX = f.leftX;
-    }
-
-    if (rightTitleEl && f.rightX !== applied.rightX) {
-      rightTitleEl.style.setProperty("--title-x", `${f.rightX}px`);
-      rightTitleEl.style.transform = `translate3d(${f.rightX}px,-50%,0)`;
-      applied.rightX = f.rightX;
     }
 
     if (scrollHintEl) {
@@ -277,17 +206,6 @@
       }
     }
 
-    if (afterImageEl) {
-      if (
-        f.smallImageScale !== applied.smallImageScale ||
-        f.smallImageY !== applied.smallImageY
-      ) {
-        afterImageEl.style.transform = `translate3d(0,${f.smallImageY}px,0) scale(${f.smallImageScale})`;
-        applied.smallImageScale = f.smallImageScale;
-        applied.smallImageY = f.smallImageY;
-      }
-    }
-
     dirty = false;
   }
 
@@ -302,9 +220,6 @@
   }
 
   function startIntro() {
-    if (introStarted) return;
-    introStarted = true;
-
     requestAnimationFrame(() => {
       requestAnimationFrame(() => {
         introVisible = true;
@@ -312,7 +227,7 @@
         hintTimeout = setTimeout(() => {
           hintVisible = true;
           forceScrollEngineUpdate();
-        }, 220);
+        }, 240);
       });
     });
   }
@@ -329,8 +244,6 @@
     if (!browser) return;
 
     let destroyed = false;
-
-    const handlePreloaderDone = () => startIntro();
 
     const handleWindowLoad = () => {
       updateAllMeasures();
@@ -371,7 +284,6 @@
     window.addEventListener("orientationchange", scheduleResizeUpdate, { passive: true });
     window.addEventListener("load", handleWindowLoad);
     window.addEventListener("pageshow", handlePageShow);
-    window.addEventListener("preloader:done", handlePreloaderDone);
 
     if (typeof ResizeObserver !== "undefined") {
       resizeObserver = new ResizeObserver(() => {
@@ -379,15 +291,12 @@
       });
 
       if (heroSection) resizeObserver.observe(heroSection);
-      if (leftTitleEl) resizeObserver.observe(leftTitleEl);
-      if (rightTitleEl) resizeObserver.observe(rightTitleEl);
       if (afterTextEl) resizeObserver.observe(afterTextEl);
-      if (afterImageEl) resizeObserver.observe(afterImageEl);
     }
 
     fallbackTimeout = setTimeout(() => {
       startIntro();
-    }, 1800);
+    }, 120);
 
     return () => {
       destroyed = true;
@@ -397,7 +306,6 @@
       window.removeEventListener("orientationchange", scheduleResizeUpdate);
       window.removeEventListener("load", handleWindowLoad);
       window.removeEventListener("pageshow", handlePageShow);
-      window.removeEventListener("preloader:done", handlePreloaderDone);
       clearTimeout(fallbackTimeout);
       clearTimeout(hintTimeout);
       clearTimeout(resizeTimer);
@@ -406,7 +314,7 @@
   });
 </script>
 
-<section class="hero-join-clean" bind:this={heroSection}>
+<section class="hero-single-clean" bind:this={heroSection}>
   <div class="hero-media-sticky" aria-hidden="true">
     <div class="hero-media">
       <img
@@ -418,43 +326,28 @@
     </div>
   </div>
 
-  <section class="pin-section" bind:this={pinSection}>
-    <div class="sticky-stage">
-      <div class="titles-layer">
-        <span
-          class="title-left"
-          class:intro-visible={introVisible}
-          bind:this={leftTitleEl}
-        >
-          Agence
-        </span>
+  <section class="hero-intro">
+    <div class="hero-overlay">
+      <h1 class:intro-visible={introVisible}>
+        {title}
+      </h1>
 
-        <span
-          class="title-right"
-          class:intro-visible={introVisible}
-          bind:this={rightTitleEl}
-        >
-          3 Terres
-        </span>
-
-        <div
-          class="scroll-hint"
-          class:hint-visible={hintVisible}
-          aria-hidden="true"
-          bind:this={scrollHintEl}
-        >
-          Scroll pour découvrir
-        </div>
+      <div
+        class="scroll-hint"
+        class:hint-visible={hintVisible}
+        aria-hidden="true"
+        bind:this={scrollHintEl}
+      >
+        Scroll pour découvrir
       </div>
     </div>
   </section>
 
-  <section class="after-section" bind:this={afterSection}>
+  <section class="after-section">
     <div class="after-grid">
-      <div
-        class="after-text"
-        bind:this={afterTextEl}
-      >
+      <div class="after-spacer" aria-hidden="true"></div>
+
+      <div class="after-text" bind:this={afterTextEl}>
         <h2 aria-label={finalText}>
           {#each words as word, w}
             <span class="word" class:muted-word={w >= grayStartsAtWord}>
@@ -463,19 +356,12 @@
           {/each}
         </h2>
       </div>
-
-      <div
-        class="after-image"
-        bind:this={afterImageEl}
-      >
-        <img src="images/ordinateur.webp" alt="Visuel 3 Terres" />
-      </div>
     </div>
   </section>
 </section>
 
 <style>
-  .hero-join-clean {
+  .hero-single-clean {
     position: relative;
     width: 100%;
     background: #000;
@@ -528,59 +414,43 @@
     opacity: 0;
   }
 
-  .pin-section {
+  .hero-intro {
     position: relative;
-    height: 160vh;
+    min-height: 100vh;
+    min-height: 100svh;
     z-index: 2;
   }
 
-  .sticky-stage {
-    position: sticky;
-    top: 0;
-    height: 100vh;
-    height: 100svh;
-    overflow: hidden;
+  .hero-overlay {
+    position: relative;
+    min-height: 100vh;
+    min-height: 100svh;
+    padding: clamp(1.1rem, 2vw, 2rem);
+    display: flex;
+    align-items: flex-end;
+    justify-content: flex-start;
   }
 
-  .titles-layer {
-    position: absolute;
-    inset: 0;
-    z-index: 2;
-    pointer-events: none;
-  }
-
-  .title-left,
-  .title-right {
-    position: absolute;
-    top: 50%;
-    line-height: 0.94;
+  .hero-overlay h1 {
+    margin: 0;
+    max-width: 8ch;
+    font-family: "Titre italic", serif;
+    font-style: italic;
+    font-weight: 100;
+    font-size: clamp(4.2rem, 11vw, 13rem);
+    line-height: 0.9;
     letter-spacing: -0.05em;
-    white-space: nowrap;
-    will-change: transform, opacity, filter;
-    font-size: clamp(2.9rem, 7.8vw, 8.8rem);
+    color: #f4efe6;
     opacity: 0;
+    transform: translate3d(0, 42px, 0);
     filter: blur(18px);
+    will-change: transform, opacity, filter;
     backface-visibility: hidden;
     -webkit-backface-visibility: hidden;
   }
 
-  .title-left {
-    font-family: "Titre", serif;
-    font-weight: 400;
-  }
-
-  .title-right {
-    font-family: "Titre italic", serif;
-    font-style: italic;
-    font-weight: 100;
-  }
-
-  .title-left.intro-visible {
-    animation: titleEnterLeft 1.25s cubic-bezier(0.22, 1, 0.36, 1) forwards;
-  }
-
-  .title-right.intro-visible {
-    animation: titleEnterRight 1.25s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  .hero-overlay h1.intro-visible {
+    animation: titleEnterUp 1.2s cubic-bezier(0.22, 1, 0.36, 1) forwards;
   }
 
   .scroll-hint {
@@ -613,17 +483,23 @@
     width: min(1400px, 92%);
     margin: 0 auto;
     display: grid;
-    grid-template-columns: minmax(0, 1.08fr) minmax(320px, 0.78fr);
+    grid-template-columns: minmax(0, 1fr) minmax(320px, 0.92fr);
     gap: clamp(1.4rem, 4vw, 4.5rem);
     align-items: start;
   }
 
+  .after-spacer {
+    min-height: 1px;
+  }
+
   .after-text {
-    will-change: transform, opacity;
+    grid-column: 2;
+    justify-self: end;
     width: 100%;
     min-width: 0;
     opacity: 0.14;
     transform: translate3d(24px, 18px, 0);
+    will-change: transform, opacity;
     -webkit-mask-image: linear-gradient(
       to bottom,
       rgba(0, 0, 0, 1) 0%,
@@ -656,6 +532,7 @@
     line-height: 1;
     letter-spacing: -0.05em;
     color: #fff;
+    text-align: left;
   }
 
   .word {
@@ -672,68 +549,39 @@
     display: inline;
   }
 
-  .after-image {
-    justify-self: end;
-    width: min(100%, 460px);
-    aspect-ratio: 1.45 / 1;
-    overflow: hidden;
-    background: #0b0b0b;
-    will-change: transform;
-    margin-top: clamp(4rem, 6vw, 7rem);
-    transform-origin: 50% 50%;
-    backface-visibility: hidden;
-    -webkit-backface-visibility: hidden;
-    transform: translate3d(0, 22px, 0) scale(0.885);
-  }
-
-  .after-image img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    display: block;
-    transform: translateZ(0);
-  }
-
-  @keyframes titleEnterLeft {
+  @keyframes titleEnterUp {
     from {
       opacity: 0;
       filter: blur(18px);
-      transform: translate3d(calc(var(--title-x, 0px) - 42px), -50%, 0);
+      transform: translate3d(0, 42px, 0);
     }
     to {
       opacity: 1;
       filter: blur(0);
-      transform: translate3d(var(--title-x, 0px), -50%, 0);
-    }
-  }
-
-  @keyframes titleEnterRight {
-    from {
-      opacity: 0;
-      filter: blur(18px);
-      transform: translate3d(calc(var(--title-x, 0px) + 42px), -50%, 0);
-    }
-    to {
-      opacity: 1;
-      filter: blur(0);
-      transform: translate3d(var(--title-x, 0px), -50%, 0);
+      transform: translate3d(0, 0, 0);
     }
   }
 
   @media (max-width: 900px) {
-    .pin-section {
-      height: 235vh;
+    .hero-overlay {
+      padding: 1rem 1rem 1.2rem;
     }
 
-    .title-left,
-    .title-right {
-      font-size: clamp(2.2rem, 9vw, 5rem);
+    .hero-overlay h1 {
+      font-size: clamp(2.5rem, 10vw, 5.6rem);
+      max-width: 9ch;
     }
 
     .after-grid {
       width: min(94%, 760px);
-      grid-template-columns: 1fr 0.82fr;
+      grid-template-columns: 1fr;
       gap: 0.8rem;
+    }
+
+    .after-text {
+      grid-column: auto;
+      width: min(100%, 520px);
+      justify-self: end;
     }
 
     .after-text h2 {
@@ -748,41 +596,27 @@
   }
 
   @media (max-width: 640px) {
-    .pin-section {
-      height: 220vh;
-    }
-
-    .title-left,
-    .title-right {
-      font-size: clamp(1.85rem, 10vw, 3.3rem);
-    }
-
     .after-section {
       padding: 11vh 0 12vh;
     }
 
+    .hero-overlay h1 {
+      font-size: clamp(2.1rem, 11vw, 3.8rem);
+      line-height: 0.92;
+    }
+
     .after-grid {
       width: min(94%, 520px);
-      grid-template-columns: 1fr;
-      gap: 1rem;
     }
 
     .after-text {
-      width: 78%;
-      justify-self: start;
+      width: min(82%, 100%);
     }
 
     .after-text h2 {
       font-size: clamp(1.15rem, 6.4vw, 1.95rem);
       line-height: 1.04;
       max-width: none;
-    }
-
-    .after-image {
-      width: min(78%, 340px);
-      justify-self: end;
-      aspect-ratio: 1.6 / 1;
-      margin-top: 3.5rem;
     }
 
     .scroll-hint {
@@ -795,11 +629,9 @@
   @media (prefers-reduced-motion: reduce) {
     .hero-media img,
     .hero-dark-layer,
-    .title-left,
-    .title-right,
+    .hero-overlay h1,
     .scroll-hint,
-    .after-text,
-    .after-image {
+    .after-text {
       transition: none !important;
       animation: none !important;
       filter: none !important;

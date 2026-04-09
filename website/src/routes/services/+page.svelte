@@ -5,11 +5,10 @@
   import Transition2 from "$lib/sections/Transition2.svelte";
   import ImageScroll from "$lib/sections/ImageScroll.svelte";
   import AncienSliderCustom from "$lib/sections/AncienSliderCustom.svelte";
+  import HeroServices from "$lib/sections/HeroServices.svelte";
 </script>
 
-<NewSectionHero />
-<Transition1 />
+<HeroServices />
 <MixSlider />
-<Transition2 />
 <ImageScroll src="images/photo.webp" alt="Description de l'image" />
 <AncienSliderCustom />

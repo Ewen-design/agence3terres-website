@@ -116,15 +116,9 @@
     return tanhEase(t, 4);
   }
 
-  function getTransitionTheme(path = "/") {
-    const normalized = path.replace(/\/+$/, "") || "/";
-
-    if (normalized === "/travail") {
-      return { mask: "#f5f1e8" };
-    }
-
-    return { mask: "#000000" };
-  }
+ function getTransitionTheme(path = "/") {
+  return { mask: "#000000" };
+}
 
   function applyTransitionTheme(path) {
     if (!transitionLayer) return;
