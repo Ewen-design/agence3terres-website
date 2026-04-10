@@ -25,9 +25,21 @@ function isNativeWheelZone(target) {
   return target instanceof Element && !!target.closest("[data-native-wheel='true']");
 }
 
+function getMaxScroll() {
+  return Math.max(
+    0,
+    document.documentElement.scrollHeight - window.innerHeight
+  );
+}
+
+function clamp(value, min, max) {
+  return Math.max(min, Math.min(max, value));
+}
+
 export function installDesktopWheelDamping({
-  factor = 0.77,
-  lerp = 0.1
+  factor = 0.86,
+  lerp = 0.14,
+  snapThreshold = 0.18
 } = {}) {
   if (typeof window === "undefined") {
     return {
@@ -37,16 +49,26 @@ export function installDesktopWheelDamping({
   }
 
   function animateWheel() {
-    wheelCurrentY += (wheelTargetY - wheelCurrentY) * lerp;
+    const maxScroll = getMaxScroll();
+    wheelTargetY = clamp(wheelTargetY, 0, maxScroll);
 
-    if (Math.abs(wheelTargetY - wheelCurrentY) < 0.4) {
+    const diff = wheelTargetY - wheelCurrentY;
+
+    // lissage dynamique : plus réactif sur les grands écarts, plus doux en fin
+    const dynamicLerp = Math.min(0.24, lerp + Math.min(Math.abs(diff) / 1400, 0.08));
+
+    wheelCurrentY += diff * dynamicLerp;
+    wheelCurrentY = clamp(wheelCurrentY, 0, maxScroll);
+
+    window.scrollTo(0, wheelCurrentY);
+
+    if (Math.abs(diff) < snapThreshold) {
       wheelCurrentY = wheelTargetY;
-      window.scrollTo(0, wheelCurrentY);
+      window.scrollTo(0, wheelTargetY);
       stopWheelDampingInternal();
       return;
     }
 
-    window.scrollTo(0, wheelCurrentY);
     wheelRaf = requestAnimationFrame(animateWheel);
   }
 
@@ -57,15 +79,11 @@ export function installDesktopWheelDamping({
 
     const activeEl = document.activeElement;
     if (isEditableElement(activeEl)) return;
-
     if (isNativeWheelZone(e.target)) return;
 
     e.preventDefault();
 
-    const maxScroll = Math.max(
-      0,
-      document.documentElement.scrollHeight - window.innerHeight
-    );
+    const maxScroll = getMaxScroll();
 
     if (!wheelActive) {
       wheelCurrentY = window.scrollY || window.pageYOffset || 0;
@@ -74,14 +92,21 @@ export function installDesktopWheelDamping({
     }
 
     wheelTargetY += e.deltaY * factor;
-    wheelTargetY = Math.max(0, Math.min(maxScroll, wheelTargetY));
+    wheelTargetY = clamp(wheelTargetY, 0, maxScroll);
 
     if (!wheelRaf) {
       wheelRaf = requestAnimationFrame(animateWheel);
     }
   }
 
+  function cancelOnDirectUserAction() {
+    if (!wheelActive) return;
+    stopWheelDampingInternal();
+  }
+
   window.addEventListener("wheel", handleWheel, { passive: false });
+  window.addEventListener("mousedown", cancelOnDirectUserAction, { passive: true });
+  window.addEventListener("keydown", cancelOnDirectUserAction, { passive: true });
 
   return {
     stop() {
@@ -89,6 +114,8 @@ export function installDesktopWheelDamping({
     },
     destroy() {
       window.removeEventListener("wheel", handleWheel);
+      window.removeEventListener("mousedown", cancelOnDirectUserAction);
+      window.removeEventListener("keydown", cancelOnDirectUserAction);
       stopWheelDampingInternal();
     }
   };

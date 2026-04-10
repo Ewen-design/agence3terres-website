@@ -12,7 +12,6 @@
   import {
     initScrollEngine,
     destroyScrollEngine,
-    updateScrollEngine,
     updateScrollEngineViewport,
     forceScrollEngineUpdate
   } from "$lib/scrollEngine.js";
@@ -33,8 +32,9 @@
   let wheelDamping = null;
 
   const ENABLE_DESKTOP_WHEEL_DAMPING = true;
-  const DESKTOP_WHEEL_FACTOR = 0.77;
-  const DESKTOP_WHEEL_LERP = 0.1;
+  const DESKTOP_WHEEL_FACTOR = 0.86;
+  const DESKTOP_WHEEL_LERP = 0.14;
+  const DESKTOP_WHEEL_SNAP = 0.18;
   const DESKTOP_WHEEL_MIN_WIDTH = 1100;
 
   function checkMobile() {
@@ -60,7 +60,8 @@
       if (!wheelDamping) {
         wheelDamping = installDesktopWheelDamping({
           factor: DESKTOP_WHEEL_FACTOR,
-          lerp: DESKTOP_WHEEL_LERP
+          lerp: DESKTOP_WHEEL_LERP,
+          snapThreshold: DESKTOP_WHEEL_SNAP
         });
       }
     } else {
@@ -72,7 +73,6 @@
   function runSync() {
     updateScrollEngineViewport();
     forceScrollEngineUpdate();
-    updateScrollEngine(window.scrollY || window.pageYOffset || 0);
   }
 
   async function syncScrollState() {
@@ -116,9 +116,9 @@
     return tanhEase(t, 4);
   }
 
- function getTransitionTheme(path = "/") {
-  return { mask: "#000000" };
-}
+  function getTransitionTheme(path = "/") {
+    return { mask: "#000000" };
+  }
 
   function applyTransitionTheme(path) {
     if (!transitionLayer) return;

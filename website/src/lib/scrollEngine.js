@@ -1,44 +1,21 @@
 let initialized = false;
 
-/* -------------------------------------------------------------------------- */
-/* State                                                                      */
-/* -------------------------------------------------------------------------- */
-
 let currentY = 0;
+let lastY = 0;
+let delta = 0;
+let direction = 0;
+let velocity = 0;
+let smoothVelocity = 0;
+
 let cachedVh = 0;
 let cachedVw = 0;
 let isMobile = false;
 
 let rafId = 0;
-let ticking = false;
-
-/* -------------------------------------------------------------------------- */
-/* Registries                                                                 */
-/* -------------------------------------------------------------------------- */
 
 const parallaxCallbacks = [];
 const readCallbacks = [];
 const writeCallbacks = [];
-
-/* -------------------------------------------------------------------------- */
-/* Shared context                                                             */
-/* -------------------------------------------------------------------------- */
-
-const sharedCtx = {
-  y: 0,
-  delta: 0,
-  direction: 0,
-  velocity: 0,
-  smoothVelocity: 0,
-  vh: 0,
-  vw: 0,
-  isMobile: false,
-  dt: 16.67
-};
-
-/* -------------------------------------------------------------------------- */
-/* Utils                                                                      */
-/* -------------------------------------------------------------------------- */
 
 function readViewport() {
   cachedVh = window.innerHeight || 0;
@@ -46,269 +23,191 @@ function readViewport() {
   isMobile = cachedVw <= 900;
 }
 
+function clamp(value, min, max) {
+  return Math.max(min, Math.min(max, value));
+}
+
+function quantizeY(y) {
+  return Math.round(y * 4) / 4;
+}
+
 function getNativeScrollY() {
   return window.scrollY || window.pageYOffset || 0;
 }
 
+function getMaxScroll() {
+  const doc = document.documentElement;
+  const body = document.body;
+  return Math.max(
+    0,
+    (doc.scrollHeight || body.scrollHeight || 0) - (window.innerHeight || 0)
+  );
+}
+
 function sortByPriority(list) {
-  list.sort((a, b) => (b.priority || 0) - (a.priority || 0));
+  list.sort((a, b) => (a.priority || 0) - (b.priority || 0));
 }
 
-function updateSharedContext() {
-  sharedCtx.y = currentY;
-  sharedCtx.delta = 0;
-  sharedCtx.direction = 0;
-  sharedCtx.velocity = 0;
-  sharedCtx.smoothVelocity = 0;
-  sharedCtx.vh = cachedVh;
-  sharedCtx.vw = cachedVw;
-  sharedCtx.isMobile = isMobile;
-  sharedCtx.dt = 16.67;
-  return sharedCtx;
+function makeContext(y) {
+  return {
+    y,
+    vh: cachedVh,
+    vw: cachedVw,
+    delta,
+    direction,
+    velocity,
+    smoothVelocity,
+    isMobile
+  };
 }
 
-function safeCall(fn, ctx) {
-  try {
-    fn(ctx.y, ctx);
-  } catch (e) {
-    console.warn("ScrollEngine callback error:", e);
+function runRegistry(list, y, ctx) {
+  for (let i = 0; i < list.length; i++) {
+    const item = list[i];
+    if (!item || typeof item.callback !== "function") continue;
+    item.callback(y, ctx);
   }
 }
 
-function safeCallRead(fn, ctx) {
-  try {
-    fn(ctx);
-  } catch (e) {
-    console.warn("ScrollEngine read callback error:", e);
-  }
+function emitFrame() {
+  rafId = 0;
+
+  const maxScroll = getMaxScroll();
+  currentY = quantizeY(clamp(getNativeScrollY(), 0, maxScroll));
+
+  delta = currentY - lastY;
+  direction = delta === 0 ? 0 : delta > 0 ? 1 : -1;
+  velocity = delta;
+  smoothVelocity += (velocity - smoothVelocity) * 0.14;
+
+  const ctx = makeContext(currentY);
+
+  runRegistry(readCallbacks, currentY, ctx);
+  runRegistry(parallaxCallbacks, currentY, ctx);
+  runRegistry(writeCallbacks, currentY, ctx);
+
+  lastY = currentY;
 }
 
-function safeCallWrite(fn, ctx) {
-  try {
-    fn(ctx);
-  } catch (e) {
-    console.warn("ScrollEngine write callback error:", e);
-  }
+function requestEmit() {
+  if (rafId) return;
+  rafId = requestAnimationFrame(emitFrame);
 }
 
-function runReadPhase(ctx) {
-  for (let i = 0; i < readCallbacks.length; i++) {
-    const item = readCallbacks[i];
-    if (item.active) safeCallRead(item.cb, ctx);
-  }
+function handleScroll() {
+  requestEmit();
 }
 
-function runParallaxPhase(ctx) {
-  for (let i = 0; i < parallaxCallbacks.length; i++) {
-    const item = parallaxCallbacks[i];
-    if (item.active) safeCall(item.cb, ctx);
-  }
-}
-
-function runWritePhase(ctx) {
-  for (let i = 0; i < writeCallbacks.length; i++) {
-    const item = writeCallbacks[i];
-    if (item.active) safeCallWrite(item.cb, ctx);
-  }
-}
-
-function runAllPhases() {
-  const ctx = updateSharedContext();
-  runReadPhase(ctx);
-  runParallaxPhase(ctx);
-  runWritePhase(ctx);
-}
-
-function ensureViewportReady() {
-  if (!cachedVh || !cachedVw) {
-    readViewport();
-    updateSharedContext();
-  }
-}
-
-/* -------------------------------------------------------------------------- */
-/* Native loop                                                                */
-/* -------------------------------------------------------------------------- */
-
-function flush() {
-  ticking = false;
-  currentY = getNativeScrollY();
-  runAllPhases();
-}
-
-function requestFlush() {
-  if (!initialized || ticking) return;
-  ticking = true;
-  rafId = requestAnimationFrame(flush);
-}
-
-function handleNativeScroll() {
-  requestFlush();
-}
-
-function handleNativeResize() {
+function handleResize() {
   readViewport();
-  requestFlush();
+  requestEmit();
 }
-
-/* -------------------------------------------------------------------------- */
-/* Public API                                                                 */
-/* -------------------------------------------------------------------------- */
 
 export function initScrollEngine() {
-  if (initialized) return;
+  if (initialized || typeof window === "undefined") return;
 
   initialized = true;
 
   readViewport();
-  currentY = getNativeScrollY();
-  rafId = 0;
-  ticking = false;
 
-  updateSharedContext();
+  currentY = quantizeY(getNativeScrollY());
+  lastY = currentY;
+  delta = 0;
+  direction = 0;
+  velocity = 0;
+  smoothVelocity = 0;
 
-  window.addEventListener("scroll", handleNativeScroll, { passive: true });
-  window.addEventListener("resize", handleNativeResize, { passive: true });
-  window.addEventListener("orientationchange", handleNativeResize, { passive: true });
+  window.addEventListener("scroll", handleScroll, { passive: true });
+  window.addEventListener("resize", handleResize, { passive: true });
+  window.addEventListener("orientationchange", handleResize, { passive: true });
+
+  const ctx = makeContext(currentY);
+  runRegistry(readCallbacks, currentY, ctx);
+  runRegistry(parallaxCallbacks, currentY, ctx);
+  runRegistry(writeCallbacks, currentY, ctx);
 }
 
 export function destroyScrollEngine() {
-  if (!initialized) return;
+  if (!initialized || typeof window === "undefined") return;
 
   initialized = false;
 
-  window.removeEventListener("scroll", handleNativeScroll);
-  window.removeEventListener("resize", handleNativeResize);
-  window.removeEventListener("orientationchange", handleNativeResize);
+  if (rafId) cancelAnimationFrame(rafId);
+  rafId = 0;
 
-  if (rafId) {
-    cancelAnimationFrame(rafId);
-    rafId = 0;
-  }
-
-  ticking = false;
-
-  parallaxCallbacks.length = 0;
-  readCallbacks.length = 0;
-  writeCallbacks.length = 0;
-
-  currentY = 0;
-  cachedVh = 0;
-  cachedVw = 0;
-  isMobile = false;
-
-  updateSharedContext();
-}
-
-export function updateScrollEngineViewport() {
-  if (!initialized) return;
-  readViewport();
-  runAllPhases();
-}
-
-export function updateScrollEngine(y) {
-  if (!initialized) return;
-
-  currentY = Number.isFinite(y) ? y : getNativeScrollY();
-  runAllPhases();
+  window.removeEventListener("scroll", handleScroll);
+  window.removeEventListener("resize", handleResize);
+  window.removeEventListener("orientationchange", handleResize);
 }
 
 export function forceScrollEngineUpdate() {
-  if (!initialized) return;
-
-  currentY = getNativeScrollY();
-  runAllPhases();
+  if (typeof window === "undefined") return;
+  readViewport();
+  requestEmit();
 }
 
-export function getScrollY() {
-  return getNativeScrollY();
+export function updateScrollEngine() {
+  if (typeof window === "undefined") return;
+  requestEmit();
 }
 
-export function getScrollContext() {
-  currentY = getNativeScrollY();
-  return updateSharedContext();
+export function updateScrollEngineViewport() {
+  if (typeof window === "undefined") return;
+  handleResize();
 }
 
-/* -------------------------------------------------------------------------- */
-/* Registration helpers                                                       */
-/* -------------------------------------------------------------------------- */
-
-function createEntry(cb, priority = 0) {
+export function getScrollEngineState() {
   return {
-    cb,
-    priority,
-    active: true
+    y: currentY,
+    delta,
+    direction,
+    velocity,
+    smoothVelocity,
+    vh: cachedVh,
+    vw: cachedVw,
+    isMobile
   };
 }
 
-export function registerParallax(cb, options = {}) {
-  const entry = createEntry(cb, options.priority || 0);
-  parallaxCallbacks.push(entry);
-  sortByPriority(parallaxCallbacks);
+function addToRegistry(list, callback, options = {}) {
+  if (typeof callback !== "function") return;
 
-  ensureViewportReady();
-  safeCall(cb, updateSharedContext());
+  const existing = list.find((item) => item.callback === callback);
+  if (existing) return;
 
-  return () => {
-    const index = parallaxCallbacks.indexOf(entry);
-    if (index !== -1) parallaxCallbacks.splice(index, 1);
-  };
+  list.push({
+    callback,
+    priority: options.priority || 0
+  });
+
+  sortByPriority(list);
 }
 
-export function unregisterParallax(cb) {
-  const index = parallaxCallbacks.findIndex((item) => item.cb === cb);
-  if (index !== -1) parallaxCallbacks.splice(index, 1);
+function removeFromRegistry(list, callback) {
+  const index = list.findIndex((item) => item.callback === callback);
+  if (index !== -1) list.splice(index, 1);
 }
 
-export function registerRead(cb, options = {}) {
-  const entry = createEntry(cb, options.priority || 0);
-  readCallbacks.push(entry);
-  sortByPriority(readCallbacks);
-
-  ensureViewportReady();
-  safeCallRead(cb, updateSharedContext());
-
-  return () => {
-    const index = readCallbacks.indexOf(entry);
-    if (index !== -1) readCallbacks.splice(index, 1);
-  };
+export function registerParallax(callback, options = {}) {
+  addToRegistry(parallaxCallbacks, callback, options);
 }
 
-export function unregisterRead(cb) {
-  const index = readCallbacks.findIndex((item) => item.cb === cb);
-  if (index !== -1) readCallbacks.splice(index, 1);
+export function unregisterParallax(callback) {
+  removeFromRegistry(parallaxCallbacks, callback);
 }
 
-export function registerWrite(cb, options = {}) {
-  const entry = createEntry(cb, options.priority || 0);
-  writeCallbacks.push(entry);
-  sortByPriority(writeCallbacks);
-
-  ensureViewportReady();
-  safeCallWrite(cb, updateSharedContext());
-
-  return () => {
-    const index = writeCallbacks.indexOf(entry);
-    if (index !== -1) writeCallbacks.splice(index, 1);
-  };
+export function registerRead(callback, options = {}) {
+  addToRegistry(readCallbacks, callback, options);
 }
 
-export function unregisterWrite(cb) {
-  const index = writeCallbacks.findIndex((item) => item.cb === cb);
-  if (index !== -1) writeCallbacks.splice(index, 1);
+export function unregisterRead(callback) {
+  removeFromRegistry(readCallbacks, callback);
 }
 
-export function setParallaxActive(cb, active) {
-  const item = parallaxCallbacks.find((entry) => entry.cb === cb);
-  if (item) item.active = !!active;
+export function registerWrite(callback, options = {}) {
+  addToRegistry(writeCallbacks, callback, options);
 }
 
-export function setReadActive(cb, active) {
-  const item = readCallbacks.find((entry) => entry.cb === cb);
-  if (item) item.active = !!active;
-}
-
-export function setWriteActive(cb, active) {
-  const item = writeCallbacks.find((entry) => entry.cb === cb);
-  if (item) item.active = !!active;
+export function unregisterWrite(callback) {
+  removeFromRegistry(writeCallbacks, callback);
 }
