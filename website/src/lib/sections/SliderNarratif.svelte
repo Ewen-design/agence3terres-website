@@ -13,7 +13,7 @@
       title: "Serein Design",
       lead: "Un univers objet premium, calme et fonctionnel.",
       rest: "Une direction pensée pour traduire une élégance sobre, technologique et durable à travers une identité visuelle claire et sensible.",
-      image: "/images/telephone.webp",
+      image: "/images/serein_design.webp",
       cta: "Voir le projet",
       page: "projet1"
     },
@@ -29,7 +29,7 @@
       title: "Votre projet ?",
       lead: "Une approche sur mesure pour révéler votre singularité.",
       rest: "Identité, direction artistique, expérience visuelle ou territoire de marque : chaque projet est pensé avec exigence, cohérence et impact.",
-      image: "/images/ordinateur.webp",
+      image: "/images/telephone.webp",
       cta: "Contactez-nous",
       page: "contact"
     }
