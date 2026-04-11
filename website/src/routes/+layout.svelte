@@ -7,7 +7,6 @@
   import Header from "$lib/structure/Header.svelte";
   import Footer from "$lib/structure/Footer.svelte";
   import CustomCursor from "$lib/structure/CustomCursor.svelte";
-  import IconeFleche from "$lib/structure/IconeFleche.svelte";
 
   import {
     initScrollEngine,
@@ -354,7 +353,6 @@
     <CustomCursor />
   {/if}
 
-  <IconeFleche />
   <Header />
 
   <div class="page-wrapper" bind:this={pageWrapper}>

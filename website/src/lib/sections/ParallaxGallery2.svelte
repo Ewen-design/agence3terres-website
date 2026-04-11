@@ -15,35 +15,35 @@
       title: "Identité visuelle et stratégie",
       date: "2023",
       desc: "Développement d'une plateforme de marque et direction artistique globale.",
-      image: "images/parfum_ordinateur.webp",
+      image: "images/telephone2.webp",
       hoverInfo: ["Identité & stratégie", "Brand platform", "Direction créative"]
     },
     {
       title: "Couverture d'événements",
       date: "2024",
       desc: "Conception d'interfaces modernes axées sur l'expérience utilisateur.",
-      image: "images/telephone2.webp",
+      image: "images/appareil_photo.webp",
       hoverInfo: ["Événementiel", "Captation & contenu", "Déploiement visuel"]
     },
     {
       title: "Conception de site web",
       date: "2022",
       desc: "Études utilisateurs et architecture d'information pour application mobile.",
-      image: "images/telephone2.webp",
+      image: "images/telephone_parfum.webp",
       hoverInfo: ["Site web", "UI Design", "UX Design"]
     },
     {
       title: "Accompagnement",
       date: "2023",
       desc: "Supervision créative et mise en place d'un univers visuel premium.",
-      image: "images/telephone2.webp",
+      image: "images/parfum_ordinateur.webp",
       hoverInfo: ["Accompagnement", "Conseil créatif", "Suivi de marque"]
     },
     {
       title: "Gestion des réseaux sociaux",
       date: "2024",
       desc: "Concept motion design pour lancement de produit digital.",
-      image: "images/telephone2.webp",
+      image: "images/telephone_main.webp",
       hoverInfo: ["Réseaux sociaux", "Contenus premium", "Stratégie éditoriale"]
     }
   ];

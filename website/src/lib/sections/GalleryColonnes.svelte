@@ -23,7 +23,7 @@
       height: 23
     },
     {
-      src: "images/telephone2.webp",
+      src: "images/telephone_parfum.webp",
       alt: "",
       ratio: "portrait",
       height: 34
@@ -32,7 +32,7 @@
 
   const centerImages = [
     {
-      src: "images/parfum_ordinateur.webp",
+      src: "images/telephone_parfum.webp",
       alt: "",
       ratio: "landscape",
       height: 28
@@ -72,7 +72,7 @@
     }
   ];
 
-  const text = "Nos instants visuels".split("");
+  const text = "L’artisanat d’émotions".split("");
 
   let sectionEl;
   let fixedTextEl;

@@ -651,7 +651,7 @@
     width: 100%;
     max-width: 30ch;
     font-family: "General Sans", sans-serif;
-    font-weight: 300;
+    font-weight:300;
     font-size: clamp(1.3rem, 2.8vw, 2.8rem);
     line-height: 1;
     letter-spacing: -0.05em;
