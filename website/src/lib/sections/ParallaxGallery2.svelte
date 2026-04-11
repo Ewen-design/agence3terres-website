@@ -8,14 +8,14 @@
       title: "Création de logo",
       date: "2024",
       desc: "Refonte complète de l'identité visuelle et création d'un système graphique minimaliste.",
-      image: "images/telephone.webp",
+      image: "images/appareil_photo.webp",
       hoverInfo: ["Création de logo", "Direction artistique", "Identité visuelle"]
     },
     {
       title: "Identité visuelle et stratégie",
       date: "2023",
       desc: "Développement d'une plateforme de marque et direction artistique globale.",
-      image: "images/telephone.webp",
+      image: "images/parfum_ordinateur.webp",
       hoverInfo: ["Identité & stratégie", "Brand platform", "Direction créative"]
     },
     {
@@ -43,7 +43,7 @@
       title: "Gestion des réseaux sociaux",
       date: "2024",
       desc: "Concept motion design pour lancement de produit digital.",
-      image: "images/parfum_rouge.webp",
+      image: "images/telephone.webp",
       hoverInfo: ["Réseaux sociaux", "Contenus premium", "Stratégie éditoriale"]
     }
   ];

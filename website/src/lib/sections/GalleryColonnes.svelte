@@ -10,21 +10,66 @@
   } from "../scrollEngine.js";
 
   const leftImages = [
-    { ratio: "portrait", height: 38 },
-    { ratio: "landscape", height: 23 },
-    { ratio: "portrait", height: 34 }
+    {
+      src: "images/appareil_photo.webp",
+      alt: "",
+      ratio: "portrait",
+      height: 38
+    },
+    {
+      src: "images/parfum_ordinateur.webp",
+      alt: "",
+      ratio: "landscape",
+      height: 23
+    },
+    {
+      src: "images/telephone.webp",
+      alt: "",
+      ratio: "portrait",
+      height: 34
+    }
   ];
 
   const centerImages = [
-    { ratio: "landscape", height: 28 },
-    { ratio: "portrait", height: 42 },
-    { ratio: "portrait", height: 36 }
+    {
+      src: "images/parfum_ordinateur.webp",
+      alt: "",
+      ratio: "landscape",
+      height: 28
+    },
+    {
+      src: "images/telephone.webp",
+      alt: "",
+      ratio: "portrait",
+      height: 42
+    },
+    {
+      src: "images/appareil_photo.webp",
+      alt: "",
+      ratio: "portrait",
+      height: 36
+    }
   ];
 
   const rightImages = [
-    { ratio: "portrait", height: 38 },
-    { ratio: "landscape", height: 23 },
-    { ratio: "portrait", height: 34 }
+    {
+      src: "images/telephone.webp",
+      alt: "",
+      ratio: "portrait",
+      height: 38
+    },
+    {
+      src: "images/appareil_photo.webp",
+      alt: "",
+      ratio: "landscape",
+      height: 23
+    },
+    {
+      src: "images/parfum_ordinateur.webp",
+      alt: "",
+      ratio: "portrait",
+      height: 34
+    }
   ];
 
   const text = "Nos instants visuels".split("");
@@ -335,8 +380,8 @@
               style={`--h:${image.height}vw`}
             >
               <img
-                src="images/telephone.webp"
-                alt=""
+                src={image.src}
+                alt={image.alt}
                 loading="lazy"
                 decoding="async"
                 draggable="false"
@@ -353,8 +398,8 @@
               style={`--h:${image.height}vw`}
             >
               <img
-                src="images/parfum_rouge.webp"
-                alt=""
+                src={image.src}
+                alt={image.alt}
                 loading="lazy"
                 decoding="async"
                 draggable="false"
@@ -371,8 +416,8 @@
               style={`--h:${image.height}vw`}
             >
               <img
-                src="images/telephone.webp"
-                alt=""
+                src={image.src}
+                alt={image.alt}
                 loading="lazy"
                 decoding="async"
                 draggable="false"

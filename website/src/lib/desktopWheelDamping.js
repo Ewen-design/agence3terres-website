@@ -55,7 +55,7 @@ export function installDesktopWheelDamping({
     const diff = wheelTargetY - wheelCurrentY;
 
     // lissage dynamique : plus réactif sur les grands écarts, plus doux en fin
-    const dynamicLerp = Math.min(0.24, lerp + Math.min(Math.abs(diff) / 1400, 0.08));
+    const dynamicLerp = Math.min(0.24, lerp + Math.min(Math.abs(diff) / 2000, 0.08));
 
     wheelCurrentY += diff * dynamicLerp;
     wheelCurrentY = clamp(wheelCurrentY, 0, maxScroll);

@@ -411,7 +411,7 @@
     <div class="hero-media">
       <img
         bind:this={heroMediaImgEl}
-        src="images/telephone.webp"
+        src="images/parfum_ordinateur.webp"
         alt=""
       />
       <div class="hero-dark-layer" bind:this={heroDarkLayerEl}></div>
@@ -468,7 +468,7 @@
         class="after-image"
         bind:this={afterImageEl}
       >
-        <img src="images/ordinateur.webp" alt="Visuel 3 Terres" />
+        <img src="images/telephone.webp" alt="Visuel 3 Terres" />
       </div>
     </div>
   </section>
