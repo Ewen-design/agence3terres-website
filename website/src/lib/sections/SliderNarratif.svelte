@@ -29,7 +29,7 @@
       title: "Votre projet ?",
       lead: "Une approche sur mesure pour révéler votre singularité.",
       rest: "Identité, direction artistique, expérience visuelle ou territoire de marque : chaque projet est pensé avec exigence, cohérence et impact.",
-      image: "/images/telephone.webp",
+      image: "/images/telephone2.webp",
       cta: "Contactez-nous",
       page: "contact"
     }

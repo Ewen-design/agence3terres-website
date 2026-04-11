@@ -468,7 +468,7 @@
         class="after-image"
         bind:this={afterImageEl}
       >
-        <img src="images/telephone.webp" alt="Visuel 3 Terres" />
+        <img src="images/telephone2.webp" alt="Visuel 3 Terres" />
       </div>
     </div>
   </section>

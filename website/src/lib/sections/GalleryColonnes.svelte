@@ -23,7 +23,7 @@
       height: 23
     },
     {
-      src: "images/telephone.webp",
+      src: "images/telephone2.webp",
       alt: "",
       ratio: "portrait",
       height: 34
@@ -38,7 +38,7 @@
       height: 28
     },
     {
-      src: "images/telephone.webp",
+      src: "images/telephone2.webp",
       alt: "",
       ratio: "portrait",
       height: 42
@@ -53,7 +53,7 @@
 
   const rightImages = [
     {
-      src: "images/telephone.webp",
+      src: "images/telephone2.webp",
       alt: "",
       ratio: "portrait",
       height: 38
