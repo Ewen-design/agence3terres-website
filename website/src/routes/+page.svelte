@@ -7,7 +7,7 @@
   
     import GalleryColonnes from "$lib/sections/GalleryColonnes.svelte";
     import Hero from "$lib/sections/Hero.svelte";
-    import SliderNarratif from "$lib/sections/SliderNarratif.svelte";
+    import MixSliderNarratif from "$lib/sections/MixSliderNarratif.svelte";
     import IntroSlider from "$lib/sections/IntroSlider.svelte";
 </script>
 
@@ -15,8 +15,7 @@
 <GalleryColonnes />
 <ParallaxGallery2 />
 <IntroSlider />
-<SliderNarratif />
-
+<MixSliderNarratif />
 
 
 

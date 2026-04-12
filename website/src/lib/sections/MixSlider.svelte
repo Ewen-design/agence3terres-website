@@ -5,35 +5,57 @@
   const slides = [
     {
       number: "01",
-      title: "BRANDING\n& STRATÉGIE",
+      navTitle: "CRÉATION DE LOGO",
+      title: "CRÉATION\nDE LOGO",
       description: "Nous révélons l’essence des marques et façonnons des identités fortes, cohérentes et mémorables. De la stratégie à l’identité visuelle, chaque élément est pensé pour créer une marque singulière et durable.",
       image: "images/parfum3.webp"
     },
     {
       number: "02",
-      title: "CONTENUS\nDIGITAUX",
-      description: "Nous imaginons des contenus qui donnent vie aux marques. Images, mots et récits se rencontrent pour créer une communication sensible, cohérente et impactante.",
+      navTitle: "BRAND IDENTITY",
+      title: "BRAND\nIDENTITY",
+      description: "Nous structurons des identités de marque complètes, capables d’aligner vision, ton, image et système visuel dans une direction claire et durable.",
       image: "images/parfum2.webp"
     },
     {
       number: "03",
-      title: "Expériences\ndigitales & web", 
-      description: "Nous concevons des expériences digitales élégantes et immersives. Chaque interface est pensée pour refléter l’univers de la marque et offrir une navigation fluide et intuitive.",
+      navTitle: "UI DESIGN",
+      title: "UI\nDESIGN",
+      description: "Nous concevons des interfaces élégantes, lisibles et sensibles, pensées pour traduire l’univers d’une marque dans des expériences digitales fluides et immersives.",
       image: "images/parfum4.webp"
     },
     {
       number: "04",
-      title: "Accompagnement\n& événements",
-      description: "Nous accompagnons les marques dans la mise en place d’univers visuels cohérents et impactants, que ce soit pour des événements, des lancements de produits ou des campagnes de communication.",
-     image: "images/telephone2.webp"
+      navTitle: "UX RESEARCH",
+      title: "UX\nRESEARCH",
+      description: "Nous analysons les usages, les parcours et les points de friction pour construire des expériences utiles, intuitives et ancrées dans les attentes réelles des publics.",
+      image: "images/telephone2.webp"
+    },
+    {
+      number: "05",
+      navTitle: "DIRECTION ARTISTIQUE",
+      title: "DIRECTION\nARTISTIQUE",
+      description: "Nous définissons des directions artistiques fortes pour donner aux marques une présence cohérente, désirable et reconnaissable sur tous leurs supports.",
+      image: "images/parfum3.webp"
+    },
+    {
+      number: "06",
+      navTitle: "MOTION CONCEPT",
+      title: "MOTION\nCONCEPT",
+      description: "Nous imaginons des principes de mouvement et des récits visuels animés qui renforcent l’impact d’une identité et prolongent son expression dans le digital.",
+      image: "images/parfum2.webp"
     }
   ];
 
   let sections = [];
+  let contentRefs = [];
   let activeIndex = 0;
-  let fills = [0, 0, 0, 0];
+  let fills = slides.map(() => 0);
+  let contentVisibleHeights = slides.map(() => 0);
   let ticking = false;
   let observer;
+  let maskAnchorEl;
+  let sliderEl;
 
   const THRESHOLD = 0.6;
   const clamp = (v, min = 0, max = 1) => Math.max(min, Math.min(max, v));
@@ -41,18 +63,28 @@
   function updateProgress() {
     const vh = window.innerHeight;
     const next = slides.map(() => 0);
+    const nextVisibleHeights = slides.map(() => 0);
+    const fallbackRevealLine = vh * 0.8;
+    const revealLine = maskAnchorEl?.getBoundingClientRect().top ?? fallbackRevealLine;
 
     sections.forEach((section, i) => {
       if (!section) return;
 
       const rect = section.getBoundingClientRect();
-
       const progress = clamp((-rect.top) / (vh * THRESHOLD), 0, 1);
 
       next[i] = progress * 100;
     });
 
+    contentRefs.forEach((content, i) => {
+      if (!content) return;
+
+      const rect = content.getBoundingClientRect();
+      nextVisibleHeights[i] = clamp(revealLine - rect.top, 0, rect.height);
+    });
+
     fills = next;
+    contentVisibleHeights = nextVisibleHeights;
     ticking = false;
   }
 
@@ -92,9 +124,11 @@
   });
 </script>
 
-<section class="slider">
+<section class="slider" bind:this={sliderEl}>
   <div class="sticky">
     <div class="backgrounds">
+      <div class="bottom-shade" aria-hidden="true"></div>
+
       <div class="progress-nav">
         {#each slides as slide, i}
           <div class="segment">
@@ -104,9 +138,23 @@
 
             <div class="segment-label">
               <span class="num">{slide.number}</span>
+              <span class="segment-title">{slide.navTitle}</span>
             </div>
           </div>
         {/each}
+      </div>
+
+      <div class="mobile-progress" aria-hidden="true">
+        <div class="segment-line mobile-progress-line">
+          <div class="segment-fill" style="width:{fills[activeIndex]}%"></div>
+        </div>
+
+        {#key activeIndex}
+          <div class="mobile-progress-meta">
+            <span class="mobile-progress-num">{slides[activeIndex].number}</span>
+            <span class="mobile-progress-title">{slides[activeIndex].navTitle}</span>
+          </div>
+        {/key}
       </div>
 
       {#each slides as slide, i}
@@ -122,16 +170,23 @@
   </div>
 
   <div class="slides">
+    <div class="mask-anchor" bind:this={maskAnchorEl} aria-hidden="true"></div>
+
     {#each slides as slide, i}
       <section
         class="slide"
         bind:this={sections[i]}
         data-index={i}
       >
-        <div class="content">
-          <div class="number">{slide.number}</div>
-          <h2>{slide.title}</h2>
-          <p>{slide.description}</p>
+        <div class="content-clip" style={`height:${contentVisibleHeights[i]}px;`}>
+          <div
+            class="content"
+            bind:this={contentRefs[i]}
+          >
+            <div class="number">{slide.number}</div>
+            <h2>{slide.title}</h2>
+            <p>{slide.description}</p>
+          </div>
         </div>
       </section>
     {/each}
@@ -153,7 +208,7 @@
   .slider{
     position:relative;
     width:100%;
-    min-height:460vh; /* ajouté seulement pour stabiliser la vraie hauteur scrollable */
+    min-height:660vh;
   }
 
   /* sticky scene */
@@ -185,6 +240,24 @@
     background:#050b14;
   }
 
+  .bottom-shade{
+    position:absolute;
+    left:0;
+    right:0;
+    bottom:0;
+    height:32vh;
+    height:32svh;
+    z-index:3;
+    pointer-events:none;
+    background:linear-gradient(
+      to top,
+      rgba(5, 11, 20, 0.9) 0%,
+      rgba(5, 11, 20, 0.72) 28%,
+      rgba(5, 11, 20, 0.38) 58%,
+      rgba(5, 11, 20, 0) 100%
+    );
+  }
+
   .bg{
     position:absolute;
     inset:0;
@@ -214,6 +287,14 @@
     z-index:3;
   }
 
+  .mask-anchor{
+    position:sticky;
+    top:80vh;
+    top:80svh;
+    height:0;
+    pointer-events:none;
+  }
+
   .slide{
     min-height:100vh;
     display:flex;
@@ -226,10 +307,17 @@
     height:60vh;
   }
 
-  .content{
-    max-width: 70%;
-    z-index:5;
+  .content-clip{
+    max-width:70%;
+    overflow:hidden;
     position:relative;
+    z-index:5;
+  }
+
+  .content{
+    position:relative;
+    z-index:5;
+    will-change: transform;
   }
 
   .number{
@@ -268,7 +356,7 @@
 
   @media (max-width:800px){
     .slider{
-      min-height:460vh;
+      min-height:660vh;
     }
 
     .sticky{
@@ -277,10 +365,18 @@
     }
 
     .slide{
-      min-height:100vh;
       min-height:100svh;
-      padding:6rem 2rem;
-      align-items:flex-end;
+      padding:7rem 2rem 11rem;
+      align-items:center;
+    }
+
+    .mask-anchor{
+      top:80vh;
+      top:80svh;
+    }
+
+    .content-clip{
+      max-width:100%;
     }
 
     h2{
@@ -299,8 +395,8 @@
     bottom:2rem;
     z-index:4;
     display:grid;
-    grid-template-columns:repeat(4,1fr);
-    gap:.8rem;
+    grid-template-columns:repeat(6,minmax(0,1fr));
+    gap:.65rem;
   }
 
   .segment-line{
@@ -323,9 +419,157 @@
   }
 
   .segment-label{
+    display:flex;
+    align-items:flex-start;
+    gap:.55rem;
     font-size:.9rem;
     opacity:.85;
+    line-height:1.05;
+    min-width:0;
+  }
+
+  .segment-label .num{
+    flex:0 0 auto;
+    opacity:.72;
     font-family:"Titre italic", serif;
-     font-style: italic;
+    font-style:italic;
+  }
+
+  .segment-title{
+    display:block;
+    min-width:0;
+    font-family:"General Sans", sans-serif;
+    font-style:normal;
+    font-weight:400;
+    font-size:clamp(.58rem, .72vw, .72rem);
+    letter-spacing:0.035em;
+    text-transform:uppercase;
+    line-height:1.15;
+    text-wrap:balance;
+  }
+
+  .mobile-progress{
+    display:none;
+    position:absolute;
+    left:1.25rem;
+    right:1.25rem;
+    bottom:1rem;
+    z-index:4;
+  }
+
+  .mobile-progress-line{
+    margin-bottom:.55rem;
+  }
+
+  .mobile-progress-meta{
+    display:flex;
+    align-items:flex-start;
+    gap:.5rem;
+    animation:mobileWipeFlipUp .48s cubic-bezier(.22, 1, .36, 1);
+    transform-origin:center bottom;
+  }
+
+  .mobile-progress-num{
+    flex:0 0 auto;
+    opacity:.72;
+    font-size:.92rem;
+    font-family:"Titre italic", serif;
+    font-style:italic;
+  }
+
+  .mobile-progress-title{
+    min-width:0;
+    font-family:"General Sans", sans-serif;
+    font-size:.72rem;
+    font-weight:400;
+    letter-spacing:.04em;
+    line-height:1.1;
+    text-transform:uppercase;
+  }
+
+  @keyframes mobileWipeFlipUp{
+    0%{
+      opacity:0;
+      transform:translate3d(0, 14px, 0) rotateX(-68deg);
+      clip-path:inset(100% 0 0 0);
+    }
+    100%{
+      opacity:1;
+      transform:translate3d(0, 0, 0) rotateX(0deg);
+      clip-path:inset(0 0 0 0);
+    }
+  }
+
+  @media (max-width:1100px){
+    .slide{
+      padding:7rem 2.5rem;
+    }
+
+    .content-clip{
+      max-width:82%;
+    }
+
+    .progress-nav{
+      grid-template-columns:repeat(3,1fr);
+      row-gap:1.25rem;
+      gap:1.1rem .9rem;
+    }
+
+    .segment-title{
+      font-size:.68rem;
+    }
+  }
+
+  @media (max-width:800px){
+    .slider{
+      min-height:680vh;
+    }
+
+    .progress-nav{
+      grid-template-columns:repeat(2,1fr);
+      left:1.25rem;
+      right:1.25rem;
+      bottom:1.5rem;
+      gap:1rem .8rem;
+    }
+
+    .segment-title{
+      font-size:.66rem;
+    }
+  }
+
+  @media (max-width:700px){
+    .slider{
+      min-height:700vh;
+    }
+
+    .bottom-shade{
+      height:40vh;
+      height:40svh;
+    }
+
+    .slide{
+      padding:6.5rem 1.25rem 10rem;
+      min-height:100svh;
+      align-items:center;
+    }
+
+    .progress-nav{
+      display:none;
+    }
+
+    .mobile-progress{
+      display:block;
+    }
+
+    h2{
+      font-size:clamp(2.6rem, 13vw, 4rem);
+    }
+
+    p{
+      margin-top:1.25rem;
+      font-size:.95rem;
+      max-width:100%;
+    }
   }
 </style>
