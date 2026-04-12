@@ -170,7 +170,7 @@
     <div class="header-spacer"></div>
   </div>
 
-  <div class="accordion" on:pointerleave={handleAccordionLeave}>
+  <div class="accordion" role="presentation" on:pointerleave={handleAccordionLeave}>
     {#each projects as project, index}
       <article
         class="accordion-item"

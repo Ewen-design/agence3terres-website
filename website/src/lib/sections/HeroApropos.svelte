@@ -319,7 +319,7 @@
     <div class="hero-media">
       <img
         bind:this={heroMediaImgEl}
-        src="images/telephone.webp"
+        src="images/telephone2.webp"
         alt=""
       />
       <div class="hero-dark-layer" bind:this={heroDarkLayerEl}></div>

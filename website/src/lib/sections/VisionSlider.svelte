@@ -49,14 +49,6 @@
     window.dispatchEvent(new CustomEvent("carousel-direction", { detail: dir }));
   }
 
-  function handleZoneClick(e) {
-    if (isMobile) return;
-    const rect = sectionEl.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    if (x < rect.width / 2) prev();
-    else next();
-  }
-
   function touchStart(e) { if (!isMobile) return; startX = e.touches[0].clientX; }
   function touchMove(e)  { if (!isMobile) return; deltaX = e.touches[0].clientX - startX; }
   function touchEnd() {
@@ -163,7 +155,6 @@
   });
 </script>
 
-<!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
 <section
   class="vision-section"
   bind:this={sectionEl}
@@ -171,13 +162,26 @@
   role="group"
   aria-label="Carrousel de citations"
   on:mousemove={handleZoneMove}
-  on:click={handleZoneClick}
   on:touchstart={touchStart}
   on:touchmove={touchMove}
   on:touchend={touchEnd}
 >
   <div class="bg" bind:this={bgEl} style="background-image:url('/images/photo.webp')"></div>
   <div class="overlay"></div>
+  <div class="nav-zones" aria-hidden={isMobile}>
+    <button
+      class="nav-zone"
+      type="button"
+      aria-label="Citation precedente"
+      on:click={prev}
+    ></button>
+    <button
+      class="nav-zone"
+      type="button"
+      aria-label="Citation suivante"
+      on:click={next}
+    ></button>
+  </div>
 
   <div class="vision-header">
     <h2>Notre vision</h2>
@@ -240,9 +244,29 @@
     pointer-events: none;
   }
 
+  .nav-zones {
+    position: absolute;
+    inset: 0;
+    z-index: 3;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .nav-zone {
+    appearance: none;
+    border: 0;
+    background: transparent;
+    cursor: inherit;
+  }
+
+  .nav-zone:focus-visible {
+    outline: 2px solid rgba(244, 239, 230, 0.9);
+    outline-offset: -2px;
+  }
+
   .vision-header {
     text-align: center;
-    z-index: 3;
+    z-index: 4;
     margin-bottom: 0rem;
   }
 
@@ -270,7 +294,7 @@
     width: 100%;
     height: 550px;
     position: relative;
-    z-index: 3;
+    z-index: 4;
   }
 
   .carousel {
@@ -370,6 +394,10 @@
   }
 
   @media (max-width: 768px) {
+    .nav-zones {
+      display: none;
+    }
+
     .carousel-wrapper {
       height: 520px;
     }

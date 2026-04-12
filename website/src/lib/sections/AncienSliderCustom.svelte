@@ -10,9 +10,11 @@
   let layerStyle = "";
 
   const images = [
-    "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?q=80&w=2070",
-    "https://images.unsplash.com/photo-1492724441997-5dc865305da7?q=80&w=2070",
-    "https://images.unsplash.com/photo-1519681393784-d120267933ba?q=80&w=2070"
+    "images/telephone_main.webp",
+    "images/telephone_parfum.webp",
+    "images/telephone2.webp",
+    "images/appareil_photo.webp",
+    "images/parfum_ordinateur.webp",
   ];
 
   $: nextIndex = (index + 1) % images.length;

@@ -72,7 +72,7 @@
     }
   ];
 
-  const text = "L’artisanat d’émotions".split("");
+  const text = "Les lumières de la création".split("");
 
   let sectionEl;
   let fixedTextEl;

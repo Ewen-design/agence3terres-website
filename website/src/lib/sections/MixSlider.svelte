@@ -5,13 +5,13 @@
   const slides = [
     {
       number: "01",
-      title: "Branding\n& stratégie",
+      title: "BRANDING\n& STRATÉGIE",
       description: "Nous révélons l’essence des marques et façonnons des identités fortes, cohérentes et mémorables. De la stratégie à l’identité visuelle, chaque élément est pensé pour créer une marque singulière et durable.",
       image: "images/parfum3.webp"
     },
     {
       number: "02",
-      title: "Contenus\n& communication",
+      title: "CONTENUS\nDIGITAUX",
       description: "Nous imaginons des contenus qui donnent vie aux marques. Images, mots et récits se rencontrent pour créer une communication sensible, cohérente et impactante.",
       image: "images/parfum2.webp"
     },
@@ -24,8 +24,8 @@
     {
       number: "04",
       title: "Accompagnement\n& événements",
-      description: "Designing refined digital identities, interfaces, and visual systems with lasting impact.",
-     image: "images/photo.webp"
+      description: "Nous accompagnons les marques dans la mise en place d’univers visuels cohérents et impactants, que ce soit pour des événements, des lancements de produits ou des campagnes de communication.",
+     image: "images/telephone2.webp"
     }
   ];
 
@@ -141,7 +141,7 @@
 </section>
 
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Aboreto&display=swap');
+
 
   :global(body){
     margin:0;
@@ -227,7 +227,7 @@
   }
 
   .content{
-    max-width:720px;
+    max-width: 70%;
     z-index:5;
     position:relative;
   }
@@ -238,16 +238,20 @@
     font-size:1.2rem;
     position:relative;
     z-index:5;
+    font-family:"Titre italic", serif;
+    font-style: italic;
   }
 
   h2{
-    font-family:"Aboreto", serif;
-    font-size:clamp(4rem,4vw,8rem);
+    font-family:"Titre italic", serif;
+     font-style: italic;
+    font-size:clamp(4rem,7vw,8rem);
     line-height:0.95;
+    font-weight: 100;
     white-space:pre-line;
     margin:0;
-    color:white;
-    letter-spacing:.02em;
+    color: #f5f1e8;
+    letter-spacing:0em;
     position:relative;
     z-index:5;
   }
@@ -259,7 +263,7 @@
     opacity:.9;
     position:relative;
     z-index:5;
-    color:rgba(244, 244, 244, 0.733);
+    color:rgba(244, 244, 244, 0.86);
   }
 
   @media (max-width:800px){
@@ -321,5 +325,7 @@
   .segment-label{
     font-size:.9rem;
     opacity:.85;
+    font-family:"Titre italic", serif;
+     font-style: italic;
   }
 </style>

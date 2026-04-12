@@ -466,8 +466,8 @@
   }
 
   .logo {
-    font-family: "Titre bold", serif;
-    font-weight: 700;
+    font-family: "Titre", serif;
+    font-weight: 500;
     font-style: italic;
   }
 
