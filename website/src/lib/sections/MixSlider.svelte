@@ -51,29 +51,39 @@
   let contentRefs = [];
   let activeIndex = 0;
   let fills = slides.map(() => 0);
+  let bgScales = slides.map(() => 1.02);
   let contentVisibleHeights = slides.map(() => 0);
   let ticking = false;
-  let observer;
   let maskAnchorEl;
   let sliderEl;
 
-  const THRESHOLD = 0.6;
   const clamp = (v, min = 0, max = 1) => Math.max(min, Math.min(max, v));
 
   function updateProgress() {
     const vh = window.innerHeight;
     const next = slides.map(() => 0);
+    const nextScales = slides.map(() => 1.02);
     const nextVisibleHeights = slides.map(() => 0);
+    const progressLine = vh * 0.5;
     const fallbackRevealLine = vh * 0.8;
     const revealLine = maskAnchorEl?.getBoundingClientRect().top ?? fallbackRevealLine;
+    let nextActiveIndex = activeIndex;
+    let closestDistance = Number.POSITIVE_INFINITY;
 
     sections.forEach((section, i) => {
       if (!section) return;
 
       const rect = section.getBoundingClientRect();
-      const progress = clamp((-rect.top) / (vh * THRESHOLD), 0, 1);
+      const progress = clamp((progressLine - rect.top) / Math.max(rect.height, 1), 0, 1);
+      const distanceToCenter = Math.abs(rect.top + rect.height * 0.5 - progressLine);
 
       next[i] = progress * 100;
+      nextScales[i] = 1.02 + progress * 0.08;
+
+      if (distanceToCenter < closestDistance) {
+        closestDistance = distanceToCenter;
+        nextActiveIndex = i;
+      }
     });
 
     contentRefs.forEach((content, i) => {
@@ -83,7 +93,9 @@
       nextVisibleHeights[i] = clamp(revealLine - rect.top, 0, rect.height);
     });
 
+    activeIndex = nextActiveIndex;
     fills = next;
+    bgScales = nextScales;
     contentVisibleHeights = nextVisibleHeights;
     ticking = false;
   }
@@ -100,27 +112,12 @@
     window.addEventListener("scroll", onScroll, { passive: true });
     window.addEventListener("resize", onScroll);
 
-    observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            activeIndex = Number(entry.target.dataset.index);
-          }
-        });
-      },
-      { threshold: THRESHOLD }
-    );
-
-    sections.forEach((section) => {
-      if (section) observer.observe(section);
-    });
   });
 
   onDestroy(() => {
     if (!browser) return;
     window.removeEventListener("scroll", onScroll);
     window.removeEventListener("resize", onScroll);
-    if (observer) observer.disconnect();
   });
 </script>
 
@@ -162,7 +159,7 @@
           class="bg"
           class:active={activeIndex === i}
         >
-          <img src={slide.image} alt="">
+          <img src={slide.image} alt="" style={`transform:scale(${bgScales[i].toFixed(3)})`}>
           <div class="overlay"></div>
         </div>
       {/each}
@@ -178,7 +175,10 @@
         bind:this={sections[i]}
         data-index={i}
       >
-        <div class="content-clip" style={`height:${contentVisibleHeights[i]}px;`}>
+        <div
+          class="content-clip"
+          style={`height:${contentVisibleHeights[i]}px;`}
+        >
           <div
             class="content"
             bind:this={contentRefs[i]}
@@ -279,6 +279,7 @@
     position:absolute;
     inset:0;
     display:block;
+    transition:transform 120ms linear;
   }
 
   /* slides flow */

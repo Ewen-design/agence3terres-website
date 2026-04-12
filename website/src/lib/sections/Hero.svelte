@@ -35,9 +35,11 @@
 
   let introStarted = false;
   let introVisible = false;
+  let heroMediaVisible = false;
   let hintVisible = false;
 
   let fallbackTimeout;
+  let mediaIntroTimeout;
   let hintTimeout;
   let resizeObserver;
   let resizeTimer;
@@ -102,6 +104,29 @@
     return 1 - Math.pow(1 - x, 4);
   }
 
+  function easeInCubic(t) {
+    const x = clamp(t, 0, 1);
+    return x * x * x;
+  }
+
+  function getPremiumFlowOffset(progress, distance, centerDrag = 0.04) {
+    const entryEnd = 0.46;
+    const centerEnd = 0.56;
+
+    if (progress <= entryEnd) {
+      const t = easeInOutSine(progress / entryEnd);
+      return distance * (1 - t) + distance * centerDrag * 0.5 * t;
+    }
+
+    if (progress < centerEnd) {
+      const t = easeInOutSine((progress - entryEnd) / (centerEnd - entryEnd));
+      return distance * centerDrag * (0.5 - t);
+    }
+
+    const t = easeInOutSine((progress - centerEnd) / (1 - centerEnd));
+    return -distance * centerDrag * 0.5 * (1 - t) + -distance * t;
+  }
+
   function getScrollY() {
     return window.scrollY || window.pageYOffset || 0;
   }
@@ -160,6 +185,10 @@
       getLocalRevealFromAbsolute(y, afterImageTop, 0.98, 0.12)
     );
 
+    const sharedAfterReveal = easeInOutSine(
+      getLocalRevealFromAbsolute(y, Math.min(afterTextTop, afterImageTop), 1.02, 0.06)
+    );
+
     const mergeProgress = clamp(heroProgress / 0.9, 0, 1);
     const smoothMerge = easeInOutSine(mergeProgress);
 
@@ -187,12 +216,14 @@
     const scrollHintOpacity = hintVisible ? hintScrollFade : 0;
 
     const textBlockOpacity = lerp(0.14, 1, localTextReveal);
-    const textBlockY = lerp(18, 0, localTextReveal);
+    const sharedFlowY = getPremiumFlowOffset(sharedAfterReveal, vh * 0.24, 0.04);
+    const textFlowY = sharedFlowY;
+    const textBlockY = lerp(18, 0, localTextReveal) + textFlowY;
     const textBlockX = 0;
     const textRevealEdge = lerp(0, 118, localTextReveal);
 
     const smallImageScale = lerp(0.885, 1.02, localImageReveal);
-    const smallImageY = lerp(22, 0, localImageReveal);
+    const smallImageY = lerp(22, 0, localImageReveal) + sharedFlowY;
 
     pendingFrame = {
       imageScale: q(imageScale, 0.001),
@@ -304,17 +335,30 @@
   function startIntro() {
     if (introStarted) return;
     introStarted = true;
+    if (typeof window !== "undefined") {
+      window.__homeHeroIntroPlayed = true;
+    }
 
     requestAnimationFrame(() => {
       requestAnimationFrame(() => {
         introVisible = true;
 
+        clearTimeout(mediaIntroTimeout);
+        mediaIntroTimeout = setTimeout(() => {
+          heroMediaVisible = true;
+        }, 180);
+
         hintTimeout = setTimeout(() => {
           hintVisible = true;
           forceScrollEngineUpdate();
-        }, 220);
+        }, 420);
       });
     });
+  }
+
+  function shouldDelayIntroForSession() {
+    if (typeof window === "undefined") return false;
+    return !window.__homeHeroIntroPlayed;
   }
 
   function scheduleResizeUpdate() {
@@ -329,8 +373,14 @@
     if (!browser) return;
 
     let destroyed = false;
+    const shouldDelayIntro = shouldDelayIntroForSession();
 
-    const handlePreloaderDone = () => startIntro();
+    const handlePreloaderDone = () => {
+      clearTimeout(fallbackTimeout);
+      fallbackTimeout = setTimeout(() => {
+        startIntro();
+      }, 140);
+    };
 
     const handleWindowLoad = () => {
       updateAllMeasures();
@@ -371,7 +421,9 @@
     window.addEventListener("orientationchange", scheduleResizeUpdate, { passive: true });
     window.addEventListener("load", handleWindowLoad);
     window.addEventListener("pageshow", handlePageShow);
-    window.addEventListener("preloader:done", handlePreloaderDone);
+    if (shouldDelayIntro) {
+      window.addEventListener("preloader:done", handlePreloaderDone);
+    }
 
     if (typeof ResizeObserver !== "undefined") {
       resizeObserver = new ResizeObserver(() => {
@@ -385,9 +437,13 @@
       if (afterImageEl) resizeObserver.observe(afterImageEl);
     }
 
-    fallbackTimeout = setTimeout(() => {
+    if (shouldDelayIntro) {
+      fallbackTimeout = setTimeout(() => {
+        startIntro();
+      }, 1800);
+    } else {
       startIntro();
-    }, 1800);
+    }
 
     return () => {
       destroyed = true;
@@ -397,8 +453,11 @@
       window.removeEventListener("orientationchange", scheduleResizeUpdate);
       window.removeEventListener("load", handleWindowLoad);
       window.removeEventListener("pageshow", handlePageShow);
-      window.removeEventListener("preloader:done", handlePreloaderDone);
+      if (shouldDelayIntro) {
+        window.removeEventListener("preloader:done", handlePreloaderDone);
+      }
       clearTimeout(fallbackTimeout);
+      clearTimeout(mediaIntroTimeout);
       clearTimeout(hintTimeout);
       clearTimeout(resizeTimer);
       resizeObserver?.disconnect();
@@ -410,6 +469,7 @@
   <div class="hero-media-sticky" aria-hidden="true">
     <div class="hero-media">
       <img
+        class:media-visible={heroMediaVisible}
         bind:this={heroMediaImgEl}
         src="images/parfum_ordinateur.webp"
         alt=""
@@ -508,8 +568,14 @@
     will-change: transform, filter;
     transform: scale(1.06);
     filter: brightness(1);
+    opacity: 0;
+    transition: opacity 1.25s cubic-bezier(0.22, 1, 0.36, 1);
     backface-visibility: hidden;
     -webkit-backface-visibility: hidden;
+  }
+
+  .hero-media img.media-visible {
+    opacity: 1;
   }
 
   .hero-dark-layer {

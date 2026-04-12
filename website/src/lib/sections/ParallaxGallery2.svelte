@@ -48,6 +48,9 @@
     }
   ];
 
+  let gallerySectionEl;
+  let galleryIntroGroupEl;
+  let galleryContentGroupEl;
   let galleryGridEl;
   let introCardEl;
 
@@ -60,12 +63,18 @@
   let scrollRaf = null;
   let mobileScrollRaf = null;
   let removeMotionListener;
+  let introFlowOffset = 0;
+  let introFlowTargetOffset = 0;
+  let contentFlowOffset = 0;
+  let contentFlowTargetOffset = 0;
 
   let introOpacity = -1;
   let introY = -999;
 
   function clamp(v, lo = 0, hi = 1) { return Math.max(lo, Math.min(hi, v)); }
   function easeOutCubic(t) { return 1 - Math.pow(1 - t, 3); }
+  function easeInCubic(t) { return t * t * t; }
+  function round2(v) { return Math.round(v * 100) / 100; }
 
   function handleButtonMove(e) {
     const btn = e.currentTarget;
@@ -76,6 +85,59 @@
 
   function updateDevice() {
     isMobile = window.innerWidth <= 900;
+  }
+
+  function getFlowOffset(progress, distance, centerDrag = 0.12) {
+    if (progress <= 0.42) {
+      const t = clamp(progress / 0.42);
+      return distance * (1 - easeOutCubic(t));
+    }
+
+    if (progress < 0.54) {
+      const t = clamp((progress - 0.42) / 0.12);
+      return distance * centerDrag * (0.5 - t);
+    }
+
+    const t = clamp((progress - 0.54) / 0.46);
+    return -distance * easeInCubic(t);
+  }
+
+  function updateGalleryFlowMotion() {
+    if (!gallerySectionEl || !galleryIntroGroupEl || !galleryContentGroupEl) return;
+
+    if (prefersReduced) {
+      if (
+        introFlowOffset !== 0 ||
+        introFlowTargetOffset !== 0 ||
+        contentFlowOffset !== 0 ||
+        contentFlowTargetOffset !== 0
+      ) {
+        introFlowOffset = 0;
+        introFlowTargetOffset = 0;
+        contentFlowOffset = 0;
+        contentFlowTargetOffset = 0;
+        galleryIntroGroupEl.style.transform = "translate3d(0,0,0)";
+        galleryContentGroupEl.style.transform = "translate3d(0,0,0)";
+      }
+      return;
+    }
+
+    const rect = gallerySectionEl.getBoundingClientRect();
+    const vh = window.innerHeight || 1;
+    const progress = clamp((vh - rect.top) / (vh + rect.height), 0, 1);
+    const introDistance = isMobile ? 260 : 460;
+    const contentDistance = isMobile ? 420 : 760;
+    const introLerp = isMobile ? 0.11 : 0.1;
+    const contentLerp = isMobile ? 0.13 : 0.12;
+
+    introFlowTargetOffset = getFlowOffset(progress, introDistance, 0.035);
+    contentFlowTargetOffset = getFlowOffset(progress, contentDistance, 0.012);
+
+    introFlowOffset += (introFlowTargetOffset - introFlowOffset) * introLerp;
+    contentFlowOffset += (contentFlowTargetOffset - contentFlowOffset) * contentLerp;
+
+    galleryIntroGroupEl.style.transform = `translate3d(0,${round2(introFlowOffset)}px,0)`;
+    galleryContentGroupEl.style.transform = `translate3d(0,${round2(contentFlowOffset)}px,0)`;
   }
 
   function updateIntro() {
@@ -130,6 +192,7 @@
     if (scrollRaf) return;
     scrollRaf = requestAnimationFrame(() => {
       updateIntro();
+      updateGalleryFlowMotion();
       scrollRaf = null;
     });
   }
@@ -148,6 +211,7 @@
     resizeTimer = setTimeout(() => {
       updateDevice();
       updateIntro();
+      updateGalleryFlowMotion();
       updateMobileActive();
     }, 70);
   }
@@ -160,7 +224,11 @@
     const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
     prefersReduced = mq.matches;
 
-    const onMotion = (e) => { prefersReduced = e.matches; updateIntro(); };
+    const onMotion = (e) => {
+      prefersReduced = e.matches;
+      updateIntro();
+      updateGalleryFlowMotion();
+    };
     if (mq.addEventListener) {
       mq.addEventListener("change", onMotion);
       removeMotionListener = () => mq.removeEventListener("change", onMotion);
@@ -171,6 +239,7 @@
 
     requestAnimationFrame(() => {
       updateIntro();
+      updateGalleryFlowMotion();
       updateMobileActive();
     });
 
@@ -195,76 +264,79 @@
   });
 </script>
 
-<section class="gallery">
-  <div class="top-header">
-    <div class="header-title-wrap">
-      <h2>Nos services</h2>
+<section class="gallery" bind:this={gallerySectionEl}>
+  <div class="gallery-intro-group" bind:this={galleryIntroGroupEl}>
+    <div class="top-header">
+      <div class="header-title-wrap">
+        <h2>Nos services</h2>
+      </div>
+      <div class="header-spacer" aria-hidden="true"></div>
     </div>
-    <div class="header-spacer" aria-hidden="true"></div>
+
+    <div class="gallery-header">
+      <div class="intro-card" bind:this={introCardEl}>
+        <p>
+          <span class="intro-main">Nous imaginons des identités fortes, des expériences digitales immersives</span>
+          <span class="intro-muted"> et des directions artistiques pensées pour laisser une empreinte durable.</span>
+        </p>
+      </div>
+    </div>
   </div>
 
-  <div class="gallery-header">
-    <div class="intro-card" bind:this={introCardEl}>
-      <p>
-        <span class="intro-main">Nous imaginons des identités fortes, des expériences digitales immersives</span>
-        <span class="intro-muted"> et des directions artistiques pensées pour laisser une empreinte durable.</span>
-      </p>
-    </div>
-  </div>
-
-  <div class="gallery-grid" bind:this={galleryGridEl}>
-    {#each items as item, i}
-      <div
-        class="card"
-        class:mobile-active={isMobile && i === activeMobileIndex}
-        class:top-row={!isMobile && i < 3}
-        class:bottom-row={!isMobile && i >= 3}
-      >
+  <div class="gallery-content-group" bind:this={galleryContentGroupEl}>
+    <div class="gallery-grid" bind:this={galleryGridEl}>
+      {#each items as item, i}
         <div
-          class="card-index-wrap"
-          class:index-top={!isMobile && i < 3}
-          class:index-bottom={!isMobile && i >= 3}
-          class:index-mobile={isMobile}
-          aria-hidden="true"
+          class="card"
+          class:mobile-active={isMobile && i === activeMobileIndex}
+          class:top-row={!isMobile && i < 3}
+          class:bottom-row={!isMobile && i >= 3}
         >
-          <span class="card-index-inner">{String(i + 1).padStart(2, "0")}</span>
-        </div>
+          <div
+            class="card-index-wrap"
+            class:index-top={!isMobile && i < 3}
+            class:index-bottom={!isMobile && i >= 3}
+            class:index-mobile={isMobile}
+            aria-hidden="true"
+          >
+            <span class="card-index-inner">{String(i + 1).padStart(2, "0")}</span>
+          </div>
 
-        <div class="card-media">
-          <div class="card-image-wrapper">
-            <img
-              src={item.image}
-              alt={item.title}
-              loading={i < 2 ? "eager" : "lazy"}
-              fetchpriority={i < 2 ? "high" : "auto"}
-              decoding="async"
-              draggable="false"
-            />
+          <div class="card-media">
+            <div class="card-image-wrapper">
+              <img
+                src={item.image}
+                alt={item.title}
+                loading={i < 2 ? "eager" : "lazy"}
+                fetchpriority={i < 2 ? "high" : "auto"}
+                decoding="async"
+                draggable="false"
+              />
+            </div>
+          </div>
+
+          <div class="info" aria-hidden="true">
+            <span class="info-chip info-primary">{item.hoverInfo[0]}</span>
+            <span class="info-chip info-secondary">{item.hoverInfo[1]}</span>
+            <span class="info-chip info-secondary">{item.hoverInfo[2]}</span>
           </div>
         </div>
+      {/each}
+    </div>
 
-        <div class="info" aria-hidden="true">
-          <span class="info-chip info-primary">{item.hoverInfo[0]}</span>
-          <span class="info-chip info-secondary">{item.hoverInfo[1]}</span>
-          <span class="info-chip info-secondary">{item.hoverInfo[2]}</span>
-        </div>
-
-      </div>
-    {/each}
-  </div>
-
-  <div class="gallery-footer">
-    <button
-      class="services-btn"
-      type="button"
-      data-cursor="button"
-      onmousemove={handleButtonMove}
-      onclick={() => navigate("services")}
-    >
-      <span class="services-btn-flip" data-text="Découvrir tous les services">
-        <span class="services-btn-text">Découvrir tous les services</span>
-      </span>
-    </button>
+    <div class="gallery-footer">
+      <button
+        class="services-btn"
+        type="button"
+        data-cursor="button"
+        onmousemove={handleButtonMove}
+        onclick={() => navigate("services")}
+      >
+        <span class="services-btn-flip" data-text="Découvrir tous les services">
+          <span class="services-btn-text">Découvrir tous les services</span>
+        </span>
+      </button>
+    </div>
   </div>
 </section>
 
@@ -286,6 +358,14 @@
     padding:   0 0 10rem 0;
     overflow:  clip;
     isolation: isolate;
+    will-change: transform;
+    transform: translate3d(0,0,0);
+  }
+
+  .gallery-intro-group,
+  .gallery-content-group {
+    will-change: transform;
+    transform: translate3d(0,0,0);
   }
 
   .top-header {
@@ -754,5 +834,8 @@
     .services-btn-flip::after { transition: none; }
 
     .intro-card { transform: none !important; opacity: 1 !important; }
+    .gallery,
+    .gallery-intro-group,
+    .gallery-content-group { transform: none !important; }
   }
 </style>

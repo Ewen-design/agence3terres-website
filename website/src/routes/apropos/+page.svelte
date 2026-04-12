@@ -1,9 +1,9 @@
 <script>
-  import StickySlider from "$lib/sections/StickySlider.svelte";
+  import SliderApropos from "$lib/sections/SliderApropos.svelte";
   import VisionSlider from "$lib/sections/VisionSlider.svelte";
-   import HeroApropos from "$lib/sections/HeroApropos.svelte";
+  import HeroApropos from "$lib/sections/HeroApropos.svelte";
 </script>
 <HeroApropos />
-<StickySlider />
+<SliderApropos />
 
 <VisionSlider />

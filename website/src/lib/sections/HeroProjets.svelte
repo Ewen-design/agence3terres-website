@@ -14,6 +14,7 @@
   let heroDarkLayerEl;
   let scrollHintEl;
   let afterTextEl;
+  let afterTextEntered = false;
 
   let vh = 1;
   let heroTop = 0;
@@ -27,6 +28,7 @@
   let hintTimeout;
   let resizeObserver;
   let resizeTimer;
+  let afterTextObserver;
 
   let isActive = true;
   let dirty = false;
@@ -86,6 +88,29 @@
     return 1 - Math.pow(1 - x, 4);
   }
 
+  function easeInCubic(t) {
+    const x = clamp(t, 0, 1);
+    return x * x * x;
+  }
+
+  function getPremiumFlowOffset(progress, distance, centerDrag = 0.04) {
+    const entryEnd = 0.46;
+    const centerEnd = 0.56;
+
+    if (progress <= entryEnd) {
+      const t = easeInOutSine(progress / entryEnd);
+      return distance * (1 - t) + distance * centerDrag * 0.5 * t;
+    }
+
+    if (progress < centerEnd) {
+      const t = easeInOutSine((progress - entryEnd) / (centerEnd - entryEnd));
+      return distance * centerDrag * (0.5 - t);
+    }
+
+    const t = easeInOutSine((progress - centerEnd) / (1 - centerEnd));
+    return -distance * centerDrag * 0.5 * (1 - t) + -distance * t;
+  }
+
   function getScrollY() {
     return window.scrollY || window.pageYOffset || 0;
   }
@@ -127,17 +152,8 @@
     const imageBrightness = lerp(midBrightness, 0, endFade);
     const imageScale = lerp(1.06, 1.025, globalFade);
 
-    const localTextReveal = easeOutQuart(
-      getLocalRevealFromAbsolute(y, afterTextTop, 0.92, 0.14)
-    );
-
     const hintScrollFade = 1 - easeOutCubic(clamp(imageFadeProgress / 0.06, 0, 1));
     const scrollHintOpacity = hintVisible ? hintScrollFade : 0;
-
-    const textBlockOpacity = lerp(0.14, 1, localTextReveal);
-    const textBlockY = lerp(18, 0, localTextReveal);
-    const textBlockX = 0;
-    const textRevealEdge = lerp(0, 118, localTextReveal);
 
     pendingFrame = {
       imageScale: q(imageScale, 0.001),
@@ -145,11 +161,7 @@
       imageDark: q(imageDark, 0.001),
       hintOpacity: q(scrollHintOpacity, 0.001),
       hintY: q(lerp(14, 0, scrollHintOpacity), 0.1),
-      hintBlur: q(lerp(10, 0, scrollHintOpacity), 0.1),
-      textOpacity: q(textBlockOpacity, 0.001),
-      textX: q(textBlockX, 0.1),
-      textY: q(textBlockY, 0.1),
-      textEdge: q(textRevealEdge, 0.1)
+      hintBlur: q(lerp(10, 0, scrollHintOpacity), 0.1)
     };
 
     dirty = true;
@@ -188,24 +200,6 @@
         applied.hintBlur = f.hintBlur;
       }
     }
-
-    if (afterTextEl) {
-      if (
-        f.textOpacity !== applied.textOpacity ||
-        f.textX !== applied.textX ||
-        f.textY !== applied.textY ||
-        f.textEdge !== applied.textEdge
-      ) {
-        afterTextEl.style.opacity = `${f.textOpacity}`;
-        afterTextEl.style.transform = `translate3d(${f.textX}px, ${f.textY}px, 0)`;
-        afterTextEl.style.setProperty("--text-reveal-edge", `${f.textEdge}%`);
-        applied.textOpacity = f.textOpacity;
-        applied.textX = f.textX;
-        applied.textY = f.textY;
-        applied.textEdge = f.textEdge;
-      }
-    }
-
     dirty = false;
   }
 
@@ -285,6 +279,17 @@
     window.addEventListener("load", handleWindowLoad);
     window.addEventListener("pageshow", handlePageShow);
 
+    afterTextObserver = new IntersectionObserver(
+      ([entry]) => {
+        if (!entry?.isIntersecting || afterTextEntered) return;
+        afterTextEntered = true;
+        afterTextEl?.style.setProperty("--text-reveal-edge", "118%");
+        afterTextObserver?.disconnect();
+      },
+      { rootMargin: "0px 0px -12% 0px", threshold: 0.2 }
+    );
+    if (afterTextEl) afterTextObserver.observe(afterTextEl);
+
     if (typeof ResizeObserver !== "undefined") {
       resizeObserver = new ResizeObserver(() => {
         scheduleResizeUpdate();
@@ -309,6 +314,7 @@
       clearTimeout(fallbackTimeout);
       clearTimeout(hintTimeout);
       clearTimeout(resizeTimer);
+      afterTextObserver?.disconnect();
       resizeObserver?.disconnect();
     };
   });
@@ -347,7 +353,7 @@
     <div class="after-grid">
       <div class="after-spacer" aria-hidden="true"></div>
 
-      <div class="after-text" bind:this={afterTextEl}>
+      <div class="after-text" class:after-text-visible={afterTextEntered} bind:this={afterTextEl}>
         <h2 aria-label={finalText}>
           {#each words as word, w}
             <span class="word" class:muted-word={w >= grayStartsAtWord}>
@@ -497,9 +503,13 @@
     justify-self: end;
     width: 100%;
     min-width: 0;
-    opacity: 0.14;
-    transform: translate3d(24px, 18px, 0);
+    opacity: 0;
+    transform: translate3d(0, 42px, 0);
     will-change: transform, opacity;
+    transition:
+      opacity 1s cubic-bezier(0.22, 1, 0.36, 1),
+      transform 1.1s cubic-bezier(0.22, 1, 0.36, 1);
+    pointer-events: none;
     -webkit-mask-image: linear-gradient(
       to bottom,
       rgba(0, 0, 0, 1) 0%,
@@ -520,6 +530,12 @@
     mask-repeat: no-repeat;
     -webkit-mask-size: 100% 140%;
     mask-size: 100% 140%;
+  }
+
+  .after-text.after-text-visible {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+    pointer-events: auto;
   }
 
   .after-text h2 {

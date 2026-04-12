@@ -5,27 +5,28 @@
   const slides = [
     {
       number: "01",
-      navTitle: "SEREIN DESIGN",
-      title: "SEREIN\nDESIGN",
+      navTitle: "LE REFLET D'UN ART",
+      title: "Le reflet\nd'un art",
       description:
-        "Un univers objet premium, calme et fonctionnel. Une direction pensée pour traduire une élégance sobre, technologique et durable à travers une identité visuelle claire et sensible.",
-      image: "/images/serein_design.webp"
+        "Dans le silence apaisant d'un lac, chaque détail trouve son écho. Chez 3 Terres, nous nous plaçons comme la surface limpide où se reflète l'essence de votre marque.",
+      image: "images/photo.webp"
     },
     {
       number: "02",
-      navTitle: "HANSATSU",
-      title: "HANSATSU",
+      navTitle: "LES LUMIERES DE LA CREATION",
+      title: "Les lumières\nde la création",
       description:
-        "Une présence plus sensorielle, plus singulière. Un travail d’image et de narration conçu pour installer une esthétique précise, immersive et raffinée autour du produit.",
-      image: "/images/parfum_rouge.webp"
+        "Cet univers urbain est le théâtre de notre créativité : élégant, moderne, vibrant. 3 Terres puise dans l'énergie de la ville l'audace d'inventer, de façonner des univers visuels qui marient esthétisme et ingéniosité.",
+      image:
+        "https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=2000&q=80"
     },
     {
       number: "03",
-      navTitle: "VOTRE PROJET ?",
-      title: "VOTRE\nPROJET ?",
+      navTitle: "LES SOMMETS DE L'AMBITION",
+      title: "Les sommets\nde l'ambition",
       description:
-        "Une approche sur mesure pour révéler votre singularité. Identité, direction artistique, expérience visuelle ou territoire de marque : chaque projet est pensé avec exigence, cohérence et impact.",
-      image: "/images/telephone2.webp"
+        "La montagne est notre troisième terre, celle de l'ambition. Nous visons le sommet pour nos clients, en créant des expériences visuelles qui inspirent et marquent les esprits.",
+      image: "images/montagne.webp"
     }
   ];
 
@@ -258,6 +259,7 @@
     min-height: 100vh;
     display: flex;
     align-items: center;
+    justify-content: center;
     padding: 8rem 4rem;
     position: relative;
   }
@@ -267,15 +269,18 @@
   }
 
   .content-clip {
-    max-width: 70%;
+    max-width: min(70%, 980px);
     overflow: hidden;
     position: relative;
     z-index: 5;
+    margin: 0 auto;
   }
 
   .content {
     position: relative;
     z-index: 5;
+    text-align: center;
+    margin: 0 auto;
   }
 
   .number {
@@ -295,21 +300,24 @@
     line-height: 0.95;
     font-weight: 100;
     white-space: pre-line;
-    margin: 0;
+    margin: 0 auto;
     color: #f5f1e8;
     letter-spacing: 0em;
     position: relative;
     z-index: 5;
+    text-align: center;
   }
 
   p {
-    margin-top: 2rem;
+    margin: 2rem auto 0;
     font-size: 1.2rem;
-    max-width: 520px;
+    max-width: 620px;
     opacity: 0.9;
     position: relative;
     z-index: 5;
     color: rgba(244, 244, 244, 0.86);
+    text-align: center;
+    text-wrap: balance;
   }
 
   .progress-nav {
@@ -417,6 +425,7 @@
       transform: translate3d(0, 14px, 0) rotateX(-68deg);
       clip-path: inset(100% 0 0 0);
     }
+
     100% {
       opacity: 1;
       transform: translate3d(0, 0, 0) rotateX(0deg);
@@ -453,6 +462,7 @@
 
     p {
       font-size: 1rem;
+      max-width: 100%;
     }
 
     .segment-title {
