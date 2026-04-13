@@ -876,19 +876,19 @@
       top: auto;
       left: 50%;
       transform: none;
-      width: min(88vw, 420px);
+      width: min(92vw, 500px);
       margin: 0;
-      padding-top: 64vh;
+      padding-top: 71vh;
       translate: -50% 0;
     }
 
     .title-mobile-top {
-      font-size: clamp(2.25rem, 9.4vw, 3.35rem);
+      font-size: clamp(2.6rem, 10.6vw, 3.95rem);
       line-height: 0.92;
     }
 
     .title-mobile-bottom {
-      font-size: clamp(3.25rem, 14.6vw, 5.2rem);
+      font-size: clamp(4rem, 17.2vw, 6.3rem);
       line-height: 0.86;
     }
 

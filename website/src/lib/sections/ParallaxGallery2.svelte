@@ -87,7 +87,11 @@
     isMobile = window.innerWidth <= 900;
   }
 
-  function getFlowOffset(progress, distance, centerDrag = 0.12) {
+  function getFlowOffset(progress, distance, centerDrag = 0.12, linear = false) {
+    if (linear) {
+      return distance * (1 - progress * 2);
+    }
+
     if (progress <= 0.42) {
       const t = clamp(progress / 0.42);
       return distance * (1 - easeOutCubic(t));
@@ -122,16 +126,34 @@
       return;
     }
 
+    if (isMobile) {
+      if (
+        introFlowOffset !== 0 ||
+        introFlowTargetOffset !== 0 ||
+        contentFlowOffset !== 0 ||
+        contentFlowTargetOffset !== 0
+      ) {
+        introFlowOffset = 0;
+        introFlowTargetOffset = 0;
+        contentFlowOffset = 0;
+        contentFlowTargetOffset = 0;
+      }
+
+      galleryIntroGroupEl.style.transform = "translate3d(0,0,0)";
+      galleryContentGroupEl.style.transform = "translate3d(0,0,0)";
+      return;
+    }
+
     const rect = gallerySectionEl.getBoundingClientRect();
     const vh = window.innerHeight || 1;
     const progress = clamp((vh - rect.top) / (vh + rect.height), 0, 1);
     const introDistance = isMobile ? 260 : 460;
     const contentDistance = isMobile ? 420 : 760;
-    const introLerp = isMobile ? 0.11 : 0.1;
-    const contentLerp = isMobile ? 0.13 : 0.12;
+    const introLerp = isMobile ? 1 : 0.1;
+    const contentLerp = isMobile ? 1 : 0.12;
 
-    introFlowTargetOffset = getFlowOffset(progress, introDistance, 0.035);
-    contentFlowTargetOffset = getFlowOffset(progress, contentDistance, 0.012);
+    introFlowTargetOffset = getFlowOffset(progress, introDistance, 0.035, isMobile);
+    contentFlowTargetOffset = getFlowOffset(progress, contentDistance, 0.012, isMobile);
 
     introFlowOffset += (introFlowTargetOffset - introFlowOffset) * introLerp;
     contentFlowOffset += (contentFlowTargetOffset - contentFlowOffset) * contentLerp;
@@ -156,10 +178,10 @@
     const rect = introCardEl.getBoundingClientRect();
     const vh = window.innerHeight || 1;
     const raw = clamp((vh * .92 - rect.top) / Math.max(vh * .72, 1), 0, 1);
-    const reveal = easeOutCubic(raw);
+    const reveal = isMobile ? raw : easeOutCubic(raw);
 
     const op = Math.round((0.18 + .82 * reveal) * 1000) / 1000;
-    const y = Math.round(18 * (1 - reveal) * 100) / 100;
+    const y = isMobile ? 0 : Math.round(18 * (1 - reveal) * 100) / 100;
 
     if (op !== introOpacity) {
       introCardEl.style.opacity = `${op}`;
@@ -797,19 +819,6 @@
     .gallery-footer { margin-top: 4rem; }
     .services-btn   { padding: 0 1.2rem; font-size: .8rem; }
 
-    .card img,
-    .info,
-    .info-chip,
-    .card-index-inner,
-    .intro-card,
-    .services-btn,
-    .services-btn-text,
-    .services-btn-flip::after { transition: none; }
-
-    .intro-card { transform: none !important; opacity: 1 !important; }
-    .gallery,
-    .gallery-intro-group,
-    .gallery-content-group { transform: none !important; }
   }
 
   @media (max-width: 420px) {
