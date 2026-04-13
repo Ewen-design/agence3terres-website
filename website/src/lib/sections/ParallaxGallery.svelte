@@ -566,6 +566,15 @@ font-family: "Aboreto", serif;
     .card-index { top: 14px; right: 14px; }
 
     .services-btn { padding: 12px 24px; font-size: 0.72rem; letter-spacing: 0.14em; }
+
+    .card img,
+    .info,
+    .card-plus {
+      transition: none;
+    }
+
+    .gallery-header { opacity: 1 !important; transform: none !important; }
+    .line { transform: scaleX(1) !important; }
   }
 
   @media (max-width: 420px) {

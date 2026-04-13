@@ -465,6 +465,14 @@
       min-height: 390vh;
     }
 
+    .bg,
+    .bg img,
+    .segment-fill,
+    .mobile-progress-meta {
+      transition: none;
+      animation: none;
+    }
+
     .bottom-shade {
       height: 38vh;
       height: 38svh;

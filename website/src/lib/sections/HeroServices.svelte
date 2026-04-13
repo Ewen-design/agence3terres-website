@@ -640,6 +640,7 @@
       font-size: 0.78rem;
       letter-spacing: 0.03em;
     }
+
   }
 
   @media (prefers-reduced-motion: reduce) {

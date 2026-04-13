@@ -497,6 +497,11 @@
           3 Terres
         </span>
 
+        <h1 class="title-mobile" aria-label="Agence 3 Terres">
+          <span class="title-mobile-top">Agence</span>
+          <span class="title-mobile-bottom">3 Terres</span>
+        </h1>
+
         <div
           class="scroll-hint"
           class:hint-visible={hintVisible}
@@ -773,6 +778,37 @@
     }
   }
 
+  .title-mobile {
+    display: none;
+    position: absolute;
+    left: 50%;
+    top: 57%;
+    transform: translate3d(-50%, -50%, 0);
+    margin: 0;
+    width: min(88vw, 420px);
+    text-align: center;
+    line-height: 0.9;
+    letter-spacing: -0.05em;
+    color: #f4efe6;
+    z-index: 2;
+    pointer-events: none;
+  }
+
+  .title-mobile span {
+    display: block;
+  }
+
+  .title-mobile-top {
+    font-family: "Titre", serif;
+    font-weight: 400;
+  }
+
+  .title-mobile-bottom {
+    font-family: "Titre italic", serif;
+    font-style: italic;
+    font-weight: 100;
+  }
+
   @keyframes titleEnterRight {
     from {
       opacity: 0;
@@ -815,12 +851,45 @@
 
   @media (max-width: 640px) {
     .pin-section {
-      height: 220vh;
+      height: auto;
+      min-height: 100svh;
+    }
+
+    .sticky-stage {
+      position: relative;
+      height: auto;
+      min-height: 100svh;
+    }
+
+    .titles-layer {
+      position: relative;
+      min-height: 100svh;
     }
 
     .title-left,
     .title-right {
-      font-size: clamp(1.85rem, 10vw, 3.3rem);
+      display: none;
+    }
+
+    .title-mobile {
+      display: block;
+      top: auto;
+      left: 50%;
+      transform: none;
+      width: min(88vw, 420px);
+      margin: 0;
+      padding-top: 64vh;
+      translate: -50% 0;
+    }
+
+    .title-mobile-top {
+      font-size: clamp(2.25rem, 9.4vw, 3.35rem);
+      line-height: 0.92;
+    }
+
+    .title-mobile-bottom {
+      font-size: clamp(3.25rem, 14.6vw, 5.2rem);
+      line-height: 0.86;
     }
 
     .after-section {
@@ -855,6 +924,15 @@
       bottom: 1.05rem;
       font-size: 0.78rem;
       letter-spacing: 0.03em;
+    }
+
+    .after-text,
+    .after-image {
+      transition: none !important;
+      animation: none !important;
+      filter: none !important;
+      opacity: 1 !important;
+      transform: none !important;
     }
   }
 

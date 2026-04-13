@@ -796,6 +796,20 @@
     .index-mobile   { bottom: -28px; }
     .gallery-footer { margin-top: 4rem; }
     .services-btn   { padding: 0 1.2rem; font-size: .8rem; }
+
+    .card img,
+    .info,
+    .info-chip,
+    .card-index-inner,
+    .intro-card,
+    .services-btn,
+    .services-btn-text,
+    .services-btn-flip::after { transition: none; }
+
+    .intro-card { transform: none !important; opacity: 1 !important; }
+    .gallery,
+    .gallery-intro-group,
+    .gallery-content-group { transform: none !important; }
   }
 
   @media (max-width: 420px) {
