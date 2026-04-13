@@ -6,29 +6,32 @@ let delta = 0;
 let direction = 0;
 let velocity = 0;
 let smoothVelocity = 0;
+let lastFrameTime = 0;
+let lastActivityTime = 0;
 
 let cachedVh = 0;
 let cachedVw = 0;
 let isMobile = false;
+let isTouch = false;
+let prefersReducedMotion = false;
 
 let rafId = 0;
+let viewportDirty = false;
+let pendingNativeY = 0;
+
+const IDLE_TIMEOUT_MS = 140;
+const STABLE_EPSILON = 0.1;
 
 const parallaxCallbacks = [];
 const readCallbacks = [];
 const writeCallbacks = [];
 
-function readViewport() {
-  cachedVh = window.innerHeight || 0;
-  cachedVw = window.innerWidth || 0;
-  isMobile = cachedVw <= 900;
-}
-
 function clamp(value, min, max) {
   return Math.max(min, Math.min(max, value));
 }
 
-function quantizeY(y) {
-  return Math.round(y * 4) / 4;
+function getNow() {
+  return typeof performance !== "undefined" ? performance.now() : Date.now();
 }
 
 function getNativeScrollY() {
@@ -44,11 +47,21 @@ function getMaxScroll() {
   );
 }
 
+function readViewport() {
+  const viewport = window.visualViewport;
+  cachedVh = Math.round(viewport?.height || window.innerHeight || 0);
+  cachedVw = Math.round(viewport?.width || window.innerWidth || 0);
+  isMobile = cachedVw <= 900;
+  isTouch = window.matchMedia?.("(pointer: coarse)")?.matches ?? false;
+  prefersReducedMotion =
+    window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches ?? false;
+}
+
 function sortByPriority(list) {
   list.sort((a, b) => (a.priority || 0) - (b.priority || 0));
 }
 
-function makeContext(y) {
+function makeContext(y, now) {
   return {
     y,
     vh: cachedVh,
@@ -57,7 +70,10 @@ function makeContext(y) {
     direction,
     velocity,
     smoothVelocity,
-    isMobile
+    isMobile,
+    isTouch,
+    prefersReducedMotion,
+    now
   };
 }
 
@@ -69,38 +85,70 @@ function runRegistry(list, y, ctx) {
   }
 }
 
-function emitFrame() {
-  rafId = 0;
-
+function emitFrame(now) {
   const maxScroll = getMaxScroll();
-  currentY = quantizeY(clamp(getNativeScrollY(), 0, maxScroll));
+  const nextY = clamp(pendingNativeY, 0, maxScroll);
+  const dt = Math.max(16, now - (lastFrameTime || now - 16));
 
-  delta = currentY - lastY;
+  delta = nextY - lastY;
   direction = delta === 0 ? 0 : delta > 0 ? 1 : -1;
   velocity = delta;
-  smoothVelocity += (velocity - smoothVelocity) * 0.14;
 
-  const ctx = makeContext(currentY);
+  const smoothing = isMobile ? 0.16 : 0.14;
+  smoothVelocity += (velocity - smoothVelocity) * smoothing;
+
+  currentY = nextY;
+
+  const ctx = makeContext(currentY, now);
 
   runRegistry(readCallbacks, currentY, ctx);
   runRegistry(parallaxCallbacks, currentY, ctx);
   runRegistry(writeCallbacks, currentY, ctx);
 
   lastY = currentY;
+  lastFrameTime = now;
+
+  const nativeY = getNativeScrollY();
+  const moved = Math.abs(nativeY - pendingNativeY) > STABLE_EPSILON;
+  pendingNativeY = nativeY;
+
+  if (moved || viewportDirty || Math.abs(delta) > STABLE_EPSILON) {
+    lastActivityTime = now;
+  }
+
+  viewportDirty = false;
+
+  const keepAlive = now - lastActivityTime < IDLE_TIMEOUT_MS;
+
+  if (keepAlive) {
+    rafId = requestAnimationFrame(loop);
+  } else {
+    rafId = 0;
+  }
 }
 
-function requestEmit() {
-  if (rafId) return;
-  rafId = requestAnimationFrame(emitFrame);
+function loop(now) {
+  emitFrame(now || getNow());
+}
+
+function startLoop() {
+  if (rafId || !initialized) return;
+  lastActivityTime = getNow();
+  rafId = requestAnimationFrame(loop);
 }
 
 function handleScroll() {
-  requestEmit();
+  pendingNativeY = getNativeScrollY();
+  lastActivityTime = getNow();
+  startLoop();
 }
 
 function handleResize() {
   readViewport();
-  requestEmit();
+  pendingNativeY = getNativeScrollY();
+  viewportDirty = true;
+  lastActivityTime = getNow();
+  startLoop();
 }
 
 export function initScrollEngine() {
@@ -110,18 +158,22 @@ export function initScrollEngine() {
 
   readViewport();
 
-  currentY = quantizeY(getNativeScrollY());
+  currentY = getNativeScrollY();
+  pendingNativeY = currentY;
   lastY = currentY;
   delta = 0;
   direction = 0;
   velocity = 0;
   smoothVelocity = 0;
+  lastFrameTime = getNow();
+  lastActivityTime = lastFrameTime;
 
   window.addEventListener("scroll", handleScroll, { passive: true });
   window.addEventListener("resize", handleResize, { passive: true });
   window.addEventListener("orientationchange", handleResize, { passive: true });
+  window.visualViewport?.addEventListener("resize", handleResize, { passive: true });
 
-  const ctx = makeContext(currentY);
+  const ctx = makeContext(currentY, lastFrameTime);
   runRegistry(readCallbacks, currentY, ctx);
   runRegistry(parallaxCallbacks, currentY, ctx);
   runRegistry(writeCallbacks, currentY, ctx);
@@ -138,17 +190,23 @@ export function destroyScrollEngine() {
   window.removeEventListener("scroll", handleScroll);
   window.removeEventListener("resize", handleResize);
   window.removeEventListener("orientationchange", handleResize);
+  window.visualViewport?.removeEventListener("resize", handleResize);
 }
 
 export function forceScrollEngineUpdate() {
   if (typeof window === "undefined") return;
   readViewport();
-  requestEmit();
+  pendingNativeY = getNativeScrollY();
+  viewportDirty = true;
+  lastActivityTime = getNow();
+  startLoop();
 }
 
 export function updateScrollEngine() {
   if (typeof window === "undefined") return;
-  requestEmit();
+  pendingNativeY = getNativeScrollY();
+  lastActivityTime = getNow();
+  startLoop();
 }
 
 export function updateScrollEngineViewport() {
@@ -165,7 +223,9 @@ export function getScrollEngineState() {
     smoothVelocity,
     vh: cachedVh,
     vw: cachedVw,
-    isMobile
+    isMobile,
+    isTouch,
+    prefersReducedMotion
   };
 }
 

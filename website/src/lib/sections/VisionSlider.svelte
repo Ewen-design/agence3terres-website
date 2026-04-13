@@ -49,6 +49,15 @@
     window.dispatchEvent(new CustomEvent("carousel-direction", { detail: dir }));
   }
 
+  function handleSectionClick(e) {
+    if (isMobile) return;
+    const rect = sectionEl.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+
+    if (x < rect.width / 2) prev();
+    else next();
+  }
+
   function touchStart(e) { if (!isMobile) return; startX = e.touches[0].clientX; }
   function touchMove(e)  { if (!isMobile) return; deltaX = e.touches[0].clientX - startX; }
   function touchEnd() {
@@ -125,11 +134,14 @@
 
   let resizeObserver;
   let intersectionObserver;
+  let removeSectionClickListener;
 
   onMount(() => {
     checkMobile();
 
     registerParallax(updateParallax);
+    sectionEl.addEventListener("click", handleSectionClick);
+    removeSectionClickListener = () => sectionEl?.removeEventListener("click", handleSectionClick);
 
     resizeObserver = new ResizeObserver(handleResize);
     resizeObserver.observe(sectionEl);
@@ -149,6 +161,7 @@
     if (!browser) return;
     stopLoop();
     unregisterParallax(updateParallax);
+    removeSectionClickListener?.();
     resizeObserver?.disconnect();
     intersectionObserver?.disconnect();
     clearTimeout(resizeTimeout);
@@ -173,13 +186,13 @@
       class="nav-zone"
       type="button"
       aria-label="Citation precedente"
-      on:click={prev}
+      on:click|stopPropagation={prev}
     ></button>
     <button
       class="nav-zone"
       type="button"
       aria-label="Citation suivante"
-      on:click={next}
+      on:click|stopPropagation={next}
     ></button>
   </div>
 
@@ -250,6 +263,7 @@
     z-index: 3;
     display: grid;
     grid-template-columns: 1fr 1fr;
+    pointer-events: none;
   }
 
   .nav-zone {
@@ -257,6 +271,7 @@
     border: 0;
     background: transparent;
     cursor: inherit;
+    pointer-events: auto;
   }
 
   .nav-zone:focus-visible {

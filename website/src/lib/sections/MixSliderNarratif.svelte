@@ -37,17 +37,28 @@
   let contentVisibleHeights = slides.map(() => 0);
   let ticking = false;
   let maskAnchorEl;
+  let isMobile = false;
+  let prefersReducedMotion = false;
+  let resizeTimeout;
+  let touchStartX = 0;
+  let touchStartY = 0;
+  let touchDeltaX = 0;
+  let touchDeltaY = 0;
   let sliderEl;
 
   const clamp = (v, min = 0, max = 1) => Math.max(min, Math.min(max, v));
 
+  function checkMobile() {
+    isMobile = window.innerWidth <= 700;
+  }
+
   function updateProgress() {
-    const vh = window.innerHeight;
+    const vh = window.innerHeight || 1;
     const next = slides.map(() => 0);
-    const nextScales = slides.map(() => 1.02);
+    const nextScales = slides.map(() => (prefersReducedMotion ? 1 : isMobile ? 1.01 : 1.02));
     const nextVisibleHeights = slides.map(() => 0);
-    const progressLine = vh * 0.5;
-    const fallbackRevealLine = vh * 0.8;
+    const progressLine = vh * (isMobile ? 0.56 : 0.5);
+    const fallbackRevealLine = vh * (isMobile ? 0.74 : 0.8);
     const revealLine = maskAnchorEl?.getBoundingClientRect().top ?? fallbackRevealLine;
     let nextActiveIndex = activeIndex;
     let closestDistance = Number.POSITIVE_INFINITY;
@@ -60,7 +71,9 @@
       const distanceToCenter = Math.abs(rect.top + rect.height * 0.5 - progressLine);
 
       next[i] = progress * 100;
-      nextScales[i] = 1.02 + progress * 0.08;
+      if (!prefersReducedMotion) {
+        nextScales[i] = (isMobile ? 1.01 : 1.02) + progress * (isMobile ? 0.03 : 0.08);
+      }
 
       if (distanceToCenter < closestDistance) {
         closestDistance = distanceToCenter;
@@ -89,17 +102,68 @@
     }
   }
 
+  function handleResize() {
+    clearTimeout(resizeTimeout);
+    resizeTimeout = setTimeout(() => {
+      checkMobile();
+      onScroll();
+    }, 90);
+  }
+
+  function jumpToSlide(index) {
+    sections[index]?.scrollIntoView({
+      behavior: prefersReducedMotion ? "auto" : "smooth",
+      block: "start"
+    });
+  }
+
+  function handleTouchStart(event) {
+    if (!isMobile) return;
+    const touch = event.touches[0];
+    touchStartX = touch.clientX;
+    touchStartY = touch.clientY;
+    touchDeltaX = 0;
+    touchDeltaY = 0;
+  }
+
+  function handleTouchMove(event) {
+    if (!isMobile) return;
+    const touch = event.touches[0];
+    touchDeltaX = touch.clientX - touchStartX;
+    touchDeltaY = touch.clientY - touchStartY;
+  }
+
+  function handleTouchEnd() {
+    if (!isMobile) return;
+    const horizontalIntent = Math.abs(touchDeltaX) > 56 && Math.abs(touchDeltaY) < 42;
+    if (!horizontalIntent) return;
+
+    if (touchDeltaX < 0) {
+      jumpToSlide(Math.min(activeIndex + 1, slides.length - 1));
+    } else {
+      jumpToSlide(Math.max(activeIndex - 1, 0));
+    }
+  }
+
   onMount(() => {
+    prefersReducedMotion = window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches ?? false;
+    checkMobile();
     updateProgress();
     window.addEventListener("scroll", onScroll, { passive: true });
-    window.addEventListener("resize", onScroll);
-
+    window.addEventListener("resize", handleResize);
+    sliderEl?.addEventListener("touchstart", handleTouchStart, { passive: true });
+    sliderEl?.addEventListener("touchmove", handleTouchMove, { passive: true });
+    sliderEl?.addEventListener("touchend", handleTouchEnd, { passive: true });
   });
 
   onDestroy(() => {
     if (!browser) return;
     window.removeEventListener("scroll", onScroll);
-    window.removeEventListener("resize", onScroll);
+    window.removeEventListener("resize", handleResize);
+    sliderEl?.removeEventListener("touchstart", handleTouchStart);
+    sliderEl?.removeEventListener("touchmove", handleTouchMove);
+    sliderEl?.removeEventListener("touchend", handleTouchEnd);
+    clearTimeout(resizeTimeout);
   });
 </script>
 
@@ -110,7 +174,14 @@
 
       <div class="progress-nav">
         {#each slides as slide, i}
-          <div class="segment">
+          <button
+            class="segment"
+            class:is-active={activeIndex === i}
+            type="button"
+            aria-label={`Aller au slide ${slide.navTitle}`}
+            aria-pressed={activeIndex === i}
+            on:click={() => jumpToSlide(i)}
+          >
             <div class="segment-line">
               <div class="segment-fill" style="width:{fills[i]}%"></div>
             </div>
@@ -119,7 +190,7 @@
               <span class="num">{slide.number}</span>
               <span class="segment-title">{slide.navTitle}</span>
             </div>
-          </div>
+          </button>
         {/each}
       </div>
 
@@ -138,7 +209,13 @@
 
       {#each slides as slide, i}
         <div class="bg" class:active={activeIndex === i}>
-          <img src={slide.image} alt="" style={`transform:scale(${bgScales[i].toFixed(3)})`} />
+          <img
+            src={slide.image}
+            alt=""
+            decoding="async"
+            draggable="false"
+            style={`transform:scale(${bgScales[i].toFixed(3)})`}
+          />
         </div>
       {/each}
     </div>
@@ -276,6 +353,7 @@
   .content {
     position: relative;
     z-index: 5;
+    will-change: height;
   }
 
   .number {
@@ -323,6 +401,16 @@
     gap: 0.7rem;
   }
 
+  .segment {
+    appearance: none;
+    border: 0;
+    padding: 0;
+    background: transparent;
+    color: inherit;
+    text-align: left;
+    cursor: pointer;
+  }
+
   .segment-line {
     position: relative;
     height: 2px;
@@ -352,7 +440,7 @@
     min-width: 0;
   }
 
-  .segment-label .num {
+  .segment .num {
     flex: 0 0 auto;
     opacity: 0.72;
     font-family: "Titre italic", serif;
@@ -370,6 +458,16 @@
     text-transform: uppercase;
     max-width: none;
     white-space: nowrap;
+  }
+
+  .segment:hover .segment-title,
+  .segment.is-active .segment-title {
+    color: #fff;
+  }
+
+  .segment:focus-visible {
+    outline: 2px solid rgba(244, 239, 230, 0.9);
+    outline-offset: 4px;
   }
 
   .mobile-progress {
@@ -462,15 +560,17 @@
 
   @media (max-width: 700px) {
     .slider {
-      min-height: 390vh;
+      min-height: 380vh;
     }
 
-    .bg,
-    .bg img,
     .segment-fill,
     .mobile-progress-meta {
       transition: none;
       animation: none;
+    }
+
+    .content {
+      will-change: auto;
     }
 
     .bottom-shade {
@@ -500,6 +600,16 @@
       margin-top: 1.25rem;
       font-size: 0.96rem;
       max-width: 100%;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .bg,
+    .bg img,
+    .segment-fill,
+    .mobile-progress-meta {
+      transition: none;
+      animation: none;
     }
   }
 </style>

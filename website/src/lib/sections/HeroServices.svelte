@@ -31,6 +31,7 @@
   let afterTextObserver;
 
   let isActive = true;
+  let isMobile = false;
   let dirty = false;
   let pendingFrame = null;
 
@@ -123,6 +124,7 @@
 
   function measureLayout() {
     vh = window.innerHeight || 1;
+    isMobile = window.innerWidth <= 900;
     heroTop = getAbsoluteTop(heroSection);
     afterTextTop = getAbsoluteTop(afterTextEl);
     heroHeight = Math.max(heroSection?.offsetHeight || 1, 1);
@@ -149,8 +151,8 @@
 
     const imageDark = clamp(globalFade * 0.42 + endFade * 0.58, 0, 1);
     const midBrightness = lerp(1, 0.58, globalFade);
-    const imageBrightness = lerp(midBrightness, 0, endFade);
-    const imageScale = lerp(1.06, 1.025, globalFade);
+    const imageBrightness = isMobile ? 1 : lerp(midBrightness, 0, endFade);
+    const imageScale = lerp(isMobile ? 1.03 : 1.06, isMobile ? 1.012 : 1.025, globalFade);
 
     const hintScrollFade = 1 - easeOutCubic(clamp(imageFadeProgress / 0.06, 0, 1));
     const scrollHintOpacity = hintVisible ? hintScrollFade : 0;
@@ -161,7 +163,7 @@
       imageDark: q(imageDark, 0.001),
       hintOpacity: q(scrollHintOpacity, 0.001),
       hintY: q(lerp(14, 0, scrollHintOpacity), 0.1),
-      hintBlur: q(lerp(10, 0, scrollHintOpacity), 0.1)
+      hintBlur: q(isMobile ? 0 : lerp(10, 0, scrollHintOpacity), 0.1)
     };
 
     dirty = true;
@@ -175,7 +177,7 @@
     if (heroMediaImgEl) {
       if (f.imageScale !== applied.imageScale || f.imageBrightness !== applied.imageBrightness) {
         heroMediaImgEl.style.transform = `scale(${f.imageScale})`;
-        heroMediaImgEl.style.filter = `brightness(${f.imageBrightness})`;
+        heroMediaImgEl.style.filter = isMobile ? "none" : `brightness(${f.imageBrightness})`;
         applied.imageScale = f.imageScale;
         applied.imageBrightness = f.imageBrightness;
       }
@@ -402,6 +404,13 @@
     filter: brightness(1);
     backface-visibility: hidden;
     -webkit-backface-visibility: hidden;
+  }
+
+  @media (max-width: 900px) {
+    .hero-media img {
+      will-change: transform;
+      filter: none;
+    }
   }
 
   .hero-dark-layer {

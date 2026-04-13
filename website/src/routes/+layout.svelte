@@ -18,6 +18,8 @@
   import { installDesktopWheelDamping } from "$lib/desktopWheelDamping.js";
 
   let isMobile = false;
+  let isTouchDevice = false;
+  let prefersReducedMotion = false;
   let onLoad, onResize, onRouteSettled;
   let syncRaf1, syncRaf2, syncTimeout;
   let transitionRaf;
@@ -37,7 +39,10 @@
   const DESKTOP_WHEEL_MIN_WIDTH = 1100;
 
   function checkMobile() {
-    isMobile = window.innerWidth <= 768;
+    isTouchDevice = window.matchMedia?.("(pointer: coarse)")?.matches ?? false;
+    prefersReducedMotion =
+      window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches ?? false;
+    isMobile = window.innerWidth <= 900 || isTouchDevice;
   }
 
   function isRealDesktop() {
@@ -119,6 +124,39 @@
     return { mask: "#000000" };
   }
 
+  function getTransitionProfile() {
+    if (prefersReducedMotion) {
+      return {
+        enterDuration: 0,
+        exitDuration: 0,
+        blurMax: 0,
+        blurBase: 0,
+        darknessMax: 0,
+        pageFade: 0
+      };
+    }
+
+    if (isMobile) {
+      return {
+        enterDuration: 560,
+        exitDuration: 500,
+        blurMax: 2,
+        blurBase: 0.08,
+        darknessMax: 0.24,
+        pageFade: 0.04
+      };
+    }
+
+    return {
+      enterDuration: 1040,
+      exitDuration: 920,
+      blurMax: 9,
+      blurBase: 0.04,
+      darknessMax: 0.42,
+      pageFade: 0.1
+    };
+  }
+
   function applyTransitionTheme(path) {
     if (!transitionLayer) return;
     const theme = getTransitionTheme(path);
@@ -194,6 +232,15 @@
         return;
       }
 
+      const profile = getTransitionProfile();
+
+      if (profile.enterDuration === 0) {
+        resetWrapperStyles();
+        resetTransitionStyles();
+        resolve();
+        return;
+      }
+
       applyTransitionTheme(to?.url?.pathname || pathname);
 
       transitionLayer.style.opacity = "1";
@@ -205,19 +252,19 @@
 
       setWipeProgress(0);
 
-      await animate(1040, (t) => {
+      await animate(profile.enterDuration, (t) => {
         const wipe = premiumWipeEase(t);
         const blurLead = premiumWipeEase(clamp01(t + 0.08));
         const darknessFollow = premiumWipeEase(clamp01((wipe - 0.015) / 0.985));
         const pageFade = easeOutCubic(clamp01((t - 0.16) / 0.84));
 
-        transitionBlur.style.backdropFilter = `blur(${blurLead * 9}px)`;
-        transitionBlur.style.webkitBackdropFilter = `blur(${blurLead * 9}px)`;
-        transitionBlur.style.opacity = `${0.04 + blurLead * 0.24}`;
+        transitionBlur.style.backdropFilter = `blur(${blurLead * profile.blurMax}px)`;
+        transitionBlur.style.webkitBackdropFilter = `blur(${blurLead * profile.blurMax}px)`;
+        transitionBlur.style.opacity = `${profile.blurBase + blurLead * Math.max(0, profile.darknessMax * 0.55)}`;
 
-        transitionDarkness.style.opacity = `${darknessFollow * 0.42}`;
+        transitionDarkness.style.opacity = `${darknessFollow * profile.darknessMax}`;
 
-        pageWrapper.style.opacity = `${1 - pageFade * 0.1}`;
+        pageWrapper.style.opacity = `${1 - pageFade * profile.pageFade}`;
 
         setWipeProgress(wipe);
       });
@@ -233,13 +280,21 @@
       return;
     }
 
+    const profile = getTransitionProfile();
+
+    if (profile.exitDuration === 0) {
+      resetWrapperStyles();
+      resetTransitionStyles();
+      return;
+    }
+
     applyTransitionTheme(pathname);
 
     transitionLayer.style.opacity = "1";
     transitionBlur.style.opacity = "1";
-    transitionBlur.style.backdropFilter = "blur(9px)";
-    transitionBlur.style.webkitBackdropFilter = "blur(9px)";
-    transitionDarkness.style.opacity = "0.42";
+    transitionBlur.style.backdropFilter = `blur(${profile.blurMax}px)`;
+    transitionBlur.style.webkitBackdropFilter = `blur(${profile.blurMax}px)`;
+    transitionDarkness.style.opacity = `${profile.darknessMax}`;
     transitionWipe.style.opacity = "1";
 
     pageWrapper.style.willChange = "opacity";
@@ -248,18 +303,18 @@
     setWipeProgress(1);
 
     requestAnimationFrame(() => {
-      animate(920, (t) => {
+      animate(profile.exitDuration, (t) => {
         const pageEase = easeOutCubic(t);
         const overlayFade = easeOutCubic(clamp01((t - 0.1) / 0.9));
         const exitPush = easeOutCubic(clamp01(t / 0.78));
 
         pageWrapper.style.opacity = `${pageEase}`;
 
-        transitionBlur.style.opacity = `${(1 - overlayFade) * 0.28}`;
-        transitionBlur.style.backdropFilter = `blur(${(1 - overlayFade) * 9}px)`;
-        transitionBlur.style.webkitBackdropFilter = `blur(${(1 - overlayFade) * 9}px)`;
+        transitionBlur.style.opacity = `${(1 - overlayFade) * Math.max(profile.blurBase, profile.darknessMax * 0.66)}`;
+        transitionBlur.style.backdropFilter = `blur(${(1 - overlayFade) * profile.blurMax}px)`;
+        transitionBlur.style.webkitBackdropFilter = `blur(${(1 - overlayFade) * profile.blurMax}px)`;
 
-        transitionDarkness.style.opacity = `${(1 - overlayFade) * 0.42}`;
+        transitionDarkness.style.opacity = `${(1 - overlayFade) * profile.darknessMax}`;
         transitionWipe.style.opacity = `${1 - overlayFade}`;
 
         setWipeProgress(1 + exitPush * 0.045);
@@ -477,5 +532,20 @@
 
   main.travail-soft-gradients .bottom-gradient {
     opacity: 0.3;
+  }
+
+  @media (max-width: 900px) {
+    .route-transition-blur {
+      backdrop-filter: blur(0px);
+      -webkit-backdrop-filter: blur(0px);
+    }
+
+    .top-gradient {
+      height: 88px;
+    }
+
+    .bottom-gradient {
+      height: 132px;
+    }
   }
 </style>
