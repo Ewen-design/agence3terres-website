@@ -76,12 +76,12 @@
         const target = fills[index];
         const delta = target - value;
 
-        if (Math.abs(delta) < 0.35) {
+        if (Math.abs(delta) < 0.2) {
           return target;
         }
 
         done = false;
-        return value + delta * 0.18;
+        return value + delta * 0.14;
       });
 
       displayedFills = nextDisplayed;
@@ -405,6 +405,8 @@
     position: relative;
     z-index: 5;
     will-change: clip-path;
+    backface-visibility: hidden;
+    transform: translateZ(0);
   }
 
   .number {
@@ -628,6 +630,10 @@
       padding: 6.5rem 1.25rem 10rem;
       min-height: 100svh;
       align-items: center;
+    }
+
+    .tail {
+      height: 14svh;
     }
 
     .progress-nav {
