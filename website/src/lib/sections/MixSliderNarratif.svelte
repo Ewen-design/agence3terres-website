@@ -33,9 +33,11 @@
   let contentRefs = [];
   let activeIndex = 0;
   let fills = slides.map(() => 0);
+  let displayedFills = slides.map(() => 0);
   let bgScales = slides.map(() => 1.02);
-  let contentVisibleHeights = slides.map(() => 0);
+  let contentClipInsets = slides.map(() => 0);
   let ticking = false;
+  let fillFrame = 0;
   let maskAnchorEl;
   let isMobile = false;
   let prefersReducedMotion = false;
@@ -52,11 +54,53 @@
     isMobile = window.innerWidth <= 700;
   }
 
+  function stopFillAnimation() {
+    if (fillFrame) {
+      cancelAnimationFrame(fillFrame);
+      fillFrame = 0;
+    }
+  }
+
+  function animateDisplayedFills() {
+    if (!isMobile || prefersReducedMotion) {
+      displayedFills = [...fills];
+      stopFillAnimation();
+      return;
+    }
+
+    stopFillAnimation();
+
+    const step = () => {
+      let done = true;
+      const nextDisplayed = displayedFills.map((value, index) => {
+        const target = fills[index];
+        const delta = target - value;
+
+        if (Math.abs(delta) < 0.35) {
+          return target;
+        }
+
+        done = false;
+        return value + delta * 0.18;
+      });
+
+      displayedFills = nextDisplayed;
+
+      if (!done) {
+        fillFrame = requestAnimationFrame(step);
+      } else {
+        fillFrame = 0;
+      }
+    };
+
+    fillFrame = requestAnimationFrame(step);
+  }
+
   function updateProgress() {
     const vh = window.innerHeight || 1;
     const next = slides.map(() => 0);
     const nextScales = slides.map(() => (prefersReducedMotion ? 1 : isMobile ? 1.01 : 1.02));
-    const nextVisibleHeights = slides.map(() => 0);
+    const nextClipInsets = slides.map(() => 0);
     const progressLine = vh * (isMobile ? 0.56 : 0.5);
     const fallbackRevealLine = vh * (isMobile ? 0.74 : 0.8);
     const revealLine = maskAnchorEl?.getBoundingClientRect().top ?? fallbackRevealLine;
@@ -85,13 +129,16 @@
       if (!content) return;
 
       const rect = content.getBoundingClientRect();
-      nextVisibleHeights[i] = clamp(revealLine - rect.top, 0, rect.height);
+      const visibleHeight = clamp(revealLine - rect.top, 0, rect.height);
+
+      nextClipInsets[i] = Math.max(rect.height - visibleHeight, 0);
     });
 
     activeIndex = nextActiveIndex;
     fills = next;
+    animateDisplayedFills();
     bgScales = nextScales;
-    contentVisibleHeights = nextVisibleHeights;
+    contentClipInsets = nextClipInsets;
     ticking = false;
   }
 
@@ -158,6 +205,7 @@
 
   onDestroy(() => {
     if (!browser) return;
+    stopFillAnimation();
     window.removeEventListener("scroll", onScroll);
     window.removeEventListener("resize", handleResize);
     sliderEl?.removeEventListener("touchstart", handleTouchStart);
@@ -196,7 +244,7 @@
 
       <div class="mobile-progress" aria-hidden="true">
         <div class="segment-line mobile-progress-line">
-          <div class="segment-fill" style="width:{fills[activeIndex]}%"></div>
+          <div class="segment-fill" style="width:{displayedFills[activeIndex]}%"></div>
         </div>
 
         {#key activeIndex}
@@ -226,11 +274,12 @@
 
     {#each slides as slide, i}
       <section class="slide" bind:this={sections[i]} data-index={i}>
-        <div
-          class="content-clip"
-          style={`height:${contentVisibleHeights[i]}px;`}
-        >
-          <div class="content" bind:this={contentRefs[i]}>
+        <div class="content-clip">
+          <div
+            class="content"
+            bind:this={contentRefs[i]}
+            style={`clip-path: inset(0 0 ${contentClipInsets[i]}px 0); -webkit-clip-path: inset(0 0 ${contentClipInsets[i]}px 0);`}
+          >
             <div class="number">{slide.number}</div>
             <h2>{slide.title}</h2>
             <p>{slide.description}</p>
@@ -321,6 +370,8 @@
   .slides {
     position: relative;
     z-index: 3;
+    margin-top: -100vh;
+    margin-top: -100svh;
   }
 
   .mask-anchor {
@@ -353,7 +404,7 @@
   .content {
     position: relative;
     z-index: 5;
-    will-change: height;
+    will-change: clip-path;
   }
 
   .number {
@@ -563,14 +614,9 @@
       min-height: 380vh;
     }
 
-    .segment-fill,
     .mobile-progress-meta {
       transition: none;
       animation: none;
-    }
-
-    .content {
-      will-change: auto;
     }
 
     .bottom-shade {
@@ -606,7 +652,6 @@
   @media (prefers-reduced-motion: reduce) {
     .bg,
     .bg img,
-    .segment-fill,
     .mobile-progress-meta {
       transition: none;
       animation: none;
