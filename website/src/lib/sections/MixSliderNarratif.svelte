@@ -30,12 +30,15 @@
   ];
 
   let sections = [];
+  let contentRefs = [];
   let activeIndex = 0;
   let fills = slides.map(() => 0);
   let displayedFills = slides.map(() => 0);
   let bgScales = slides.map(() => 1.02);
+  let contentClipInsets = slides.map(() => 0);
   let ticking = false;
   let fillFrame = 0;
+  let maskAnchorEl;
   let isMobile = false;
   let prefersReducedMotion = false;
   let resizeTimeout;
@@ -98,7 +101,10 @@
     const vh = window.innerHeight || 1;
     const next = slides.map(() => 0);
     const nextScales = slides.map(() => (prefersReducedMotion ? 1 : isMobile ? 1.01 : 1.02));
+    const nextClipInsets = slides.map(() => 0);
     const progressLine = vh * (isMobile ? 0.56 : 0.5);
+    const fallbackRevealLine = vh * (isMobile ? 0.74 : 0.8);
+    const revealLine = maskAnchorEl?.getBoundingClientRect().top ?? fallbackRevealLine;
     let nextActiveIndex = activeIndex;
     let closestDistance = Number.POSITIVE_INFINITY;
 
@@ -120,10 +126,20 @@
       }
     });
 
+    contentRefs.forEach((content, i) => {
+      if (!content) return;
+
+      const rect = content.getBoundingClientRect();
+      const visibleHeight = clamp(revealLine - rect.top, 0, rect.height);
+
+      nextClipInsets[i] = Math.max(rect.height - visibleHeight, 0);
+    });
+
     activeIndex = nextActiveIndex;
     fills = next;
     animateDisplayedFills();
     bgScales = nextScales;
+    contentClipInsets = nextClipInsets;
     ticking = false;
   }
 
@@ -216,7 +232,7 @@
             on:click={() => jumpToSlide(i)}
           >
             <div class="segment-line">
-              <div class="segment-fill" style={`transform: scaleX(${fills[i] / 100})`}></div>
+              <div class="segment-fill" style="width:{fills[i]}%"></div>
             </div>
 
             <div class="segment-label">
@@ -244,7 +260,7 @@
   <div class="mobile-progress-shell" aria-hidden="true">
     <div class="mobile-progress">
       <div class="segment-line mobile-progress-line">
-        <div class="segment-fill" style={`transform: scaleX(${displayedFills[activeIndex] / 100})`}></div>
+        <div class="segment-fill" style="width:{displayedFills[activeIndex]}%"></div>
       </div>
 
       {#key activeIndex}
@@ -257,10 +273,20 @@
   </div>
 
   <div class="slides">
+    <div class="mask-anchor" bind:this={maskAnchorEl} aria-hidden="true"></div>
+
     {#each slides as slide, i}
       <section class="slide" bind:this={sections[i]} data-index={i}>
         <div class="content-clip">
-          <div class="content">
+          <div
+            class="content"
+            bind:this={contentRefs[i]}
+            style={
+              isMobile
+                ? ""
+                : `clip-path: inset(0 0 ${contentClipInsets[i]}px 0); -webkit-clip-path: inset(0 0 ${contentClipInsets[i]}px 0);`
+            }
+          >
             <div class="number">{slide.number}</div>
             <h2>{slide.title}</h2>
             <p>{slide.description}</p>
@@ -355,6 +381,14 @@
     margin-top: -100svh;
   }
 
+  .mask-anchor {
+    position: sticky;
+    top: 80vh;
+    top: 80svh;
+    height: 0;
+    pointer-events: none;
+  }
+
   .slide {
     min-height: 100vh;
     display: flex;
@@ -369,6 +403,7 @@
 
   .content-clip {
     max-width: 70%;
+    overflow: hidden;
     position: relative;
     z-index: 5;
   }
@@ -376,6 +411,9 @@
   .content {
     position: relative;
     z-index: 5;
+    will-change: clip-path;
+    backface-visibility: hidden;
+    transform: translateZ(0);
   }
 
   .number {
@@ -417,7 +455,7 @@
     left: 2rem;
     right: 2rem;
     bottom: 2rem;
-    z-index: 5;
+    z-index: 4;
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 0.7rem;
@@ -446,14 +484,10 @@
     left: 0;
     top: 0;
     bottom: 0;
-    width: 100%;
+    width: 0%;
     background: white;
     box-shadow: 0 0 12px rgba(255, 255, 255, 0.2);
-    transform-origin: left center;
-    transition: none;
-    will-change: transform;
-    backface-visibility: hidden;
-    transform: translateZ(0);
+    transition: width 80ms linear;
   }
 
   .segment-label {
@@ -568,6 +602,7 @@
 
     .content-clip {
       max-width: 100%;
+      overflow: visible;
     }
 
     .progress-nav {

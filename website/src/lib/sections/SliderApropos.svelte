@@ -30,12 +30,15 @@
   ];
 
   let sections = [];
+  let contentRefs = [];
   let activeIndex = 0;
   let fills = slides.map(() => 0);
   let displayedFills = slides.map(() => 0);
   let bgScales = slides.map(() => 1.02);
+  let contentClipInsets = slides.map(() => 0);
   let ticking = false;
   let fillFrame = 0;
+  let maskAnchorEl;
   let sliderEl;
   let isMobile = false;
   let prefersReducedMotion = false;
@@ -98,7 +101,10 @@
     const vh = window.innerHeight || 1;
     const next = slides.map(() => 0);
     const nextScales = slides.map(() => (prefersReducedMotion ? 1 : isMobile ? 1.01 : 1.02));
+    const nextClipInsets = slides.map(() => 0);
     const progressLine = vh * (isMobile ? 0.56 : 0.5);
+    const fallbackRevealLine = vh * (isMobile ? 0.74 : 0.8);
+    const revealLine = maskAnchorEl?.getBoundingClientRect().top ?? fallbackRevealLine;
     let nextActiveIndex = activeIndex;
     let closestDistance = Number.POSITIVE_INFINITY;
 
@@ -120,10 +126,20 @@
       }
     });
 
+    contentRefs.forEach((content, i) => {
+      if (!content) return;
+
+      const rect = content.getBoundingClientRect();
+      const visibleHeight = clamp(revealLine - rect.top, 0, rect.height);
+
+      nextClipInsets[i] = Math.max(rect.height - visibleHeight, 0);
+    });
+
     activeIndex = nextActiveIndex;
     fills = next;
     animateDisplayedFills();
     bgScales = nextScales;
+    contentClipInsets = nextClipInsets;
     ticking = false;
   }
 
@@ -257,10 +273,20 @@
   </div>
 
   <div class="slides">
+    <div class="mask-anchor" bind:this={maskAnchorEl} aria-hidden="true"></div>
+
     {#each slides as slide, i}
       <section class="slide" bind:this={sections[i]} data-index={i}>
         <div class="content-clip">
-          <div class="content">
+          <div
+            class="content"
+            bind:this={contentRefs[i]}
+            style={
+              isMobile
+                ? ""
+                : `clip-path: inset(0 0 ${contentClipInsets[i]}px 0); -webkit-clip-path: inset(0 0 ${contentClipInsets[i]}px 0);`
+            }
+          >
             <div class="number">{slide.number}</div>
             <h2>{slide.title}</h2>
             <p>{slide.description}</p>
@@ -355,6 +381,14 @@
     margin-top: -100svh;
   }
 
+  .mask-anchor {
+    position: sticky;
+    top: 80vh;
+    top: 80svh;
+    height: 0;
+    pointer-events: none;
+  }
+
   .slide {
     min-height: 100vh;
     display: flex;
@@ -370,6 +404,7 @@
 
   .content-clip {
     max-width: min(70%, 980px);
+    overflow: hidden;
     position: relative;
     z-index: 5;
     margin: 0 auto;
@@ -380,6 +415,9 @@
     z-index: 5;
     text-align: center;
     margin: 0 auto;
+    will-change: clip-path;
+    backface-visibility: hidden;
+    transform: translateZ(0);
   }
 
   .number {
@@ -581,6 +619,7 @@
 
     .content-clip {
       max-width: 100%;
+      overflow: visible;
     }
 
     .progress-nav {

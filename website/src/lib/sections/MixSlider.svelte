@@ -48,10 +48,12 @@
   ];
 
   let sections = [];
+  let contentRefs = [];
   let activeIndex = 0;
   let fills = slides.map(() => 0);
   let displayedFills = slides.map(() => 0);
   let bgScales = slides.map(() => 1.02);
+  let contentClipInsets = slides.map(() => 0);
   let ticking = false;
   let fillFrame = 0;
   let maskAnchorEl;
@@ -117,7 +119,10 @@
     const vh = window.innerHeight || 1;
     const next = slides.map(() => 0);
     const nextScales = slides.map(() => (prefersReducedMotion ? 1 : isMobile ? 1.01 : 1.02));
+    const nextClipInsets = slides.map(() => 0);
     const progressLine = vh * (isMobile ? 0.56 : 0.5);
+    const fallbackRevealLine = vh * (isMobile ? 0.74 : 0.8);
+    const revealLine = maskAnchorEl?.getBoundingClientRect().top ?? fallbackRevealLine;
     let nextActiveIndex = activeIndex;
     let closestDistance = Number.POSITIVE_INFINITY;
 
@@ -139,10 +144,20 @@
       }
     });
 
+    contentRefs.forEach((content, i) => {
+      if (!content) return;
+
+      const rect = content.getBoundingClientRect();
+      const visibleHeight = clamp(revealLine - rect.top, 0, rect.height);
+
+      nextClipInsets[i] = Math.max(rect.height - visibleHeight, 0);
+    });
+
     activeIndex = nextActiveIndex;
     fills = next;
     animateDisplayedFills();
     bgScales = nextScales;
+    contentClipInsets = nextClipInsets;
     ticking = false;
   }
 
@@ -280,6 +295,8 @@
   </div>
 
   <div class="slides">
+    <div class="mask-anchor" bind:this={maskAnchorEl} aria-hidden="true"></div>
+
     {#each slides as slide, i}
       <section
         class="slide"
@@ -289,6 +306,12 @@
         <div class="content-clip">
           <div
             class="content"
+            bind:this={contentRefs[i]}
+            style={
+              isMobile
+                ? ""
+                : `clip-path: inset(0 0 ${contentClipInsets[i]}px 0); -webkit-clip-path: inset(0 0 ${contentClipInsets[i]}px 0);`
+            }
           >
             <div class="number">{slide.number}</div>
             <h2>{slide.title}</h2>
@@ -406,12 +429,21 @@
     position: relative;
   }
 
+  .mask-anchor {
+    position: sticky;
+    top: 80vh;
+    top: 80svh;
+    height: 0;
+    pointer-events: none;
+  }
+
   .tail {
     height: 60vh;
   }
 
   .content-clip {
     max-width: 70%;
+    overflow: hidden;
     position: relative;
     z-index: 5;
   }
@@ -419,6 +451,9 @@
   .content {
     position: relative;
     z-index: 5;
+    will-change: clip-path;
+    backface-visibility: hidden;
+    transform: translateZ(0);
   }
 
   .number {
@@ -641,6 +676,7 @@
 
     .content-clip {
       max-width: 100%;
+      overflow: visible;
     }
 
     h2 {
