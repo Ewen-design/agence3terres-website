@@ -151,8 +151,8 @@
 
     const imageDark = clamp(globalFade * 0.42 + endFade * 0.58, 0, 1);
     const midBrightness = lerp(1, 0.58, globalFade);
-    const imageBrightness = isMobile ? 1 : lerp(midBrightness, 0, endFade);
-    const imageScale = lerp(isMobile ? 1.03 : 1.06, isMobile ? 1.012 : 1.025, globalFade);
+    const imageBrightness = lerp(midBrightness, 0, endFade);
+    const imageScale = lerp(1.06, 1.025, globalFade);
 
     const hintScrollFade = 1 - easeOutCubic(clamp(imageFadeProgress / 0.06, 0, 1));
     const scrollHintOpacity = hintVisible ? hintScrollFade : 0;
@@ -177,7 +177,7 @@
     if (heroMediaImgEl) {
       if (f.imageScale !== applied.imageScale || f.imageBrightness !== applied.imageBrightness) {
         heroMediaImgEl.style.transform = `scale(${f.imageScale})`;
-        heroMediaImgEl.style.filter = isMobile ? "none" : `brightness(${f.imageBrightness})`;
+        heroMediaImgEl.style.filter = `brightness(${f.imageBrightness})`;
         applied.imageScale = f.imageScale;
         applied.imageBrightness = f.imageBrightness;
       }

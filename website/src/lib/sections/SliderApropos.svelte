@@ -30,15 +30,12 @@
   ];
 
   let sections = [];
-  let contentRefs = [];
   let activeIndex = 0;
   let fills = slides.map(() => 0);
   let displayedFills = slides.map(() => 0);
   let bgScales = slides.map(() => 1.02);
-  let contentClipInsets = slides.map(() => 0);
   let ticking = false;
   let fillFrame = 0;
-  let maskAnchorEl;
   let sliderEl;
   let isMobile = false;
   let prefersReducedMotion = false;
@@ -47,6 +44,7 @@
   let touchStartY = 0;
   let touchDeltaX = 0;
   let touchDeltaY = 0;
+  const mobileFillEase = 0.18;
 
   const clamp = (v, min = 0, max = 1) => Math.max(min, Math.min(max, v));
 
@@ -68,7 +66,7 @@
       return;
     }
 
-    stopFillAnimation();
+    if (fillFrame) return;
 
     const step = () => {
       let done = true;
@@ -81,7 +79,7 @@
         }
 
         done = false;
-        return value + delta * 0.14;
+        return value + delta * mobileFillEase;
       });
 
       displayedFills = nextDisplayed;
@@ -100,10 +98,7 @@
     const vh = window.innerHeight || 1;
     const next = slides.map(() => 0);
     const nextScales = slides.map(() => (prefersReducedMotion ? 1 : isMobile ? 1.01 : 1.02));
-    const nextClipInsets = slides.map(() => 0);
     const progressLine = vh * (isMobile ? 0.56 : 0.5);
-    const fallbackRevealLine = vh * (isMobile ? 0.74 : 0.8);
-    const revealLine = maskAnchorEl?.getBoundingClientRect().top ?? fallbackRevealLine;
     let nextActiveIndex = activeIndex;
     let closestDistance = Number.POSITIVE_INFINITY;
 
@@ -125,20 +120,10 @@
       }
     });
 
-    contentRefs.forEach((content, i) => {
-      if (!content) return;
-
-      const rect = content.getBoundingClientRect();
-      const visibleHeight = clamp(revealLine - rect.top, 0, rect.height);
-
-      nextClipInsets[i] = Math.max(rect.height - visibleHeight, 0);
-    });
-
     activeIndex = nextActiveIndex;
     fills = next;
     animateDisplayedFills();
     bgScales = nextScales;
-    contentClipInsets = nextClipInsets;
     ticking = false;
   }
 
@@ -242,19 +227,6 @@
         {/each}
       </div>
 
-      <div class="mobile-progress" aria-hidden="true">
-        <div class="segment-line mobile-progress-line">
-          <div class="segment-fill" style={`transform: scaleX(${displayedFills[activeIndex] / 100})`}></div>
-        </div>
-
-        {#key activeIndex}
-          <div class="mobile-progress-meta">
-            <span class="mobile-progress-num">{slides[activeIndex].number}</span>
-            <span class="mobile-progress-title">{slides[activeIndex].navTitle}</span>
-          </div>
-        {/key}
-      </div>
-
       {#each slides as slide, i}
         <div class="bg" class:active={activeIndex === i}>
           <img
@@ -269,17 +241,26 @@
     </div>
   </div>
 
-  <div class="slides">
-    <div class="mask-anchor" bind:this={maskAnchorEl} aria-hidden="true"></div>
+  <div class="mobile-progress-shell" aria-hidden="true">
+    <div class="mobile-progress">
+      <div class="segment-line mobile-progress-line">
+        <div class="segment-fill" style={`transform: scaleX(${displayedFills[activeIndex] / 100})`}></div>
+      </div>
 
+      {#key activeIndex}
+        <div class="mobile-progress-meta">
+          <span class="mobile-progress-num">{slides[activeIndex].number}</span>
+          <span class="mobile-progress-title">{slides[activeIndex].navTitle}</span>
+        </div>
+      {/key}
+    </div>
+  </div>
+
+  <div class="slides">
     {#each slides as slide, i}
       <section class="slide" bind:this={sections[i]} data-index={i}>
         <div class="content-clip">
-          <div
-            class="content"
-            bind:this={contentRefs[i]}
-            style={`clip-path: inset(0 0 ${contentClipInsets[i]}px 0); -webkit-clip-path: inset(0 0 ${contentClipInsets[i]}px 0);`}
-          >
+          <div class="content">
             <div class="number">{slide.number}</div>
             <h2>{slide.title}</h2>
             <p>{slide.description}</p>
@@ -374,14 +355,6 @@
     margin-top: -100svh;
   }
 
-  .mask-anchor {
-    position: sticky;
-    top: 80vh;
-    top: 80svh;
-    height: 0;
-    pointer-events: none;
-  }
-
   .slide {
     min-height: 100vh;
     display: flex;
@@ -397,7 +370,6 @@
 
   .content-clip {
     max-width: min(70%, 980px);
-    overflow: hidden;
     position: relative;
     z-index: 5;
     margin: 0 auto;
@@ -408,9 +380,6 @@
     z-index: 5;
     text-align: center;
     margin: 0 auto;
-    will-change: clip-path;
-    backface-visibility: hidden;
-    transform: translateZ(0);
   }
 
   .number {
@@ -455,7 +424,7 @@
     left: 2rem;
     right: 2rem;
     bottom: 2rem;
-    z-index: 4;
+    z-index: 5;
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 0.7rem;
@@ -493,7 +462,10 @@
     background: white;
     box-shadow: 0 0 12px rgba(255, 255, 255, 0.2);
     transform-origin: left center;
-    transition: transform 80ms linear;
+    transition: none;
+    will-change: transform;
+    backface-visibility: hidden;
+    transform: translateZ(0);
   }
 
   .segment-label {
@@ -536,13 +508,20 @@
     outline-offset: 4px;
   }
 
+  .mobile-progress-shell {
+    display: none;
+  }
+
   .mobile-progress {
     display: none;
     position: absolute;
-    left: 1.25rem;
-    right: 1.25rem;
-    bottom: 1rem;
-    z-index: 4;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 6;
+    padding: 0.55rem 1.25rem calc(0.65rem + env(safe-area-inset-bottom));
+    background: #000;
+    box-shadow: 0 -12px 0 #000;
   }
 
   .mobile-progress-line {
@@ -628,7 +607,7 @@
 
   @media (max-width: 700px) {
     .slider {
-      min-height: 380vh;
+      min-height: 300vh;
     }
 
     .mobile-progress-meta {
@@ -648,15 +627,31 @@
     }
 
     .tail {
-      height: 14svh;
+      height: 0;
     }
 
     .progress-nav {
       display: none;
     }
 
+    .mobile-progress-shell {
+      --mobile-progress-shell-height: calc(4.45rem + env(safe-area-inset-bottom));
+      display: block;
+      position: sticky;
+      top: calc(100svh - var(--mobile-progress-shell-height));
+      height: var(--mobile-progress-shell-height);
+      margin-top: calc(-1 * var(--mobile-progress-shell-height));
+      margin-bottom: calc(-1 * var(--mobile-progress-shell-height));
+      z-index: 8;
+      pointer-events: none;
+    }
+
     .mobile-progress {
       display: block;
+      position: absolute;
+      bottom: -1px;
+      left: 0;
+      right: 0;
     }
 
     h2 {
