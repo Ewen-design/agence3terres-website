@@ -626,7 +626,47 @@
   }
 
   .theme-projets .nav-btn::before {
+     border-image-source: radial-gradient(
+      68px circle at var(--mx, 50%) var(--my, 50%),
+      rgba(220, 240, 255, 1) 0%,
+      rgba(145, 205, 255, 0.98) 22%,
+      rgba(74, 140, 255, 0.62) 45%,
+      rgba(18, 45, 120, 0.14) 62%,
+      transparent 78%
+    );
+  }
+
+  .theme-projets .nav-btn::after {
+     border-image-source: radial-gradient(
+      78px circle at var(--mx, 50%) var(--my, 50%),
+      rgba(95, 165, 255, 0.42) 0%,
+      rgba(74, 140, 255, 0.18) 42%,
+      transparent 72%
+    );
+  }
+
+  .theme-apropos .nav-btn::before {
     border-image-source: radial-gradient(
+      68px circle at var(--mx, 50%) var(--my, 50%),
+      rgba(255, 225, 140, 1) 0%,
+      rgba(212, 175, 55, 0.95) 22%,
+      rgba(212, 102, 55, 0.55) 45%,
+      rgba(212, 102, 55, 0.12) 62%,
+      transparent 78%
+    );
+  }
+
+  .theme-apropos .nav-btn::after {
+    border-image-source: radial-gradient(
+     78px circle at var(--mx, 50%) var(--my, 50%),
+      rgba(212, 175, 55, 0.55) 0%,
+      rgba(212, 102, 55, 0.22) 42%,
+      transparent 72%
+    );
+  }
+
+  .theme-contact .nav-btn::before {
+     border-image-source: radial-gradient(
       68px circle at var(--mx, 50%) var(--my, 50%),
       rgba(235, 232, 255, 1) 0%,
       rgba(210, 210, 230, 0.98) 22%,
@@ -636,51 +676,11 @@
     );
   }
 
-  .theme-projets .nav-btn::after {
-    border-image-source: radial-gradient(
+  .theme-contact .nav-btn::after {
+   border-image-source: radial-gradient(
       78px circle at var(--mx, 50%) var(--my, 50%),
       rgba(150, 140, 230, 0.42) 0%,
       rgba(130, 110, 220, 0.18) 42%,
-      transparent 72%
-    );
-  }
-
-  .theme-apropos .nav-btn::before {
-    border-image-source: radial-gradient(
-      68px circle at var(--mx, 50%) var(--my, 50%),
-      rgba(255, 226, 226, 1) 0%,
-      rgba(255, 170, 170, 0.98) 22%,
-      rgba(255, 110, 90, 0.62) 45%,
-      rgba(150, 40, 40, 0.14) 62%,
-      transparent 78%
-    );
-  }
-
-  .theme-apropos .nav-btn::after {
-    border-image-source: radial-gradient(
-      78px circle at var(--mx, 50%) var(--my, 50%),
-      rgba(255, 110, 90, 0.42) 0%,
-      rgba(255, 110, 90, 0.18) 42%,
-      transparent 72%
-    );
-  }
-
-  .theme-contact .nav-btn::before {
-    border-image-source: radial-gradient(
-      68px circle at var(--mx, 50%) var(--my, 50%),
-      rgba(228, 255, 247, 1) 0%,
-      rgba(170, 255, 233, 0.98) 22%,
-      rgba(77, 214, 182, 0.62) 45%,
-      rgba(26, 111, 117, 0.14) 62%,
-      transparent 78%
-    );
-  }
-
-  .theme-contact .nav-btn::after {
-    border-image-source: radial-gradient(
-      78px circle at var(--mx, 50%) var(--my, 50%),
-      rgba(77, 214, 182, 0.42) 0%,
-      rgba(77, 214, 182, 0.18) 42%,
       transparent 72%
     );
   }

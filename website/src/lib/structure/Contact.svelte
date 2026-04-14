@@ -28,7 +28,7 @@
     }
   ];
 
-  let activeTab = "contact";
+  let activeTab = "inquiries";
   let previousTab = null;
   let isSwitching = false;
   let nextVisible = false;
@@ -102,8 +102,8 @@
     <div class="right">
       <div class="hero">
         <h1>
-          Parlons d’un<br />
-          projet marquant.
+          Parlons<br />
+          de votre projet.
         </h1>
         <p>
           Chaque collaboration commence par une conversation claire, directe et bien cadrée.
@@ -180,13 +180,29 @@
                 <button
                   type="button"
                   class="nav-btn copy-btn"
+                  class:has-label={copied}
+                  aria-label={copied ? "Email copié" : "Copier l'adresse email"}
                   data-cursor="button"
                   on:mousemove={handleButtonMove}
                   on:click={copyEmail}
                 >
-                  <span class="nav-btn-flip" data-text={copied ? "Copié" : "Copier"}>
-                    <span class="nav-btn-text">{copied ? "Copié" : "Copier"}</span>
-                  </span>
+                  {#if copied}
+                    <span class="nav-btn-flip" data-text="Copié">
+                      <span class="nav-btn-text">Copié</span>
+                    </span>
+                  {:else}
+                    <span class="copy-icon" aria-hidden="true">
+                      <svg viewBox="0 0 24 24" focusable="false">
+                        <path
+                          d="M9 4h10v10H9zM5 8h10v10H5z"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="1.75"
+                          stroke-linejoin="round"
+                        />
+                      </svg>
+                    </span>
+                  {/if}
                 </button>
               </div>
             {:else if previousTab === "socials"}
@@ -223,13 +239,29 @@
               <button
                 type="button"
                 class="nav-btn copy-btn"
+                class:has-label={copied}
+                aria-label={copied ? "Email copié" : "Copier l'adresse email"}
                 data-cursor="button"
                 on:mousemove={handleButtonMove}
                 on:click={copyEmail}
               >
-                <span class="nav-btn-flip" data-text={copied ? "Copié" : "Copier"}>
-                  <span class="nav-btn-text">{copied ? "Copié" : "Copier"}</span>
-                </span>
+                {#if copied}
+                  <span class="nav-btn-flip" data-text="Copié">
+                    <span class="nav-btn-text">Copié</span>
+                  </span>
+                {:else}
+                  <span class="copy-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" focusable="false">
+                      <path
+                        d="M9 4h10v10H9zM5 8h10v10H5z"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="1.75"
+                        stroke-linejoin="round"
+                      />
+                    </svg>
+                  </span>
+                {/if}
               </button>
             </div>
           {:else if activeTab === "socials"}
@@ -259,7 +291,7 @@
 <style>
   .contact {
     position: relative;
-    min-height: 100vh;
+    height: 100vh;
     overflow: hidden;
     color: white;
   }
@@ -291,8 +323,9 @@
   .container {
     position: relative;
     z-index: 2;
-    min-height: 100vh;
-    padding: clamp(6.5rem, 10vh, 8rem) clamp(1.5rem, 6vw, 8vw) clamp(2rem, 4vw, 3rem);
+    height: 100vh;
+    box-sizing: border-box;
+    padding: clamp(5.5rem, 8vh, 7rem) clamp(1.5rem, 6vw, 8vw) clamp(1.6rem, 3vw, 2.4rem);
     display: flex;
     justify-content: space-between;
     gap: clamp(3rem, 7vw, 7rem);
@@ -307,7 +340,7 @@
   }
 
   .hero {
-    margin-bottom: 2.5rem;
+    margin-bottom: 2rem;
   }
 
   .hero h1 {
@@ -331,7 +364,7 @@
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
     background: rgba(255, 255, 255, 0.08);
-    padding: clamp(1.6rem, 3vw, 3rem);
+    padding: clamp(1.3rem, 2.4vw, 2.35rem);
     border-radius: 2px;
     box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
     border: 1px solid rgba(255, 255, 255, 0.08);
@@ -340,7 +373,7 @@
 
   .field {
     position: relative;
-    margin-bottom: 2rem;
+    margin-bottom: 1.55rem;
   }
 
   input,
@@ -358,7 +391,7 @@
 
   textarea {
     resize: vertical;
-    min-height: 8rem;
+    min-height: 6.8rem;
   }
 
   label {
@@ -396,12 +429,12 @@
     align-items: center;
     gap: 0.8rem;
     flex-wrap: wrap;
-    margin-bottom: 0.45rem;
+    margin-bottom: 0.15rem;
   }
 
   .content-stage {
     position: relative;
-    min-height: clamp(8.25rem, 12vw, 10.25rem);
+    min-height: clamp(6.6rem, 9vw, 8.2rem);
     width: 100%;
     overflow: hidden;
   }
@@ -452,9 +485,10 @@
 
   .email-panel {
     display: flex;
-    align-items: flex-end;
-    gap: 1rem;
-    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.65rem;
+    flex-wrap: nowrap;
+    max-width: 100%;
   }
 
   .headline,
@@ -472,6 +506,11 @@
 
   .headline-link {
     max-width: 100%;
+  }
+
+  .email-panel .headline-link {
+    font-size: clamp(1.55rem, 3.35vw, 3.55rem);
+    line-height: 0.96;
   }
 
   .socials-group {
@@ -520,10 +559,10 @@
     border-image-slice: 1;
     border-image-source: radial-gradient(
       68px circle at var(--mx, 50%) var(--my, 50%),
-      rgba(228, 255, 247, 1) 0%,
-      rgba(170, 255, 233, 0.98) 22%,
-      rgba(77, 214, 182, 0.62) 45%,
-      rgba(26, 111, 117, 0.14) 62%,
+      rgba(235, 232, 255, 1) 0%,
+      rgba(210, 210, 230, 0.98) 22%,
+      rgba(130, 110, 220, 0.62) 45%,
+      rgba(35, 30, 95, 0.14) 62%,
       transparent 78%
     );
     transition: opacity 0.25s ease;
@@ -535,8 +574,8 @@
     border-image-slice: 1;
     border-image-source: radial-gradient(
       78px circle at var(--mx, 50%) var(--my, 50%),
-      rgba(77, 214, 182, 0.42) 0%,
-      rgba(77, 214, 182, 0.18) 42%,
+      rgba(150, 140, 230, 0.42) 0%,
+      rgba(130, 110, 220, 0.18) 42%,
       transparent 72%
     );
     filter: blur(2px);
@@ -581,11 +620,36 @@
   }
 
   .submit-btn {
-    margin-top: 0.9rem;
+    margin-top: 1rem;
+    padding: 0 1.5rem;
   }
 
   .copy-btn {
-    margin-bottom: 0.45rem;
+    flex: 0 0 auto;
+    min-width: 36px;
+    width: 36px;
+    padding: 0;
+    margin-bottom: 0;
+  }
+
+  .copy-btn.has-label {
+    width: auto;
+    min-width: 5.1rem;
+    padding: 0 0.85rem;
+  }
+
+  .copy-icon {
+    width: 1.15rem;
+    height: 1.15rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .copy-icon svg {
+    width: 100%;
+    height: 100%;
+    display: block;
   }
 
   .nav-btn-flip {
@@ -644,10 +708,10 @@
     border-image-slice: 1;
     border-image-source: radial-gradient(
       68px circle at var(--mx, 50%) var(--my, 50%),
-      rgba(228, 255, 247, 1) 0%,
-      rgba(170, 255, 233, 0.98) 22%,
-      rgba(77, 214, 182, 0.62) 45%,
-      rgba(26, 111, 117, 0.14) 62%,
+      rgba(235, 232, 255, 1) 0%,
+      rgba(210, 210, 230, 0.98) 22%,
+      rgba(130, 110, 220, 0.62) 45%,
+      rgba(35, 30, 95, 0.14) 62%,
       transparent 78%
     );
     transition: opacity 0.25s ease;
@@ -659,8 +723,8 @@
     border-image-slice: 1;
     border-image-source: radial-gradient(
       78px circle at var(--mx, 50%) var(--my, 50%),
-      rgba(77, 214, 182, 0.42) 0%,
-      rgba(77, 214, 182, 0.18) 42%,
+      rgba(150, 140, 230, 0.42) 0%,
+      rgba(130, 110, 220, 0.18) 42%,
       transparent 72%
     );
     filter: blur(2px);
@@ -696,6 +760,12 @@
   }
 
   @media (max-width: 1000px) {
+    .contact,
+    .container {
+      height: auto;
+      min-height: 100vh;
+    }
+
     .container {
       flex-direction: column;
       gap: 3rem;
@@ -759,6 +829,11 @@
     .email-panel {
       align-items: center;
       flex-direction: column;
+      gap: 0.65rem;
+    }
+
+    .email-panel .headline-link {
+      font-size: clamp(1.2rem, 6.1vw, 2.3rem);
     }
 
     .content-stage {

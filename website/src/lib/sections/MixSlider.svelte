@@ -431,8 +431,8 @@
 
   .mask-anchor {
     position: sticky;
-    top: 80vh;
-    top: 80svh;
+    top: 88vh;
+    top: 88svh;
     height: 0;
     pointer-events: none;
   }

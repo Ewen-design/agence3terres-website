@@ -497,7 +497,7 @@
           3 Terres
         </span>
 
-        <h1 class="title-mobile" aria-label="Agence 3 Terres">
+        <h1 class="title-mobile" class:intro-visible={introVisible} aria-label="Agence 3 Terres">
           <span class="title-mobile-top">Agence</span>
           <span class="title-mobile-bottom">3 Terres</span>
         </h1>
@@ -792,6 +792,9 @@
     color: #f4efe6;
     z-index: 2;
     pointer-events: none;
+    opacity: 0;
+    filter: blur(18px);
+    will-change: transform, opacity, filter;
   }
 
   .title-mobile span {
@@ -819,6 +822,19 @@
       opacity: 1;
       filter: blur(0);
       transform: translate3d(var(--title-x, 0px), -50%, 0);
+    }
+  }
+
+  @keyframes titleEnterMobile {
+    from {
+      opacity: 0;
+      filter: blur(18px);
+      transform: translate3d(-50%, 26px, 0);
+    }
+    to {
+      opacity: 1;
+      filter: blur(0);
+      transform: translate3d(-50%, 0, 0);
     }
   }
 
@@ -875,11 +891,14 @@
       display: block;
       top: auto;
       left: 50%;
-      transform: none;
+      transform: translate3d(-50%, 0, 0);
       width: min(92vw, 500px);
       margin: 0;
       padding-top: 71vh;
-      translate: -50% 0;
+    }
+
+    .title-mobile.intro-visible {
+      animation: titleEnterMobile 1.25s cubic-bezier(0.22, 1, 0.36, 1) forwards;
     }
 
     .title-mobile-top {
