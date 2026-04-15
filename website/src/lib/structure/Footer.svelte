@@ -37,7 +37,7 @@
     </div>
 
     <div class="bottom-block">
-      <img src="/images/logo-icon.png" alt="Logo Agence 3 Terres" class="logo" />
+      <img src="/images/test_logo.png" alt="Logo Agence 3 Terres" class="logo" />
 
       <div class="contact-block">
         <span class="contact-title">Contact</span>
@@ -153,8 +153,7 @@
   }
 
   .line-2 {
-    font-family: "Titre italic", serif;
-    font-style: italic;
+    font-family: "Titre", serif;
     font-weight: 400;
     color: rgba(255, 255, 255, 0.5);
     margin-top: 0.04em;

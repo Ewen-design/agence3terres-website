@@ -27,8 +27,11 @@
   let headerIntroStarted = false;
   let headerIntroVisible = false;
   let headerIntroDone = false;
+  let headerReady = false;
+  let blurWarm = false;
   let headerIntroFallback;
   let headerIntroCleanup;
+  let blurWarmCleanup;
 
   let btnEls = [];
   let tourTimer;
@@ -263,28 +266,68 @@
   }
 
   onMount(() => {
+    let destroyed = false;
+
     lastScrollY = window.scrollY || 0;
     refreshThemeSections();
-    linksTextReady = !compact;
+    linksTextReady = false;
 
     registerRead(processScrollState);
     forceScrollEngineUpdate();
 
-    const handlePreloaderDone = () => {
+    const markHeaderReady = async () => {
+      if (document.fonts?.ready) {
+        try {
+          await document.fonts.ready;
+        } catch {}
+      }
+
+      if (destroyed) return;
+
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          if (destroyed) return;
+          headerReady = true;
+          linksTextReady = !compact;
+          forceScrollEngineUpdate();
+        });
+      });
+    };
+
+    const handlePreloaderDone = async () => {
+      await markHeaderReady();
+      if (destroyed) return;
       startHeaderIntro();
     };
 
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        if (destroyed) return;
+        blurWarm = true;
+      });
+    });
+
     window.addEventListener("preloader:done", handlePreloaderDone);
 
-    headerIntroFallback = setTimeout(() => {
+    markHeaderReady();
+
+    headerIntroFallback = setTimeout(async () => {
+      await markHeaderReady();
+      if (destroyed) return;
       startHeaderIntro();
     }, 1800);
+
+    blurWarmCleanup = setTimeout(() => {
+      if (destroyed) return;
+      blurWarm = false;
+    }, 2600);
 
     window.addEventListener("resize", scheduleThemeSectionsRefresh, { passive: true });
 
     scheduleTour();
 
     return () => {
+      destroyed = true;
       unregisterRead(processScrollState);
       window.removeEventListener("preloader:done", handlePreloaderDone);
       window.removeEventListener("resize", scheduleThemeSectionsRefresh);
@@ -301,14 +344,26 @@
     clearTimeout(flipResetTimer);
     clearTimeout(headerIntroFallback);
     clearTimeout(headerIntroCleanup);
+    clearTimeout(blurWarmCleanup);
 
     cancelAnimationFrame(tourRaf);
     cancelAnimationFrame(refreshSectionsRaf);
   });
 </script>
 
+{#if blurWarm}
+  <div class="header-blur-prewarm" aria-hidden="true">
+    <span></span>
+    <span></span>
+    <span></span>
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
+{/if}
+
 <header
-  class="nav-wrapper {compact ? 'compact' : ''} {menuOpen ? 'menu-open' : ''} {themeClass} {headerIntroVisible ? 'intro-visible' : 'intro-hidden'} {headerIntroVisible && !headerIntroDone ? 'intro-animating' : ''}"
+  class="nav-wrapper {compact ? 'compact' : ''} {menuOpen ? 'menu-open' : ''} {themeClass} {headerReady ? 'is-ready' : 'is-loading'} {headerIntroVisible ? 'intro-visible' : 'intro-hidden'} {headerIntroVisible && !headerIntroDone ? 'intro-animating' : ''}"
   style="color:{textColor}"
   bind:this={headerEl}
 >
@@ -387,15 +442,50 @@
     z-index: 1000;
   }
 
+  .header-blur-prewarm {
+    position: fixed;
+    top: -200px;
+    left: -200px;
+    z-index: -1;
+    display: flex;
+    gap: 0.6rem;
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .header-blur-prewarm span {
+    display: block;
+    height: 40px;
+    border-radius: 2px;
+    background: rgba(255, 255, 255, 0.10);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    transform: translateZ(0);
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+  }
+
+  .header-blur-prewarm span:nth-child(1) { width: 168px; }
+  .header-blur-prewarm span:nth-child(2) { width: 112px; }
+  .header-blur-prewarm span:nth-child(3) { width: 124px; }
+  .header-blur-prewarm span:nth-child(4) { width: 118px; }
+  .header-blur-prewarm span:nth-child(5) { width: 114px; }
+  .header-blur-prewarm span:nth-child(6) { width: 44px; }
+
   .nav-wrapper {
     padding: 0;
     background: none;
     backdrop-filter: none;
     box-shadow: none;
+    isolation: isolate;
     transition:
       opacity 0.9s ease,
-      transform 0.9s cubic-bezier(.22,.61,.36,1),
-      filter 0.9s ease;
+      transform 0.9s cubic-bezier(.22,.61,.36,1);
+  }
+
+  .nav-wrapper.is-loading {
+    opacity: 0;
+    pointer-events: none;
   }
 
   .nav-wrapper.intro-hidden {
@@ -407,7 +497,6 @@
   .nav-wrapper.intro-visible {
     opacity: 1;
     transform: translateX(-50%);
-    filter: none;
     pointer-events: auto;
   }
 
@@ -418,12 +507,10 @@
   @keyframes headerIntroReveal {
     from {
       opacity: 0;
-      filter: blur(10px);
       transform: translateX(-50%) translate3d(0, -10px, 0) scale(0.985);
     }
     to {
       opacity: 1;
-      filter: blur(0);
       transform: translateX(-50%) translate3d(0, 0, 0) scale(1);
     }
   }
@@ -431,7 +518,6 @@
   .menu-open {
     opacity: 0.35;
     transform: translateX(-50%) scale(0.97);
-    filter: blur(6px);
   }
 
   .nav-inner {
@@ -457,6 +543,10 @@
     background: rgba(255, 255, 255, 0.10);
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
+    will-change: transform, opacity, backdrop-filter, -webkit-backdrop-filter;
+    transform: translateZ(0);
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
     border-radius: 2px;
     box-shadow: 0 6px 8px rgba(0, 0, 0, 0.04);
     transition:
