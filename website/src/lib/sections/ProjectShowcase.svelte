@@ -32,14 +32,14 @@
   ];
 
   let sectionEl;
-  let sectionTop = 0;
-  let sectionHeight = 1;
+  let slideEls = [];
+  let slideMetrics = [];
   let viewportH = 1;
   let measured = false;
   let resizeTimer;
 
   let scrollBlend = 0;
-  let hoveredIndex = null;
+  let activeIndex = 0;
 
   const clamp = (v, min = 0, max = 1) => Math.min(max, Math.max(min, v));
 
@@ -56,18 +56,49 @@
   function measure() {
     if (!browser || !sectionEl) return;
     const scrollY = window.scrollY || window.pageYOffset || 0;
-    const rect = sectionEl.getBoundingClientRect();
-    sectionTop = rect.top + scrollY;
-    sectionHeight = Math.max(rect.height, 1);
     viewportH = Math.max(window.innerHeight, 1);
+    slideMetrics = slideEls
+      .map((slide) => {
+        if (!slide) return null;
+        const rect = slide.getBoundingClientRect();
+        const top = rect.top + scrollY;
+        const height = Math.max(rect.height, 1);
+
+        return {
+          top,
+          height,
+          center: top + height * 0.5
+        };
+      })
+      .filter(Boolean);
     measured = true;
   }
 
   function handleParallax(y) {
-    if (!measured) return;
-    const maxScroll = Math.max(sectionHeight - viewportH, 1);
-    const overall = clamp((y - sectionTop) / maxScroll, 0, 1);
-    scrollBlend = smoother01(invLerp(0.18, 0.82, overall));
+    if (!measured || slideMetrics.length === 0) return;
+
+    const viewportMid = y + viewportH * 0.5;
+    let nextActiveIndex = activeIndex;
+    let closestDistance = Number.POSITIVE_INFINITY;
+
+    slideMetrics.forEach((metric, index) => {
+      const distance = Math.abs(metric.center - viewportMid);
+      if (distance < closestDistance) {
+        closestDistance = distance;
+        nextActiveIndex = index;
+      }
+    });
+
+    activeIndex = nextActiveIndex;
+
+    if (slideMetrics.length === 1) {
+      scrollBlend = 0;
+      return;
+    }
+
+    const firstCenter = slideMetrics[0].center;
+    const lastCenter = slideMetrics[slideMetrics.length - 1].center;
+    scrollBlend = smoother01(invLerp(firstCenter, lastCenter, viewportMid));
   }
 
   function handleResize() {
@@ -113,29 +144,73 @@
     clearTimeout(resizeTimer);
   });
 
-  $: visualBlend = hoveredIndex === null ? scrollBlend : hoveredIndex;
-  $: activeIndex = visualBlend >= 0.5 ? 1 : 0;
+  $: visualBlend = scrollBlend;
   $: activeProject = projects[activeIndex];
 </script>
 
-<section class="project-showcase" bind:this={sectionEl}>
+<section
+  class="project-showcase"
+  bind:this={sectionEl}
+  style={`--project-count:${projects.length};`}
+>
   <div class="sticky-shell">
     <div class="backdrop"></div>
 
     <div class="showcase-grid">
-      <div class="project-rail">
-        {#each projects as project, i}
-          <article
-            class="rail-item"
-            class:is-active={activeIndex === i}
-            on:mouseenter={() => (hoveredIndex = i)}
-            on:mouseleave={() => (hoveredIndex = null)}
-            on:focusin={() => (hoveredIndex = i)}
-            on:focusout={() => (hoveredIndex = null)}
+      <div class="rail-spacer" aria-hidden="true"></div>
+
+      <div class="visual-stage" aria-hidden="true">
+        <div class="visual-frame" style={`--blend:${visualBlend.toFixed(3)};`}>
+          <div
+            class="visual-base"
+            style={`transform: scale(${(1.01 + visualBlend * 0.035).toFixed(4)}); filter: brightness(${(1 - visualBlend * 0.24).toFixed(4)});`}
           >
-            <div class="rail-meta">{project.number} / {project.category}</div>
+            <img src={projects[0].image} alt="" />
+          </div>
+
+          <div
+            class="visual-next"
+            style={`clip-path: inset(${((1 - visualBlend) * 100).toFixed(3)}% 0 0 0); -webkit-clip-path: inset(${((1 - visualBlend) * 100).toFixed(3)}% 0 0 0);`}
+          >
+            <img
+              src={projects[1].image}
+              alt=""
+              style={`transform: scale(${(1.045 - visualBlend * 0.02).toFixed(4)});`}
+            />
+          </div>
+
+          <div class="visual-shade"></div>
+        </div>
+      </div>
+
+      <div class="story-panel">
+        <div class="story-copy">
+          {#each projects as project, i}
+            <div
+              class="story-layer"
+              class:is-active={activeIndex === i}
+              aria-hidden={activeIndex !== i}
+            >
+              <p class="story-lead">{project.lead}</p>
+              <p class="story-rest">{project.rest}</p>
+            </div>
+          {/each}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="project-scroll-track">
+    {#each projects as project, i}
+      <section class="project-slide">
+        <div class="project-slide-grid">
+          <article
+            class="project-copy"
+            bind:this={slideEls[i]}
+            class:is-active={activeIndex === i}
+          >
             <h2>{project.title}</h2>
-            <p>{project.lead}</p>
+            <p>{project.lead} {project.rest}</p>
             <button
               class="nav-btn"
               type="button"
@@ -148,51 +223,9 @@
               </span>
             </button>
           </article>
-        {/each}
-      </div>
-
-      <div class="visual-stage" aria-hidden="true">
-        <div class="visual-frame">
-          <div
-            class="visual-base"
-            style={`opacity:${(1 - visualBlend).toFixed(3)}; transform: scale(${(1.02 - visualBlend * 0.02).toFixed(4)});`}
-          >
-            <img src={projects[0].image} alt="" />
-          </div>
-
-          <div
-            class="visual-next"
-            style={`opacity:${visualBlend.toFixed(3)}; clip-path: inset(${((1 - visualBlend) * 100).toFixed(3)}% 0 0 0); -webkit-clip-path: inset(${((1 - visualBlend) * 100).toFixed(3)}% 0 0 0);`}
-          >
-            <img
-              src={projects[1].image}
-              alt=""
-              style={`transform: scale(${(1.045 - visualBlend * 0.03).toFixed(4)});`}
-            />
-          </div>
-
-          <div class="visual-shade"></div>
-          <div class="visual-line"></div>
         </div>
-      </div>
-
-      <div class="story-panel">
-        <div class="story-kicker">{activeProject.number} / {activeProject.category}</div>
-        <div class="story-copy">
-          {#each projects as project, i}
-            <div
-              class="story-layer"
-              class:is-active={activeIndex === i}
-              aria-hidden={activeIndex !== i}
-            >
-              <h3>{project.title}</h3>
-              <p class="story-lead">{project.lead}</p>
-              <p class="story-rest">{project.rest}</p>
-            </div>
-          {/each}
-        </div>
-      </div>
-    </div>
+      </section>
+    {/each}
   </div>
 
   <div class="mobile-stack">
@@ -201,10 +234,8 @@
         <div class="mobile-image">
           <img src={project.image} alt={project.title} />
         </div>
-        <div class="mobile-meta">{project.number} / {project.category}</div>
         <h2>{project.title}</h2>
-        <p class="mobile-lead">{project.lead}</p>
-        <p class="mobile-rest">{project.rest}</p>
+        <p class="mobile-rest">{project.lead} {project.rest}</p>
         <button
           class="nav-btn"
           type="button"
@@ -226,7 +257,7 @@
     position: relative;
     background: #000;
     color: #f5f1e8;
-    min-height: 240vh;
+    min-height: calc(var(--project-count, 2) * 100vh);
   }
 
   .sticky-shell {
@@ -240,10 +271,7 @@
   .backdrop {
     position: absolute;
     inset: 0;
-    background:
-      radial-gradient(circle at 18% 18%, rgba(255, 255, 255, 0.04), transparent 26%),
-      radial-gradient(circle at 82% 84%, rgba(255, 255, 255, 0.03), transparent 30%),
-      linear-gradient(180deg, #050505 0%, #000 100%);
+    background: #000;
   }
 
   .showcase-grid {
@@ -257,56 +285,29 @@
     align-items: stretch;
   }
 
-  .project-rail {
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    gap: 1.3rem;
+  .rail-spacer {
     min-width: 0;
   }
 
-  .rail-item {
-    padding: 0.25rem 0;
-    opacity: 0.34;
-    transition:
-      opacity 0.7s ease,
-      transform 0.8s cubic-bezier(.22,1,.36,1);
-  }
-
-  .rail-item.is-active {
-    opacity: 1;
-    transform: translate3d(0, 0, 0);
-  }
-
-  .rail-meta,
-  .mobile-meta,
-  .story-kicker {
-    font-family: "General Sans", sans-serif;
-    font-size: 0.72rem;
-    letter-spacing: 0.13em;
-    text-transform: uppercase;
-    color: rgba(245, 241, 232, 0.46);
-  }
-
-  .rail-item h2,
-  .mobile-card h2,
-  .story-layer h3 {
+  .project-copy h2,
+  .mobile-card h2 {
     margin: 0.35rem 0 0;
-    font-family: "Titre", serif;
-    font-size: clamp(2.8rem, 4vw, 4.9rem);
+    font-family: "Titre italic", serif;
+    font-style: italic;
+    font-size: clamp(3.5rem, 5.4vw, 6.2rem);
     line-height: 0.9;
     letter-spacing: -0.055em;
     font-weight: 400;
   }
 
-  .rail-item p,
+  .project-copy p,
   .mobile-card p {
     margin: 0.9rem 0 1.25rem;
-    max-width: 24rem;
+    max-width: 28rem;
     font-family: "General Sans", sans-serif;
-    font-size: 0.98rem;
-    line-height: 1.5;
-    color: rgba(245, 241, 232, 0.66);
+    font-size: 1.02rem;
+    line-height: 1.62;
+    color: rgba(245, 241, 232, 0.72);
   }
 
   .visual-stage {
@@ -328,7 +329,7 @@
   .visual-next {
     position: absolute;
     inset: 0;
-    will-change: opacity, transform, clip-path;
+    will-change: transform, clip-path, filter;
   }
 
   .visual-base img,
@@ -340,26 +341,15 @@
   }
 
   .visual-base img {
-    transform: scale(1.02);
+    transform: scale(1.01);
   }
 
   .visual-shade {
     position: absolute;
     inset: 0;
     background:
-      linear-gradient(180deg, rgba(0, 0, 0, 0.08) 0%, rgba(0, 0, 0, 0.28) 100%),
-      linear-gradient(90deg, rgba(0, 0, 0, 0.24) 0%, rgba(0, 0, 0, 0) 30%, rgba(0, 0, 0, 0.18) 100%);
-    pointer-events: none;
-  }
-
-  .visual-line {
-    position: absolute;
-    left: 0;
-    right: 0;
-    top: calc((1 - var(--blend, 0)) * 100%);
-    height: 1px;
-    background: rgba(245, 241, 232, 0.34);
-    opacity: 0.7;
+      linear-gradient(180deg, rgba(0, 0, 0, 0.06) 0%, rgba(0, 0, 0, 0.22) 100%),
+      linear-gradient(90deg, rgba(0, 0, 0, 0.18) 0%, rgba(0, 0, 0, 0) 32%, rgba(0, 0, 0, 0.12) 100%);
     pointer-events: none;
   }
 
@@ -374,30 +364,22 @@
 
   .story-copy {
     position: relative;
-    min-height: 16rem;
-    margin-top: 1rem;
+    min-height: 14rem;
   }
 
   .story-layer {
     position: absolute;
     inset: 0;
     opacity: 0;
-    transform: translate3d(0, 20px, 0);
-    filter: blur(10px);
-    transition:
-      opacity 0.8s ease,
-      transform 0.9s cubic-bezier(.22,1,.36,1),
-      filter 0.9s cubic-bezier(.22,1,.36,1);
+    transition: opacity 0.7s ease;
   }
 
   .story-layer.is-active {
     opacity: 1;
-    transform: translate3d(0, 0, 0);
-    filter: blur(0);
   }
 
   .story-lead {
-    margin: 0.8rem 0 0;
+    margin: 0 0 0.9rem;
     font-family: "Titre", serif;
     font-size: clamp(1.35rem, 2vw, 2rem);
     line-height: 1.02;
@@ -406,12 +388,53 @@
   }
 
   .story-rest {
-    margin: 1rem 0 0;
+    margin: 0;
     font-family: "General Sans", sans-serif;
-    font-size: 1rem;
-    line-height: 1.55;
-    color: rgba(245, 241, 232, 0.68);
-    max-width: 28rem;
+    font-size: 1.02rem;
+    line-height: 1.7;
+    color: rgba(245, 241, 232, 0.78);
+    max-width: 25rem;
+  }
+
+  .project-scroll-track {
+    position: relative;
+    z-index: 3;
+    margin-top: -100vh;
+    margin-top: -100svh;
+    pointer-events: none;
+  }
+
+  .project-slide {
+    min-height: 100vh;
+    min-height: 100svh;
+    display: flex;
+    align-items: center;
+  }
+
+  .project-slide-grid {
+    width: 100%;
+    display: grid;
+    grid-template-columns: minmax(280px, 0.95fr) minmax(340px, 1.05fr) minmax(280px, 0.82fr);
+    gap: clamp(1.2rem, 2vw, 2rem);
+    padding: clamp(5.8rem, 10vh, 7rem) clamp(1.2rem, 2.5vw, 2rem) clamp(1.4rem, 2.5vw, 2rem);
+    align-items: center;
+  }
+
+  .project-copy {
+    grid-column: 1;
+    align-self: center;
+    pointer-events: auto;
+    max-width: 26rem;
+    opacity: 0.34;
+    transform: translate3d(0, 32px, 0);
+    transition:
+      opacity 0.7s ease,
+      transform 0.9s cubic-bezier(.22,1,.36,1);
+  }
+
+  .project-copy.is-active {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
   }
 
   .nav-btn {
@@ -534,6 +557,10 @@
       display: none;
     }
 
+    .project-scroll-track {
+      display: none;
+    }
+
     .mobile-stack {
       display: grid;
       gap: 3rem;
@@ -562,25 +589,17 @@
     }
 
     .mobile-card h2 {
-      font-size: clamp(2.6rem, 10vw, 4rem);
+      font-size: clamp(3rem, 11vw, 4.6rem);
       line-height: 0.9;
     }
 
-    .mobile-lead {
-      font-family: "Titre", serif;
-      font-size: clamp(1.2rem, 5.6vw, 1.8rem);
-      line-height: 1.02;
-      letter-spacing: -0.04em;
-      color: #f5f1e8;
-    }
-
     .mobile-rest {
-      color: rgba(245, 241, 232, 0.7);
+      color: rgba(245, 241, 232, 0.74);
     }
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .rail-item,
+    .project-copy,
     .story-layer,
     .nav-btn,
     .nav-btn-text,

@@ -109,6 +109,16 @@
     return 1 - Math.pow(1 - t, 3);
   }
 
+  function easeInOutSine(t) {
+    const x = clamp01(t);
+    return -(Math.cos(Math.PI * x) - 1) / 2;
+  }
+
+  function easeInOutQuint(t) {
+    const x = clamp01(t);
+    return x < 0.5 ? 16 * x * x * x * x * x : 1 - Math.pow(-2 * x + 2, 5) / 2;
+  }
+
   function tanhEase(t, strength = 2.6) {
     const x = clamp01(t);
     const a = Math.tanh(strength * (2 * x - 1));
@@ -117,7 +127,8 @@
   }
 
   function premiumWipeEase(t) {
-    return tanhEase(t, 4);
+    const x = clamp01(t);
+    return easeInOutSine(x) * 0.4 + easeInOutQuint(x) * 0.6;
   }
 
   function getTransitionTheme(path = "/") {
@@ -143,7 +154,9 @@
         blurMax: 2,
         blurBase: 0.08,
         darknessMax: 0.24,
-        pageFade: 0.04
+        pageFade: 0.04,
+        pageBlurOut: 2.5,
+        pageBlurIn: 2.4
       };
     }
 
@@ -153,7 +166,9 @@
       blurMax: 9,
       blurBase: 0.04,
       darknessMax: 0.42,
-      pageFade: 0.1
+      pageFade: 0.1,
+      pageBlurOut: 7,
+      pageBlurIn: 6
     };
   }
 
@@ -174,11 +189,13 @@
     const overscanBottom = 140;
     const startY = -vh - overscanTop;
     const endY = overscanBottom;
-    const y = startY + (endY - startY) * p;
+    const baseY = startY + (endY - startY) * p;
+    const arcLift = Math.sin(p * Math.PI) * vh * 0.042;
+    const y = baseY - arcLift;
 
     const drift =
-      Math.sin((p - 0.08) * Math.PI) * vw * 0.006 +
-      Math.sin((p - 0.14) * Math.PI * 2) * vw * 0.0012;
+      Math.sin((p - 0.03) * Math.PI) * vw * 0.02 +
+      Math.sin((p - 0.12) * Math.PI * 2) * vw * 0.0024;
 
     transitionWipe.style.transform = `translate3d(${drift}px, ${y}px, 0)`;
   }
@@ -186,6 +203,7 @@
   function resetWrapperStyles() {
     if (!pageWrapper) return;
     pageWrapper.style.opacity = "";
+    pageWrapper.style.filter = "";
     pageWrapper.style.willChange = "";
   }
 
@@ -248,7 +266,7 @@
       transitionDarkness.style.opacity = "0";
       transitionWipe.style.opacity = "1";
 
-      pageWrapper.style.willChange = "opacity";
+      pageWrapper.style.willChange = "opacity, filter";
 
       setWipeProgress(0);
 
@@ -257,6 +275,7 @@
         const blurLead = premiumWipeEase(clamp01(t + 0.08));
         const darknessFollow = premiumWipeEase(clamp01((wipe - 0.015) / 0.985));
         const pageFade = easeOutCubic(clamp01((t - 0.16) / 0.84));
+        const pageBlur = premiumWipeEase(clamp01((t - 0.02) / 0.9));
 
         transitionBlur.style.backdropFilter = `blur(${blurLead * profile.blurMax}px)`;
         transitionBlur.style.webkitBackdropFilter = `blur(${blurLead * profile.blurMax}px)`;
@@ -265,6 +284,7 @@
         transitionDarkness.style.opacity = `${darknessFollow * profile.darknessMax}`;
 
         pageWrapper.style.opacity = `${1 - pageFade * profile.pageFade}`;
+        pageWrapper.style.filter = `blur(${pageBlur * profile.pageBlurOut}px) brightness(${1 - pageBlur * 0.16})`;
 
         setWipeProgress(wipe);
       });
@@ -297,18 +317,21 @@
     transitionDarkness.style.opacity = `${profile.darknessMax}`;
     transitionWipe.style.opacity = "1";
 
-    pageWrapper.style.willChange = "opacity";
+    pageWrapper.style.willChange = "opacity, filter";
     pageWrapper.style.opacity = "0";
+    pageWrapper.style.filter = `blur(${profile.pageBlurIn}px) brightness(0.84)`;
 
     setWipeProgress(1);
 
     requestAnimationFrame(() => {
       animate(profile.exitDuration, (t) => {
-        const pageEase = easeOutCubic(t);
-        const overlayFade = easeOutCubic(clamp01((t - 0.1) / 0.9));
-        const exitPush = easeOutCubic(clamp01(t / 0.78));
+        const pageEase = premiumWipeEase(t);
+        const overlayFade = easeInOutSine(clamp01((t - 0.08) / 0.92));
+        const exitPush = premiumWipeEase(clamp01(t / 0.82));
+        const pageBlurRelease = easeInOutSine(t);
 
         pageWrapper.style.opacity = `${pageEase}`;
+        pageWrapper.style.filter = `blur(${(1 - pageBlurRelease) * profile.pageBlurIn}px) brightness(${0.84 + pageBlurRelease * 0.16})`;
 
         transitionBlur.style.opacity = `${(1 - overlayFade) * Math.max(profile.blurBase, profile.darknessMax * 0.66)}`;
         transitionBlur.style.backdropFilter = `blur(${(1 - overlayFade) * profile.blurMax}px)`;
