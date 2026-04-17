@@ -16,6 +16,11 @@
   } from "$lib/scrollEngine.js";
 
   import { installDesktopWheelDamping } from "$lib/desktopWheelDamping.js";
+  import {
+    activatePendingSilentNavigation,
+    clearSilentNavigation,
+    isSilentNavigationActive
+  } from "$lib/routeTransitionState.js";
 
   let isMobile = false;
   let isTouchDevice = false;
@@ -250,6 +255,13 @@
         return;
       }
 
+      if (activatePendingSilentNavigation()) {
+        resetWrapperStyles();
+        resetTransitionStyles();
+        resolve();
+        return;
+      }
+
       const profile = getTransitionProfile();
 
       if (profile.enterDuration === 0) {
@@ -297,6 +309,13 @@
     syncScrollState();
 
     if (!pageWrapper || !transitionLayer || !transitionBlur || !transitionDarkness || !transitionWipe) {
+      return;
+    }
+
+    if (isSilentNavigationActive()) {
+      clearSilentNavigation();
+      resetWrapperStyles();
+      resetTransitionStyles();
       return;
     }
 

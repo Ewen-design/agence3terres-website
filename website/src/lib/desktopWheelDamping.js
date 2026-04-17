@@ -2,11 +2,14 @@ let wheelRaf = 0;
 let wheelTargetY = 0;
 let wheelCurrentY = 0;
 let wheelActive = false;
+let wheelSuppressedUntil = 0;
 
 function stopWheelDampingInternal() {
   if (wheelRaf) cancelAnimationFrame(wheelRaf);
   wheelRaf = 0;
   wheelActive = false;
+  wheelTargetY = 0;
+  wheelCurrentY = 0;
 }
 
 function isEditableElement(el) {
@@ -73,6 +76,12 @@ export function installDesktopWheelDamping({
   }
 
   function handleWheel(e) {
+    if (performance.now() < wheelSuppressedUntil) {
+      e.preventDefault();
+      stopWheelDampingInternal();
+      return;
+    }
+
     if (e.ctrlKey) return;
     if (Math.abs(e.deltaY) < 0.01) return;
     if (Math.abs(e.deltaY) <= Math.abs(e.deltaX)) return;
@@ -104,9 +113,21 @@ export function installDesktopWheelDamping({
     stopWheelDampingInternal();
   }
 
+  function handleForceStop() {
+    stopWheelDampingInternal();
+  }
+
+  function handleSuppress(event) {
+    const durationMs = Math.max(0, Number(event?.detail?.durationMs) || 0);
+    wheelSuppressedUntil = performance.now() + durationMs;
+    stopWheelDampingInternal();
+  }
+
   window.addEventListener("wheel", handleWheel, { passive: false });
   window.addEventListener("mousedown", cancelOnDirectUserAction, { passive: true });
   window.addEventListener("keydown", cancelOnDirectUserAction, { passive: true });
+  window.addEventListener("app:wheel-damping-stop", handleForceStop);
+  window.addEventListener("app:wheel-damping-suppress", handleSuppress);
 
   return {
     stop() {
@@ -116,6 +137,8 @@ export function installDesktopWheelDamping({
       window.removeEventListener("wheel", handleWheel);
       window.removeEventListener("mousedown", cancelOnDirectUserAction);
       window.removeEventListener("keydown", cancelOnDirectUserAction);
+      window.removeEventListener("app:wheel-damping-stop", handleForceStop);
+      window.removeEventListener("app:wheel-damping-suppress", handleSuppress);
       stopWheelDampingInternal();
     }
   };

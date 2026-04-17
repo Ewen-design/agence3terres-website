@@ -425,16 +425,6 @@
     align-self: center;
     pointer-events: auto;
     max-width: 26rem;
-    opacity: 0.34;
-    transform: translate3d(0, 32px, 0);
-    transition:
-      opacity 0.7s ease,
-      transform 0.9s cubic-bezier(.22,1,.36,1);
-  }
-
-  .project-copy.is-active {
-    opacity: 1;
-    transform: translate3d(0, 0, 0);
   }
 
   .nav-btn {

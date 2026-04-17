@@ -1,166 +1,69 @@
+<svelte:head>
+  <title>Projet 2 | Agence 3 Terres</title>
+</svelte:head>
+
 <script>
-  import { onMount } from "svelte";
-  import { navigate } from "$lib/navigate.js";
-
-  let trigger;
-  let progress = 0;
-  let interval;
-  let hasStarted = false;
-
-  function startTransition() {
-    if (hasStarted) return;
-    hasStarted = true;
-
-    interval = setInterval(() => {
-      progress += 100 / (1500 / 16);
-      if (progress >= 100) {
-        clearInterval(interval);
-        navigate("projet1");
-      }
-    }, 16);
-  }
-
-  onMount(() => {
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          startTransition();
-        }
-      },
-      { threshold: 0.95 }
-    );
-
-    observer.observe(trigger);
-  });
+  import ProjectHeroProjetsStyle from "$lib/structure/projects/ProjectHeroProjetsStyle.svelte";
+  import ProjectEditorialRole from "$lib/structure/projects/ProjectEditorialRole.svelte";
+  import ProjectEditorialSplit from "$lib/structure/projects/ProjectEditorialSplit.svelte";
+  import ProjectEditorialStatement from "$lib/structure/projects/ProjectEditorialStatement.svelte";
+  import ProjectEditorialMobileShowcase from "$lib/structure/projects/ProjectEditorialMobileShowcase.svelte";
 </script>
 
-<article class="project">
+<ProjectHeroProjetsStyle
+  title="Projet 2"
+  image="/images/parfum_rouge.webp"
+  finalText="Une page projet conçue pour installer un univers plus sensoriel, plus narratif et plus immersif dès l'arrivée."
+/>
 
-  <section
-    class="hero"
-    style="background-image:url('https://images.unsplash.com/photo-1500530855697-b586d89ba3ee')"
-  >
-    <div class="overlay">
-      <h1>Atelier Noir</h1>
-      <span>Direction artistique</span>
-    </div>
-  </section>
+<ProjectEditorialRole
+  title="Notre rôle"
+  images={[
+    { src: "/images/parfum4.webp", alt: "Composition visuelle large du projet 2" },
+    { src: "/images/parfum2.webp", alt: "Univers principal du projet 2" }
+  ]}
+  items={[
+    {
+      title: "Direction artistique",
+      text: "Une ambiance plus dense, plus sensorielle, pensée pour faire ressentir avant d'expliquer."
+    },
+    {
+      title: "Narration digitale",
+      text: "Un rythme plus assumé entre images, espaces et points d'accroche éditoriaux."
+    },
+    {
+      title: "Expérience mobile",
+      text: "Un travail d'écran pensé pour prolonger l'intensité du projet sans perdre la lecture."
+    }
+  ]}
+/>
 
-  <section class="content">
-    <p>
-      Atelier Noir explore une approche minimaliste de la direction artistique.
-    </p>
-    <p>
-      Le contraste et l’espace deviennent les éléments centraux.
-    </p>
-    <p>
-      Le scroll devient narratif et contemplatif.
-    </p>
-  </section>
+<ProjectEditorialSplit
+  title="Iconographie"
+  text="Des détails plus précis, une image plus incarnée, et un mobile qui garde toute l'intention visuelle du projet."
+  image="/images/telephone_parfum.webp"
+  alt="Vue mobile projet 2"
+  reverse={true}
+/>
 
-  <section class="next">
+<ProjectEditorialMobileShowcase
+  eyebrow="Mobile matters"
+  text="L'expérience mobile devait porter le projet avec la même intensité, la même précision et la même sensation d'immersion."
+  leftImage="/images/parfum3.webp"
+  leftAlt="Interface projet 2 sur fond sombre"
+  rightImage="/images/telephone_parfum.webp"
+  rightAlt="Mise en situation mobile projet 2"
+  reverse={true}
+/>
 
-    <div class="sticky">Prochain projet</div>
+<ProjectEditorialStatement
+  eyebrow="Mouvement et rythme"
+  text="Le projet avance surtout par tension visuelle, densité maîtrisée et contraste entre grands vides et images très présentes."
+/>
 
-    <div
-      class="next-image"
-      bind:this={trigger}
-      style="background-image:url('https://images.unsplash.com/photo-1520962917960-42d4c9c64c66')"
-    >
-      <h2>Maison Élixir</h2>
-
-      {#if hasStarted}
-        <div class="loader">
-          <div class="bar" style="width:{progress}%"></div>
-        </div>
-      {/if}
-    </div>
-
-  </section>
-
-</article>
-
-<style>
-.project {
-  background: black;
-  color: white;
-}
-
-.hero {
-  height: 100vh;
-  background-size: cover;
-  background-position: center;
-  position: relative;
-}
-
-.overlay {
-  position: absolute;
-  inset: 0;
-  background: rgba(0,0,0,0.4);
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  padding: 80px;
-}
-
-.hero h1 {
-  font-family: 'Aboreto', serif;
-  font-size: clamp(3rem, 6vw, 6rem);
-}
-
-.hero span {
-  margin-top: 20px;
-  opacity: 0.7;
-}
-
-.content {
-  max-width: 900px;
-  padding: 150px 80px;
-  line-height: 1.8;
-}
-
-.next {
-  position: relative;
-  height: 160vh;
-}
-
-.sticky {
-  position: sticky;
-  top: 40px;
-  margin-left: 80px;
-  padding: 12px 24px;
-  background: white;
-  color: black;
-}
-
-.next-image {
-  height: 100vh;
-  margin-top: 200px;
-  background-size: cover;
-  background-position: center;
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.next-image h2 {
-  font-family: 'Aboreto', serif;
-  font-size: 4rem;
-}
-
-.loader {
-  position: absolute;
-  bottom: 60px;
-  left: 10%;
-  width: 80%;
-  height: 1px;
-  background: rgba(255,255,255,0.3);
-}
-
-.bar {
-  height: 100%;
-  background: white;
-  transition: width 0.1s linear;
-}
-</style>
+<ProjectEditorialSplit
+  title="Direction digitale"
+  text="L'ensemble garde une lecture claire, mais avec plus de densité visuelle et un rapport plus sensible entre image, matière et interface."
+  image="/images/parfum_ordinateur.webp"
+  alt="Vue desktop projet 2"
+/>

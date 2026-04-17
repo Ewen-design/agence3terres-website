@@ -60,7 +60,7 @@
   }
 
   function processScrollState(state) {
-    const currentY = state?.currentY ?? window.scrollY ?? 0;
+    const currentY = state?.y ?? state?.currentY ?? window.scrollY ?? 0;
     const delta = currentY - lastScrollY;
 
     if (Math.abs(delta) >= SCROLL_THRESHOLD) {
@@ -74,7 +74,11 @@
   }
 
   function updateTextColor() {
-    if (!headerEl || !themedSections.length) return;
+    if (!headerEl) return;
+    if (!themedSections.length) {
+      if (textColor !== "white") textColor = "white";
+      return;
+    }
 
     const rect = headerEl.getBoundingClientRect();
     const headerMid = rect.top + rect.height * 0.5;

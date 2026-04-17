@@ -1,5 +1,9 @@
 import { goto } from "$app/navigation";
 import { browser } from "$app/environment";
+import {
+  clearSilentNavigation,
+  markNextNavigationSilent
+} from "$lib/routeTransitionState.js";
 
 let _isTransitioning = false;
 
@@ -7,7 +11,7 @@ export function isTransitioning() {
   return _isTransitioning;
 }
 
-export async function navigate(page) {
+export async function navigate(page, options = {}) {
   if (!browser) return;
 
   const url = page === "home" ? "/" : `/${page}`;
@@ -19,6 +23,10 @@ export async function navigate(page) {
   _isTransitioning = true;
 
   try {
+    if (options.silent) {
+      markNextNavigationSilent();
+    }
+
     await goto(url, {
       noScroll: true,
       keepFocus: true
@@ -32,6 +40,7 @@ export async function navigate(page) {
 
     window.dispatchEvent(new CustomEvent("app:route-settled"));
   } catch (error) {
+    clearSilentNavigation();
     console.error("Navigation error:", error);
   } finally {
     _isTransitioning = false;

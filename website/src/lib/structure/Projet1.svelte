@@ -1,181 +1,68 @@
+<svelte:head>
+  <title>Projet 1 | Agence 3 Terres</title>
+</svelte:head>
+
 <script>
-  import { onMount } from "svelte";
-  import { navigate } from "$lib/navigate.js";
-
-  let trigger;
-  let progress = 0;
-  let interval;
-  let hasStarted = false;
-
-  function startTransition() {
-    if (hasStarted) return;
-    hasStarted = true;
-
-    interval = setInterval(() => {
-      progress += 100 / (1500 / 16);
-      if (progress >= 100) {
-        clearInterval(interval);
-        navigate("projet2");
-      }
-    }, 16);
-  }
-
-  onMount(() => {
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          startTransition();
-        }
-      },
-      { threshold: 0.95 }
-    );
-
-    observer.observe(trigger);
-  });
+  import ProjectHeroProjetsStyle from "$lib/structure/projects/ProjectHeroProjetsStyle.svelte";
+  import ProjectEditorialRole from "$lib/structure/projects/ProjectEditorialRole.svelte";
+  import ProjectEditorialSplit from "$lib/structure/projects/ProjectEditorialSplit.svelte";
+  import ProjectEditorialStatement from "$lib/structure/projects/ProjectEditorialStatement.svelte";
+  import ProjectEditorialMobileShowcase from "$lib/structure/projects/ProjectEditorialMobileShowcase.svelte";
 </script>
 
-<article class="project">
+<ProjectHeroProjetsStyle
+  title="Projet 1"
+  image="/images/serein_design.webp"
+  finalText="Une page projet pensée pour montrer le travail avec plus de clarté, de tenue et de précision visuelle."
+/>
 
-  <!-- HERO -->
-  <section
-    class="hero"
-    style="background-image:url('https://images.unsplash.com/photo-1520962917960-42d4c9c64c66')"
-  >
-    <div class="overlay">
-      <h1>Maison Élixir</h1>
-      <span>Branding & Digital</span>
-    </div>
-  </section>
+<ProjectEditorialRole
+  title="Notre rôle"
+  images={[
+    { src: "/images/photo.webp", alt: "Composition visuelle large du projet 1" },
+    { src: "/images/serein_design.webp", alt: "Univers principal du projet 1" }
+  ]}
+  items={[
+    {
+      title: "Website UX et UI Design",
+      text: "Un parcours plus clair, plus direct et plus calme, pensé pour mieux guider la lecture."
+    },
+    {
+      title: "Direction visuelle",
+      text: "Un langage plus net, plus premium, avec davantage d'air et une hiérarchie plus juste."
+    },
+    {
+      title: "Déploiement mobile",
+      text: "Une adaptation précise pour garder la même tenue sur des surfaces plus serrées."
+    }
+  ]}
+/>
 
-  <!-- CONTENT -->
-  <section class="content">
-    <p>
-      Maison Élixir est un projet premium mêlant identité visuelle,
-      direction artistique et expérience digitale immersive.
-    </p>
-    <p>
-      L’accent est mis sur la matière, la lumière et le rythme du scroll.
-    </p>
-    <p>
-      Chaque section agit comme une respiration.
-    </p>
-  </section>
+<ProjectEditorialSplit
+  title="Interface mobile"
+  text="Une présence plus simple et plus lisible. Le projet garde sa clarté jusque dans les vues les plus rapprochées."
+  image="/images/telephone_main.webp"
+  alt="Vue mobile projet 1"
+/>
 
-  <!-- NEXT PROJECT (vrai bas de page) -->
-  <section class="next">
+<ProjectEditorialStatement
+  eyebrow="Système visuel"
+  text="Le projet repose surtout sur les rapports d'échelle, la respiration entre les blocs et une lecture plus ouverte."
+/>
 
-    <div class="sticky">
-      Prochain projet
-    </div>
+<ProjectEditorialMobileShowcase
+  eyebrow="Mobile first"
+  text="Le mobile devient ici un vrai support d'expression, pas une simple adaptation plus compacte."
+  leftImage="/images/telephone2.webp"
+  leftAlt="Interface mobile verticale projet 1"
+  rightImage="/images/photo2.webp"
+  rightAlt="Mise en situation mobile projet 1"
+/>
 
-    <div
-      class="next-image"
-      bind:this={trigger}
-      style="background-image:url('https://images.unsplash.com/photo-1500530855697-b586d89ba3ee')"
-    >
-      <h2>Atelier Noir</h2>
-
-      {#if hasStarted}
-        <div class="loader">
-          <div class="bar" style="width:{progress}%"></div>
-        </div>
-      {/if}
-    </div>
-
-  </section>
-
-</article>
-
-<style>
-.project {
-  background: black;
-  color: white;
-}
-
-/* HERO */
-
-.hero {
-  height: 100vh;
-  background-size: cover;
-  background-position: center;
-  position: relative;
-}
-
-.overlay {
-  position: absolute;
-  inset: 0;
-  background: rgba(0,0,0,0.4);
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  padding: 80px;
-}
-
-.hero h1 {
-  font-family: 'Aboreto', serif;
-  font-size: clamp(3rem, 6vw, 6rem);
-}
-
-.hero span {
-  margin-top: 20px;
-  opacity: 0.7;
-}
-
-/* CONTENT */
-
-.content {
-  max-width: 900px;
-  padding: 150px 80px;
-  line-height: 1.8;
-}
-
-/* NEXT */
-
-.next {
-  position: relative;
-  min-height: 100vh;
-}
-
-.sticky {
-  position: sticky;
-  top: 40px;
-  margin-left: 80px;
-  padding: 12px 24px;
-  background: white;
-  color: black;
-  z-index: 5;
-}
-
-.next-image {
-  height: 100vh;
-  width: 100%;
-  background-size: cover;
-  background-position: center;
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.next-image h2 {
-  font-family: 'Aboreto', serif;
-  font-size: 4rem;
-}
-
-/* LOADER */
-
-.loader {
-  position: absolute;
-  bottom: 60px;
-  left: 10%;
-  width: 80%;
-  height: 1px;
-  background: rgba(255,255,255,0.3);
-}
-
-.bar {
-  height: 100%;
-  background: white;
-  transition: width 0.1s linear;
-}
-</style>
+<ProjectEditorialSplit
+  title="Vue desktop"
+  text="Sur desktop, le système reste sobre et très lisible. Les espacements et les rapports de taille portent l'ensemble."
+  image="/images/ordinateur.webp"
+  alt="Vue desktop projet 1"
+  reverse={true}
+/>
