@@ -4,16 +4,27 @@
 
 <script>
   import ProjectHeroProjetsStyle from "$lib/structure/projects/ProjectHeroProjetsStyle.svelte";
+  import ProjectScrollScaleReveal from "$lib/structure/projects/ProjectScrollScaleReveal.svelte";
   import ProjectEditorialRole from "$lib/structure/projects/ProjectEditorialRole.svelte";
   import ProjectEditorialSplit from "$lib/structure/projects/ProjectEditorialSplit.svelte";
   import ProjectEditorialStatement from "$lib/structure/projects/ProjectEditorialStatement.svelte";
   import ProjectEditorialMobileShowcase from "$lib/structure/projects/ProjectEditorialMobileShowcase.svelte";
+  import ProjectFullscreenTitleImage from "$lib/structure/projects/ProjectFullscreenTitleImage.svelte";
+  import ProjectEditorialTriptych from "$lib/structure/projects/ProjectEditorialTriptych.svelte";
+  import ProjectLinksCarousel from "$lib/structure/projects/ProjectLinksCarousel.svelte";
 </script>
 
 <ProjectHeroProjetsStyle
   title="Projet 2"
   image="/images/parfum_rouge.webp"
   finalText="Une page projet conçue pour installer un univers plus sensoriel, plus narratif et plus immersif dès l'arrivée."
+/>
+
+<ProjectScrollScaleReveal
+  image="/images/parfum2.webp"
+  alt="Image immersive du projet 2"
+  startScale={0.84}
+  endScale={1.02}
 />
 
 <ProjectEditorialRole
@@ -66,4 +77,62 @@
   text="L'ensemble garde une lecture claire, mais avec plus de densité visuelle et un rapport plus sensible entre image, matière et interface."
   image="/images/parfum_ordinateur.webp"
   alt="Vue desktop projet 2"
+/>
+
+<ProjectFullscreenTitleImage
+  image="/images/parfum4.webp"
+  alt="Vue plein écran du projet 2"
+  title="Une tension visuelle."
+/>
+
+<ProjectEditorialTriptych
+  topImage="/images/parfum_ordinateur.webp"
+  topAlt="Image large projet 2"
+  bottomLeftImage="/images/parfum3.webp"
+  bottomLeftAlt="Portrait ambiance projet 2"
+  bottomRightImage="/images/telephone_parfum.webp"
+  bottomRightAlt="Texture visuelle projet 2"
+/>
+
+<ProjectScrollScaleReveal
+  image="/images/parfum2.webp"
+  alt="Transition de fin du projet 2"
+  reverse={true}
+  sectionHeight={168}
+  startScale={0.84}
+  endScale={1.02}
+/>
+
+<ProjectLinksCarousel
+  title="Continuer"
+  intro="Une sélection de pages à ouvrir ensuite : l'autre projet, les services de l'agence et la page de contact."
+  items={[
+    {
+      href: "/projet1",
+      image: "/images/serein_design.webp",
+      alt: "Aperçu du projet 1",
+      eyebrow: "Projet",
+      kicker: "01",
+      title: "Projet 1",
+      text: "Une direction plus calme, plus nette et plus précise."
+    },
+    {
+      href: "/services",
+      image: "/images/appareil_photo.webp",
+      alt: "Aperçu de la page services",
+      eyebrow: "Page",
+      kicker: "Services",
+      title: "Services",
+      text: "Les expertises de l'agence, du fond à la forme."
+    },
+    {
+      href: "/contact",
+      image: "/images/photo2.webp",
+      alt: "Aperçu de la page contact",
+      eyebrow: "Page",
+      kicker: "Contact",
+      title: "Contact",
+      text: "Parler d'un besoin, d'une refonte ou d'une nouvelle présence."
+    }
+  ]}
 />
