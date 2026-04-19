@@ -10,7 +10,7 @@
   import ProjectEditorialStatement from "$lib/structure/projects/ProjectEditorialStatement.svelte";
   import ProjectEditorialMobileShowcase from "$lib/structure/projects/ProjectEditorialMobileShowcase.svelte";
   import ProjectFullscreenTitleImage from "$lib/structure/projects/ProjectFullscreenTitleImage.svelte";
-  import ProjectEditorialTriptych from "$lib/structure/projects/ProjectEditorialTriptych.svelte";
+  import ProjectEditorialHoverMosaic from "$lib/structure/projects/ProjectEditorialHoverMosaic.svelte";
   import ProjectLinksCarousel from "$lib/structure/projects/ProjectLinksCarousel.svelte";
 </script>
 
@@ -82,13 +82,67 @@
   title="Une présence calme."
 />
 
-<ProjectEditorialTriptych
-  topImage="/images/telephone_main.webp"
-  topAlt="Image large projet 1"
-  bottomLeftImage="/images/photo2.webp"
-  bottomLeftAlt="Portrait ambiance projet 1"
-  bottomRightImage="/images/photo.webp"
-  bottomRightAlt="Texture visuelle projet 1"
+<ProjectEditorialHoverMosaic
+  eyebrow="Showcase"
+  title="Une grille qui respire."
+  text="Un grand plan d'ouverture, puis quatre vues plus proches qui gardent le même calme visuel avec une interaction discrète au survol."
+  feature={{
+    src: "/images/serein_design.webp",
+    alt: "Grand visuel projet 1",
+    titleLeft: "Serein",
+    titleRight: "Design",
+    hoverImages: [
+      { src: "/images/telephone_main.webp", alt: "Aperçu mobile projet 1" },
+      { src: "/images/photo2.webp", alt: "Aperçu portrait projet 1" },
+      { src: "/images/ordinateur.webp", alt: "Aperçu desktop projet 1" }
+    ]
+  }}
+  items={[
+    {
+      src: "/images/telephone_main.webp",
+      alt: "Vue mobile projet 1",
+      titleLeft: "Mobile",
+      titleRight: "System",
+      hoverImages: [
+        { src: "/images/telephone2.webp", alt: "Détail mobile projet 1" },
+        { src: "/images/photo.webp", alt: "Univers projet 1" },
+        { src: "/images/serein_design.webp", alt: "Hero projet 1" }
+      ]
+    },
+    {
+      src: "/images/ordinateur.webp",
+      alt: "Vue desktop projet 1",
+      titleLeft: "Desktop",
+      titleRight: "Flow",
+      hoverImages: [
+        { src: "/images/photo2.webp", alt: "Détail photo projet 1" },
+        { src: "/images/telephone_main.webp", alt: "Vue mobile projet 1" },
+        { src: "/images/telephone2.webp", alt: "Autre vue mobile projet 1" }
+      ]
+    },
+    {
+      src: "/images/photo2.webp",
+      alt: "Image ambiance projet 1",
+      titleLeft: "Brand",
+      titleRight: "Detail",
+      hoverImages: [
+        { src: "/images/photo.webp", alt: "Texture projet 1" },
+        { src: "/images/ordinateur.webp", alt: "Vue desktop projet 1" },
+        { src: "/images/serein_design.webp", alt: "Visuel principal projet 1" }
+      ]
+    },
+    {
+      src: "/images/photo.webp",
+      alt: "Texture visuelle projet 1",
+      titleLeft: "Editorial",
+      titleRight: "Crop",
+      hoverImages: [
+        { src: "/images/telephone2.webp", alt: "Détail mobile projet 1" },
+        { src: "/images/photo2.webp", alt: "Ambiance projet 1" },
+        { src: "/images/telephone_main.webp", alt: "Interface mobile projet 1" }
+      ]
+    }
+  ]}
 />
 
 <ProjectScrollScaleReveal

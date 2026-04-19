@@ -10,7 +10,7 @@
   import ProjectEditorialStatement from "$lib/structure/projects/ProjectEditorialStatement.svelte";
   import ProjectEditorialMobileShowcase from "$lib/structure/projects/ProjectEditorialMobileShowcase.svelte";
   import ProjectFullscreenTitleImage from "$lib/structure/projects/ProjectFullscreenTitleImage.svelte";
-  import ProjectEditorialTriptych from "$lib/structure/projects/ProjectEditorialTriptych.svelte";
+  import ProjectEditorialHoverMosaic from "$lib/structure/projects/ProjectEditorialHoverMosaic.svelte";
   import ProjectLinksCarousel from "$lib/structure/projects/ProjectLinksCarousel.svelte";
 </script>
 
@@ -85,13 +85,67 @@
   title="Une tension visuelle."
 />
 
-<ProjectEditorialTriptych
-  topImage="/images/parfum_ordinateur.webp"
-  topAlt="Image large projet 2"
-  bottomLeftImage="/images/parfum3.webp"
-  bottomLeftAlt="Portrait ambiance projet 2"
-  bottomRightImage="/images/telephone_parfum.webp"
-  bottomRightAlt="Texture visuelle projet 2"
+<ProjectEditorialHoverMosaic
+  eyebrow="Showcase"
+  title="Une mosaïque plus immersive."
+  text="Le premier visuel prend presque tout l'écran, puis quatre plans gardent un rythme régulier avec un hover lent, sombre et plus sensoriel."
+  feature={{
+    src: "/images/parfum4.webp",
+    alt: "Grand visuel projet 2",
+    titleLeft: "Visual",
+    titleRight: "Tension",
+    hoverImages: [
+      { src: "/images/parfum2.webp", alt: "Aperçu immersif projet 2" },
+      { src: "/images/parfum3.webp", alt: "Aperçu sensoriel projet 2" },
+      { src: "/images/parfum_ordinateur.webp", alt: "Aperçu desktop projet 2" }
+    ]
+  }}
+  items={[
+    {
+      src: "/images/parfum_ordinateur.webp",
+      alt: "Vue desktop projet 2",
+      titleLeft: "Desktop",
+      titleRight: "Scene",
+      hoverImages: [
+        { src: "/images/parfum3.webp", alt: "Détail visuel projet 2" },
+        { src: "/images/telephone_parfum.webp", alt: "Vue mobile projet 2" },
+        { src: "/images/parfum4.webp", alt: "Univers projet 2" }
+      ]
+    },
+    {
+      src: "/images/parfum3.webp",
+      alt: "Composition visuelle projet 2",
+      titleLeft: "Visual",
+      titleRight: "Rhythm",
+      hoverImages: [
+        { src: "/images/parfum2.webp", alt: "Aperçu immersif projet 2" },
+        { src: "/images/parfum_ordinateur.webp", alt: "Vue desktop projet 2" },
+        { src: "/images/telephone_parfum.webp", alt: "Interface mobile projet 2" }
+      ]
+    },
+    {
+      src: "/images/telephone_parfum.webp",
+      alt: "Vue mobile projet 2",
+      titleLeft: "Mobile",
+      titleRight: "Intensity",
+      hoverImages: [
+        { src: "/images/parfum3.webp", alt: "Détail projet 2" },
+        { src: "/images/parfum4.webp", alt: "Visuel principal projet 2" },
+        { src: "/images/parfum2.webp", alt: "Image immersive projet 2" }
+      ]
+    },
+    {
+      src: "/images/parfum2.webp",
+      alt: "Image immersive projet 2",
+      titleLeft: "Atmosphere",
+      titleRight: "Frame",
+      hoverImages: [
+        { src: "/images/telephone_parfum.webp", alt: "Vue mobile projet 2" },
+        { src: "/images/parfum_ordinateur.webp", alt: "Desktop projet 2" },
+        { src: "/images/parfum3.webp", alt: "Texture visuelle projet 2" }
+      ]
+    }
+  ]}
 />
 
 <ProjectScrollScaleReveal
