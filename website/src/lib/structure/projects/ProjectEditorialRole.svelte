@@ -48,7 +48,7 @@
   .editorial-role__media {
     margin: 0;
     overflow: hidden;
-    border-radius: 0.35rem;
+    border-radius: 3px;
     aspect-ratio: 1.9;
     background: #d9dfd6;
   }

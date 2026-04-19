@@ -7,14 +7,46 @@ import {
 
 let _isTransitioning = false;
 
+function normalizeUrl(target) {
+  if (!target) return "/";
+  return target === "home" ? "/" : target.startsWith("/") ? target : `/${target}`;
+}
+
+function stopWheelDamping(durationMs = 0) {
+  if (!browser) return;
+
+  window.dispatchEvent(new CustomEvent("app:wheel-damping-stop"));
+
+  if (durationMs > 0) {
+    window.dispatchEvent(
+      new CustomEvent("app:wheel-damping-suppress", {
+        detail: { durationMs }
+      })
+    );
+  }
+}
+
+function resetScrollPosition() {
+  if (!browser) return;
+
+  window.scrollTo({
+    top: 0,
+    left: 0,
+    behavior: "auto"
+  });
+
+  document.documentElement.scrollTop = 0;
+  document.body.scrollTop = 0;
+}
+
 export function isTransitioning() {
   return _isTransitioning;
 }
 
-export async function navigate(page, options = {}) {
+export async function navigate(target, options = {}) {
   if (!browser) return;
 
-  const url = page === "home" ? "/" : `/${page}`;
+  const url = normalizeUrl(target);
   const currentPath = window.location.pathname.replace(/\/+$/, "") || "/";
   const targetPath = url.replace(/\/+$/, "") || "/";
 
@@ -27,15 +59,16 @@ export async function navigate(page, options = {}) {
       markNextNavigationSilent();
     }
 
+    stopWheelDamping(900);
+
     await goto(url, {
       noScroll: true,
       keepFocus: true
     });
 
-    window.scrollTo({
-      top: 0,
-      left: 0,
-      behavior: "auto"
+    resetScrollPosition();
+    requestAnimationFrame(() => {
+      resetScrollPosition();
     });
 
     window.dispatchEvent(new CustomEvent("app:route-settled"));

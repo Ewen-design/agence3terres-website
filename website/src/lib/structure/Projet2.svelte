@@ -10,7 +10,6 @@
   import ProjectEditorialSplit from "$lib/structure/projects/ProjectEditorialSplit.svelte";
   import ProjectEditorialStatement from "$lib/structure/projects/ProjectEditorialStatement.svelte";
   import ProjectEditorialMobileShowcase from "$lib/structure/projects/ProjectEditorialMobileShowcase.svelte";
-  import ProjectFullscreenTitleImage from "$lib/structure/projects/ProjectFullscreenTitleImage.svelte";
   import ProjectEditorialHoverMosaic from "$lib/structure/projects/ProjectEditorialHoverMosaic.svelte";
   import ProjectLinksCarousel from "$lib/structure/projects/ProjectLinksCarousel.svelte";
 </script>
@@ -50,6 +49,26 @@
   ]}
 />
 
+<ProjectEditorialSplit
+  title="Interface mobile"
+  text="Une présence plus dense et plus sensorielle. Le projet garde son intensité jusque dans les vues les plus rapprochées."
+  image="/images/telephone_parfum.webp"
+  alt="Vue mobile projet 2"
+/>
+
+<ProjectEditorialStatement
+  eyebrow="Mouvement et rythme"
+  text="Le projet avance surtout par tension visuelle, densité maîtrisée et contraste entre grands vides et images très présentes."
+/>
+
+<ProjectEditorialSplit
+  title="Vue desktop"
+  text="Sur desktop, le système reste net et immersif. Les rapports d'échelle et la densité d'image portent l'ensemble."
+  image="/images/parfum_ordinateur.webp"
+  alt="Vue desktop projet 2"
+  reverse={true}
+/>
+
 <ProjectStorySlider
   slides={[
     {
@@ -73,14 +92,6 @@
   ]}
 />
 
-<ProjectEditorialSplit
-  title="Iconographie"
-  text="Des détails plus précis, une image plus incarnée, et un mobile qui garde toute l'intention visuelle du projet."
-  image="/images/telephone_parfum.webp"
-  alt="Vue mobile projet 2"
-  reverse={true}
-/>
-
 <ProjectEditorialMobileShowcase
   eyebrow="Mobile matters"
   text="L'expérience mobile devait porter le projet avec la même intensité, la même précision et la même sensation d'immersion."
@@ -88,31 +99,11 @@
   leftAlt="Interface projet 2 sur fond sombre"
   rightImage="/images/telephone_parfum.webp"
   rightAlt="Mise en situation mobile projet 2"
-  reverse={true}
-/>
-
-<ProjectEditorialStatement
-  eyebrow="Mouvement et rythme"
-  text="Le projet avance surtout par tension visuelle, densité maîtrisée et contraste entre grands vides et images très présentes."
-/>
-
-<ProjectEditorialSplit
-  title="Direction digitale"
-  text="L'ensemble garde une lecture claire, mais avec plus de densité visuelle et un rapport plus sensible entre image, matière et interface."
-  image="/images/parfum_ordinateur.webp"
-  alt="Vue desktop projet 2"
-/>
-
-<ProjectFullscreenTitleImage
-  image="/images/parfum4.webp"
-  alt="Vue plein écran du projet 2"
-  title="Une tension visuelle."
 />
 
 <ProjectEditorialHoverMosaic
-  eyebrow="Showcase"
   title="Une mosaïque plus immersive."
-  text="Le premier visuel prend presque tout l'écran, puis quatre plans gardent un rythme régulier avec un hover lent, sombre et plus sensoriel."
+  text="Le premier visuel prend presque tout l'écran, puis deux plans gardent un rythme régulier avec un hover lent, sombre et plus sensoriel."
   feature={{
     src: "/images/parfum4.webp",
     alt: "Grand visuel projet 2",
@@ -146,28 +137,6 @@
         { src: "/images/parfum_ordinateur.webp", alt: "Vue desktop projet 2" },
         { src: "/images/telephone_parfum.webp", alt: "Interface mobile projet 2" }
       ]
-    },
-    {
-      src: "/images/telephone_parfum.webp",
-      alt: "Vue mobile projet 2",
-      titleLeft: "Mobile",
-      titleRight: "Intensity",
-      hoverImages: [
-        { src: "/images/parfum3.webp", alt: "Détail projet 2" },
-        { src: "/images/parfum4.webp", alt: "Visuel principal projet 2" },
-        { src: "/images/parfum2.webp", alt: "Image immersive projet 2" }
-      ]
-    },
-    {
-      src: "/images/parfum2.webp",
-      alt: "Image immersive projet 2",
-      titleLeft: "Atmosphere",
-      titleRight: "Frame",
-      hoverImages: [
-        { src: "/images/telephone_parfum.webp", alt: "Vue mobile projet 2" },
-        { src: "/images/parfum_ordinateur.webp", alt: "Desktop projet 2" },
-        { src: "/images/parfum3.webp", alt: "Texture visuelle projet 2" }
-      ]
     }
   ]}
 />
@@ -182,35 +151,8 @@
 />
 
 <ProjectLinksCarousel
-  title="Continuer"
-  intro="Une sélection de pages à ouvrir ensuite : l'autre projet, les services de l'agence et la page de contact."
-  items={[
-    {
-      href: "/projet1",
-      image: "/images/serein_design.webp",
-      alt: "Aperçu du projet 1",
-      eyebrow: "Projet",
-      kicker: "01",
-      title: "Projet 1",
-      text: "Une direction plus calme, plus nette et plus précise."
-    },
-    {
-      href: "/services",
-      image: "/images/appareil_photo.webp",
-      alt: "Aperçu de la page services",
-      eyebrow: "Page",
-      kicker: "Services",
-      title: "Services",
-      text: "Les expertises de l'agence, du fond à la forme."
-    },
-    {
-      href: "/contact",
-      image: "/images/photo2.webp",
-      alt: "Aperçu de la page contact",
-      eyebrow: "Page",
-      kicker: "Contact",
-      title: "Contact",
-      text: "Parler d'un besoin, d'une refonte ou d'une nouvelle présence."
-    }
-  ]}
+  title="Projet suivant"
+  text="Continuer avec une direction plus calme, plus nette et plus précise."
+  href="/projet1"
+  label="Voir projet 1"
 />

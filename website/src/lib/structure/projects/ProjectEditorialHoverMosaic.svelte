@@ -1,5 +1,4 @@
 <script>
-  export let eyebrow = "";
   export let title = "";
   export let text = "";
   export let feature = {
@@ -14,17 +13,15 @@
 
 <section class="project-editorial-hover-mosaic">
   <div class="project-editorial-hover-mosaic__intro">
-    {#if eyebrow}
-      <p class="project-editorial-hover-mosaic__eyebrow">{eyebrow}</p>
-    {/if}
-
     {#if title}
       <h2>{title}</h2>
     {/if}
 
-    {#if text}
-      <p class="project-editorial-hover-mosaic__text">{text}</p>
-    {/if}
+    <div class="project-editorial-hover-mosaic__body">
+      {#if text}
+        <p class="project-editorial-hover-mosaic__text">{text}</p>
+      {/if}
+    </div>
   </div>
 
   <div class="project-editorial-hover-mosaic__grid">
@@ -64,7 +61,7 @@
       </figure>
     </article>
 
-    {#each items as item}
+    {#each items.slice(0, 2) as item}
       <article class="project-editorial-hover-mosaic__tile">
         <figure class="project-editorial-hover-mosaic__media">
           <img src={item.src} alt={item.alt} loading="lazy" />
@@ -109,41 +106,40 @@
     padding: clamp(4.5rem, 7vw, 7rem) clamp(0.45rem, 0.9vw, 0.7rem) clamp(5rem, 8vw, 8rem);
     background:
       radial-gradient(circle at top, rgba(255, 255, 255, 0.1), transparent 40%),
-      #f4f1eb;
+      #f7f5f1;
     color: #171412;
   }
 
   .project-editorial-hover-mosaic__intro {
     display: grid;
-    gap: 0.6rem;
-    max-width: 38rem;
-    margin: 0 auto clamp(1.35rem, 2vw, 1.8rem);
-    text-align: center;
-  }
-
-  .project-editorial-hover-mosaic__eyebrow {
-    font-family: "Manrope", sans-serif;
-    font-size: 0.74rem;
-    letter-spacing: 0.18em;
-    text-transform: uppercase;
-    color: rgba(23, 20, 18, 0.52);
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
+    gap: 2rem;
+    align-items: start;
+    margin: 0 0 clamp(1.35rem, 2vw, 1.8rem);
   }
 
   .project-editorial-hover-mosaic__intro h2 {
+    margin: 0;
     font-family: "Titre italic", serif;
-    font-size: clamp(2.7rem, 5vw, 5.2rem);
+    font-size: clamp(1.4rem, 1.8vw, 2rem);
     font-weight: 400;
-    line-height: 0.94;
-    letter-spacing: -0.06em;
+    line-height: 1;
+    letter-spacing: -0.02em;
+  }
+
+  .project-editorial-hover-mosaic__body {
+    display: flex;
+    justify-content: flex-end;
   }
 
   .project-editorial-hover-mosaic__text {
-    max-width: 30rem;
-    margin: 0 auto;
-    font-family: "Manrope", sans-serif;
-    font-size: clamp(0.98rem, 1.16vw, 1.08rem);
-    line-height: 1.55;
-    color: rgba(23, 20, 18, 0.72);
+    margin: 0;
+    max-width: 21ch;
+    font-family: "General Sans", sans-serif;
+    font-weight: 300;
+    font-size: clamp(1.3rem, 2.8vw, 2.8rem);
+    line-height: 1;
+    letter-spacing: -0.05em;
   }
 
   .project-editorial-hover-mosaic__grid {
@@ -323,6 +319,20 @@
     .project-editorial-hover-mosaic__grid {
       --mosaic-tile-height: auto;
       grid-template-columns: 1fr;
+    }
+
+    .project-editorial-hover-mosaic__intro {
+      grid-template-columns: 1fr;
+      gap: 1rem;
+    }
+
+    .project-editorial-hover-mosaic__body {
+      justify-content: flex-start;
+    }
+
+    .project-editorial-hover-mosaic__text {
+      max-width: 14ch;
+      font-size: clamp(1.6rem, 9vw, 2.8rem);
     }
 
     .project-editorial-hover-mosaic__tile--feature {

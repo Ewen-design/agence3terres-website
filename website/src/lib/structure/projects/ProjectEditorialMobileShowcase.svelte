@@ -29,6 +29,7 @@
   .editorial-mobile-showcase {
     background: #f7f5f1;
     color: #121212;
+  
     padding: 0 1.25rem 7rem;
   }
 
@@ -39,7 +40,7 @@
   }
 
   .editorial-mobile-showcase__media {
-    margin: 0;
+    margin: 4rem 0 0;
     overflow: hidden;
     border-radius: 0.35rem;
     min-height: 32rem;

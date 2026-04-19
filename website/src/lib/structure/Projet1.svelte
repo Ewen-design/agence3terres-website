@@ -10,7 +10,6 @@
   import ProjectEditorialSplit from "$lib/structure/projects/ProjectEditorialSplit.svelte";
   import ProjectEditorialStatement from "$lib/structure/projects/ProjectEditorialStatement.svelte";
   import ProjectEditorialMobileShowcase from "$lib/structure/projects/ProjectEditorialMobileShowcase.svelte";
-  import ProjectFullscreenTitleImage from "$lib/structure/projects/ProjectFullscreenTitleImage.svelte";
   import ProjectEditorialHoverMosaic from "$lib/structure/projects/ProjectEditorialHoverMosaic.svelte";
   import ProjectLinksCarousel from "$lib/structure/projects/ProjectLinksCarousel.svelte";
 </script>
@@ -26,10 +25,12 @@
   alt="Image immersive du projet 1"
 />
 
+
+
 <ProjectEditorialRole
   title="Notre rôle"
   images={[
-    { src: "/images/photo.webp", alt: "Composition visuelle large du projet 1" },
+    { src: "/images/telephone2.webp", alt: "Composition visuelle large du projet 1" },
     { src: "/images/serein_design.webp", alt: "Univers principal du projet 1" }
   ]}
   items={[
@@ -46,6 +47,27 @@
       text: "Une adaptation précise pour garder la même tenue sur des surfaces plus serrées."
     }
   ]}
+/>
+
+
+<ProjectEditorialSplit
+  title="Interface mobile"
+  text="Une présence plus simple et plus lisible. Le projet garde sa clarté jusque dans les vues les plus rapprochées."
+  image="/images/telephone_main.webp"
+  alt="Vue mobile projet 1"
+/>
+
+<ProjectEditorialStatement
+  eyebrow="Système visuel"
+  text="Le projet repose surtout sur les rapports d'échelle, la respiration entre les blocs et une lecture plus ouverte."
+/>
+
+<ProjectEditorialSplit
+  title="Vue desktop"
+  text="Sur desktop, le système reste sobre et très lisible. Les espacements et les rapports de taille portent l'ensemble."
+  image="/images/telephone2.webp"
+  alt="Vue desktop projet 1"
+  reverse={true}
 />
 
 <ProjectStorySlider
@@ -71,18 +93,6 @@
   ]}
 />
 
-<ProjectEditorialSplit
-  title="Interface mobile"
-  text="Une présence plus simple et plus lisible. Le projet garde sa clarté jusque dans les vues les plus rapprochées."
-  image="/images/telephone_main.webp"
-  alt="Vue mobile projet 1"
-/>
-
-<ProjectEditorialStatement
-  eyebrow="Système visuel"
-  text="Le projet repose surtout sur les rapports d'échelle, la respiration entre les blocs et une lecture plus ouverte."
-/>
-
 <ProjectEditorialMobileShowcase
   eyebrow="Mobile first"
   text="Le mobile devient ici un vrai support d'expression, pas une simple adaptation plus compacte."
@@ -92,24 +102,9 @@
   rightAlt="Mise en situation mobile projet 1"
 />
 
-<ProjectEditorialSplit
-  title="Vue desktop"
-  text="Sur desktop, le système reste sobre et très lisible. Les espacements et les rapports de taille portent l'ensemble."
-  image="/images/ordinateur.webp"
-  alt="Vue desktop projet 1"
-  reverse={true}
-/>
-
-<ProjectFullscreenTitleImage
-  image="/images/serein_design.webp"
-  alt="Vue plein écran du projet 1"
-  title="Une présence calme."
-/>
-
 <ProjectEditorialHoverMosaic
-  eyebrow="Showcase"
   title="Une grille qui respire."
-  text="Un grand plan d'ouverture, puis quatre vues plus proches qui gardent le même calme visuel avec une interaction discrète au survol."
+  text="Un grand plan d'ouverture, puis deux vues plus proches qui gardent le même calme visuel avec une interaction discrète au survol."
   feature={{
     src: "/images/serein_design.webp",
     alt: "Grand visuel projet 1",
@@ -143,28 +138,6 @@
         { src: "/images/telephone_main.webp", alt: "Vue mobile projet 1" },
         { src: "/images/telephone2.webp", alt: "Autre vue mobile projet 1" }
       ]
-    },
-    {
-      src: "/images/photo2.webp",
-      alt: "Image ambiance projet 1",
-      titleLeft: "Brand",
-      titleRight: "Detail",
-      hoverImages: [
-        { src: "/images/photo.webp", alt: "Texture projet 1" },
-        { src: "/images/ordinateur.webp", alt: "Vue desktop projet 1" },
-        { src: "/images/serein_design.webp", alt: "Visuel principal projet 1" }
-      ]
-    },
-    {
-      src: "/images/photo.webp",
-      alt: "Texture visuelle projet 1",
-      titleLeft: "Editorial",
-      titleRight: "Crop",
-      hoverImages: [
-        { src: "/images/telephone2.webp", alt: "Détail mobile projet 1" },
-        { src: "/images/photo2.webp", alt: "Ambiance projet 1" },
-        { src: "/images/telephone_main.webp", alt: "Interface mobile projet 1" }
-      ]
     }
   ]}
 />
@@ -177,35 +150,8 @@
 />
 
 <ProjectLinksCarousel
-  title="Continuer"
-  intro="Une suite de pages à parcourir ensuite : l'autre projet, les services de l'agence et la prise de contact."
-  items={[
-    {
-      href: "/projet2",
-      image: "/images/parfum_rouge.webp",
-      alt: "Aperçu du projet 2",
-      eyebrow: "Projet",
-      kicker: "02",
-      title: "Projet 2",
-      text: "Une direction plus sensorielle, plus dense et plus narrative."
-    },
-    {
-      href: "/services",
-      image: "/images/appareil_photo.webp",
-      alt: "Aperçu de la page services",
-      eyebrow: "Page",
-      kicker: "Services",
-      title: "Services",
-      text: "Identité, direction artistique, site web et accompagnement."
-    },
-    {
-      href: "/contact",
-      image: "/images/photo2.webp",
-      alt: "Aperçu de la page contact",
-      eyebrow: "Page",
-      kicker: "Contact",
-      title: "Contact",
-      text: "Ouvrir une discussion, cadrer un projet ou demander un devis."
-    }
-  ]}
+  title="Projet suivant"
+  text="Continuer avec une direction plus sensorielle, plus dense et plus narrative."
+  href="/projet2"
+  label="Voir projet 2"
 />
