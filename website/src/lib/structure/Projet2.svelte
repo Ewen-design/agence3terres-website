@@ -6,6 +6,7 @@
   import ProjectHeroProjetsStyle from "$lib/structure/projects/ProjectHeroProjetsStyle.svelte";
   import ProjectScrollScaleReveal from "$lib/structure/projects/ProjectScrollScaleReveal.svelte";
   import ProjectEditorialRole from "$lib/structure/projects/ProjectEditorialRole.svelte";
+  import ProjectStorySlider from "$lib/structure/projects/ProjectStorySlider.svelte";
   import ProjectEditorialSplit from "$lib/structure/projects/ProjectEditorialSplit.svelte";
   import ProjectEditorialStatement from "$lib/structure/projects/ProjectEditorialStatement.svelte";
   import ProjectEditorialMobileShowcase from "$lib/structure/projects/ProjectEditorialMobileShowcase.svelte";
@@ -45,6 +46,29 @@
     {
       title: "Expérience mobile",
       text: "Un travail d'écran pensé pour prolonger l'intensité du projet sans perdre la lecture."
+    }
+  ]}
+/>
+
+<ProjectStorySlider
+  slides={[
+    {
+      label: "Direction artistique",
+      title: "Installer",
+      text: "Une ambiance immédiate. Une image plus dense.",
+      image: "/images/parfum2.webp"
+    },
+    {
+      label: "Identité",
+      title: "Tenir",
+      text: "Un territoire plus singulier. Un rythme plus juste.",
+      image: "/images/parfum3.webp"
+    },
+    {
+      label: "UI design",
+      title: "Prolonger",
+      text: "L'intensité continue dans l'écran sans perdre la lecture.",
+      image: "/images/parfum_ordinateur.webp"
     }
   ]}
 />

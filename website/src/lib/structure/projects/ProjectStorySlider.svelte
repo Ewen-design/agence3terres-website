@@ -3,75 +3,34 @@
   import { browser } from "$app/environment";
 
   export let slides = [];
-  export let title = "";
-
   let sections = [];
   let contentRefs = [];
   let activeIndex = 0;
-  let fills = slides.map(() => 0);
-  let displayedFills = slides.map(() => 0);
   let bgScales = slides.map(() => 1.02);
   let contentClipInsets = slides.map(() => 0);
   let ticking = false;
-  let fillFrame = 0;
   let maskAnchorEl;
   let sliderEl;
   let isMobile = false;
   let prefersReducedMotion = false;
   let resizeTimeout;
-  const mobileFillEase = 0.18;
+  let touchStartX = 0;
+  let touchStartY = 0;
+  let touchDeltaX = 0;
+  let touchDeltaY = 0;
 
   const clamp = (v, min = 0, max = 1) => Math.max(min, Math.min(max, v));
+
+  $: sections.length = slides.length;
+  $: contentRefs.length = slides.length;
+  $: sliderHeightStyle = `--slider-height: ${Math.max(slides.length * 100 + 80, 320)}vh;`;
 
   function checkMobile() {
     isMobile = window.innerWidth <= 700;
   }
 
-  function stopFillAnimation() {
-    if (fillFrame) {
-      cancelAnimationFrame(fillFrame);
-      fillFrame = 0;
-    }
-  }
-
-  function animateDisplayedFills() {
-    if (!isMobile || prefersReducedMotion) {
-      displayedFills = [...fills];
-      stopFillAnimation();
-      return;
-    }
-
-    if (fillFrame) return;
-
-    const step = () => {
-      let done = true;
-      const nextDisplayed = displayedFills.map((value, index) => {
-        const target = fills[index];
-        const delta = target - value;
-
-        if (Math.abs(delta) < 0.2) {
-          return target;
-        }
-
-        done = false;
-        return value + delta * mobileFillEase;
-      });
-
-      displayedFills = nextDisplayed;
-
-      if (!done) {
-        fillFrame = requestAnimationFrame(step);
-      } else {
-        fillFrame = 0;
-      }
-    };
-
-    fillFrame = requestAnimationFrame(step);
-  }
-
   function updateProgress() {
     const vh = window.innerHeight || 1;
-    const next = slides.map(() => 0);
     const nextScales = slides.map(() => (prefersReducedMotion ? 1 : isMobile ? 1.01 : 1.02));
     const nextClipInsets = slides.map(() => 0);
     const progressLine = vh * (isMobile ? 0.56 : 0.5);
@@ -87,9 +46,8 @@
       const progress = clamp((progressLine - rect.top) / Math.max(rect.height, 1), 0, 1);
       const distanceToCenter = Math.abs(rect.top + rect.height * 0.5 - progressLine);
 
-      next[i] = progress * 100;
       if (!prefersReducedMotion) {
-        nextScales[i] = (isMobile ? 1.01 : 1.02) + progress * (isMobile ? 0.03 : 0.07);
+        nextScales[i] = (isMobile ? 1.01 : 1.02) + progress * (isMobile ? 0.03 : 0.08);
       }
 
       if (distanceToCenter < closestDistance) {
@@ -107,8 +65,6 @@
     });
 
     activeIndex = nextActiveIndex;
-    fills = next;
-    animateDisplayedFills();
     bgScales = nextScales;
     contentClipInsets = nextClipInsets;
     ticking = false;
@@ -136,6 +92,34 @@
     });
   }
 
+  function handleTouchStart(event) {
+    if (!isMobile) return;
+    const touch = event.touches[0];
+    touchStartX = touch.clientX;
+    touchStartY = touch.clientY;
+    touchDeltaX = 0;
+    touchDeltaY = 0;
+  }
+
+  function handleTouchMove(event) {
+    if (!isMobile) return;
+    const touch = event.touches[0];
+    touchDeltaX = touch.clientX - touchStartX;
+    touchDeltaY = touch.clientY - touchStartY;
+  }
+
+  function handleTouchEnd() {
+    if (!isMobile) return;
+    const horizontalIntent = Math.abs(touchDeltaX) > 56 && Math.abs(touchDeltaY) < 42;
+    if (!horizontalIntent) return;
+
+    if (touchDeltaX < 0) {
+      jumpToSlide(Math.min(activeIndex + 1, slides.length - 1));
+    } else {
+      jumpToSlide(Math.max(activeIndex - 1, 0));
+    }
+  }
+
   onMount(() => {
     if (!browser) return;
     prefersReducedMotion = window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches ?? false;
@@ -143,47 +127,26 @@
     updateProgress();
     window.addEventListener("scroll", onScroll, { passive: true });
     window.addEventListener("resize", handleResize);
+    sliderEl?.addEventListener("touchstart", handleTouchStart, { passive: true });
+    sliderEl?.addEventListener("touchmove", handleTouchMove, { passive: true });
+    sliderEl?.addEventListener("touchend", handleTouchEnd, { passive: true });
   });
 
   onDestroy(() => {
     if (!browser) return;
-    stopFillAnimation();
     window.removeEventListener("scroll", onScroll);
     window.removeEventListener("resize", handleResize);
+    sliderEl?.removeEventListener("touchstart", handleTouchStart);
+    sliderEl?.removeEventListener("touchmove", handleTouchMove);
+    sliderEl?.removeEventListener("touchend", handleTouchEnd);
     clearTimeout(resizeTimeout);
   });
 </script>
 
-<section class="project-slider" bind:this={sliderEl}>
-  <div class="project-slider__header">
-    <h2>{title}</h2>
-  </div>
-
+<section class="project-slider" bind:this={sliderEl} style={sliderHeightStyle}>
   <div class="project-slider__sticky">
     <div class="project-slider__backgrounds">
       <div class="project-slider__shade"></div>
-
-      <div class="project-slider__nav">
-        {#each slides as slide, i}
-          <button
-            class="project-slider__segment"
-            class:is-active={activeIndex === i}
-            type="button"
-            aria-label={`Aller au slide ${slide.label}`}
-            aria-pressed={activeIndex === i}
-            on:click={() => jumpToSlide(i)}
-          >
-            <div class="project-slider__line">
-              <div class="project-slider__fill" style={`transform: scaleX(${fills[i] / 100})`}></div>
-            </div>
-
-            <div class="project-slider__segment-label">
-              <span class="project-slider__num">{slide.number}</span>
-              <span class="project-slider__label">{slide.label}</span>
-            </div>
-          </button>
-        {/each}
-      </div>
 
       {#each slides as slide, i}
         <div class="project-slider__bg" class:is-active={activeIndex === i}>
@@ -198,19 +161,6 @@
         </div>
       {/each}
     </div>
-  </div>
-
-  <div class="project-slider__mobile-progress" aria-hidden="true">
-    <div class="project-slider__mobile-line">
-      <div class="project-slider__fill" style={`transform: scaleX(${displayedFills[activeIndex] / 100})`}></div>
-    </div>
-
-    {#key activeIndex}
-      <div class="project-slider__mobile-meta">
-        <span>{slides[activeIndex].number}</span>
-        <span>{slides[activeIndex].label}</span>
-      </div>
-    {/key}
   </div>
 
   <div class="project-slider__slides">
@@ -228,7 +178,6 @@
                 : `clip-path: inset(0 0 ${contentClipInsets[i]}px 0); -webkit-clip-path: inset(0 0 ${contentClipInsets[i]}px 0);`
             }
           >
-            <div class="project-slider__content-num">{slide.number}</div>
             <h3>{slide.title}</h3>
             <p>{slide.text}</p>
           </div>
@@ -244,24 +193,8 @@
   .project-slider {
     position: relative;
     width: 100%;
-    min-height: 420vh;
-    background: #050505;
-  }
-
-  .project-slider__header {
-    position: relative;
-    z-index: 2;
-    padding: clamp(2rem, 5vw, 3.6rem) clamp(1.2rem, 3vw, 2.2rem) 0;
-    max-width: 26rem;
-  }
-
-  .project-slider__header h2 {
-    margin: 0;
-    font-family: "Titre italic", serif;
-    font-style: italic;
-    font-size: clamp(2.3rem, 4.5vw, 4.2rem);
-    line-height: 0.93;
-    letter-spacing: -0.05em;
+    min-height: var(--slider-height, 420vh);
+    background: #050b14;
     color: #f5f1e8;
   }
 
@@ -271,210 +204,196 @@
     height: 100vh;
     height: 100svh;
     overflow: hidden;
-    background: #050505;
+    background: #050b14;
     isolation: isolate;
   }
 
-  .project-slider__backgrounds,
-  .project-slider__bg {
+  .project-slider__backgrounds {
     position: absolute;
     inset: 0;
+    z-index: 1;
+    background: #050b14;
   }
 
   .project-slider__bg {
+    position: absolute;
+    inset: 0;
     opacity: 0;
-    transition: opacity 0.7s ease;
+    z-index: 1;
+    background: #050b14;
+    transition: opacity 900ms ease;
   }
 
   .project-slider__bg.is-active {
     opacity: 1;
+    z-index: 2;
   }
 
   .project-slider__bg img {
+    position: absolute;
+    inset: 0;
     width: 100%;
     height: 100%;
     object-fit: cover;
     display: block;
-    transition: transform 0.5s ease;
+    transition: transform 120ms linear;
   }
 
   .project-slider__bg-overlay {
     position: absolute;
     inset: 0;
-    background:
-      linear-gradient(180deg, rgba(0, 0, 0, 0.04) 0%, rgba(0, 0, 0, 0.16) 100%),
-      linear-gradient(90deg, rgba(0, 0, 0, 0.18) 0%, rgba(0, 0, 0, 0.04) 45%, rgba(0, 0, 0, 0.14) 100%);
+    background: rgba(0, 0, 0, 0.2);
+    pointer-events: none;
   }
 
   .project-slider__shade {
     position: absolute;
-    inset: 0;
-    z-index: 1;
-    background: linear-gradient(180deg, rgba(0, 0, 0, 0) 68%, rgba(0, 0, 0, 0.26) 100%);
-  }
-
-  .project-slider__nav {
-    position: absolute;
-    top: clamp(1.2rem, 3vw, 1.8rem);
-    right: clamp(1.2rem, 3vw, 2.2rem);
-    z-index: 2;
-    display: grid;
-    gap: 0.95rem;
-    width: min(21rem, calc(100vw - 2.4rem));
-  }
-
-  .project-slider__segment {
-    display: grid;
-    gap: 0.5rem;
-    border: 0;
-    padding: 0;
-    background: transparent;
-    color: inherit;
-    text-align: left;
-    cursor: pointer;
-  }
-
-  .project-slider__line,
-  .project-slider__mobile-line {
-    height: 1px;
-    background: rgba(245, 241, 232, 0.18);
-    overflow: hidden;
-  }
-
-  .project-slider__fill {
-    width: 100%;
-    height: 100%;
-    background: #f5f1e8;
-    transform-origin: left center;
-  }
-
-  .project-slider__segment-label,
-  .project-slider__mobile-meta {
-    display: flex;
-    gap: 0.7rem;
-    align-items: baseline;
-  }
-
-  .project-slider__num,
-  .project-slider__content-num,
-  .project-slider__mobile-meta span:first-child {
-    font-family: "General Sans", sans-serif;
-    font-size: 0.8rem;
-    color: rgba(245, 241, 232, 0.56);
-  }
-
-  .project-slider__label,
-  .project-slider__mobile-meta span:last-child {
-    font-family: "General Sans", sans-serif;
-    font-size: 0.92rem;
-    color: rgba(245, 241, 232, 0.84);
-  }
-
-  .project-slider__mobile-progress {
-    display: none;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 32vh;
+    height: 32svh;
+    z-index: 3;
+    pointer-events: none;
+    background: linear-gradient(
+      to top,
+      rgba(5, 11, 20, 0.9) 0%,
+      rgba(5, 11, 20, 0.72) 28%,
+      rgba(5, 11, 20, 0.38) 58%,
+      rgba(5, 11, 20, 0) 100%
+    );
   }
 
   .project-slider__slides {
     position: relative;
-    z-index: 1;
+    z-index: 3;
     margin-top: -100vh;
     margin-top: -100svh;
   }
 
   .project-slider__mask-anchor {
-    position: relative;
+    position: sticky;
+    top: 88vh;
+    top: 88svh;
     height: 0;
-    top: 78vh;
+    pointer-events: none;
   }
 
   .project-slider__slide {
     min-height: 100vh;
     min-height: 100svh;
     display: flex;
-    align-items: flex-end;
-    padding: clamp(1.2rem, 3vw, 2.2rem);
+    align-items: center;
+    padding: 8rem 4rem;
   }
 
   .project-slider__content-clip {
-    width: 100%;
-    overflow: visible;
+    max-width: 70%;
+    overflow: hidden;
+    position: relative;
+    z-index: 5;
   }
 
   .project-slider__content {
-    max-width: 24rem;
-    padding-bottom: clamp(1.2rem, 2.6vw, 1.8rem);
+    position: relative;
+    z-index: 5;
+    max-width: 32rem;
+    will-change: clip-path;
+    backface-visibility: hidden;
+    transform: translateZ(0);
   }
 
   .project-slider__content h3 {
-    margin: 0.35rem 0 0;
+    margin: 0;
     font-family: "Titre italic", serif;
     font-style: italic;
-    font-size: clamp(3.4rem, 6vw, 6rem);
-    line-height: 0.9;
-    letter-spacing: -0.065em;
+    font-weight: 100;
+    font-size: clamp(4rem, 7vw, 8rem);
+    line-height: 0.95;
+    letter-spacing: 0;
     color: #f5f1e8;
-    max-width: 8ch;
+    white-space: pre-line;
   }
 
   .project-slider__content p {
-    margin: 0.9rem 0 0;
-    max-width: 18rem;
+    margin: 2rem 0 0;
+    max-width: 30rem;
     font-family: "General Sans", sans-serif;
-    font-size: clamp(0.98rem, 1.15vw, 1.04rem);
-    line-height: 1.58;
-    color: rgba(245, 241, 232, 0.84);
+    font-size: 1.2rem;
+    line-height: 1.55;
+    color: rgba(244, 244, 244, 0.86);
   }
 
   .project-slider__tail {
-    height: 100vh;
-    height: 100svh;
+    height: 60vh;
+  }
+
+  @media (max-width: 1100px) {
+    .project-slider__slide {
+      padding: 7rem 2.5rem;
+    }
+
+    .project-slider__content-clip {
+      max-width: 82%;
+    }
+  }
+
+  @media (max-width: 800px) {
+    .project-slider {
+      min-height: max(var(--slider-height, 420vh), 460vh);
+    }
+
+    .project-slider__slide {
+      padding: 7rem 2rem 11rem;
+    }
+
+    .project-slider__content-clip {
+      max-width: 100%;
+      overflow: visible;
+    }
+
+    .project-slider__content h3 {
+      font-size: clamp(3rem, 15vw, 5rem);
+    }
+
+    .project-slider__content p {
+      font-size: 1rem;
+      max-width: 100%;
+    }
   }
 
   @media (max-width: 700px) {
     .project-slider {
-      min-height: 380vh;
+      min-height: max(var(--slider-height, 420vh), 420vh);
     }
 
-    .project-slider__header {
-      padding: 1.4rem 1rem 0;
-      max-width: 18rem;
-    }
-
-    .project-slider__header h2 {
-      font-size: clamp(2rem, 10vw, 3.3rem);
-    }
-
-    .project-slider__nav {
-      display: none;
-    }
-
-    .project-slider__mobile-progress {
-      position: sticky;
-      top: 1rem;
-      z-index: 4;
-      display: grid;
-      gap: 0.55rem;
-      width: calc(100% - 2rem);
-      margin: 0 auto;
-      transform: translateY(1rem);
+    .project-slider__shade {
+      height: 40vh;
+      height: 40svh;
     }
 
     .project-slider__slide {
-      padding: 1rem;
-    }
-
-    .project-slider__content {
-      max-width: 16rem;
-      padding-bottom: 0.8rem;
+      padding: 6.5rem 1.25rem 6rem;
     }
 
     .project-slider__content h3 {
-      font-size: clamp(2.8rem, 15vw, 4.4rem);
+      font-size: clamp(2.6rem, 13vw, 4rem);
     }
 
     .project-slider__content p {
+      margin-top: 1.25rem;
       font-size: 0.95rem;
-      max-width: 16rem;
+    }
+
+    .project-slider__tail {
+      height: 0;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .project-slider__bg,
+    .project-slider__bg img {
+      transition: none;
     }
   }
 </style>

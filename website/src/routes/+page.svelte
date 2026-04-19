@@ -7,15 +7,20 @@
   
     import GalleryColonnes from "$lib/sections/GalleryColonnes.svelte";
     import Hero from "$lib/sections/Hero.svelte";
+    import HomeScrollScaleReveal from "$lib/sections/HomeScrollScaleReveal.svelte";
     import MixSliderNarratif from "$lib/sections/MixSliderNarratif.svelte";
     import IntroSlider from "$lib/sections/IntroSlider.svelte";
 </script>
 
 <Hero />
+<HomeScrollScaleReveal
+  image="/images/telephone2.webp"
+  alt="Révélation visuelle en pleine largeur"
+/>
 <GalleryColonnes />
 <ParallaxGallery2 />
+
 <IntroSlider />
 <MixSliderNarratif />
-
 
 

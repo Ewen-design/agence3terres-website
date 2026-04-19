@@ -6,6 +6,7 @@
   import ProjectHeroProjetsStyle from "$lib/structure/projects/ProjectHeroProjetsStyle.svelte";
   import ProjectScrollScaleReveal from "$lib/structure/projects/ProjectScrollScaleReveal.svelte";
   import ProjectEditorialRole from "$lib/structure/projects/ProjectEditorialRole.svelte";
+  import ProjectStorySlider from "$lib/structure/projects/ProjectStorySlider.svelte";
   import ProjectEditorialSplit from "$lib/structure/projects/ProjectEditorialSplit.svelte";
   import ProjectEditorialStatement from "$lib/structure/projects/ProjectEditorialStatement.svelte";
   import ProjectEditorialMobileShowcase from "$lib/structure/projects/ProjectEditorialMobileShowcase.svelte";
@@ -43,6 +44,29 @@
     {
       title: "Déploiement mobile",
       text: "Une adaptation précise pour garder la même tenue sur des surfaces plus serrées."
+    }
+  ]}
+/>
+
+<ProjectStorySlider
+  slides={[
+    {
+      label: "Identité",
+      title: "Clarifier",
+      text: "Une base plus nette. Une hiérarchie plus calme.",
+      image: "/images/ordinateur.webp"
+    },
+    {
+      label: "Direction artistique",
+      title: "Cadrer",
+      text: "Des images plus ouvertes. Un territoire plus précis.",
+      image: "/images/photo.webp"
+    },
+    {
+      label: "UI design",
+      title: "Déployer",
+      text: "Une interface simple. Une continuité sans surcharge.",
+      image: "/images/telephone2.webp"
     }
   ]}
 />

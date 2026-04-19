@@ -9,6 +9,8 @@
 </script>
 
 <HeroServices />
+
 <MixSlider />
+
 <ImageScroll src="images/photo.webp" alt="Description de l'image" />
-<AncienSliderCustom />
+
