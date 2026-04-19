@@ -8,14 +8,14 @@
       navTitle: "CRÉATION DE LOGO",
       title: "CRÉATION\nDE LOGO",
       description: "Nous révélons l’essence des marques et façonnons des identités fortes, cohérentes et mémorables. De la stratégie à l’identité visuelle, chaque élément est pensé pour créer une marque singulière et durable.",
-      image: "/images/parfum3.webp"
+      image: "/images/telephone2_parfum.webp"
     },
     {
       number: "02",
       navTitle: "BRAND IDENTITY",
       title: "BRAND\nIDENTITY",
       description: "Nous structurons des identités de marque complètes, capables d’aligner vision, ton, image et système visuel dans une direction claire et durable.",
-      image: "/images/parfum2.webp"
+      image: "/images/telephone2.webp"
     },
     {
       number: "03",
@@ -66,8 +66,16 @@
   let touchDeltaX = 0;
   let touchDeltaY = 0;
   const mobileFillEase = 0.18;
+  const firstSlideShadeMin = 0;
 
   const clamp = (v, min = 0, max = 1) => Math.max(min, Math.min(max, v));
+  const getBottomShadeBackground = (strength) => `linear-gradient(
+    to top,
+    rgba(5, 11, 20, ${(0.9 * strength).toFixed(3)}) 0%,
+    rgba(5, 11, 20, ${(0.72 * strength).toFixed(3)}) 28%,
+    rgba(5, 11, 20, ${(0.38 * strength).toFixed(3)}) 58%,
+    rgba(5, 11, 20, 0) 100%
+  )`;
 
   function checkMobile() {
     isMobile = window.innerWidth <= 700;
@@ -237,7 +245,11 @@
 <section class="slider" bind:this={sliderEl}>
   <div class="sticky">
     <div class="backgrounds">
-      <div class="bottom-shade" aria-hidden="true"></div>
+      <div
+        class="bottom-shade"
+        aria-hidden="true"
+        style={`background: ${getBottomShadeBackground(firstSlideShadeMin + (1 - firstSlideShadeMin) * clamp(fills[0] / 100))};`}
+      ></div>
 
       <div class="progress-nav">
         {#each slides as slide, i}
@@ -300,6 +312,7 @@
     {#each slides as slide, i}
       <section
         class="slide"
+        class:first-slide={i === 0}
         bind:this={sections[i]}
         data-index={i}
       >
@@ -374,13 +387,7 @@
     height: 32svh;
     z-index: 3;
     pointer-events: none;
-    background: linear-gradient(
-      to top,
-      rgba(5, 11, 20, 0.9) 0%,
-      rgba(5, 11, 20, 0.72) 28%,
-      rgba(5, 11, 20, 0.38) 58%,
-      rgba(5, 11, 20, 0) 100%
-    );
+    transition: background 320ms ease;
   }
 
   .bg {
@@ -480,6 +487,10 @@
     z-index: 5;
   }
 
+  .first-slide h2 {
+    color: #353535;
+  }
+
   p {
     margin-top: 2rem;
     font-size: 1.2rem;
@@ -488,6 +499,18 @@
     position: relative;
     z-index: 5;
     color: rgba(244, 244, 244, 0.86);
+  }
+
+  .first-slide .number {
+    opacity: 1;
+    color: #4A4A4A;
+    text-shadow: none;
+  }
+
+  .first-slide p {
+    opacity: 1;
+    color: #4A4A4A;
+    text-shadow: none;
   }
 
   .progress-nav {
