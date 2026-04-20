@@ -190,7 +190,7 @@
     position: relative;
     min-height: var(--section-height);
     overflow: clip;
-    background: #050505;
+    background: #000;
     isolation: isolate;
   }
 

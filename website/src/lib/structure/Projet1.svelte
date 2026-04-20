@@ -76,13 +76,13 @@
       label: "Identité",
       title: "Clarifier",
       text: "Une base plus nette. Une hiérarchie plus calme.",
-      image: "/images/ordinateur.webp"
+      image: "/images/telephone2_parfum.webp"
     },
     {
       label: "Direction artistique",
       title: "Cadrer",
       text: "Des images plus ouvertes. Un territoire plus précis.",
-      image: "/images/photo.webp"
+      image: "/images/telephone_main.webp"
     },
     {
       label: "UI design",
@@ -98,7 +98,7 @@
   text="Le mobile devient ici un vrai support d'expression, pas une simple adaptation plus compacte."
   leftImage="/images/telephone2.webp"
   leftAlt="Interface mobile verticale projet 1"
-  rightImage="/images/photo2.webp"
+  rightImage="/images/telephone_main.webp"
   rightAlt="Mise en situation mobile projet 1"
 />
 
@@ -113,7 +113,7 @@
     hoverImages: [
       { src: "/images/telephone_main.webp", alt: "Aperçu mobile projet 1" },
       { src: "/images/photo2.webp", alt: "Aperçu portrait projet 1" },
-      { src: "/images/ordinateur.webp", alt: "Aperçu desktop projet 1" }
+      { src: "/images/telephone2_parfum.webp", alt: "Aperçu desktop projet 1" }
     ]
   }}
   items={[
@@ -129,7 +129,7 @@
       ]
     },
     {
-      src: "/images/ordinateur.webp",
+      src: "/images/telephone2_parfum.webp",
       alt: "Vue desktop projet 1",
       titleLeft: "Desktop",
       titleRight: "Flow",

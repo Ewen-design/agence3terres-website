@@ -19,7 +19,7 @@
   export let startRadius = 0.5;
   export let endRadius = 0.18;
   export let reverse = false;
-  export let startBackground = "#050505";
+  export let startBackground = "#000";
   export let endBackground = "#f7f5f1";
 
   let sectionEl;

@@ -434,7 +434,7 @@
   .gallery-section {
     --section-bg: #000;
     --section-text: #f5f1e8;
-    --card-bg: #111;
+    --card-bg: #000;
     position: relative;
     width: 100%;
     background: var(--section-bg);

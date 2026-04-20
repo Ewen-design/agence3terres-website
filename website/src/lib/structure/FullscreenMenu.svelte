@@ -3,6 +3,7 @@
   import { browser } from "$app/environment";
   import { page } from "$app/stores";
   import { navigate } from "$lib/navigate.js";
+  import { projectPages } from "$lib/data/projectPages.js";
 
   export let open = false;
   export let origin = { x: 0, y: 0, width: 44, height: 40 };
@@ -31,9 +32,28 @@
   const links = [
     { label: "L'envol", page: "home", image: "/images/photo.webp" },
     { label: "Projets", page: "travail", image: "/images/parfum4.webp" },
-    { label: "À propos", page: "apropos", image: "/images/parfum3.webp" },
+    { label: "A propos", page: "apropos", image: "/images/parfum3.webp" },
     { label: "Services", page: "services", image: "/images/parfum2.webp" },
     { label: "Contact", page: "contact", image: "/images/photo2.webp" }
+  ];
+
+  const projectPreviewCards = [
+    {
+      page: "projet1",
+      title: projectPages.projet1.title,
+      meta: "Projet sélectionné",
+      image: projectPages.projet1.hero.image,
+      alt: projectPages.projet1.hero.alt,
+      large: true
+    },
+    {
+      page: "projet2",
+      title: projectPages.projet2.title,
+      image: projectPages.projet2.hero.image,
+      alt: projectPages.projet2.hero.alt,
+      text: projectPages.projet2.hero.summaryMain,
+      large: false
+    }
   ];
 
   const PANEL_OPEN_DELAY = 170;
@@ -179,13 +199,12 @@
     await tick();
   }
 
-  async function handleClick(link) {
+  async function handlePath(path) {
     if (closing || navigating) return;
 
-    const targetPath = link.page === "home" ? "/" : `/${link.page}`;
     const currentPath = ($page.url.pathname || "/").replace(/\/+$/, "") || "/";
 
-    if (targetPath === currentPath) {
+    if (path === currentPath) {
       close();
       return;
     }
@@ -199,7 +218,7 @@
     footerVisible = false;
 
     navigateTimer = setTimeout(() => {
-      navigate(link.page);
+      navigate(path === "/" ? "home" : path.replace(/^\//, ""));
     }, NAVIGATE_DELAY);
 
     closePanelTimer = setTimeout(() => {
@@ -212,6 +231,11 @@
 
     open = false;
     await tick();
+  }
+
+  async function handleClick(link) {
+    const targetPath = link.page === "home" ? "/" : `/${link.page}`;
+    await handlePath(targetPath);
   }
 
   function handleEnter(index) {
@@ -261,7 +285,55 @@
   <div class="menu-shell">
     <div class="menu-panel"></div>
 
-    <div class="menu-media-shell" aria-hidden="true">
+    <div class="menu-upper ui-content">
+      <nav class="menu-nav" aria-label="Navigation principale">
+        {#each links as link, i}
+          <button
+            class="menu-link"
+            class:is-current={previewIndex === i}
+            type="button"
+            aria-current={(link.page === "home" ? "/" : `/${link.page}`) === (($page.url.pathname || "/").replace(/\/+$/, "") || "/") ? "page" : undefined}
+            on:mouseenter={() => handleEnter(i)}
+            on:mouseleave={handleLeave}
+            on:focus={() => handleEnter(i)}
+            on:blur={handleLeave}
+            on:click={() => handleClick(link)}
+          >
+            <span class="menu-link-line">
+              <span class="menu-link-text">{link.label}</span>
+            </span>
+          </button>
+        {/each}
+      </nav>
+
+      <aside class="project-previews" aria-label="Aperçus projets">
+        {#each projectPreviewCards as card}
+          <button
+            class="project-card"
+            class:large={card.large}
+            type="button"
+            on:click={() => handlePath(`/${card.page}`)}
+          >
+            {#if card.large}
+              <div class="project-card-copy">
+                <span class="project-card-title">{card.title}</span>
+              </div>
+              <img class="project-card-image" src={card.image} alt={card.alt} loading="lazy" />
+            {:else}
+              <div class="project-card-copy compact">
+                <span class="project-card-title compact-title">{card.title}</span>
+              </div>
+              <div class="project-card-row">
+                <img class="project-card-image compact-image" src={card.image} alt={card.alt} loading="lazy" />
+                <p class="project-card-text">{card.text}</p>
+              </div>
+            {/if}
+          </button>
+        {/each}
+      </aside>
+    </div>
+
+    <div class="menu-media-shell ui-content" aria-hidden="true">
       <div class="menu-media-reveal">
         <div class="menu-media-stack">
           {#each links as link, i}
@@ -276,46 +348,20 @@
           <div class="menu-media-overlay"></div>
         </div>
       </div>
+
+      <button
+        class="nav-btn close-block"
+        type="button"
+        aria-label="Fermer le menu"
+        on:mousemove={handleGlowMove}
+        on:click|stopPropagation={close}
+      >
+        <svg class="close-icon" viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M6 6L18 18" />
+          <path d="M18 6L6 18" />
+        </svg>
+      </button>
     </div>
-
-    <div class="menu-logo-wrap ui-content ui-top">
-      <img class="menu-logo" src="/images/test_logo.png" alt="Agence 3 Terres" />
-    </div>
-
-    <button
-      class="nav-btn close-block ui-content ui-top"
-      type="button"
-      aria-label="Fermer le menu"
-      on:mousemove={handleGlowMove}
-      on:click|stopPropagation={close}
-    >
-      <svg class="close-icon" viewBox="0 0 24 24" aria-hidden="true">
-        <path d="M6 6L18 18" />
-        <path d="M18 6L6 18" />
-      </svg>
-    </button>
-
-    <nav class="menu-nav ui-content" aria-label="Navigation principale">
-      {#each links as link, i}
-        <button
-          class="menu-link"
-          class:is-current={previewIndex === i}
-          type="button"
-          aria-current={(link.page === "home" ? "/" : `/${link.page}`) === (($page.url.pathname || "/").replace(/\/+$/, "") || "/") ? "page" : undefined}
-          on:mouseenter={() => handleEnter(i)}
-          on:mouseleave={handleLeave}
-          on:focus={() => handleEnter(i)}
-          on:blur={handleLeave}
-          on:click={() => handleClick(link)}
-        >
-          <span class="menu-link-line">
-            <span class="menu-link-text">{link.label}</span>
-          </span>
-        </button>
-      {/each}
-    </nav>
-
-    <div class="bottom-gradient"></div>
 
     <div class="bottom-strip ui-bottom">
       <div class="menu-email">
@@ -357,7 +403,7 @@
     opacity: 0;
     visibility: hidden;
     pointer-events: none;
-    color: #f5f1e8;
+    color: #fff;
   }
 
   .fs-menu.is-visible {
@@ -383,9 +429,8 @@
   .menu-scrim {
     z-index: 2;
     opacity: 0;
-    background:
-      linear-gradient(90deg, rgba(0, 0, 0, 0.68) 0%, rgba(0, 0, 0, 0.58) 52%, rgba(0, 0, 0, 0.42) 100%);
-    transition: opacity 1.45s cubic-bezier(.22, 1, .36, 1);
+    background: rgba(0, 0, 0, 0.84);
+    transition: opacity 1.35s cubic-bezier(.22, 1, .36, 1);
   }
 
   .menu-blur {
@@ -394,44 +439,262 @@
     backdrop-filter: blur(0px);
     -webkit-backdrop-filter: blur(0px);
     transition:
-      opacity 1.45s cubic-bezier(.22, 1, .36, 1),
-      backdrop-filter 1.45s cubic-bezier(.22, 1, .36, 1),
-      -webkit-backdrop-filter 1.45s cubic-bezier(.22, 1, .36, 1);
+      opacity 1.35s cubic-bezier(.22, 1, .36, 1),
+      backdrop-filter 1.35s cubic-bezier(.22, 1, .36, 1),
+      -webkit-backdrop-filter 1.35s cubic-bezier(.22, 1, .36, 1);
   }
 
   .menu-shell {
     position: absolute;
     inset: 0;
     z-index: 4;
+    display: grid;
+    grid-template-rows: minmax(0, 1fr) minmax(260px, 44vh);
   }
 
   .menu-panel {
     position: absolute;
-    inset: 0 auto 0 0;
-    width: 100vw;
-    background: #000;
-    clip-path: inset(0 100% 0 0);
-    -webkit-clip-path: inset(0 100% 0 0);
+    inset: 0;
+    background: #010101;
+    clip-path: inset(0 0 100% 0);
+    -webkit-clip-path: inset(0 0 100% 0);
     will-change: clip-path;
     transition:
-      clip-path 1.45s cubic-bezier(.18, .93, .2, 1),
-      -webkit-clip-path 1.45s cubic-bezier(.18, .93, .2, 1);
+      clip-path 1.4s cubic-bezier(.18, .93, .2, 1),
+      -webkit-clip-path 1.4s cubic-bezier(.18, .93, .2, 1);
+  }
+
+  .ui-content {
+    opacity: 0;
+    filter: blur(18px);
+    transform: translate3d(0, 26px, 0);
+    transition:
+      opacity 1.1s cubic-bezier(.22, 1, .36, 1),
+      filter 1.1s cubic-bezier(.22, 1, .36, 1),
+      transform 1.1s cubic-bezier(.22, 1, .36, 1);
+  }
+
+  .menu-upper {
+    position: relative;
+    z-index: 8;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: start;
+    min-height: 0;
+    padding: clamp(1.25rem, 2vw, 1.75rem) clamp(1rem, 2vw, 2rem) 0;
+  }
+
+  .menu-nav {
+    grid-column: 1;
+    justify-self: start;
+    width: min(100%, 620px);
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: clamp(0.35rem, 0.7vh, 0.75rem);
+    padding-top: clamp(1rem, 2.6vh, 2rem);
+  }
+
+  .menu-link {
+    position: relative;
+    width: auto;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: #fff;
+    text-align: left;
+    cursor: pointer;
+  }
+
+  .menu-link-line {
+    display: block;
+    overflow: visible;
+    padding: 0.16em 0 0.2em;
+  }
+
+  .menu-link-text {
+    display: inline-block;
+    font-family: "Titre", serif;
+    font-style: italic;
+    font-size: clamp(3.35rem, 4.7vw, 5.6rem);
+    line-height: 0.94;
+    letter-spacing: -0.025em;
+    clip-path: inset(100% 0 0 0);
+    -webkit-clip-path: inset(100% 0 0 0);
+    opacity: 0;
+    color: rgba(255, 255, 255, 0.42);
+    padding-right: 0.08em;
+    transition:
+      clip-path 1.18s cubic-bezier(.22, 1, .36, 1),
+      -webkit-clip-path 1.18s cubic-bezier(.22, 1, .36, 1),
+      opacity 0.6s ease,
+      color 0.6s ease,
+      filter 0.8s ease;
+  }
+
+  .menu-link.is-current .menu-link-text,
+  .menu-link:hover .menu-link-text,
+  .menu-link:focus-visible .menu-link-text {
+    color: #fff;
+    filter: drop-shadow(0 0 18px rgba(255, 255, 255, 0.08));
+  }
+
+  .project-previews {
+    position: relative;
+    z-index: 9;
+    grid-column: 2;
+    justify-self: end;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    width: min(22vw, 290px);
+    padding-top: 0.2rem;
+  }
+
+  .project-card {
+    position: relative;
+    overflow: hidden;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.75rem;
+    padding: 0.95rem;
+    border: 0;
+    border-radius: 2px;
+    background: #171717;
+    color: #fff;
+    text-align: left;
+    cursor: pointer;
+  }
+
+  .project-card.large {
+    gap: 0.9rem;
+    background: #151515;
+  }
+
+  .nav-btn::before,
+  .nav-btn::after,
+  .social-link::before,
+  .social-link::after {
+    content: "";
+    position: absolute;
+    inset: -1px;
+    border-radius: inherit;
+    pointer-events: none;
+    opacity: 0;
+  }
+
+  .nav-btn::before,
+  .social-link::before {
+    border: 1px solid transparent;
+    border-image-slice: 1;
+    border-image-source: radial-gradient(
+      68px circle at var(--mx, 50%) var(--my, 50%),
+      rgba(255, 225, 140, 1) 0%,
+      rgba(212, 175, 55, 0.95) 22%,
+      rgba(212, 102, 55, 0.55) 45%,
+      rgba(212, 102, 55, 0.12) 62%,
+      transparent 78%
+    );
+    transition: opacity 0.25s ease;
+  }
+
+  .nav-btn::after,
+  .social-link::after {
+    border: 1px solid transparent;
+    border-image-slice: 1;
+    border-image-source: radial-gradient(
+      78px circle at var(--mx, 50%) var(--my, 50%),
+      rgba(212, 175, 55, 0.55) 0%,
+      rgba(212, 102, 55, 0.22) 42%,
+      transparent 72%
+    );
+    filter: blur(2px);
+    transition: opacity 0.25s ease;
+  }
+
+  .nav-btn:hover::before,
+  .nav-btn:hover::after,
+  .social-link:hover::before,
+  .social-link:hover::after {
+    opacity: 1;
+  }
+
+  .project-card-copy {
+    display: flex;
+    flex-direction: column;
+    gap: 0.22rem;
+  }
+
+  .project-card-copy.compact {
+    gap: 0.3rem;
+  }
+
+  .project-card-title {
+    font-family: "General Sans", sans-serif;
+    font-size: 1rem;
+    line-height: 1.1;
+    letter-spacing: -0.03em;
+    font-weight: 400;
+  }
+
+  .project-card.large .project-card-title {
+    font-size: 1.18rem;
+  }
+
+  .compact-title {
+    max-width: 16ch;
+  }
+
+  .project-card-meta {
+    font-family: "General Sans", sans-serif;
+    font-size: 0.72rem;
+    line-height: 1.2;
+    color: rgba(255, 255, 255, 0.5);
+  }
+
+  .project-card-row {
+    display: grid;
+    grid-template-columns: 64px minmax(0, 1fr);
+    align-items: start;
+    gap: 0.8rem;
+  }
+
+  .project-card-image {
+    width: 100%;
+    height: clamp(82px, 8vw, 102px);
+    border-radius: 2px;
+    object-fit: cover;
+    filter: brightness(0.88) saturate(0.9);
+  }
+
+  .project-card.large .project-card-image {
+    height: clamp(120px, 10vw, 148px);
+  }
+
+  .compact-image {
+    width: 64px;
+    height: 64px;
+  }
+
+  .project-card-text {
+    margin: 0;
+    font-family: "General Sans", sans-serif;
+    font-size: 0.76rem;
+    line-height: 1.25;
+    color: rgba(255, 255, 255, 0.72);
   }
 
   .menu-media-shell {
-    position: absolute;
-    top: clamp(2.4rem, 4vh, 3rem);
-    right: clamp(1.5rem, 2.4vw, 2.4rem);
-    bottom: clamp(2.4rem, 4vh, 3rem);
-    width: min(34vw, 460px);
-    overflow: hidden;
-    pointer-events: none;
-    z-index: 10;
+    position: relative;
+    z-index: 7;
+    min-height: 0;
   }
 
   .menu-media-reveal {
     position: absolute;
     inset: 0;
+    overflow: hidden;
+    pointer-events: none;
     clip-path: inset(100% 0 0 0);
     -webkit-clip-path: inset(100% 0 0 0);
     will-change: clip-path;
@@ -443,8 +706,7 @@
   .menu-media-stack {
     position: absolute;
     inset: 0;
-    background: #040404;
-    border-radius: 4px;
+    background: #050505;
   }
 
   .menu-media-image {
@@ -454,55 +716,26 @@
     height: 100%;
     object-fit: cover;
     opacity: 0;
-    transform: scale(1.045);
+    transform: scale(1.04);
     filter: brightness(0.72) saturate(0.9) contrast(1.02);
     transition:
-      opacity 1.05s cubic-bezier(.22, 1, .36, 1),
-      transform 1.45s cubic-bezier(.22, 1, .36, 1),
-      filter 1.05s cubic-bezier(.22, 1, .36, 1);
+      opacity 0.9s cubic-bezier(.22, 1, .36, 1),
+      transform 1.35s cubic-bezier(.22, 1, .36, 1),
+      filter 0.9s cubic-bezier(.22, 1, .36, 1);
   }
 
   .menu-media-image.is-active {
     opacity: 1;
     transform: scale(1);
-    filter: brightness(0.84) saturate(0.98) contrast(1.04);
+    filter: brightness(0.86) saturate(0.98) contrast(1.03);
   }
 
   .menu-media-overlay {
     position: absolute;
     inset: 0;
     background:
-      linear-gradient(180deg, rgba(0, 0, 0, 0.18) 0%, rgba(0, 0, 0, 0.38) 100%),
-      linear-gradient(270deg, rgba(0, 0, 0, 0.34) 0%, rgba(0, 0, 0, 0) 45%);
-  }
-
-  .ui-content {
-    opacity: 0;
-    filter: blur(18px);
-    transform: translate3d(0, 26px, 0);
-    transition:
-      opacity 1.18s cubic-bezier(.22, 1, .36, 1),
-      filter 1.18s cubic-bezier(.22, 1, .36, 1),
-      transform 1.18s cubic-bezier(.22, 1, .36, 1);
-  }
-
-  .menu-logo-wrap {
-    position: absolute;
-    top: clamp(0.8rem, 1.5vw, 1.1rem);
-    left: 50%;
-    z-index: 20;
-    transform: translateX(-50%) translate3d(0, 26px, 0);
-    width: min(92px, 11vw);
-    display: flex;
-    justify-content: center;
-    pointer-events: none;
-  }
-
-  .menu-logo {
-    display: block;
-    width: 100%;
-    height: auto;
-    object-fit: contain;
+      linear-gradient(180deg, rgba(0, 0, 0, 0.08) 0%, rgba(0, 0, 0, 0.24) 100%),
+      linear-gradient(0deg, rgba(0, 0, 0, 0.34) 0%, rgba(0, 0, 0, 0) 30%);
   }
 
   .nav-btn {
@@ -517,69 +750,28 @@
     white-space: nowrap;
     color: inherit;
     border: 1px solid rgba(255, 255, 255, 0.14);
-    cursor: pointer;
     background: rgba(255, 255, 255, 0.10);
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
     border-radius: 2px;
+    cursor: pointer;
     transition:
       transform 1s cubic-bezier(.22,.61,.36,1),
       background 1s cubic-bezier(.22,.61,.36,1),
-      border-color 0.45s cubic-bezier(.22,.61,.36,1);
-  }
-
-  .nav-btn::before,
-  .nav-btn::after {
-    content: "";
-    position: absolute;
-    inset: -1px;
-    border-radius: inherit;
-    pointer-events: none;
-    opacity: 0;
-  }
-
-  .nav-btn::before {
-    border: 1px solid transparent;
-    border-radius: inherit;
-    border-image-slice: 1;
-    border-image-source: radial-gradient(
-      68px circle at var(--mx, 50%) var(--my, 50%),
-      rgba(255, 225, 140, 1) 0%,
-      rgba(212, 175, 55, 0.95) 22%,
-      rgba(212, 102, 55, 0.55) 45%,
-      rgba(212, 102, 55, 0.12) 62%,
-      transparent 78%
-    );
-    transition: opacity 0.25s ease;
-  }
-
-  .nav-btn::after {
-    border: 1px solid transparent;
-    border-radius: inherit;
-    border-image-slice: 1;
-    border-image-source: radial-gradient(
-      78px circle at var(--mx, 50%) var(--my, 50%),
-      rgba(212, 175, 55, 0.55) 0%,
-      rgba(212, 102, 55, 0.22) 42%,
-      transparent 72%
-    );
-    filter: blur(2px);
-    transition: opacity 0.25s ease;
-  }
-
-  .nav-btn:hover::before,
-  .nav-btn:hover::after {
-    opacity: 1;
+      border-color 0.35s ease;
   }
 
   .close-block {
     position: absolute;
-    top: clamp(1rem, 2vw, 1.6rem);
-    right: clamp(1rem, 2vw, 1.6rem);
-    z-index: 21;
-    width: 44px;
+    left: 50%;
+    bottom: clamp(1rem, 2.2vh, 1.75rem);
+    z-index: 30;
+    width: min(320px, calc(100% - 2rem));
     min-width: 44px;
     padding: 0;
+    transform: translateX(-50%);
+    color: inherit;
+    pointer-events: auto;
   }
 
   .close-icon {
@@ -594,76 +786,6 @@
 
   .close-block:hover .close-icon {
     transform: rotate(90deg) scale(1.15);
-  }
-
-  .menu-nav {
-    position: absolute;
-    top: clamp(4.9rem, 10vh, 7rem);
-    left: clamp(1.4rem, 2.4vw, 2.25rem);
-    z-index: 12;
-    width: min(34vw, 460px);
-    display: flex;
-    flex-direction: column;
-    gap: clamp(0.2rem, 0.45vw, 0.45rem);
-    transform: none;
-    align-items: flex-start;
-  }
-
-  .menu-link {
-    position: relative;
-    width: 100%;
-    padding: 0;
-    border: 0;
-    background: transparent;
-    color: #f5f1e8;
-    text-align: left;
-    cursor: pointer;
-  }
-
-  .menu-link-line {
-    display: block;
-    overflow: hidden;
-  }
-
-  .menu-link-text {
-    display: inline-block;
-    font-family: "Titre", serif;
-    font-size: clamp(4.35rem, 7vw, 8rem);
-    line-height: 0.88;
-    letter-spacing: -0.06em;
-    transform: none;
-    clip-path: inset(100% 0 0 0);
-    -webkit-clip-path: inset(100% 0 0 0);
-    opacity: 0;
-    transition:
-      clip-path 1.18s cubic-bezier(.22, 1, .36, 1),
-      -webkit-clip-path 1.18s cubic-bezier(.22, 1, .36, 1),
-      opacity 0.6s ease,
-      color 0.6s ease,
-      opacity 0.6s ease,
-      filter 0.8s ease;
-  }
-
-  .menu-link.is-current .menu-link-text,
-  .menu-link:hover .menu-link-text,
-  .menu-link:focus-visible .menu-link-text {
-    color: #ffffff;
-    filter: drop-shadow(0 0 18px rgba(255, 255, 255, 0.09));
-  }
-
-  .menu-link:not(.is-current) .menu-link-text {
-    color: rgba(245, 241, 232, 0.28);
-  }
-
-  .bottom-gradient {
-    position: absolute;
-    inset: auto 0 0 0;
-    height: clamp(180px, 28vh, 320px);
-    z-index: 13;
-    pointer-events: none;
-    opacity: 0;
-    background: linear-gradient(180deg, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0.42) 42%, rgba(0, 0, 0, 0.84) 100%);
-    transition: opacity 1.2s cubic-bezier(.22, 1, .36, 1);
   }
 
   .bottom-strip {
@@ -683,14 +805,14 @@
       opacity 1.18s cubic-bezier(.22, 1, .36, 1),
       filter 1.18s cubic-bezier(.22, 1, .36, 1),
       transform 1.18s cubic-bezier(.22, 1, .36, 1);
+    pointer-events: none;
   }
 
   .bottom-kicker {
     font-family: "General Sans", sans-serif;
     font-size: 0.9rem;
     letter-spacing: 0.02em;
-    text-transform: none;
-    color: rgba(245, 241, 232, 0.58);
+    color: rgba(255, 255, 255, 0.58);
     margin-bottom: 0.8rem;
   }
 
@@ -699,8 +821,9 @@
     font-size: clamp(1.05rem, 1.45vw, 1.5rem);
     line-height: 1;
     letter-spacing: -0.03em;
-    color: #f5f1e8;
+    color: #fff;
     text-decoration: none;
+    pointer-events: auto;
   }
 
   .menu-socials {
@@ -727,58 +850,15 @@
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
     transition:
-      transform 0.35s cubic-bezier(.22,.61,.36,1),
+      transform 0.35s cubic-bezier(.22, .61, .36, 1),
       background 0.35s ease,
       border-color 0.35s ease;
+    pointer-events: auto;
   }
 
   .social-link:hover {
     background: rgba(255, 255, 255, 0.12);
     border-color: rgba(255, 255, 255, 0.24);
-  }
-
-  .social-link::before,
-  .social-link::after {
-    content: "";
-    position: absolute;
-    inset: -1px;
-    border-radius: inherit;
-    pointer-events: none;
-    opacity: 0;
-  }
-
-  .social-link::before {
-    border: 1px solid transparent;
-    border-radius: inherit;
-    border-image-slice: 1;
-    border-image-source: radial-gradient(
-      68px circle at var(--mx, 50%) var(--my, 50%),
-      rgba(255, 225, 140, 1) 0%,
-      rgba(212, 175, 55, 0.95) 22%,
-      rgba(212, 102, 55, 0.55) 45%,
-      rgba(212, 102, 55, 0.12) 62%,
-      transparent 78%
-    );
-    transition: opacity 0.25s ease;
-  }
-
-  .social-link::after {
-    border: 1px solid transparent;
-    border-radius: inherit;
-    border-image-slice: 1;
-    border-image-source: radial-gradient(
-      78px circle at var(--mx, 50%) var(--my, 50%),
-      rgba(212, 175, 55, 0.55) 0%,
-      rgba(212, 102, 55, 0.22) 42%,
-      transparent 72%
-    );
-    filter: blur(2px);
-    transition: opacity 0.25s ease;
-  }
-
-  .social-link:hover::before,
-  .social-link:hover::after {
-    opacity: 1;
   }
 
   .icon {
@@ -829,13 +909,11 @@
   }
 
   .fs-menu.content-visible .menu-link-text {
-    transform: none;
     clip-path: inset(0 0 0 0);
     -webkit-clip-path: inset(0 0 0 0);
     opacity: 1;
   }
 
-  .fs-menu.footer-visible .bottom-gradient,
   .fs-menu.footer-visible .bottom-strip {
     opacity: 1;
     filter: blur(0);
@@ -853,14 +931,8 @@
 
   .fs-menu.is-closing .menu-link-text,
   .fs-menu.is-navigating .menu-link-text {
-    transform: none;
     clip-path: inset(0 0 100% 0);
     -webkit-clip-path: inset(0 0 100% 0);
-    opacity: 0;
-  }
-
-  .fs-menu.is-closing .bottom-gradient,
-  .fs-menu.is-navigating .bottom-gradient {
     opacity: 0;
   }
 
@@ -872,8 +944,8 @@
 
   .fs-menu.is-closing .menu-panel,
   .fs-menu.is-navigating .menu-panel {
-    clip-path: inset(0 100% 0 0);
-    -webkit-clip-path: inset(0 100% 0 0);
+    clip-path: inset(0 0 100% 0);
+    -webkit-clip-path: inset(0 0 100% 0);
   }
 
   .fs-menu.is-closing .menu-scrim,
@@ -888,41 +960,59 @@
     -webkit-backdrop-filter: blur(0px);
   }
 
-  @media (max-width: 900px) {
-    .menu-panel {
-      width: 100vw;
+  @media (max-width: 1100px) {
+    .menu-upper {
+      grid-template-columns: minmax(0, 1fr);
+      justify-items: center;
+      padding-top: 1rem;
     }
 
-    .menu-media-shell {
-      top: 0;
-      right: 0;
-      bottom: 0;
-      width: 100vw;
-      opacity: 0.26;
-    }
-
-    .menu-media-overlay {
-      background:
-        linear-gradient(180deg, rgba(0, 0, 0, 0.54) 0%, rgba(0, 0, 0, 0.7) 100%),
-        linear-gradient(90deg, rgba(0, 0, 0, 0.36) 0%, rgba(0, 0, 0, 0.16) 100%);
-    }
-
-    .menu-logo-wrap {
-      top: 0.8rem;
-      width: min(82px, 26vw);
+    .project-previews {
+      position: absolute;
+      top: 1rem;
+      right: 1rem;
+      grid-column: auto;
+      width: min(34vw, 260px);
     }
 
     .menu-nav {
-      left: 1rem;
-      right: 1rem;
-      width: auto;
-      top: clamp(4.8rem, 10vh, 6rem);
-      gap: 0.3rem;
+      grid-column: auto;
+      justify-self: center;
+      align-items: flex-start;
+      padding-top: clamp(4rem, 10vw, 5.5rem);
+    }
+  }
+
+  @media (max-width: 900px) {
+    .menu-shell {
+      grid-template-rows: minmax(0, 1fr) minmax(220px, 36vh);
+    }
+
+    .menu-upper {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1.2rem 1rem 0;
+    }
+
+    .menu-nav {
+      width: 100%;
+      padding-top: 1.2rem;
+      gap: 0.45rem;
     }
 
     .menu-link-text {
-      font-size: clamp(3rem, 12vw, 4.8rem);
-      line-height: 0.9;
+      font-size: clamp(2.85rem, 10.5vw, 4.5rem);
+      line-height: 0.92;
+    }
+
+    .project-previews {
+      display: none;
+    }
+
+    .close-block {
+      width: min(260px, calc(100% - 2rem));
+      height: 40px;
     }
 
     .bottom-strip {
@@ -956,7 +1046,6 @@
     .menu-media-image,
     .ui-content,
     .menu-link-text,
-    .bottom-gradient,
     .bottom-strip,
     .nav-btn,
     .social-link,
