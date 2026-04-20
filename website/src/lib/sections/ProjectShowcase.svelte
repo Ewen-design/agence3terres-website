@@ -17,7 +17,7 @@
       rest: "Une direction pensée pour traduire une elegance sobre, technologique et durable a travers une identite visuelle claire et sensible.",
       image: "/images/serein_design.webp",
       page: "projet1",
-      button: "Voir projet 1"
+      button: "Voir le projet"
     },
     {
       number: "02",
@@ -27,7 +27,7 @@
       rest: "Un travail d'image et de narration concu pour installer une esthetique precise, immersive et raffinee autour du produit.",
       image: "/images/parfum_rouge.webp",
       page: "projet2",
-      button: "Voir projet 2"
+      button: "Voir le projet"
     }
   ];
 
@@ -191,8 +191,18 @@
               class:is-active={activeIndex === i}
               aria-hidden={activeIndex !== i}
             >
-              <p class="story-lead">{project.lead}</p>
               <p class="story-rest">{project.rest}</p>
+              <button
+                class="nav-btn story-btn"
+                type="button"
+                data-cursor="button"
+                on:mousemove={handleButtonMove}
+                on:click={() => navigate(project.page)}
+              >
+                <span class="nav-btn-flip" data-text={project.button}>
+                  <span class="nav-btn-text">{project.button}</span>
+                </span>
+              </button>
             </div>
           {/each}
         </div>
@@ -210,18 +220,6 @@
             class:is-active={activeIndex === i}
           >
             <h2>{project.title}</h2>
-            <p>{project.lead} {project.rest}</p>
-            <button
-              class="nav-btn"
-              type="button"
-              data-cursor="button"
-              on:mousemove={handleButtonMove}
-              on:click={() => navigate(project.page)}
-            >
-              <span class="nav-btn-flip" data-text={project.button}>
-                <span class="nav-btn-text">{project.button}</span>
-              </span>
-            </button>
           </article>
         </div>
       </section>
@@ -300,7 +298,6 @@
     font-weight: 400;
   }
 
-  .project-copy p,
   .mobile-card p {
     margin: 0.9rem 0 1.25rem;
     max-width: 28rem;
@@ -364,7 +361,7 @@
 
   .story-copy {
     position: relative;
-    min-height: 14rem;
+    min-height: 18rem;
   }
 
   .story-layer {
@@ -372,19 +369,12 @@
     inset: 0;
     opacity: 0;
     transition: opacity 0.7s ease;
+    pointer-events: none;
   }
 
   .story-layer.is-active {
     opacity: 1;
-  }
-
-  .story-lead {
-    margin: 0 0 0.9rem;
-    font-family: "Titre", serif;
-    font-size: clamp(1.35rem, 2vw, 2rem);
-    line-height: 1.02;
-    letter-spacing: -0.04em;
-    color: #f5f1e8;
+    pointer-events: auto;
   }
 
   .story-rest {
@@ -394,6 +384,10 @@
     line-height: 1.7;
     color: rgba(245, 241, 232, 0.78);
     max-width: 25rem;
+  }
+
+  .story-btn {
+    margin-top: 1.4rem;
   }
 
   .project-scroll-track {
@@ -425,6 +419,11 @@
     align-self: center;
     pointer-events: auto;
     max-width: 26rem;
+  }
+
+  .project-copy h2 {
+    font-size: clamp(5.3rem, 8.2vw, 9.4rem);
+    line-height: 0.82;
   }
 
   .nav-btn {

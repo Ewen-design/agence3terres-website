@@ -15,7 +15,7 @@
 </script>
 
 <ProjectHeroProjetsStyle
-  title="Projet 1"
+  title="Serein Design"
   image="/images/serein_design.webp"
   finalText="Une page projet pensée pour montrer le travail avec plus de clarté, de tenue et de précision visuelle."
 />

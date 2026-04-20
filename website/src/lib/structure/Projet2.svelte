@@ -15,7 +15,7 @@
 </script>
 
 <ProjectHeroProjetsStyle
-  title="Projet 2"
+  title="Hansatsu"
   image="/images/parfum_rouge.webp"
   finalText="Une page projet conçue pour installer un univers plus sensoriel, plus narratif et plus immersif dès l'arrivée."
 />

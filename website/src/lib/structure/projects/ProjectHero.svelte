@@ -100,7 +100,7 @@
 
   .project-hero__headline h1 {
     margin: 0;
-    max-width: 7ch;
+    max-width: 10ch;
     font-family: "Titre italic", serif;
     font-style: italic;
     font-weight: 400;

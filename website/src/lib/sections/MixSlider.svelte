@@ -77,6 +77,25 @@
     rgba(5, 11, 20, 0) 100%
   )`;
 
+  function syncHeaderTone(nextActiveIndex = activeIndex) {
+    if (!browser || !sliderEl) return;
+
+    const rect = sliderEl.getBoundingClientRect();
+    const vh = window.innerHeight || 1;
+    const sliderIsStickyActive = rect.top <= 0 && rect.bottom >= vh;
+    const tone = sliderIsStickyActive
+      ? nextActiveIndex === 0
+        ? "dark"
+        : "light"
+      : null;
+
+    window.dispatchEvent(
+      new CustomEvent("mixslider:header-tone", {
+        detail: { tone }
+      })
+    );
+  }
+
   function checkMobile() {
     isMobile = window.innerWidth <= 700;
   }
@@ -166,6 +185,7 @@
     animateDisplayedFills();
     bgScales = nextScales;
     contentClipInsets = nextClipInsets;
+    syncHeaderTone(nextActiveIndex);
     ticking = false;
   }
 
@@ -232,6 +252,11 @@
 
   onDestroy(() => {
     if (!browser) return;
+    window.dispatchEvent(
+      new CustomEvent("mixslider:header-tone", {
+        detail: { tone: null }
+      })
+    );
     stopFillAnimation();
     window.removeEventListener("scroll", onScroll);
     window.removeEventListener("resize", handleResize);

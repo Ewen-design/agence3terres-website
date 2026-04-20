@@ -40,8 +40,10 @@
 
   let themedSections = [];
   let refreshSectionsRaf = 0;
+  let mixSliderHeaderTone = null;
 
   const SCROLL_THRESHOLD = 10;
+  const LIGHT_TEXT_COLOR = "#353535";
   const SECTION_SELECTOR =
     "section.hero-wrapper, section.creative-section, section.services, section.dna-section, section.lifestyles-section";
 
@@ -75,6 +77,14 @@
 
   function updateTextColor() {
     if (!headerEl) return;
+    if (mixSliderHeaderTone === "dark") {
+      if (textColor !== LIGHT_TEXT_COLOR) textColor = LIGHT_TEXT_COLOR;
+      return;
+    }
+    if (mixSliderHeaderTone === "light") {
+      if (textColor !== "white") textColor = "white";
+      return;
+    }
     if (!themedSections.length) {
       if (textColor !== "white") textColor = "white";
       return;
@@ -93,7 +103,7 @@
       }
     }
 
-    const nextColor = overLight ? "black" : "white";
+    const nextColor = overLight ? LIGHT_TEXT_COLOR : "white";
     if (nextColor !== textColor) textColor = nextColor;
   }
 
@@ -269,6 +279,11 @@
     scheduleThemeSectionsRefresh();
   }
 
+  function handleMixSliderHeaderTone(event) {
+    mixSliderHeaderTone = event.detail?.tone ?? null;
+    updateTextColor();
+  }
+
   onMount(() => {
     let destroyed = false;
 
@@ -312,6 +327,7 @@
     });
 
     window.addEventListener("preloader:done", handlePreloaderDone);
+    window.addEventListener("mixslider:header-tone", handleMixSliderHeaderTone);
 
     markHeaderReady();
 
@@ -334,6 +350,7 @@
       destroyed = true;
       unregisterRead(processScrollState);
       window.removeEventListener("preloader:done", handlePreloaderDone);
+      window.removeEventListener("mixslider:header-tone", handleMixSliderHeaderTone);
       window.removeEventListener("resize", scheduleThemeSectionsRefresh);
     };
   });
@@ -483,6 +500,7 @@
     box-shadow: none;
     isolation: isolate;
     transition:
+      color 220ms ease,
       opacity 0.9s ease,
       transform 0.9s cubic-bezier(.22,.61,.36,1);
   }
@@ -554,6 +572,7 @@
     border-radius: 2px;
     box-shadow: 0 6px 8px rgba(0, 0, 0, 0.04);
     transition:
+      color 220ms ease,
       transform 1.2s cubic-bezier(.22,.61,.36,1),
       box-shadow 1.2s cubic-bezier(.22,.61,.36,1),
       background 1.2s cubic-bezier(.22,.61,.36,1);
