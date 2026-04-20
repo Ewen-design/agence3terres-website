@@ -59,10 +59,10 @@
   const PANEL_OPEN_DELAY = 170;
   const CONTENT_REVEAL_DELAY = 780;
   const FOOTER_REVEAL_DELAY = 1380;
-  const CLOSE_CONTENT_MS = 280;
-  const CLOSE_PANEL_DELAY = 190;
-  const PANEL_CLOSE_MS = 1420;
-  const NAVIGATE_DELAY = 150;
+  const CLOSE_CONTENT_MS = 860;
+  const CLOSE_PANEL_DELAY = 420;
+  const PANEL_CLOSE_MS = 1880;
+  const NAVIGATE_DELAY = 1380;
 
   let visible = false;
   let expanded = false;
@@ -430,7 +430,7 @@
     z-index: 2;
     opacity: 0;
     background: rgba(0, 0, 0, 0.84);
-    transition: opacity 1.35s cubic-bezier(.22, 1, .36, 1);
+    transition: opacity 1.8s cubic-bezier(.16, 1, .3, 1);
   }
 
   .menu-blur {
@@ -439,9 +439,9 @@
     backdrop-filter: blur(0px);
     -webkit-backdrop-filter: blur(0px);
     transition:
-      opacity 1.35s cubic-bezier(.22, 1, .36, 1),
-      backdrop-filter 1.35s cubic-bezier(.22, 1, .36, 1),
-      -webkit-backdrop-filter 1.35s cubic-bezier(.22, 1, .36, 1);
+      opacity 1.8s cubic-bezier(.16, 1, .3, 1),
+      backdrop-filter 1.8s cubic-bezier(.16, 1, .3, 1),
+      -webkit-backdrop-filter 1.8s cubic-bezier(.16, 1, .3, 1);
   }
 
   .menu-shell {
@@ -460,8 +460,8 @@
     -webkit-clip-path: inset(0 0 100% 0);
     will-change: clip-path;
     transition:
-      clip-path 1.4s cubic-bezier(.18, .93, .2, 1),
-      -webkit-clip-path 1.4s cubic-bezier(.18, .93, .2, 1);
+      clip-path 1.9s cubic-bezier(.16, 1, .3, 1),
+      -webkit-clip-path 1.9s cubic-bezier(.16, 1, .3, 1);
   }
 
   .ui-content {
@@ -469,9 +469,9 @@
     filter: blur(18px);
     transform: translate3d(0, 26px, 0);
     transition:
-      opacity 1.1s cubic-bezier(.22, 1, .36, 1),
-      filter 1.1s cubic-bezier(.22, 1, .36, 1),
-      transform 1.1s cubic-bezier(.22, 1, .36, 1);
+      opacity 1.6s cubic-bezier(.16, 1, .3, 1),
+      filter 1.6s cubic-bezier(.16, 1, .3, 1),
+      transform 1.6s cubic-bezier(.16, 1, .3, 1);
   }
 
   .menu-upper {
@@ -525,11 +525,11 @@
     color: rgba(255, 255, 255, 0.42);
     padding-right: 0.08em;
     transition:
-      clip-path 1.18s cubic-bezier(.22, 1, .36, 1),
-      -webkit-clip-path 1.18s cubic-bezier(.22, 1, .36, 1),
-      opacity 0.6s ease,
-      color 0.6s ease,
-      filter 0.8s ease;
+      clip-path 1.6s cubic-bezier(.16, 1, .3, 1),
+      -webkit-clip-path 1.6s cubic-bezier(.16, 1, .3, 1),
+      opacity 1.05s ease,
+      color 1.05s ease,
+      filter 1.2s ease;
   }
 
   .menu-link.is-current .menu-link-text,
@@ -699,8 +699,8 @@
     -webkit-clip-path: inset(100% 0 0 0);
     will-change: clip-path;
     transition:
-      clip-path 1.55s cubic-bezier(.18, .93, .2, 1),
-      -webkit-clip-path 1.55s cubic-bezier(.18, .93, .2, 1);
+      clip-path 1.95s cubic-bezier(.16, 1, .3, 1),
+      -webkit-clip-path 1.95s cubic-bezier(.16, 1, .3, 1);
   }
 
   .menu-media-stack {
@@ -719,9 +719,9 @@
     transform: scale(1.04);
     filter: brightness(0.72) saturate(0.9) contrast(1.02);
     transition:
-      opacity 0.9s cubic-bezier(.22, 1, .36, 1),
-      transform 1.35s cubic-bezier(.22, 1, .36, 1),
-      filter 0.9s cubic-bezier(.22, 1, .36, 1);
+      opacity 1.15s cubic-bezier(.16, 1, .3, 1),
+      transform 1.7s cubic-bezier(.16, 1, .3, 1),
+      filter 1.15s cubic-bezier(.16, 1, .3, 1);
   }
 
   .menu-media-image.is-active {
@@ -802,9 +802,9 @@
     filter: blur(16px);
     transform: translate3d(0, 26px, 0);
     transition:
-      opacity 1.18s cubic-bezier(.22, 1, .36, 1),
-      filter 1.18s cubic-bezier(.22, 1, .36, 1),
-      transform 1.18s cubic-bezier(.22, 1, .36, 1);
+      opacity 1.65s cubic-bezier(.16, 1, .3, 1),
+      filter 1.65s cubic-bezier(.16, 1, .3, 1),
+      transform 1.65s cubic-bezier(.16, 1, .3, 1);
     pointer-events: none;
   }
 
