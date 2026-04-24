@@ -31,11 +31,6 @@
   <div class="footer-overlay"></div>
 
   <div class="footer-content">
-    <div class="text-block">
-      <h2 class="line-1">Parlons de votre</h2>
-      <h2 class="line-2">prochain projet.</h2>
-    </div>
-
     <div class="bottom-block">
       <img src="/images/logo_prisme.png" alt="Logo Agence 3 Terres" class="logo" />
 
@@ -121,41 +116,8 @@
     min-height: var(--viewport-height);
     display: flex;
     flex-direction: column;
-    justify-content: space-between;
+    justify-content: flex-end;
     padding: clamp(1.2rem, 2vw, 2rem);
-  }
-
-  .text-block {
-    max-width: 920px;
-    padding-top: clamp(5.5rem, 11vh, 8rem);
-    padding-left: clamp(1rem, 4vw, 4rem);
-    opacity: 0;
-    transform: translate3d(0, 26px, 0);
-    transition:
-      opacity 0.95s cubic-bezier(.22,.61,.36,1),
-      transform 0.95s cubic-bezier(.22,.61,.36,1);
-    will-change: opacity, transform;
-  }
-
-  .line-1,
-  .line-2 {
-    margin: 0;
-    line-height: 0.92;
-    letter-spacing: 0.01em;
-    font-size: clamp(2.8rem, 6.1vw, 6.2rem);
-  }
-
-  .line-1 {
-    font-family: "Titre", serif;
-    font-weight: 400;
-    color: #fff;
-  }
-
-  .line-2 {
-    font-family: "Titre", serif;
-    font-weight: 400;
-    color: rgba(255, 255, 255, 0.5);
-    margin-top: 0.04em;
   }
 
   .bottom-block {
@@ -263,19 +225,12 @@
     opacity: 1;
   }
 
-  .footer.is-visible .text-block,
   .footer.is-visible .bottom-block {
     opacity: 1;
     transform: translate3d(0, 0, 0);
   }
 
   @media (max-width: 768px) {
-    .line-1,
-    .line-2 {
-      font-size: clamp(2.1rem, 9vw, 4rem);
-      line-height: 0.98;
-    }
-
     .footer-bg {
       filter: brightness(0.52) contrast(1.02) saturate(0.92);
     }
@@ -310,7 +265,6 @@
   @media (prefers-reduced-motion: reduce) {
     .footer-bg,
     .footer-overlay,
-    .text-block,
     .bottom-block,
     .icon-link {
       transition: none;
@@ -318,7 +272,6 @@
 
     .footer-bg,
     .footer-overlay,
-    .text-block,
     .bottom-block {
       opacity: 1;
       transform: none;

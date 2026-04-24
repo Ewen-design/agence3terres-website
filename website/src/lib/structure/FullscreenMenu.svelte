@@ -1048,18 +1048,20 @@
     .bottom-strip {
       left: 1rem;
       right: 1rem;
-      bottom: 1rem;
-      flex-direction: column;
-      align-items: stretch;
-      gap: 1.2rem;
+      top: calc(64svh + 1rem);
+      bottom: auto;
+      flex-direction: row;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 1rem;
     }
 
     .menu-socials {
-      align-items: flex-start;
+      align-items: flex-end;
     }
 
     .socials-group {
-      justify-content: flex-start;
+      justify-content: flex-end;
     }
 
     .social-link {
