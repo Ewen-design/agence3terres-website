@@ -458,6 +458,7 @@
 
   <div class="page-wrapper" bind:this={pageWrapper}>
     <slot />
+    <div class="ios-bottom-mask" aria-hidden="true"></div>
   </div>
 
   <div class="route-transition-layer" bind:this={transitionLayer} aria-hidden="true">
@@ -539,11 +540,29 @@
     left: -10vw;
     top: -140px;
     width: 120vw;
-    height: calc(100vh + 280px);
+    height: calc(var(--viewport-height) + 280px);
     background: var(--wipe-color);
     opacity: 0;
     will-change: transform, opacity;
     transform: translate3d(0, calc(-100% - 140px), 0);
+  }
+
+  .ios-bottom-mask {
+    display: none;
+  }
+
+  @media (hover: none) and (pointer: coarse) {
+    .ios-bottom-mask {
+      position: fixed;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      height: calc(env(safe-area-inset-bottom, 0px) + 28px);
+      background: #000;
+      pointer-events: none;
+      z-index: 999999;
+      display: block;
+    }
   }
 
   .top-gradient {

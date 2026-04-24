@@ -429,7 +429,7 @@
   .story-slider__sticky {
     position: sticky;
     top: 0;
-    height: 100vh;
+    height: var(--viewport-height);
     overflow: hidden;
     background: #05070a;
     transform: translateZ(0);
@@ -755,7 +755,7 @@
   .story-slider__progress {
     position: absolute;
     left: clamp(1rem, 2vw, 2rem);
-    bottom: clamp(3rem, 4.6vw, 4rem);
+    bottom: max(clamp(3rem, 4.6vw, 4rem), var(--safe-bottom-offset));
     display: flex;
     align-items: center;
     gap: 0.9rem;
@@ -792,7 +792,7 @@
   .story-slider__arrow {
     position: absolute;
     left: clamp(1rem, 2vw, 2rem);
-    bottom: clamp(1.2rem, 2.2vw, 2rem);
+    bottom: max(clamp(1.2rem, 2.2vw, 2rem), var(--safe-bottom-offset));
     opacity: 0.92;
   }
 
@@ -866,11 +866,11 @@
 
     .story-slider__progress {
       width: min(180px, 48vw);
-      bottom: clamp(2.6rem, 6vw, 3.2rem);
+      bottom: max(clamp(2.6rem, 6vw, 3.2rem), var(--safe-bottom-offset));
     }
 
     .story-slider__arrow {
-      bottom: clamp(1rem, 3.2vw, 1.4rem);
+      bottom: max(clamp(1rem, 3.2vw, 1.4rem), var(--safe-bottom-offset));
     }
 
     .story-slider__bottom-gradient {

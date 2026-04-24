@@ -380,8 +380,7 @@
   .sticky {
     position: sticky;
     top: 0;
-    height: 100vh;
-    height: 100svh;
+    height: var(--viewport-height);
     overflow: hidden;
     background: #050b14;
     isolation: isolate;
@@ -449,12 +448,11 @@
   .slides {
     position: relative;
     z-index: 3;
-    margin-top: -100vh;
-    margin-top: -100svh;
+    margin-top: calc(-1 * var(--viewport-height));
   }
 
   .slide {
-    min-height: 100vh;
+    min-height: var(--viewport-height);
     display: flex;
     align-items: center;
     padding: 8rem 4rem;
@@ -542,7 +540,7 @@
     position: absolute;
     left: 2rem;
     right: 2rem;
-    bottom: 2rem;
+    bottom: max(2rem, var(--safe-bottom-offset));
     z-index: 5;
     display: grid;
     grid-template-columns: repeat(6, minmax(0, 1fr));
@@ -712,12 +710,11 @@
     }
 
     .sticky {
-      height: 100vh;
-      height: 100svh;
+      height: var(--viewport-height);
     }
 
     .slide {
-      min-height: 100svh;
+      min-height: var(--viewport-height);
       padding: 7rem 2rem 11rem;
       align-items: center;
     }
@@ -739,7 +736,7 @@
       grid-template-columns: repeat(2, 1fr);
       left: 1.25rem;
       right: 1.25rem;
-      bottom: 1.5rem;
+      bottom: max(1.5rem, var(--safe-bottom-offset));
       gap: 1rem 0.8rem;
     }
 
@@ -765,7 +762,7 @@
 
     .slide {
       padding: 6.5rem 1.25rem 10rem;
-      min-height: 100svh;
+      min-height: var(--viewport-height);
       align-items: center;
     }
 
@@ -781,7 +778,7 @@
       --mobile-progress-shell-height: calc(4.45rem + env(safe-area-inset-bottom));
       display: block;
       position: sticky;
-      top: calc(100svh - var(--mobile-progress-shell-height));
+      top: calc(var(--viewport-height) - var(--mobile-progress-shell-height));
       height: var(--mobile-progress-shell-height);
       margin-top: calc(-1 * var(--mobile-progress-shell-height));
       margin-bottom: calc(-1 * var(--mobile-progress-shell-height));

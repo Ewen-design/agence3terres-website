@@ -8,9 +8,23 @@
 }
 
 /* ── Root setup ── */
+:root {
+  --viewport-height: 100svh;
+  --safe-bottom-offset: calc(env(safe-area-inset-bottom, 0px) + 24px);
+}
+
+@supports (height: 100dvh) {
+  :root {
+    --viewport-height: 100dvh;
+  }
+}
+
 html {
+  margin: 0;
+  min-height: 100%;
   scroll-behavior: auto;
   scrollbar-width: none;
+  background: #000;
 }
 
 html::-webkit-scrollbar {
@@ -18,11 +32,12 @@ html::-webkit-scrollbar {
 }
 
 body {
+  margin: 0;
   font-family: "Manrope", system-ui, -apple-system, sans-serif;
-  background: #111;
+  background: #000;
   color: #fff;
-
-  min-height: 100vh;
+  min-height: 100%;
+  min-height: 100svh;
   overflow-x: hidden;
 
   -webkit-font-smoothing: antialiased;
@@ -51,14 +66,25 @@ body {
   overflow-x: hidden;
 }
 
-html {
-  height: 100%;
-}
-
 body {
-  min-height: 100%;
   overscroll-behavior-y: none;
   -webkit-overflow-scrolling: touch;
+}
+
+@supports (height: 100dvh) {
+  body {
+    min-height: 100dvh;
+  }
+}
+
+.section-full {
+  min-height: 100svh;
+}
+
+@supports (height: 100dvh) {
+  .section-full {
+    min-height: 100dvh;
+  }
 }
 
 @font-face {

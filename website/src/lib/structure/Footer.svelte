@@ -26,7 +26,7 @@
   });
 </script>
 
-<footer class="footer" class:is-visible={isVisible} bind:this={footerEl}>
+<footer class="footer section-full" class:is-visible={isVisible} bind:this={footerEl}>
   <div class="footer-bg"></div>
   <div class="footer-overlay"></div>
 
@@ -79,7 +79,6 @@
 <style>
   .footer {
     position: relative;
-    min-height: 100vh;
     overflow: hidden;
     background: #070707;
     isolation: isolate;
@@ -119,7 +118,7 @@
   .footer-content {
     position: relative;
     z-index: 2;
-    min-height: 100vh;
+    min-height: var(--viewport-height);
     display: flex;
     flex-direction: column;
     justify-content: space-between;
@@ -164,7 +163,7 @@
     flex-direction: column;
     align-items: center;
     gap: 0.95rem;
-    padding-bottom: clamp(1rem, 2vw, 1.8rem);
+    padding-bottom: max(clamp(1rem, 2vw, 1.8rem), var(--safe-bottom-offset));
     opacity: 0;
     transform: translate3d(0, 18px, 0);
     transition:

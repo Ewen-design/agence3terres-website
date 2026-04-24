@@ -110,7 +110,7 @@
 <style>
   .scroll-btn {
     position: fixed;
-    bottom: 2rem;
+    bottom: max(2rem, var(--safe-bottom-offset));
     right: 2rem;
     width: 48px;
     height: 48px;

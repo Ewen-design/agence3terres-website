@@ -551,9 +551,8 @@
   .hero-media-sticky {
     position: sticky;
     top: 0;
-    height: 100vh;
-    height: 100svh;
-    margin-bottom: -100vh;
+    height: var(--viewport-height);
+    margin-bottom: calc(-1 * var(--viewport-height));
     z-index: 0;
     pointer-events: none;
   }
@@ -608,8 +607,7 @@
   .sticky-stage {
     position: sticky;
     top: 0;
-    height: 100vh;
-    height: 100svh;
+    height: var(--viewport-height);
     overflow: hidden;
   }
 

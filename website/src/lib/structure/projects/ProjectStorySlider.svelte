@@ -201,8 +201,7 @@
   .project-slider__sticky {
     position: sticky;
     top: 0;
-    height: 100vh;
-    height: 100svh;
+    height: var(--viewport-height);
     overflow: hidden;
     background: #050b14;
     isolation: isolate;
@@ -267,8 +266,7 @@
   .project-slider__slides {
     position: relative;
     z-index: 3;
-    margin-top: -100vh;
-    margin-top: -100svh;
+    margin-top: calc(-1 * var(--viewport-height));
   }
 
   .project-slider__mask-anchor {
@@ -280,8 +278,7 @@
   }
 
   .project-slider__slide {
-    min-height: 100vh;
-    min-height: 100svh;
+    min-height: var(--viewport-height);
     display: flex;
     align-items: center;
     padding: 8rem 4rem;
