@@ -286,6 +286,10 @@
     <div class="menu-panel"></div>
 
     <div class="menu-upper ui-content">
+      <div class="menu-top-logo" aria-hidden="true">
+        <img src="/images/logo_prisme.png" alt="" />
+      </div>
+
       <nav class="menu-nav" aria-label="Navigation principale">
         {#each links as link, i}
           <button
@@ -482,6 +486,24 @@
     align-items: start;
     min-height: 0;
     padding: clamp(1.25rem, 2vw, 1.75rem) clamp(1rem, 2vw, 2rem) 0;
+  }
+
+  .menu-top-logo {
+    position: absolute;
+    top: calc(clamp(1.25rem, 2vw, 1.75rem) + 0.2rem);
+    left: 50%;
+    z-index: 12;
+    transform: translateX(-50%);
+    display: flex;
+    justify-content: center;
+    pointer-events: none;
+  }
+
+  .menu-top-logo img {
+    display: block;
+    width: clamp(2.15rem, 3.35vw, 3rem);
+    height: auto;
+    object-fit: contain;
   }
 
   .menu-nav {
@@ -984,6 +1006,14 @@
   }
 
   @media (max-width: 900px) {
+    .menu-top-logo {
+      top: calc(clamp(1.25rem, 2vw, 1.75rem) + 0.2rem);
+    }
+
+    .menu-top-logo img {
+      width: clamp(1.95rem, 7vw, 2.45rem);
+    }
+
     .menu-shell {
       grid-template-rows: minmax(0, 1fr) minmax(220px, 36vh);
     }

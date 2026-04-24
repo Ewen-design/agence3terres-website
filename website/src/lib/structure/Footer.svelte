@@ -37,7 +37,7 @@
     </div>
 
     <div class="bottom-block">
-      <img src="/images/test_logo.png" alt="Logo Agence 3 Terres" class="logo" />
+      <img src="/images/logo_prisme.png" alt="Logo Agence 3 Terres" class="logo" />
 
       <div class="contact-block">
         <span class="contact-title">Contact</span>
