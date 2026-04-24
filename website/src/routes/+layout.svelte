@@ -557,7 +557,7 @@
       left: 0;
       right: 0;
       bottom: 0;
-      height: calc(env(safe-area-inset-bottom, 0px) + 28px);
+      height: calc(env(safe-area-inset-bottom, 0px) + 14px);
       background: #000;
       pointer-events: none;
       z-index: 999999;

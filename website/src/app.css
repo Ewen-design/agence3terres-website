@@ -10,13 +10,7 @@
 /* ── Root setup ── */
 :root {
   --viewport-height: 100svh;
-  --safe-bottom-offset: calc(env(safe-area-inset-bottom, 0px) + 24px);
-}
-
-@supports (height: 100dvh) {
-  :root {
-    --viewport-height: 100dvh;
-  }
+  --safe-bottom-offset: calc(env(safe-area-inset-bottom, 0px) + 18px);
 }
 
 html {
@@ -71,20 +65,8 @@ body {
   -webkit-overflow-scrolling: touch;
 }
 
-@supports (height: 100dvh) {
-  body {
-    min-height: 100dvh;
-  }
-}
-
 .section-full {
   min-height: 100svh;
-}
-
-@supports (height: 100dvh) {
-  .section-full {
-    min-height: 100dvh;
-  }
 }
 
 @font-face {
