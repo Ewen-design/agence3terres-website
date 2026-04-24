@@ -436,11 +436,8 @@
   }
 
   .fixed-text {
-    position: sticky;
-    top: 0;
-    width: 100%;
-    height: var(--viewport-height);
-    margin-bottom: calc(-1 * var(--viewport-height));
+    position: fixed;
+    inset: 0;
     display: grid;
     place-items: center;
     z-index: 999;
@@ -659,12 +656,6 @@
     .title {
       font-size: clamp(2rem, 9vw, 3.1rem);
       line-height: 0.92;
-    }
-
-    .fixed-text {
-      top: 0;
-      height: var(--viewport-height);
-      margin-bottom: calc(-1 * var(--viewport-height));
     }
 
     .card.portrait {
