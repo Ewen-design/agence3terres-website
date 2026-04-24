@@ -644,7 +644,27 @@
 
   @media (max-width: 700px) {
     .slider {
+      --mobile-bg-bleed: 72px;
+      touch-action: pan-y;
+    }
+
+    .slider {
       min-height: 300vh;
+    }
+
+    .sticky::before,
+    .backgrounds,
+    .bg {
+      inset: 0 0 calc(-1 * var(--mobile-bg-bleed)) 0;
+    }
+
+    .bg img {
+      inset: 0 0 calc(-1 * var(--mobile-bg-bleed)) 0;
+      height: calc(100% + var(--mobile-bg-bleed));
+    }
+
+    .bottom-shade {
+      bottom: calc(-1 * var(--mobile-bg-bleed));
     }
 
     .mobile-progress-meta {
@@ -661,10 +681,22 @@
       padding: 6.5rem 1.25rem 5.75rem;
       min-height: var(--viewport-height);
       align-items: center;
+      touch-action: pan-y;
     }
 
     .tail {
       height: 0;
+    }
+
+    .content-clip,
+    .content,
+    .number,
+    h2,
+    p {
+      pointer-events: none;
+      touch-action: pan-y;
+      -webkit-user-select: none;
+      user-select: none;
     }
 
     .progress-nav {
