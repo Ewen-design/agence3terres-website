@@ -10,7 +10,7 @@
 /* ── Root setup ── */
 :root {
   --viewport-height: 100svh;
-  --safe-bottom-offset: calc(env(safe-area-inset-bottom, 0px) + 18px);
+  --safe-bottom-offset: calc(env(safe-area-inset-bottom, 0px) + 14px);
 }
 
 html {

@@ -212,7 +212,8 @@
     const leftX = lerp(leftStartX, leftEndX, smoothMerge);
     const rightX = lerp(rightStartX, rightEndX, smoothMerge);
 
-    const hintScrollFade = 1 - easeOutCubic(clamp(heroProgress / 0.03, 0, 1));
+    const hintFadeProgress = easeInOutSine(clamp(heroProgress / 0.085, 0, 1));
+    const hintScrollFade = 1 - hintFadeProgress;
     const scrollHintOpacity = hintVisible ? hintScrollFade : 0;
 
     const textBlockOpacity = lerp(0.14, 1, localTextReveal);
@@ -232,8 +233,8 @@
       leftX: q(leftX, 0.1),
       rightX: q(rightX, 0.1),
       hintOpacity: q(scrollHintOpacity, 0.001),
-      hintY: q(lerp(14, 0, scrollHintOpacity), 0.1),
-      hintBlur: q(lerp(10, 0, scrollHintOpacity), 0.1),
+      hintY: q(lerp(10, 0, scrollHintOpacity), 0.1),
+      hintBlur: q(lerp(6, 0, scrollHintOpacity), 0.1),
       textOpacity: q(textBlockOpacity, 0.001),
       textX: q(textBlockX, 0.1),
       textY: q(textBlockY, 0.1),
@@ -668,7 +669,7 @@
   }
 
   .hint-visible {
-    transition: opacity 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+    transition: opacity 1.1s cubic-bezier(0.22, 1, 0.36, 1);
   }
 
   .after-section {

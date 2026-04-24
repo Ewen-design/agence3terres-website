@@ -96,7 +96,6 @@
 
   let applied = {
     textOpacity: -1,
-    textTranslate: -999,
     galleryOpacity: -1,
     galleryExitCut: -999,
     galleryExitFeather: -999
@@ -108,16 +107,16 @@
   const DESKTOP_GALLERY_CENTER = 0.58;
   const DESKTOP_GALLERY_RANGE = 0.72;
 
-  const MOBILE_TEXT_CENTER = 0.6;
+  const MOBILE_TEXT_CENTER = 0.57;
   const MOBILE_TEXT_ENTER_RANGE = 0.42;
-  const MOBILE_TEXT_LEAVE_RANGE = 1.0;
-  const MOBILE_GALLERY_CENTER = 0.96;
-  const MOBILE_GALLERY_RANGE = 0.42;
+  const MOBILE_TEXT_LEAVE_RANGE = 0.76;
+  const MOBILE_GALLERY_CENTER = 0.82;
+  const MOBILE_GALLERY_RANGE = 0.34;
 
   const DESKTOP_EXIT_START = 1.12;
   const DESKTOP_EXIT_END = 0.08;
-  const MOBILE_EXIT_START = 1.08;
-  const MOBILE_EXIT_END = 0.12;
+  const MOBILE_EXIT_START = 0.92;
+  const MOBILE_EXIT_END = 0.2;
 
   function clamp(value, min, max) {
     return Math.max(min, Math.min(max, value));
@@ -203,7 +202,6 @@
 
     pending = {
       textOpacity: q(textVisibility, 0.001),
-      textTranslate: q((1 - textVisibility) * (isMobile ? 26 : 34), 0.1),
       galleryOpacity: q(galleryProgress, 0.001),
       galleryExitCut: q(blendedExit * (isMobile ? 70 : 74), 0.1),
       galleryExitFeather: q((isMobile ? 21 : 20) + blendedExit * (isMobile ? 18 : 20), 0.1)
@@ -219,11 +217,6 @@
       if (pending.textOpacity !== applied.textOpacity) {
         fixedTextEl.style.opacity = `${pending.textOpacity}`;
         applied.textOpacity = pending.textOpacity;
-      }
-
-      if (pending.textTranslate !== applied.textTranslate) {
-        fixedTextEl.style.transform = `translate3d(0, ${pending.textTranslate}px, 0)`;
-        applied.textTranslate = pending.textTranslate;
       }
 
       fixedTextEl.style.visibility = pending.textOpacity > 0.008 ? "visible" : "hidden";
@@ -285,7 +278,7 @@
       if (fixedTextEl) {
         fixedTextEl.style.opacity = "0";
         fixedTextEl.style.visibility = "hidden";
-        fixedTextEl.style.transform = `translate3d(0, ${isMobile ? 26 : 34}px, 0)`;
+        fixedTextEl.style.transform = "translate3d(0, 0, 0)";
       }
 
       if (galleryShellEl) {
@@ -452,7 +445,7 @@
     opacity: 0;
     visibility: hidden;
     transform: translate3d(0, 34px, 0);
-    will-change: transform, opacity;
+    will-change: opacity;
     backface-visibility: hidden;
     -webkit-backface-visibility: hidden;
   }
@@ -632,14 +625,14 @@
 
   @media (max-width: 640px) {
     .gallery-track {
-      min-height: 170vh;
+      min-height: 138vh;
     }
 
     .gallery-shell {
       width: 154vw;
       margin-left: 50%;
       transform: translate3d(-50%, 0, 0);
-      padding: 7vh 0 3vh;
+      padding: 6vh 0 1vh;
     }
 
     .gallery-grid {
@@ -692,7 +685,7 @@
 
   @media (max-width: 420px) {
     .gallery-track {
-      min-height: 178vh;
+      min-height: 142vh;
     }
 
     .gallery-shell {
