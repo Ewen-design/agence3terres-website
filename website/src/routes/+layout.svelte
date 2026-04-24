@@ -450,6 +450,10 @@
     <CustomCursor />
   {/if}
 
+  <div class="site-prism-mark" aria-hidden="true">
+    <img src="/images/logo_prisme.png" alt="" loading="eager" />
+  </div>
+
   <Header />
 
   <div class="page-wrapper" bind:this={pageWrapper}>
@@ -488,10 +492,29 @@
     position: fixed;
     inset: 0;
     pointer-events: none;
-    z-index: 60;
+    z-index: 300000;
     opacity: 0;
     overflow: hidden;
     will-change: opacity;
+  }
+
+  .site-prism-mark {
+    position: fixed;
+    top: 1rem;
+    left: 1rem;
+    z-index: 5000;
+    pointer-events: none;
+    padding: 0.22rem;
+    border-radius: 2px;
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(3px);
+    -webkit-backdrop-filter: blur(3px);
+  }
+
+  .site-prism-mark img {
+    display: block;
+    width: clamp(1.8rem, 2.9vw, 2.7rem);
+    height: auto;
   }
 
   .route-transition-blur {
@@ -577,6 +600,16 @@
   }
 
   @media (max-width: 900px) {
+    .site-prism-mark {
+      top: 0.8rem;
+      left: 0.8rem;
+      padding: 0.2rem;
+    }
+
+    .site-prism-mark img {
+      width: clamp(1.7rem, 8vw, 2.2rem);
+    }
+
     .route-transition-blur {
       backdrop-filter: blur(0px);
       -webkit-backdrop-filter: blur(0px);
