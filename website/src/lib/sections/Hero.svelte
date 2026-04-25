@@ -838,6 +838,10 @@
   }
 
   @media (max-width: 900px) {
+    .scroll-hint {
+      display: none !important;
+    }
+
     .pin-section {
       height: 235vh;
     }

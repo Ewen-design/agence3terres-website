@@ -544,6 +544,10 @@
   }
 
   @media (max-width: 900px) {
+    .scroll-hint {
+      display: none !important;
+    }
+
     .hero-overlay {
       padding: 1rem 1rem 1.2rem;
     }
