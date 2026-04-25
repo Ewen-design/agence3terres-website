@@ -876,7 +876,7 @@
   @media (max-width: 768px) {
     header {
       top: 0.85rem;
-      width: min(calc(100vw - 1.8rem), 30rem);
+      width: min(calc(100vw - 1.2rem), 28.8rem);
       overflow: visible;
     }
 
@@ -899,10 +899,10 @@
     .links {
       order: 3;
       display: flex;
-      width: min(calc(100vw - 3.8rem), 28.75rem);
-      max-width: none;
+      width: max-content;
+      max-width: calc(100vw - 0.8rem);
       justify-content: center;
-      gap: 0.44rem;
+      gap: 0.42rem;
       padding: 0;
       margin: 0;
       max-height: 4rem;
@@ -918,6 +918,8 @@
 
     .links button {
       flex: 0 0 auto;
+      padding: 0 1.16rem;
+      font-size: 0.84rem;
     }
 
     .compact .nav-inner {
@@ -927,8 +929,8 @@
     }
 
     .compact .links {
-      width: min(calc(100vw - 3.8rem), 28.75rem);
-      max-width: none;
+      width: max-content;
+      max-width: calc(100vw - 0.8rem);
       max-height: 4rem;
       opacity: 0;
       margin-top: 0;
@@ -938,12 +940,24 @@
     }
 
     .nav-wrapper.mobile-top-links-visible:not(.menu-open) .links {
-      width: min(calc(100vw - 3.8rem), 28.75rem);
+      width: max-content;
+      max-width: calc(100vw - 0.8rem);
       opacity: 1;
       margin-top: 0;
       transform: translate3d(0, 0, 0) scaleY(1);
       pointer-events: auto;
       overflow: visible;
+    }
+  }
+
+  @media (max-width: 390px) {
+    .links {
+      gap: 0.38rem;
+    }
+
+    .links button {
+      padding: 0 1.02rem;
+      font-size: 0.8rem;
     }
   }
 

@@ -110,34 +110,36 @@
         </p>
       </div>
 
-      <form id="contact-form" class="form" on:submit={handleSubmit}>
-        <div class="field">
-          <input id="contact-name" type="text" bind:value={name} required placeholder=" " />
-          <label for="contact-name">Votre nom</label>
-        </div>
+      <div class="form-shell">
+        <form id="contact-form" class="form" on:submit={handleSubmit}>
+          <div class="field">
+            <input id="contact-name" type="text" bind:value={name} required placeholder=" " />
+            <label for="contact-name">Votre nom</label>
+          </div>
 
-        <div class="field">
-          <input id="contact-email" type="email" bind:value={email} required placeholder=" " />
-          <label for="contact-email">Email</label>
-        </div>
+          <div class="field">
+            <input id="contact-email" type="email" bind:value={email} required placeholder=" " />
+            <label for="contact-email">Email</label>
+          </div>
 
-        <div class="field">
-          <textarea id="contact-message" rows="5" bind:value={message} required placeholder=" "></textarea>
-          <label for="contact-message">Votre message</label>
-        </div>
-      </form>
+          <div class="field">
+            <textarea id="contact-message" rows="5" bind:value={message} required placeholder=" "></textarea>
+            <label for="contact-message">Votre message</label>
+          </div>
+        </form>
 
-      <button
-        type="submit"
-        form="contact-form"
-        class="nav-btn submit-btn"
-        data-cursor="button"
-        on:mousemove={handleButtonMove}
-      >
-        <span class="nav-btn-flip" data-text="Envoyer">
-          <span class="nav-btn-text">Envoyer</span>
-        </span>
-      </button>
+        <button
+          type="submit"
+          form="contact-form"
+          class="nav-btn submit-btn"
+          data-cursor="button"
+          on:mousemove={handleButtonMove}
+        >
+          <span class="nav-btn-flip" data-text="Envoyer">
+            <span class="nav-btn-text">Envoyer</span>
+          </span>
+        </button>
+      </div>
     </div>
 
     <div class="contact-info">
@@ -341,6 +343,13 @@
 
   .hero {
     margin-bottom: 2rem;
+  }
+
+  .form-shell {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
   }
 
   .hero h1 {
@@ -792,38 +801,54 @@
   @media (max-width: 768px) {
     .contact,
     .container {
-      min-height: 100svh;
+      min-height: 120svh;
     }
 
     .container {
       flex-direction: column;
       padding:
-        calc(env(safe-area-inset-top, 0px) + 5.1rem)
+        calc(env(safe-area-inset-top, 0px) + 9rem)
         1.05rem
-        calc(env(safe-area-inset-bottom, 0px) + 1rem);
-      gap: 1.15rem;
-      align-items: center;
-      justify-content: space-between;
+        calc(env(safe-area-inset-bottom, 0px) + 1.15rem);
+      gap: 0.05rem;
+      align-items: stretch;
+      justify-content: flex-start;
     }
 
-    .right,
+    .right {
+      display: contents;
+    }
+
+    .hero,
+    .contact-info,
+    .form-shell {
+      width: min(100%, 32rem);
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .hero,
     .contact-info {
       align-items: center;
       text-align: center;
     }
 
-    .right {
-      width: min(100%, 32rem);
-      justify-content: flex-start;
+    .hero {
+      order: 1;
+      margin-bottom: 2.1rem;
     }
 
     .contact-info {
+      order: 2;
       justify-content: flex-start;
-      margin-top: 0.45rem;
+      margin-top: 0;
+      padding-bottom: 0;
+      margin-bottom: -1.55rem;
     }
 
-    .hero {
-      margin-bottom: 0.9rem;
+    .form-shell {
+      order: 3;
+      align-items: stretch;
     }
 
     .hero h1 {
@@ -831,7 +856,8 @@
     }
 
     .hero p {
-      margin-top: 0.7rem;
+      margin-top: 0.82rem;
+      margin-bottom: 1rem;
       font-size: 0.9rem;
       line-height: 1.42;
       margin-left: auto;
@@ -868,6 +894,7 @@
 
     .submit-btn {
       margin-top: 0.8rem;
+      align-self: flex-start;
     }
 
     .headline,
@@ -887,7 +914,7 @@
     }
 
     .content-stage {
-      min-height: 6.15rem;
+      min-height: 5.1rem;
       display: flex;
       justify-content: center;
     }
@@ -899,7 +926,7 @@
 
     .tabs {
       gap: 0.55rem;
-      margin-bottom: 0.4rem;
+      margin-bottom: 1.4rem;
     }
 
     .copy-btn {
