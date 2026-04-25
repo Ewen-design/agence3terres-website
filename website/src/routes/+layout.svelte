@@ -42,6 +42,31 @@
   const DESKTOP_WHEEL_LERP = 0.14;
   const DESKTOP_WHEEL_SNAP = 0.18;
   const DESKTOP_WHEEL_MIN_WIDTH = 1100;
+  const SITE_URL = "https://agence3terres.com";
+  const SHARE_IMAGE_PATH = "/images/telephone2.webp";
+  const PAGE_META = {
+    "/": {
+      title: "3 Terres"
+    },
+    "/services": {
+      title: "3 Terres"
+    },
+    "/travail": {
+      title: "3 Terres"
+    },
+    "/apropos": {
+      title: "3 Terres"
+    },
+    "/contact": {
+      title: "3 Terres"
+    },
+    "/projet1": {
+      title: "Projet 1 | Agence 3 Terres"
+    },
+    "/projet2": {
+      title: "Projet 2 | Agence 3 Terres"
+    }
+  };
 
   function checkMobile() {
     isTouchDevice = window.matchMedia?.("(pointer: coarse)")?.matches ?? false;
@@ -105,6 +130,11 @@
   $: pathname = $page.url.pathname.replace(/\/+$/, "") || "/";
   $: hideFooter = ["/projet1", "/projet2", "/contact"].includes(pathname);
   $: isTravailPage = $page.url.pathname === "/travail";
+  $: currentMeta = PAGE_META[pathname] ?? PAGE_META["/"];
+  $: canonicalUrl = `${SITE_URL}${pathname === "/" ? "" : pathname}`;
+  $: shareImageUrl = `${SITE_URL}${SHARE_IMAGE_PATH}`;
+  $: seoTitle = currentMeta.title;
+  $: seoDescription = currentMeta.description ?? null;
 
   function clamp01(v) {
     return Math.max(0, Math.min(1, v));
@@ -443,6 +473,18 @@
     href="https://fonts.googleapis.com/css2?family=Aboreto&family=Manrope:wght@400;500;600;700&display=swap"
     rel="stylesheet"
   />
+  <link rel="canonical" href={canonicalUrl} />
+
+  <meta property="og:title" content={seoTitle} />
+  {#if seoDescription}
+    <meta property="og:description" content={seoDescription} />
+  {/if}
+  <meta property="og:image" content={shareImageUrl} />
+  <meta property="og:url" content={canonicalUrl} />
+  <meta property="og:type" content="website" />
+
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:image" content={shareImageUrl} />
 </svelte:head>
 
 <main class:travail-soft-gradients={isTravailPage} class:contact-page={pathname === "/contact"}>

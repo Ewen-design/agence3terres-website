@@ -12,6 +12,7 @@
 
   let lastScrollY = 0;
   let scrollingDown = false;
+  let atTopOfPage = true;
   let menuOpen = false;
   let textColor = "white";
   let headerEl;
@@ -64,6 +65,7 @@
   function processScrollState(state) {
     const currentY = state?.y ?? state?.currentY ?? window.scrollY ?? 0;
     const delta = currentY - lastScrollY;
+    atTopOfPage = currentY <= 24;
 
     if (Math.abs(delta) >= SCROLL_THRESHOLD) {
       if (delta > 0 && currentY > 80) scrollingDown = true;
@@ -254,6 +256,7 @@
   }
 
   $: compact = scrollingDown && !menuOpen;
+  $: mobileTopLinksVisible = atTopOfPage && !menuOpen;
 
   $: themeClass =
     $page.url.pathname === "/services" ? "theme-services" :
@@ -384,7 +387,7 @@
 {/if}
 
 <header
-  class="nav-wrapper {compact ? 'compact' : ''} {menuOpen ? 'menu-open' : ''} {themeClass} {headerReady ? 'is-ready' : 'is-loading'} {headerIntroVisible ? 'intro-visible' : 'intro-hidden'} {headerIntroVisible && !headerIntroDone ? 'intro-animating' : ''}"
+  class="nav-wrapper {compact ? 'compact' : ''} {mobileTopLinksVisible ? 'mobile-top-links-visible' : 'mobile-top-links-hidden'} {menuOpen ? 'menu-open' : ''} {themeClass} {headerReady ? 'is-ready' : 'is-loading'} {headerIntroVisible ? 'intro-visible' : 'intro-hidden'} {headerIntroVisible && !headerIntroDone ? 'intro-animating' : ''}"
   style="color:{textColor}"
   bind:this={headerEl}
 >
@@ -900,17 +903,16 @@
       max-height: 4rem;
       clip-path: inset(0 0 0 0);
       transform-origin: top center;
-      transform: translate3d(0, 0, 0) scaleY(1);
+      transform: translate3d(0, -10px, 0) scaleY(0.82);
       transition:
         transform 0.58s cubic-bezier(.2,.85,.25,1),
         opacity 0.58s cubic-bezier(.2,.85,.25,1);
+      opacity: 0;
+      pointer-events: none;
     }
 
     .links button {
-      flex: 0 1 auto;
-      min-width: fit-content;
-      padding: 0 0.88rem;
-      font-size: 0.82rem;
+      flex: 0 0 auto;
     }
 
     .compact .nav-inner {
@@ -930,7 +932,7 @@
       pointer-events: none;
     }
 
-    .nav-wrapper:not(.compact):not(.menu-open) .links {
+    .nav-wrapper.mobile-top-links-visible:not(.menu-open) .links {
       width: min(calc(100vw - 3.8rem), 28.75rem);
       opacity: 1;
       margin-top: 0;
