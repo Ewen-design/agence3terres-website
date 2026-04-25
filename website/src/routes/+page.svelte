@@ -10,6 +10,7 @@
     import HomeScrollScaleReveal from "$lib/sections/HomeScrollScaleReveal.svelte";
     import MixSliderNarratif from "$lib/sections/MixSliderNarratif.svelte";
     import IntroSlider from "$lib/sections/IntroSlider.svelte";
+    import FaqAccordion from "$lib/sections/FaqAccordion.svelte";
 </script>
 
 <Hero />
@@ -22,5 +23,5 @@
 
 <IntroSlider />
 <MixSliderNarratif />
-
+<FaqAccordion />
 
