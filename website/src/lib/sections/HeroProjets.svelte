@@ -565,7 +565,7 @@
     }
 
     .hero-overlay h1 {
-      font-size: clamp(4.8rem, 16vw, 9rem);
+      font-size: clamp(5.4rem, 18vw, 10rem);
       max-width: 9ch;
     }
 
@@ -594,7 +594,7 @@
     }
 
     .hero-overlay h1 {
-      font-size: clamp(4.4rem, 17vw, 7.4rem);
+      font-size: clamp(5rem, 19vw, 8.4rem);
       line-height: 0.92;
     }
 
