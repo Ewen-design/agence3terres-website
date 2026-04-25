@@ -16,6 +16,11 @@
       lead: "Un univers objet premium, calme et fonctionnel.",
       rest: "Une direction pensée pour traduire une elegance sobre, technologique et durable a travers une identite visuelle claire et sensible.",
       image: "/images/serein_design.webp",
+      previewImages: [
+        { src: "/images/telephone2.webp", alt: "Apercu mobile Serein Design" },
+        { src: "/images/telephone_main.webp", alt: "Detail interface Serein Design" },
+        { src: "/images/telephone2_parfum.webp", alt: "Composition visuelle Serein Design" }
+      ],
       page: "projet1",
       button: "Voir le projet",
       mobileInfo: ["Serein Design", "Identite", "Direction", "Branding", "UI design"]
@@ -27,6 +32,11 @@
       lead: "Une presence plus sensorielle, plus singuliere.",
       rest: "Un travail d'image et de narration concu pour installer une esthetique precise, immersive et raffinee autour du produit.",
       image: "/images/parfum_rouge.webp",
+      previewImages: [
+        { src: "/images/parfum2.webp", alt: "Apercu immersif Hansatsu" },
+        { src: "/images/parfum3.webp", alt: "Detail Hansatsu" },
+        { src: "/images/telephone_parfum.webp", alt: "Interface mobile Hansatsu" }
+      ],
       page: "projet2",
       button: "Voir le projet",
       mobileInfo: ["Hansatsu", "Narration", "Image", "DA", "Contenu"]
@@ -38,6 +48,11 @@
       lead: "Une vision a faire naitre, clarifier ou amplifier.",
       rest: "Identite, direction artistique, site web ou experience digitale : construisons ensemble une presence forte, juste et memorable.",
       image: "/images/telephone2.webp",
+      previewImages: [
+        { src: "/images/telephone_main.webp", alt: "Projet digital" },
+        { src: "/images/parfum_ordinateur.webp", alt: "Direction web" },
+        { src: "/images/photo.webp", alt: "Univers de marque" }
+      ],
       page: "contact",
       button: "Nous contacter",
       mobileInfo: ["Votre projet ?", "Site web", "Identite", "Strategie", "Motion"]
@@ -239,6 +254,21 @@
           {#each projects as project, i}
             <div class="visual-layer" class:is-active={activeIndex === i}>
               <img src={project.image} alt="" />
+              {#if project.previewImages?.length}
+                <div class="visual-floating-card">
+                  <div class="visual-slideshow">
+                    {#each project.previewImages as image, slideIndex}
+                      <img
+                        src={image.src}
+                        alt={image.alt || ""}
+                        class="visual-slide"
+                        loading="lazy"
+                        style={`--slide-index:${slideIndex}; --slide-count:${project.previewImages.length};`}
+                      />
+                    {/each}
+                  </div>
+                </div>
+              {/if}
             </div>
           {/each}
           <div class="visual-shade"></div>
@@ -303,6 +333,21 @@
       >
         <div class="mobile-image">
           <img src={project.image} alt={project.title} />
+          {#if project.previewImages?.length}
+            <div class="mobile-preview-card" aria-hidden="true">
+              <div class="mobile-preview-slideshow">
+                {#each project.previewImages as image, slideIndex}
+                  <img
+                    src={image.src}
+                    alt=""
+                    class="mobile-preview-slide"
+                    loading="lazy"
+                    style={`--slide-index:${slideIndex}; --slide-count:${project.previewImages.length};`}
+                  />
+                {/each}
+              </div>
+            </div>
+          {/if}
           <div class="mobile-card-info" aria-hidden="true">
             <span class="mobile-info-chip mobile-info-title">{project.mobileInfo[0]}</span>
             {#each project.mobileInfo.slice(1) as info}
@@ -416,6 +461,7 @@
     opacity: 0;
     transition: opacity 1.35s cubic-bezier(.22,.61,.36,1);
     will-change: opacity;
+    pointer-events: none;
   }
 
   .visual-layer img {
@@ -433,11 +479,65 @@
 
   .visual-layer.is-active {
     opacity: 1;
+    pointer-events: auto;
   }
 
   .visual-layer.is-active img {
     transform: scale(calc(1.03 + var(--desktop-zoom, 0) * 0.035));
     filter: brightness(0.86);
+  }
+
+  .visual-floating-card {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    z-index: 3;
+    width: clamp(11rem, 23vw, 18rem);
+    aspect-ratio: 1.02;
+    border-radius: 2px;
+    overflow: hidden;
+    background: rgba(255, 255, 255, 0.94);
+    box-shadow: 0 25px 80px rgba(11, 8, 5, 0.28);
+    opacity: 0;
+    transform: translate(-50%, calc(-50% + 16px)) scale(0.985);
+    transition:
+      opacity 0.45s ease,
+      transform 0.75s cubic-bezier(0.16, 1, 0.3, 1);
+    pointer-events: none;
+  }
+
+  .visual-slideshow {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    background: #111;
+  }
+
+  .visual-slide {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: 0;
+    animation-name: project-showcase-slideshow;
+    animation-duration: calc(var(--slide-count) * 1.85s);
+    animation-timing-function: ease-in-out;
+    animation-iteration-count: infinite;
+    animation-delay: calc(var(--slide-index) * 1.85s);
+    animation-fill-mode: both;
+  }
+
+  .visual-layer.is-active:hover img,
+  .visual-layer.is-active:focus-within img {
+    transform: scale(calc(1.05 + var(--desktop-zoom, 0) * 0.04));
+    filter: saturate(0.95) brightness(0.82);
+  }
+
+  .visual-layer.is-active:hover .visual-floating-card,
+  .visual-layer.is-active:focus-within .visual-floating-card {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
   }
 
   .visual-shade {
@@ -739,6 +839,47 @@
       pointer-events: none;
     }
 
+    .mobile-preview-card {
+      position: absolute;
+      left: 12px;
+      bottom: 12px;
+      z-index: 2;
+      width: clamp(5.7rem, 24vw, 7.3rem);
+      aspect-ratio: 0.88;
+      overflow: hidden;
+      border-radius: 2px;
+      background: rgba(255, 255, 255, 0.94);
+      box-shadow: 0 18px 48px rgba(11, 8, 5, 0.28);
+      opacity: 0;
+      transform: translate3d(0, 10px, 0) scale(0.985);
+      transition:
+        opacity .34s ease,
+        transform .42s cubic-bezier(.22,.61,.36,1);
+      pointer-events: none;
+    }
+
+    .mobile-preview-slideshow {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      background: #111;
+    }
+
+    .mobile-preview-slide {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      opacity: 0;
+      animation-name: project-showcase-slideshow;
+      animation-duration: calc(var(--slide-count) * 1.85s);
+      animation-timing-function: ease-in-out;
+      animation-iteration-count: infinite;
+      animation-delay: calc(var(--slide-index) * 1.85s);
+      animation-fill-mode: both;
+    }
+
     .mobile-card-index-wrap {
       position: absolute;
       left: 0;
@@ -814,6 +955,12 @@
     .mobile-card.is-active .mobile-card-index-inner {
       opacity: 1;
       transform: translate3d(0, 0, 0);
+    }
+
+    .mobile-card.is-active .mobile-preview-card {
+      opacity: 1;
+      transform: translate3d(0, 0, 0) scale(1);
+      transition-delay: .18s;
     }
 
     .mobile-card.is-active .mobile-info-chip {
@@ -994,6 +1141,12 @@
       gap: 6px;
     }
 
+    .mobile-preview-card {
+      left: 10px;
+      bottom: 10px;
+      width: clamp(5.2rem, 24vw, 6.5rem);
+    }
+
     .mobile-card-index-wrap {
       bottom: -26px;
     }
@@ -1031,9 +1184,27 @@
     .story-layer,
     .nav-btn,
     .nav-btn-text,
-    .nav-btn-flip::after {
+    .nav-btn-flip::after,
+    .visual-floating-card,
+    .mobile-preview-card {
       transition: none !important;
       animation: none !important;
+    }
+  }
+
+  @keyframes project-showcase-slideshow {
+    0% {
+      opacity: 0;
+    }
+
+    8%,
+    42% {
+      opacity: 1;
+    }
+
+    58%,
+    100% {
+      opacity: 0;
     }
   }
 </style>

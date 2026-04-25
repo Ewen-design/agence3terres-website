@@ -502,6 +502,7 @@
     backdrop-filter: none;
     box-shadow: none;
     isolation: isolate;
+    overflow: visible;
     transition:
       color 220ms ease,
       opacity 0.9s ease,
@@ -549,6 +550,7 @@
     display: flex;
     align-items: center;
     gap: 0.6rem;
+    overflow: visible;
     transition: gap 0.7s cubic-bezier(.22,.9,.3,1);
   }
 
@@ -874,7 +876,8 @@
   @media (max-width: 768px) {
     header {
       top: 0.85rem;
-      width: auto;
+      width: min(calc(100vw - 1.8rem), 30rem);
+      overflow: visible;
     }
 
     .nav-wrapper,
@@ -886,9 +889,11 @@
     }
 
     .nav-inner {
+      width: 100%;
       flex-wrap: wrap;
       justify-content: center;
       row-gap: 0.55rem;
+      overflow: visible;
     }
 
     .links {
