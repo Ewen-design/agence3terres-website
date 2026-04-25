@@ -291,7 +291,7 @@
 <style>
   .contact {
     position: relative;
-    height: 100vh;
+    height: 100svh;
     overflow: hidden;
     color: white;
   }
@@ -323,7 +323,7 @@
   .container {
     position: relative;
     z-index: 2;
-    height: 100vh;
+    height: 100svh;
     box-sizing: border-box;
     padding: clamp(5.5rem, 8vh, 7rem) clamp(1.5rem, 6vw, 8vw) clamp(1.6rem, 3vw, 2.4rem);
     display: flex;
@@ -650,6 +650,9 @@
     width: 100%;
     height: 100%;
     display: block;
+    overflow: visible;
+    stroke: currentColor;
+    vector-effect: non-scaling-stroke;
   }
 
   .nav-btn-flip {
@@ -787,12 +790,20 @@
   }
 
   @media (max-width: 768px) {
+    .contact,
+    .container {
+      min-height: 100svh;
+    }
+
     .container {
       flex-direction: column;
-      padding-left: 1.1rem;
-      padding-right: 1.1rem;
-      gap: 2rem;
+      padding:
+        calc(env(safe-area-inset-top, 0px) + 5.1rem)
+        1.05rem
+        calc(env(safe-area-inset-bottom, 0px) + 1rem);
+      gap: 1.15rem;
       align-items: center;
+      justify-content: space-between;
     }
 
     .right,
@@ -801,23 +812,62 @@
       text-align: center;
     }
 
-    .contact-info {
+    .right {
+      width: min(100%, 32rem);
       justify-content: flex-start;
     }
 
+    .contact-info {
+      justify-content: flex-start;
+      margin-top: 0.45rem;
+    }
+
+    .hero {
+      margin-bottom: 0.9rem;
+    }
+
     .hero h1 {
-      font-size: clamp(2.2rem, 11vw, 3.6rem);
+      font-size: clamp(2rem, 10vw, 3.2rem);
     }
 
     .hero p {
-      font-size: 0.95rem;
+      margin-top: 0.7rem;
+      font-size: 0.9rem;
+      line-height: 1.42;
       margin-left: auto;
       margin-right: auto;
+    }
+
+    .form {
+      padding: 1rem 1rem 0.8rem;
+    }
+
+    .field {
+      margin-bottom: 1rem;
+    }
+
+    input,
+    textarea {
+      padding: 0.72rem 0;
+      font-size: 0.95rem;
+    }
+
+    textarea {
+      min-height: 4.8rem;
+    }
+
+    label {
+      top: 0.72rem;
+      font-size: 0.84rem;
     }
 
     .nav-btn {
       padding: 0 1.15rem;
       font-size: 0.84rem;
+    }
+
+    .submit-btn {
+      margin-top: 0.8rem;
     }
 
     .headline,
@@ -829,7 +879,7 @@
     .email-panel {
       align-items: center;
       flex-direction: column;
-      gap: 0.65rem;
+      gap: 0.5rem;
     }
 
     .email-panel .headline-link {
@@ -837,7 +887,7 @@
     }
 
     .content-stage {
-      min-height: 6.2rem;
+      min-height: 6.15rem;
       display: flex;
       justify-content: center;
     }
@@ -845,6 +895,23 @@
     .tabs,
     .socials-group {
       justify-content: center;
+    }
+
+    .tabs {
+      gap: 0.55rem;
+      margin-bottom: 0.4rem;
+    }
+
+    .copy-btn {
+      width: 40px;
+      min-width: 40px;
+      height: 40px;
+    }
+
+    .copy-icon {
+      width: 1.2rem;
+      height: 1.2rem;
+      flex: 0 0 auto;
     }
 
     .form {

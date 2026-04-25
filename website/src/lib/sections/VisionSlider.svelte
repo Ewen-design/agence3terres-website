@@ -22,6 +22,10 @@
   let isMobile = false;
   let startX = 0;
   let deltaX = 0;
+  let dragRotation = 0;
+  let isDragging = false;
+  let dragStartCurrent = 0;
+  const mobileDragDivider = 11;
 
   function next() { current = (current + 1) % quotes.length; }
   function prev() { current = (current - 1 + quotes.length) % quotes.length; }
@@ -58,12 +62,29 @@
     else next();
   }
 
-  function touchStart(e) { if (!isMobile) return; startX = e.touches[0].clientX; }
-  function touchMove(e)  { if (!isMobile) return; deltaX = e.touches[0].clientX - startX; }
+  function touchStart(e) {
+    if (!isMobile) return;
+    startX = e.touches[0].clientX;
+    deltaX = 0;
+    dragRotation = 0;
+    dragStartCurrent = current;
+    isDragging = true;
+  }
+
+  function touchMove(e)  {
+    if (!isMobile || !isDragging) return;
+    deltaX = e.touches[0].clientX - startX;
+    dragRotation = deltaX / mobileDragDivider;
+  }
+
   function touchEnd() {
     if (!isMobile) return;
-    if (deltaX > 60) prev();
-    if (deltaX < -60) next();
+    if (deltaX > 52) current = (dragStartCurrent - 1 + quotes.length) % quotes.length;
+    else if (deltaX < -52) current = (dragStartCurrent + 1) % quotes.length;
+    else current = dragStartCurrent;
+
+    isDragging = false;
+    dragRotation = 0;
     deltaX = 0;
   }
 
@@ -178,6 +199,7 @@
   on:touchstart={touchStart}
   on:touchmove={touchMove}
   on:touchend={touchEnd}
+  on:touchcancel={touchEnd}
 >
   <div class="bg" bind:this={bgEl} style="background-image:url('/images/photo.webp')"></div>
   <div class="overlay"></div>
@@ -204,7 +226,11 @@
   <div bind:this={section}></div>
 
   <div class="carousel-wrapper">
-    <div class="carousel" style="transform: rotateY({-current * angleStep}deg)">
+    <div
+      class="carousel"
+      class:is-dragging={isDragging}
+      style="transform: rotateY({-current * angleStep + dragRotation}deg)"
+    >
       {#each quotes as quote, i}
         <div
           class="card"
@@ -236,6 +262,7 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
+    touch-action: pan-y;
   }
 
   .bg {
@@ -318,6 +345,11 @@
     position: absolute;
     transform-style: preserve-3d;
     transition: transform 1.6s cubic-bezier(.22,.61,.36,1);
+    will-change: transform;
+  }
+
+  .carousel.is-dragging {
+    transition: none;
   }
 
   .card {
@@ -415,6 +447,10 @@
 
     .carousel-wrapper {
       height: 520px;
+    }
+
+    .carousel {
+      transition: transform 0.9s cubic-bezier(.22,.61,.36,1);
     }
 
     .card {

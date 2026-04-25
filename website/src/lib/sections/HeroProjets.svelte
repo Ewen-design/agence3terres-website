@@ -339,15 +339,6 @@
       <h1 class:intro-visible={introVisible}>
         {title}
       </h1>
-
-      <div
-        class="scroll-hint"
-        class:hint-visible={hintVisible}
-        aria-hidden="true"
-        bind:this={scrollHintEl}
-      >
-        Scroll pour découvrir
-      </div>
     </div>
   </section>
 
@@ -452,7 +443,7 @@
     font-family: "Titre italic", serif;
     font-style: italic;
     font-weight: 100;
-    font-size: clamp(4.2rem, 11vw, 13rem);
+    font-size: clamp(5.8rem, 15vw, 18rem);
     line-height: 0.9;
     letter-spacing: -0.05em;
     color: #f4efe6;
@@ -466,25 +457,6 @@
 
   .hero-overlay h1.intro-visible {
     animation: titleEnterUp 1.2s cubic-bezier(0.22, 1, 0.36, 1) forwards;
-  }
-
-  .scroll-hint {
-    position: absolute;
-    left: 50%;
-    bottom: clamp(1.3rem, 3vw, 2.4rem);
-    font-family: "General Sans", sans-serif;
-    font-size: clamp(0.82rem, 0.95vw, 0.98rem);
-    font-weight: 300;
-    letter-spacing: 0.04em;
-    color: rgba(255, 255, 255, 0.76);
-    white-space: nowrap;
-    will-change: transform, opacity, filter;
-    opacity: 0;
-    transform: translate3d(-50%, 14px, 0);
-  }
-
-  .hint-visible {
-    transition: opacity 0.7s cubic-bezier(0.22, 1, 0.36, 1);
   }
 
   .after-section {
@@ -589,11 +561,11 @@
 
   @media (max-width: 900px) {
     .hero-overlay {
-      padding: 1rem 1rem 1.2rem;
+      padding: 1rem 1rem 2.4rem;
     }
 
     .hero-overlay h1 {
-      font-size: clamp(2.5rem, 10vw, 5.6rem);
+      font-size: clamp(4.8rem, 16vw, 9rem);
       max-width: 9ch;
     }
 
@@ -614,10 +586,6 @@
       max-width: 11ch;
     }
 
-    .scroll-hint {
-      bottom: 1.25rem;
-      font-size: 0.82rem;
-    }
   }
 
   @media (max-width: 640px) {
@@ -626,7 +594,7 @@
     }
 
     .hero-overlay h1 {
-      font-size: clamp(2.1rem, 11vw, 3.8rem);
+      font-size: clamp(4.4rem, 17vw, 7.4rem);
       line-height: 0.92;
     }
 
@@ -644,19 +612,12 @@
       max-width: none;
     }
 
-    .scroll-hint {
-      bottom: 1.05rem;
-      font-size: 0.78rem;
-      letter-spacing: 0.03em;
-    }
-
   }
 
   @media (prefers-reduced-motion: reduce) {
     .hero-media img,
     .hero-dark-layer,
     .hero-overlay h1,
-    .scroll-hint,
     .after-text {
       transition: none !important;
       animation: none !important;

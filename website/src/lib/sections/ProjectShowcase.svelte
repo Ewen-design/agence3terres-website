@@ -316,6 +316,9 @@
             {project.button}
           </div>
         </div>
+        <div class="mobile-card-index-wrap" aria-hidden="true">
+          <span class="mobile-card-index-inner">{project.number}</span>
+        </div>
       </button>
     {/each}
     </div>
@@ -679,6 +682,7 @@
     }
 
     .mobile-card {
+      position: relative;
       flex: 0 0 clamp(304px, 84vw, 388px);
       width: clamp(304px, 84vw, 388px);
       display: block;
@@ -735,6 +739,33 @@
       pointer-events: none;
     }
 
+    .mobile-card-index-wrap {
+      position: absolute;
+      left: 0;
+      bottom: -30px;
+      z-index: 6;
+      overflow: hidden;
+      width: max-content;
+      height: 1.1em;
+      pointer-events: none;
+    }
+
+    .mobile-card-index-inner {
+      display: block;
+      font-family: "Titre italic", serif;
+      font-style: italic;
+      font-weight: 100;
+      font-size: 1.05rem;
+      line-height: 1;
+      letter-spacing: -0.02em;
+      color: rgba(245, 241, 232, 0.8);
+      opacity: 0;
+      transform: translate3d(0, -115%, 0);
+      transition:
+        transform .42s cubic-bezier(.22,.61,.36,1),
+        opacity .32s ease;
+    }
+
     .mobile-info-chip {
       display: inline-flex;
       align-items: center;
@@ -776,6 +807,11 @@
     }
 
     .mobile-card.is-active .mobile-card-info {
+      opacity: 1;
+      transform: translate3d(0, 0, 0);
+    }
+
+    .mobile-card.is-active .mobile-card-index-inner {
       opacity: 1;
       transform: translate3d(0, 0, 0);
     }
@@ -956,6 +992,10 @@
       top: 10px;
       left: 10px;
       gap: 6px;
+    }
+
+    .mobile-card-index-wrap {
+      bottom: -26px;
     }
 
     .mobile-info-title {

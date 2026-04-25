@@ -445,7 +445,7 @@
   />
 </svelte:head>
 
-<main class:travail-soft-gradients={isTravailPage}>
+<main class:travail-soft-gradients={isTravailPage} class:contact-page={pathname === "/contact"}>
   {#if !isMobile}
     <CustomCursor />
   {/if}
@@ -620,9 +620,18 @@
 
   @media (max-width: 900px) {
     .site-prism-mark {
+      top: auto;
+      left: 50%;
+      bottom: calc(env(safe-area-inset-bottom, 0px) + 0.8rem);
+      transform: translateX(-50%);
+      padding: 0.2rem;
+    }
+
+    main.contact-page .site-prism-mark {
       top: 0.8rem;
       left: 0.8rem;
-      padding: 0.2rem;
+      bottom: auto;
+      transform: none;
     }
 
     .site-prism-mark img {
