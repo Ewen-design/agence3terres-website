@@ -58,6 +58,7 @@
   let fillFrame = 0;
   let maskAnchorEl;
   let sliderEl;
+  let textLayerEl;
   let isMobile = false;
   let prefersReducedMotion = false;
   let resizeTimeout;
@@ -67,10 +68,12 @@
   let touchDeltaY = 0;
   let stableMobileViewport = 0;
   let lastViewportWidth = 0;
+  let mobileRevealLinePx = 0;
+  let mobileProgressLinePx = 0;
   const mobileFillEase = 0.18;
   const firstSlideShadeMin = 0;
+  const mobileMaskGapPx = 156;
   const mobileProgressRatio = 0.56;
-  const mobileRevealRatio = 0.76;
 
   const clamp = (v, min = 0, max = 1) => Math.max(min, Math.min(max, v));
   const getBottomShadeBackground = (strength) => `linear-gradient(
@@ -124,6 +127,16 @@
     lastViewportWidth = nextWidth;
   }
 
+  function syncMobileLines() {
+    if (!isMobile) return;
+
+    mobileProgressLinePx = Math.round(stableMobileViewport * mobileProgressRatio);
+
+    const fallbackRevealLine = Math.round(stableMobileViewport * 0.76);
+    const measuredTextTop = textLayerEl?.offsetTop ?? fallbackRevealLine + mobileMaskGapPx;
+    mobileRevealLinePx = Math.max(0, Math.round(measuredTextTop - mobileMaskGapPx));
+  }
+
   function getStableViewportHeight() {
     return isMobile ? stableMobileViewport || window.innerHeight || 1 : window.innerHeight || 1;
   }
@@ -175,8 +188,8 @@
     const next = slides.map(() => 0);
     const nextScales = slides.map(() => (prefersReducedMotion ? 1 : isMobile ? 1.01 : 1.02));
     const nextClipInsets = slides.map(() => 0);
-    const progressLine = vh * (isMobile ? mobileProgressRatio : 0.5);
-    const fallbackRevealLine = vh * (isMobile ? mobileRevealRatio : 0.8);
+    const progressLine = isMobile ? mobileProgressLinePx || Math.round(vh * mobileProgressRatio) : vh * 0.5;
+    const fallbackRevealLine = isMobile ? mobileRevealLinePx || Math.round(vh * 0.76) : vh * 0.8;
     const revealLine = isMobile ? fallbackRevealLine : maskAnchorEl?.getBoundingClientRect().top ?? fallbackRevealLine;
     let nextActiveIndex = activeIndex;
     let closestDistance = Number.POSITIVE_INFINITY;
@@ -203,9 +216,7 @@
       if (!content) return;
 
       const rect = content.getBoundingClientRect();
-      const visibleHeight = clamp(revealLine - rect.top, 0, rect.height);
-
-      nextClipInsets[i] = Math.max(rect.height - visibleHeight, 0);
+      nextClipInsets[i] = clamp(rect.bottom - revealLine, 0, rect.height);
     });
 
     activeIndex = nextActiveIndex;
@@ -229,6 +240,7 @@
     resizeTimeout = setTimeout(() => {
       checkMobile();
       syncStableMobileViewport();
+      syncMobileLines();
       onScroll();
     }, 90);
   }
@@ -272,6 +284,7 @@
     prefersReducedMotion = window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches ?? false;
     checkMobile();
     syncStableMobileViewport(true);
+    syncMobileLines();
     updateProgress();
     window.addEventListener("scroll", onScroll, { passive: true });
     window.addEventListener("resize", handleResize);
@@ -347,7 +360,7 @@
       {/each}
     </div>
 
-    <div class="text-layer" aria-live="polite">
+    <div class="text-layer" bind:this={textLayerEl} aria-live="polite">
       {#each slides as slide, i}
         <div class="text-slide" class:active={activeIndex === i} class:first-slide={i === 0}>
           <p>{slide.description}</p>
