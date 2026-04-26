@@ -327,7 +327,7 @@
     <div class="hero-media">
       <img
         bind:this={heroMediaImgEl}
-        src="images/parfum_rouge.webp"
+        src="images/telephone_parfum.webp"
         alt=""
       />
       <div class="hero-dark-layer" bind:this={heroDarkLayerEl}></div>

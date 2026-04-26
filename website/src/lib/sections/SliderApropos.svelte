@@ -24,7 +24,7 @@
       navTitle: "LES SOMMETS DE L'AMBITION",
       title: "Les sommets\nde l'ambition",
       description:
-        "La montagne est notre troisième terre, celle de l'ambition. Nous visons le sommet pour nos clients, en créant des expériences visuelles qui inspirent et marquent les esprits.",
+        "La montagne est notre troisième terre, celle de l'ambition. Nous visons le sommet pour nos clients avec des expériences visuelles qui inspirent et marquent.",
       image: "/images/montagne.webp"
     }
   ];
@@ -36,7 +36,6 @@
   let displayedFills = slides.map(() => 0);
   let bgScales = slides.map(() => 1.02);
   let contentClipInsets = slides.map(() => 0);
-  let mobileVisibleHeights = slides.map(() => 0);
   let ticking = false;
   let fillFrame = 0;
   let maskAnchorEl;
@@ -53,10 +52,6 @@
   const mobileFillEase = 0.18;
   let stableMobileViewport = 0;
   let lastViewportWidth = 0;
-  let mobileProgressLinePx = 0;
-  let mobileClipHeightPx = 0;
-  const mobileMaskGapPx = 156;
-  const mobileProgressRatio = 0.56;
 
   const clamp = (v, min = 0, max = 1) => Math.max(min, Math.min(max, v));
 
@@ -82,17 +77,6 @@
     }
 
     lastViewportWidth = nextWidth;
-  }
-
-  function syncMobileLines() {
-    if (!isMobile) return;
-
-    mobileProgressLinePx = Math.round(stableMobileViewport * mobileProgressRatio);
-    const stickyTop = stickyEl?.getBoundingClientRect().top ?? 0;
-    const measuredTextTop = textLayerEl
-      ? Math.round(textLayerEl.getBoundingClientRect().top - stickyTop)
-      : Math.round(stableMobileViewport * 0.82);
-    mobileClipHeightPx = Math.max(0, Math.round(measuredTextTop - mobileMaskGapPx));
   }
 
   function getStableViewportHeight() {
@@ -146,10 +130,9 @@
     const next = slides.map(() => 0);
     const nextScales = slides.map(() => (prefersReducedMotion ? 1 : isMobile ? 1.01 : 1.02));
     const nextClipInsets = slides.map(() => 0);
-    const nextMobileVisibleHeights = slides.map(() => 0);
-    const progressLine = isMobile ? mobileProgressLinePx || Math.round(vh * mobileProgressRatio) : vh * 0.5;
-    const fallbackRevealLine = isMobile ? mobileClipHeightPx || Math.round(vh * 0.76) : vh * 0.8;
-    const revealLine = isMobile ? fallbackRevealLine : maskAnchorEl?.getBoundingClientRect().top ?? fallbackRevealLine;
+    const progressLine = vh * 0.5;
+    const fallbackRevealLine = vh * 0.8;
+    const revealLine = maskAnchorEl?.getBoundingClientRect().top ?? fallbackRevealLine;
     let nextActiveIndex = activeIndex;
     let closestDistance = Number.POSITIVE_INFINITY;
 
@@ -175,14 +158,10 @@
       if (!content) return;
 
       const rect = content.getBoundingClientRect();
-      const visibleHeight = clamp(revealLine - rect.top, 0, rect.height);
-
-      if (isMobile) {
-        nextMobileVisibleHeights[i] = visibleHeight;
-        return;
+      if (!isMobile) {
+        const visibleHeight = clamp(revealLine - rect.top, 0, rect.height);
+        nextClipInsets[i] = clamp(rect.height - visibleHeight, 0, rect.height);
       }
-
-      nextClipInsets[i] = clamp(rect.height - visibleHeight, 0, rect.height);
     });
 
     activeIndex = nextActiveIndex;
@@ -190,7 +169,6 @@
     animateDisplayedFills();
     bgScales = nextScales;
     contentClipInsets = nextClipInsets;
-    mobileVisibleHeights = nextMobileVisibleHeights;
     ticking = false;
   }
 
@@ -206,7 +184,6 @@
     resizeTimeout = setTimeout(() => {
       checkMobile();
       syncStableMobileViewport();
-      syncMobileLines();
       onScroll();
     }, 90);
   }
@@ -250,7 +227,6 @@
     prefersReducedMotion = window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches ?? false;
     checkMobile();
     syncStableMobileViewport(true);
-    syncMobileLines();
     updateProgress();
     window.addEventListener("scroll", onScroll, { passive: true });
     window.addEventListener("resize", handleResize);
@@ -273,7 +249,11 @@
   });
 </script>
 
-<section class="slider" bind:this={sliderEl}>
+<section
+  class="slider"
+  bind:this={sliderEl}
+  style={isMobile && stableMobileViewport ? `--current-viewport-height:${stableMobileViewport}px;` : ""}
+>
   <div class="sticky" bind:this={stickyEl}>
     <div class="backgrounds">
       <div class="bottom-shade" aria-hidden="true"></div>
@@ -340,12 +320,20 @@
   <div class="slides">
     <div class="mask-anchor" bind:this={maskAnchorEl} aria-hidden="true"></div>
 
+    <div class="mobile-text-sticky-shell" aria-live="polite">
+      <div class="mobile-text-overlay">
+        {#each slides as slide, i}
+          <div class="mobile-text-panel" class:active={activeIndex === i}>
+            <span class="mobile-text-num">{slide.number}</span>
+            <p>{slide.description}</p>
+          </div>
+        {/each}
+      </div>
+    </div>
+
     {#each slides as slide, i}
       <section class="slide" bind:this={sections[i]} data-index={i}>
-        <div
-          class="content-clip"
-          style={isMobile ? `height:${mobileVisibleHeights[i]}px;` : ""}
-        >
+        <div class="content-clip">
           <div
             class="content"
             bind:this={contentRefs[i]}
@@ -368,6 +356,7 @@
 
 <style>
   .slider {
+    --current-viewport-height: var(--viewport-height);
     --slider-progress-bottom: max(2rem, var(--safe-bottom-offset));
     --slider-text-bottom: calc(var(--slider-progress-bottom) + 5rem);
     --slider-mask-top: 72vh;
@@ -380,7 +369,7 @@
   .sticky {
     position: sticky;
     top: 0;
-    height: var(--viewport-height);
+    height: var(--current-viewport-height);
     overflow: hidden;
     background: #050b14;
     isolation: isolate;
@@ -447,7 +436,7 @@
   .slides {
     position: relative;
     z-index: 3;
-    margin-top: calc(-1 * var(--viewport-height));
+    margin-top: calc(-1 * var(--current-viewport-height));
   }
 
   .mask-anchor {
@@ -458,7 +447,7 @@
   }
 
   .slide {
-    min-height: var(--viewport-height);
+    min-height: var(--current-viewport-height);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -646,6 +635,14 @@
     display: none;
   }
 
+  .mobile-text-overlay {
+    display: none;
+  }
+
+  .mobile-text-sticky-shell {
+    display: none;
+  }
+
   .mobile-progress {
     display: none;
     position: absolute;
@@ -708,7 +705,7 @@
     }
 
     .slide {
-      min-height: var(--viewport-height);
+      min-height: var(--current-viewport-height);
       padding: 7rem 2rem 11rem;
       align-items: center;
     }
@@ -736,7 +733,7 @@
     }
 
     p {
-      font-size: 1rem;
+      font-size: 1.14rem;
       max-width: 100%;
     }
 
@@ -784,24 +781,88 @@
 
     .slide {
       padding: 6.5rem 1.25rem 5.75rem;
-      min-height: var(--viewport-height);
+      min-height: var(--current-viewport-height);
       align-items: flex-start;
       touch-action: pan-y;
     }
 
-    .mask-anchor {
-      top: var(--slider-mask-top-mobile);
-    }
-
     .text-layer {
-      left: 1.25rem;
-      right: 1.25rem;
-      bottom: var(--slider-text-bottom);
+      display: none;
+    }
+
+    .mobile-text-sticky-shell {
+      --mobile-text-panel-height: 8rem;
+      --mobile-text-panel-height: 8.4rem;
+      --mobile-text-panel-bleed: 2rem;
+      display: block;
+      position: absolute;
+      inset: 0;
+      z-index: 9;
+      pointer-events: none;
       text-align: center;
     }
 
-    .text-slide {
+    .mobile-text-overlay {
+      display: block;
+      position: sticky;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: var(--current-viewport-height);
+    }
+
+    .mobile-text-overlay::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: calc(-1 * var(--mobile-text-panel-bleed));
+      height: calc(var(--mobile-text-panel-height) + var(--mobile-text-panel-bleed) + env(safe-area-inset-bottom, 0px));
+      background: #000;
       text-align: center;
+    }
+
+    .mobile-text-panel {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: calc(var(--mobile-text-panel-bleed) + env(safe-area-inset-bottom, 0px));
+      padding: 0.95rem 1.25rem 0 1.5rem;
+      display: grid;
+      grid-template-columns: 2.45rem minmax(0, 1fr);
+      column-gap: 1rem;
+      align-items: start;
+      opacity: 0;
+      transition: opacity 900ms ease;
+      text-align: center;
+    }
+
+    .mobile-text-panel.active {
+      opacity: 1;
+    }
+
+    .mobile-text-num {
+      display: block;
+      margin: 0;
+      grid-column: 1;
+      grid-row: 1;
+      color: #fff;
+      font-size: 1.14rem;
+      font-family: "Titre italic", serif;
+      font-style: italic;
+      opacity: 1;
+      text-align: left;
+    }
+
+    .mobile-text-panel p {
+      margin: 0;
+      grid-column: 2;
+      grid-row: 1;
+      font-size: 0.96rem;
+      max-width: 38ch;
+      margin-left: 0;
+      margin-right: 0;
+      text-align: left;
     }
 
     .tail {
@@ -820,28 +881,21 @@
     }
 
     .content-clip {
-      overflow: hidden;
+      overflow: visible;
+    }
+
+    .content .number {
+      display: none;
     }
 
     .progress-nav {
       display: none;
     }
 
-    .mobile-progress-shell,
-    .mobile-progress {
-      display: none !important;
-    }
-
     h2 {
       font-size: clamp(2.7rem, 13vw, 4.2rem);
     }
 
-    .text-slide p {
-      font-size: 0.96rem;
-      max-width: 30ch;
-      margin-left: auto;
-      margin-right: auto;
-    }
   }
 
   @media (prefers-reduced-motion: reduce) {
