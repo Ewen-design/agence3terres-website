@@ -54,9 +54,11 @@
   let displayedFills = slides.map(() => 0);
   let bgScales = slides.map(() => 1.02);
   let contentClipInsets = slides.map(() => 0);
+  let mobileVisibleHeights = slides.map(() => 0);
   let ticking = false;
   let fillFrame = 0;
   let maskAnchorEl;
+  let stickyEl;
   let sliderEl;
   let textLayerEl;
   let isMobile = false;
@@ -68,8 +70,8 @@
   let touchDeltaY = 0;
   let stableMobileViewport = 0;
   let lastViewportWidth = 0;
-  let mobileRevealLinePx = 0;
   let mobileProgressLinePx = 0;
+  let mobileClipHeightPx = 0;
   const mobileFillEase = 0.18;
   const firstSlideShadeMin = 0;
   const mobileMaskGapPx = 156;
@@ -131,10 +133,11 @@
     if (!isMobile) return;
 
     mobileProgressLinePx = Math.round(stableMobileViewport * mobileProgressRatio);
-
-    const fallbackRevealLine = Math.round(stableMobileViewport * 0.76);
-    const measuredTextTop = textLayerEl?.offsetTop ?? fallbackRevealLine + mobileMaskGapPx;
-    mobileRevealLinePx = Math.max(0, Math.round(measuredTextTop - mobileMaskGapPx));
+    const stickyTop = stickyEl?.getBoundingClientRect().top ?? 0;
+    const measuredTextTop = textLayerEl
+      ? Math.round(textLayerEl.getBoundingClientRect().top - stickyTop)
+      : Math.round(stableMobileViewport * 0.82);
+    mobileClipHeightPx = Math.max(0, Math.round(measuredTextTop - mobileMaskGapPx));
   }
 
   function getStableViewportHeight() {
@@ -188,8 +191,9 @@
     const next = slides.map(() => 0);
     const nextScales = slides.map(() => (prefersReducedMotion ? 1 : isMobile ? 1.01 : 1.02));
     const nextClipInsets = slides.map(() => 0);
+    const nextMobileVisibleHeights = slides.map(() => 0);
     const progressLine = isMobile ? mobileProgressLinePx || Math.round(vh * mobileProgressRatio) : vh * 0.5;
-    const fallbackRevealLine = isMobile ? mobileRevealLinePx || Math.round(vh * 0.76) : vh * 0.8;
+    const fallbackRevealLine = isMobile ? mobileClipHeightPx || Math.round(vh * 0.76) : vh * 0.8;
     const revealLine = isMobile ? fallbackRevealLine : maskAnchorEl?.getBoundingClientRect().top ?? fallbackRevealLine;
     let nextActiveIndex = activeIndex;
     let closestDistance = Number.POSITIVE_INFINITY;
@@ -216,7 +220,14 @@
       if (!content) return;
 
       const rect = content.getBoundingClientRect();
-      nextClipInsets[i] = clamp(rect.bottom - revealLine, 0, rect.height);
+      const visibleHeight = clamp(revealLine - rect.top, 0, rect.height);
+
+      if (isMobile) {
+        nextMobileVisibleHeights[i] = visibleHeight;
+        return;
+      }
+
+      nextClipInsets[i] = clamp(rect.height - visibleHeight, 0, rect.height);
     });
 
     activeIndex = nextActiveIndex;
@@ -224,6 +235,7 @@
     animateDisplayedFills();
     bgScales = nextScales;
     contentClipInsets = nextClipInsets;
+    mobileVisibleHeights = nextMobileVisibleHeights;
     syncHeaderTone(nextActiveIndex);
     ticking = false;
   }
@@ -313,7 +325,7 @@
 </script>
 
 <section class="slider" bind:this={sliderEl}>
-  <div class="sticky">
+  <div class="sticky" bind:this={stickyEl}>
     <div class="backgrounds">
       <div
         class="bottom-shade"
@@ -394,11 +406,18 @@
         bind:this={sections[i]}
         data-index={i}
       >
-        <div class="content-clip">
+        <div
+          class="content-clip"
+          style={isMobile ? `height:${mobileVisibleHeights[i]}px;` : ""}
+        >
           <div
             class="content"
             bind:this={contentRefs[i]}
-            style={`clip-path: inset(0 0 ${contentClipInsets[i]}px 0); -webkit-clip-path: inset(0 0 ${contentClipInsets[i]}px 0);`}
+            style={
+              isMobile
+                ? ""
+                : `clip-path: inset(0 0 ${contentClipInsets[i]}px 0); -webkit-clip-path: inset(0 0 ${contentClipInsets[i]}px 0);`
+            }
           >
             <div class="number">{slide.number}</div>
             <h2>{slide.title}</h2>
@@ -881,7 +900,7 @@
     .slide {
       padding: 6.5rem 1.25rem 5.75rem;
       min-height: var(--viewport-height);
-      align-items: center;
+      align-items: flex-start;
       touch-action: pan-y;
     }
 
@@ -908,6 +927,10 @@
       touch-action: pan-y;
       -webkit-user-select: none;
       user-select: none;
+    }
+
+    .content-clip {
+      overflow: hidden;
     }
 
     .progress-nav {

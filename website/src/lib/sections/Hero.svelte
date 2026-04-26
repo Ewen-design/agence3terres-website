@@ -472,7 +472,7 @@
       <img
         class:media-visible={heroMediaVisible}
         bind:this={heroMediaImgEl}
-        src="images/telephone2.webp"
+        src="images/telephone_parfum.webp"
         alt=""
       />
       <div class="hero-dark-layer" bind:this={heroDarkLayerEl}></div>
