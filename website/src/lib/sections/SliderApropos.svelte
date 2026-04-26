@@ -36,8 +36,12 @@
   let displayedFills = slides.map(() => 0);
   let bgScales = slides.map(() => 1.02);
   let contentClipInsets = slides.map(() => 0);
+  let mobileTitleOffsets = slides.map(() => 0);
   let ticking = false;
   let fillFrame = 0;
+  let scrollMonitorFrame = 0;
+  let lastObservedScrollY = 0;
+  let stableFrameCount = 0;
   let maskAnchorEl;
   let sliderEl;
   let isMobile = false;
@@ -48,6 +52,11 @@
   let touchDeltaX = 0;
   let touchDeltaY = 0;
   const mobileFillEase = 0.18;
+  let stableMobileViewport = 0;
+  let lastViewportWidth = 0;
+  let mobileMaskLinePx = 0;
+  const mobileProgressRatio = 0.56;
+  const mobileMaskRatio = 0.76;
 
   const clamp = (v, min = 0, max = 1) => Math.max(min, Math.min(max, v));
 
@@ -55,10 +64,43 @@
     isMobile = window.innerWidth <= 700;
   }
 
+  function syncStableMobileViewport(forceReset = false) {
+    const nextWidth = window.innerWidth || 0;
+    const nextHeight = window.innerHeight || document.documentElement.clientHeight || 1;
+
+    if (!isMobile) {
+      stableMobileViewport = nextHeight;
+      lastViewportWidth = nextWidth;
+      mobileMaskLinePx = nextHeight * mobileMaskRatio;
+      return;
+    }
+
+    const orientationShift = Math.abs(nextWidth - lastViewportWidth) > 80;
+    if (forceReset || orientationShift || !stableMobileViewport) {
+      stableMobileViewport = nextHeight;
+    } else {
+      stableMobileViewport = Math.max(stableMobileViewport, nextHeight);
+    }
+
+    lastViewportWidth = nextWidth;
+    mobileMaskLinePx = stableMobileViewport * mobileMaskRatio;
+  }
+
+  function getStableViewportHeight() {
+    return isMobile ? stableMobileViewport || window.innerHeight || 1 : window.innerHeight || 1;
+  }
+
   function stopFillAnimation() {
     if (fillFrame) {
       cancelAnimationFrame(fillFrame);
       fillFrame = 0;
+    }
+  }
+
+  function stopScrollMonitor() {
+    if (scrollMonitorFrame) {
+      cancelAnimationFrame(scrollMonitorFrame);
+      scrollMonitorFrame = 0;
     }
   }
 
@@ -98,13 +140,14 @@
   }
 
   function updateProgress() {
-    const vh = window.innerHeight || 1;
+    const vh = getStableViewportHeight();
     const next = slides.map(() => 0);
     const nextScales = slides.map(() => (prefersReducedMotion ? 1 : isMobile ? 1.01 : 1.02));
     const nextClipInsets = slides.map(() => 0);
-    const progressLine = vh * (isMobile ? 0.56 : 0.5);
-    const fallbackRevealLine = vh * (isMobile ? 0.74 : 0.8);
-    const revealLine = maskAnchorEl?.getBoundingClientRect().top ?? fallbackRevealLine;
+    const nextMobileTitleOffsets = slides.map(() => 0);
+    const progressLine = vh * (isMobile ? mobileProgressRatio : 0.5);
+    const fallbackRevealLine = vh * (isMobile ? mobileMaskRatio : 0.8);
+    const revealLine = isMobile ? fallbackRevealLine : maskAnchorEl?.getBoundingClientRect().top ?? fallbackRevealLine;
     let nextActiveIndex = activeIndex;
     let closestDistance = Number.POSITIVE_INFINITY;
 
@@ -130,6 +173,10 @@
       if (!content) return;
 
       const rect = content.getBoundingClientRect();
+      nextMobileTitleOffsets[i] = rect.top;
+
+      if (isMobile) return;
+
       const visibleHeight = clamp(revealLine - rect.top, 0, rect.height);
 
       nextClipInsets[i] = Math.max(rect.height - visibleHeight, 0);
@@ -140,6 +187,7 @@
     animateDisplayedFills();
     bgScales = nextScales;
     contentClipInsets = nextClipInsets;
+    mobileTitleOffsets = nextMobileTitleOffsets;
     ticking = false;
   }
 
@@ -148,12 +196,44 @@
       ticking = true;
       requestAnimationFrame(updateProgress);
     }
+
+    if (isMobile) {
+      startScrollMonitor();
+    }
+  }
+
+  function startScrollMonitor() {
+    if (scrollMonitorFrame || !isMobile) return;
+
+    lastObservedScrollY = window.scrollY;
+    stableFrameCount = 0;
+
+    const step = () => {
+      const nextScrollY = window.scrollY;
+
+      if (Math.abs(nextScrollY - lastObservedScrollY) > 0.5) {
+        lastObservedScrollY = nextScrollY;
+        stableFrameCount = 0;
+        updateProgress();
+      } else {
+        stableFrameCount += 1;
+      }
+
+      if (stableFrameCount < 8) {
+        scrollMonitorFrame = requestAnimationFrame(step);
+      } else {
+        scrollMonitorFrame = 0;
+      }
+    };
+
+    scrollMonitorFrame = requestAnimationFrame(step);
   }
 
   function handleResize() {
     clearTimeout(resizeTimeout);
     resizeTimeout = setTimeout(() => {
       checkMobile();
+      syncStableMobileViewport();
       onScroll();
     }, 90);
   }
@@ -196,9 +276,12 @@
   onMount(() => {
     prefersReducedMotion = window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches ?? false;
     checkMobile();
+    syncStableMobileViewport(true);
     updateProgress();
     window.addEventListener("scroll", onScroll, { passive: true });
     window.addEventListener("resize", handleResize);
+    window.visualViewport?.addEventListener("resize", handleResize);
+    window.visualViewport?.addEventListener("scroll", onScroll, { passive: true });
     sliderEl?.addEventListener("touchstart", handleTouchStart, { passive: true });
     sliderEl?.addEventListener("touchmove", handleTouchMove, { passive: true });
     sliderEl?.addEventListener("touchend", handleTouchEnd, { passive: true });
@@ -207,8 +290,11 @@
   onDestroy(() => {
     if (!browser) return;
     stopFillAnimation();
+    stopScrollMonitor();
     window.removeEventListener("scroll", onScroll);
     window.removeEventListener("resize", handleResize);
+    window.visualViewport?.removeEventListener("resize", handleResize);
+    window.visualViewport?.removeEventListener("scroll", onScroll);
     sliderEl?.removeEventListener("touchstart", handleTouchStart);
     sliderEl?.removeEventListener("touchmove", handleTouchMove);
     sliderEl?.removeEventListener("touchend", handleTouchEnd);
@@ -256,6 +342,22 @@
       {/each}
     </div>
 
+    <div
+      class="mobile-title-mask"
+      aria-hidden="true"
+      style={`--mobile-mask-line:${mobileMaskLinePx}px;`}
+    >
+      {#each slides as slide, i}
+        <div
+          class="mobile-title-item"
+          style={`transform: translate3d(0, ${mobileTitleOffsets[i]}px, 0);`}
+        >
+          <div class="number">{slide.number}</div>
+          <h2>{slide.title}</h2>
+        </div>
+      {/each}
+    </div>
+
     <div class="text-layer" aria-live="polite">
       {#each slides as slide, i}
         <div class="text-slide" class:active={activeIndex === i}>
@@ -289,7 +391,11 @@
           <div
             class="content"
             bind:this={contentRefs[i]}
-            style={`clip-path: inset(0 0 ${contentClipInsets[i]}px 0); -webkit-clip-path: inset(0 0 ${contentClipInsets[i]}px 0);`}
+            style={
+              isMobile
+                ? ""
+                : `clip-path: inset(0 0 ${contentClipInsets[i]}px 0); -webkit-clip-path: inset(0 0 ${contentClipInsets[i]}px 0);`
+            }
           >
             <div class="number">{slide.number}</div>
             <h2>{slide.title}</h2>
@@ -448,6 +554,10 @@
 
   .text-slide p {
     margin: 0;
+  }
+
+  .mobile-title-mask {
+    display: none;
   }
 
   .number {
@@ -729,10 +839,42 @@
       top: var(--slider-mask-top-mobile);
     }
 
+    .mobile-title-mask {
+      display: block;
+      position: absolute;
+      inset: 0;
+      height: var(--mobile-mask-line);
+      overflow: hidden;
+      z-index: 5;
+      pointer-events: none;
+    }
+
+    .mobile-title-item {
+      position: absolute;
+      left: 1.25rem;
+      right: 1.25rem;
+      top: 0;
+      text-align: center;
+      will-change: transform;
+    }
+
+    .mobile-title-item .number,
+    .mobile-title-item h2 {
+      pointer-events: none;
+      touch-action: pan-y;
+      -webkit-user-select: none;
+      user-select: none;
+    }
+
     .text-layer {
       left: 1.25rem;
       right: 1.25rem;
       bottom: var(--slider-text-bottom);
+      text-align: center;
+    }
+
+    .text-slide {
+      text-align: center;
     }
 
     .tail {
@@ -748,6 +890,10 @@
       touch-action: pan-y;
       -webkit-user-select: none;
       user-select: none;
+    }
+
+    .content {
+      opacity: 0;
     }
 
     .progress-nav {
@@ -766,6 +912,8 @@
     .text-slide p {
       font-size: 0.96rem;
       max-width: 30ch;
+      margin-left: auto;
+      margin-right: auto;
     }
   }
 
