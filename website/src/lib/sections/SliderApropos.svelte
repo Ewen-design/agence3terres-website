@@ -255,6 +255,14 @@
         </div>
       {/each}
     </div>
+
+    <div class="text-layer" aria-live="polite">
+      {#each slides as slide, i}
+        <div class="text-slide" class:active={activeIndex === i}>
+          <p>{slide.description}</p>
+        </div>
+      {/each}
+    </div>
   </div>
 
   <div class="mobile-progress-shell" aria-hidden="true">
@@ -281,15 +289,10 @@
           <div
             class="content"
             bind:this={contentRefs[i]}
-            style={
-              isMobile
-                ? ""
-                : `clip-path: inset(0 0 ${contentClipInsets[i]}px 0); -webkit-clip-path: inset(0 0 ${contentClipInsets[i]}px 0);`
-            }
+            style={`clip-path: inset(0 0 ${contentClipInsets[i]}px 0); -webkit-clip-path: inset(0 0 ${contentClipInsets[i]}px 0);`}
           >
             <div class="number">{slide.number}</div>
             <h2>{slide.title}</h2>
-            <p>{slide.description}</p>
           </div>
         </div>
       </section>
@@ -301,6 +304,10 @@
 
 <style>
   .slider {
+    --slider-progress-bottom: max(2rem, var(--safe-bottom-offset));
+    --slider-text-bottom: calc(var(--slider-progress-bottom) + 5rem);
+    --slider-mask-top: 72vh;
+    --slider-mask-top-mobile: 76lvh;
     position: relative;
     width: 100%;
     min-height: 360vh;
@@ -381,8 +388,7 @@
 
   .mask-anchor {
     position: sticky;
-    top: 88vh;
-    top: 88svh;
+    top: var(--slider-mask-top);
     height: 0;
     pointer-events: none;
   }
@@ -416,6 +422,32 @@
     will-change: clip-path;
     backface-visibility: hidden;
     transform: translateZ(0);
+  }
+
+  .text-layer {
+    position: absolute;
+    left: 4rem;
+    right: 4rem;
+    bottom: var(--slider-text-bottom);
+    z-index: 5;
+    pointer-events: none;
+  }
+
+  .text-slide {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    opacity: 0;
+    transition: opacity 900ms ease;
+  }
+
+  .text-slide.active {
+    opacity: 1;
+  }
+
+  .text-slide p {
+    margin: 0;
   }
 
   .number {
@@ -461,7 +493,7 @@
     position: absolute;
     left: 2rem;
     right: 2rem;
-    bottom: max(2rem, var(--safe-bottom-offset));
+    bottom: var(--slider-progress-bottom);
     z-index: 5;
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -617,6 +649,11 @@
       align-items: center;
     }
 
+    .text-layer {
+      left: 2rem;
+      right: 2rem;
+    }
+
     .content-clip {
       max-width: 100%;
       overflow: visible;
@@ -647,6 +684,8 @@
   @media (max-width: 700px) {
     .slider {
       --mobile-bg-bleed: 72px;
+      --slider-progress-bottom: max(1.1rem, calc(env(safe-area-inset-bottom, 0px) + 0.9rem));
+      --slider-text-bottom: calc(var(--slider-progress-bottom) + 1.2rem);
       touch-action: pan-y;
     }
 
@@ -686,6 +725,16 @@
       touch-action: pan-y;
     }
 
+    .mask-anchor {
+      top: var(--slider-mask-top-mobile);
+    }
+
+    .text-layer {
+      left: 1.25rem;
+      right: 1.25rem;
+      bottom: var(--slider-text-bottom);
+    }
+
     .tail {
       height: 0;
     }
@@ -714,8 +763,7 @@
       font-size: clamp(2.7rem, 13vw, 4.2rem);
     }
 
-    p {
-      margin-top: 1.25rem;
+    .text-slide p {
       font-size: 0.96rem;
       max-width: 30ch;
     }
