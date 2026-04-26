@@ -401,8 +401,17 @@
       on:mousemove={handleButtonMove}
       on:click={handleLogoClick}
     >
-      <span class="nav-btn-flip" data-text="Agence 3 Terres">
-        <span class="nav-btn-text">Agence 3 Terres</span>
+      <span class="nav-btn-flip nav-btn-flip-logo">
+        <span class="nav-btn-text nav-btn-text-logo nav-btn-text-logo-main">
+          <span>Agence</span>
+          <span class="nav-btn-logo-prism" aria-hidden="true"></span>
+          <span>3 Terres</span>
+        </span>
+        <span class="nav-btn-text nav-btn-text-logo nav-btn-text-logo-clone" aria-hidden="true">
+          <span>Agence</span>
+          <span class="nav-btn-logo-prism" aria-hidden="true"></span>
+          <span>3 Terres</span>
+        </span>
       </span>
     </button>
 
@@ -605,6 +614,33 @@
       opacity 0.28s ease;
   }
 
+  .nav-btn-text-logo {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+
+  .nav-btn-text-logo-clone {
+    position: absolute;
+    left: 0;
+    top: 0;
+    transform: translateY(100%);
+  }
+
+  .logo .nav-btn-flip::after {
+    content: none;
+  }
+
+  .nav-btn-logo-prism {
+    display: none;
+    width: 0.95em;
+    height: 1.02em;
+    flex: 0 0 auto;
+    background-color: currentColor;
+    -webkit-mask: url("/logo_prisme_noir.svg") center / contain no-repeat;
+    mask: url("/logo_prisme_noir.svg") center / contain no-repeat;
+  }
+
   .nav-btn-flip::after {
     content: attr(data-text);
     position: absolute;
@@ -664,6 +700,16 @@
   }
 
   .links .nav-btn:hover .nav-btn-flip::after {
+    transform: translateY(0%);
+    opacity: 1;
+  }
+
+  .logo:hover .nav-btn-text-logo-main {
+    transform: translateY(-100%);
+    opacity: 1;
+  }
+
+  .logo:hover .nav-btn-text-logo-clone {
     transform: translateY(0%);
     opacity: 1;
   }
@@ -874,6 +920,14 @@
   .more:hover span:nth-child(3) { transform: translateX(-6px) scale(1.6); }
 
   @media (max-width: 768px) {
+    .nav-btn-logo-prism {
+      display: block;
+    }
+
+    .nav-btn-text-logo {
+      gap: 0.48rem;
+    }
+
     header {
       top: 0.85rem;
       width: min(calc(100vw - 1.2rem), 28.8rem);

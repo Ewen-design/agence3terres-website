@@ -37,7 +37,6 @@
   let bgScales = slides.map(() => 1.02);
   let contentClipInsets = slides.map(() => 0);
   let ticking = false;
-  let fillFrame = 0;
   let maskAnchorEl;
   let stickyEl;
   let textLayerEl;
@@ -51,8 +50,6 @@
   let sliderEl;
   let stableMobileViewport = 0;
   let lastViewportWidth = 0;
-  const mobileFillEase = 0.18;
-
   const clamp = (v, min = 0, max = 1) => Math.max(min, Math.min(max, v));
 
   function checkMobile() {
@@ -83,48 +80,6 @@
     return isMobile ? stableMobileViewport || window.innerHeight || 1 : window.innerHeight || 1;
   }
 
-  function stopFillAnimation() {
-    if (fillFrame) {
-      cancelAnimationFrame(fillFrame);
-      fillFrame = 0;
-    }
-  }
-
-  function animateDisplayedFills() {
-    if (!isMobile || prefersReducedMotion) {
-      displayedFills = [...fills];
-      stopFillAnimation();
-      return;
-    }
-
-    if (fillFrame) return;
-
-    const step = () => {
-      let done = true;
-      const nextDisplayed = displayedFills.map((value, index) => {
-        const target = fills[index];
-        const delta = target - value;
-
-        if (Math.abs(delta) < 0.2) {
-          return target;
-        }
-
-        done = false;
-        return value + delta * mobileFillEase;
-      });
-
-      displayedFills = nextDisplayed;
-
-      if (!done) {
-        fillFrame = requestAnimationFrame(step);
-      } else {
-        fillFrame = 0;
-      }
-    };
-
-    fillFrame = requestAnimationFrame(step);
-  }
-
   function updateProgress() {
     const vh = getStableViewportHeight();
     const next = slides.map(() => 0);
@@ -145,7 +100,7 @@
 
       next[i] = progress * 100;
       if (!prefersReducedMotion) {
-        nextScales[i] = (isMobile ? 1.01 : 1.02) + progress * (isMobile ? 0.03 : 0.08);
+        nextScales[i] = isMobile ? 1.01 + progress * 0.03 : 1.02 + progress * 0.08;
       }
 
       if (distanceToCenter < closestDistance) {
@@ -155,7 +110,7 @@
     });
 
     contentRefs.forEach((content, i) => {
-      if (!content) return;
+      if (!content || isMobile) return;
 
       const rect = content.getBoundingClientRect();
       if (!isMobile) {
@@ -166,7 +121,7 @@
 
     activeIndex = nextActiveIndex;
     fills = next;
-    animateDisplayedFills();
+    displayedFills = next;
     bgScales = nextScales;
     contentClipInsets = nextClipInsets;
     ticking = false;
@@ -238,7 +193,6 @@
 
   onDestroy(() => {
     if (!browser) return;
-    stopFillAnimation();
     window.removeEventListener("scroll", onScroll);
     window.removeEventListener("resize", handleResize);
     window.visualViewport?.removeEventListener("resize", handleResize);
@@ -416,6 +370,7 @@
     transition: opacity 900ms ease;
     z-index: 1;
     background: #050b14;
+    will-change: opacity;
   }
 
   .bg.active {
@@ -431,6 +386,9 @@
     inset: 0;
     display: block;
     transition: transform 120ms linear;
+    will-change: transform;
+    backface-visibility: hidden;
+    transform-origin: center center;
   }
 
   .slides {
@@ -751,6 +709,19 @@
       bottom: calc(-1 * var(--mobile-bg-bleed));
     }
 
+    .bg {
+      transition: opacity 420ms ease;
+    }
+
+    .bg img {
+      transition: transform 220ms ease-out;
+    }
+
+    .text-slide,
+    .mobile-text-panel {
+      transition-duration: 240ms;
+    }
+
     .mobile-progress-meta {
       transition: none;
       animation: none;
@@ -764,7 +735,7 @@
     .slide {
       padding: 6.5rem 1.25rem 5.75rem;
       min-height: var(--current-viewport-height);
-      align-items: flex-start;
+      align-items: center;
       touch-action: pan-y;
     }
 
@@ -773,9 +744,9 @@
     }
 
     .mobile-text-sticky-shell {
-      --mobile-text-panel-height: 8rem;
-      --mobile-text-panel-height: 8.4rem;
+      --mobile-text-panel-height: 10.2rem;
       --mobile-text-panel-bleed: 2rem;
+      --mobile-text-panel-lift: 1rem;
       display: block;
       position: absolute;
       inset: 0;
@@ -797,7 +768,7 @@
       position: absolute;
       left: 0;
       right: 0;
-      bottom: calc(-1 * var(--mobile-text-panel-bleed));
+      bottom: calc(var(--mobile-text-panel-lift) - var(--mobile-text-panel-bleed));
       height: calc(var(--mobile-text-panel-height) + var(--mobile-text-panel-bleed) + env(safe-area-inset-bottom, 0px));
       background: #000;
     }
@@ -806,7 +777,9 @@
       position: absolute;
       left: 0;
       right: 0;
-      bottom: calc(var(--mobile-text-panel-bleed) + env(safe-area-inset-bottom, 0px));
+      top: calc(
+        var(--current-viewport-height) - var(--mobile-text-panel-height) - env(safe-area-inset-bottom, 0px) - var(--mobile-text-panel-lift)
+      );
       padding: 0.95rem 1.25rem 0 1.5rem;
       display: grid;
       grid-template-columns: 2.45rem minmax(0, 1fr);
@@ -826,7 +799,7 @@
       grid-column: 1;
       grid-row: 1;
       color: #fff;
-      font-size: 1.14rem;
+      font-size: 1.3rem;
       font-family: "Titre italic", serif;
       font-style: italic;
       opacity: 1;
@@ -868,7 +841,7 @@
     }
 
     h2 {
-      font-size: clamp(2.7rem, 13vw, 4.2rem);
+      font-size: clamp(2.95rem, 13.8vw, 4.35rem);
     }
 
   }
