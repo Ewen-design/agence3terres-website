@@ -43,6 +43,9 @@
   let isMobile = false;
   let prefersReducedMotion = false;
   let resizeTimeout;
+  let resizeRaf = 0;
+  let progressRaf = 0;
+  let settleTimer;
   let touchStartX = 0;
   let touchStartY = 0;
   let touchDeltaX = 0;
@@ -50,6 +53,14 @@
   let sliderEl;
   let stableMobileViewport = 0;
   let lastViewportWidth = 0;
+  let currentScrollY = 0;
+  let sectionMetrics = [];
+  let contentMetrics = [];
+  let maskAnchorTop = 0;
+  let metricsDirty = true;
+  let sliderVisible = true;
+  let sliderObserver;
+  let layoutObserver;
   const clamp = (v, min = 0, max = 1) => Math.max(min, Math.min(max, v));
 
   function checkMobile() {
@@ -80,23 +91,75 @@
     return isMobile ? stableMobileViewport || window.innerHeight || 1 : window.innerHeight || 1;
   }
 
+  function measureLayout() {
+    if (!browser || !sliderEl) return;
+
+    const scrollY = window.scrollY || window.pageYOffset || 0;
+    sectionMetrics = sections.map((section) => {
+      if (!section) return null;
+      const rect = section.getBoundingClientRect();
+      return {
+        top: rect.top + scrollY,
+        height: rect.height
+      };
+    });
+
+    contentMetrics = contentRefs.map((content) => {
+      if (!content) return null;
+      const rect = content.getBoundingClientRect();
+      return {
+        top: rect.top + scrollY,
+        height: rect.height
+      };
+    });
+
+    maskAnchorTop = maskAnchorEl
+      ? maskAnchorEl.getBoundingClientRect().top + scrollY
+      : 0;
+
+    metricsDirty = false;
+  }
+
+  function queueProgressUpdate() {
+    if (progressRaf) return;
+    progressRaf = requestAnimationFrame(() => {
+      progressRaf = 0;
+      updateProgress();
+    });
+  }
+
+  function scheduleLayoutRefresh() {
+    metricsDirty = true;
+    currentScrollY = window.scrollY || window.pageYOffset || 0;
+    measureLayout();
+    queueProgressUpdate();
+  }
+
   function updateProgress() {
+    if (!sliderVisible && !metricsDirty) {
+      ticking = false;
+      return;
+    }
+
+    if (metricsDirty) measureLayout();
+
     const vh = getStableViewportHeight();
     const next = slides.map(() => 0);
     const nextScales = slides.map(() => (prefersReducedMotion ? 1 : isMobile ? 1.01 : 1.02));
     const nextClipInsets = slides.map(() => 0);
     const progressLine = vh * 0.5;
     const fallbackRevealLine = vh * 0.8;
-    const revealLine = maskAnchorEl?.getBoundingClientRect().top ?? fallbackRevealLine;
+    const scrollY = currentScrollY || window.scrollY || window.pageYOffset || 0;
+    const revealLine = maskAnchorTop ? maskAnchorTop - scrollY : fallbackRevealLine;
     let nextActiveIndex = activeIndex;
     let closestDistance = Number.POSITIVE_INFINITY;
 
-    sections.forEach((section, i) => {
-      if (!section) return;
+    sectionMetrics.forEach((metric, i) => {
+      if (!metric) return;
 
-      const rect = section.getBoundingClientRect();
-      const progress = clamp((progressLine - rect.top) / Math.max(rect.height, 1), 0, 1);
-      const distanceToCenter = Math.abs(rect.top + rect.height * 0.5 - progressLine);
+      const sectionTop = metric.top - scrollY;
+      const progress = clamp((progressLine - sectionTop) / Math.max(metric.height, 1), 0, 1);
+      const distanceToCenter = Math.abs(sectionTop + metric.height * 0.5 - progressLine);
 
       next[i] = progress * 100;
       if (!prefersReducedMotion) {
@@ -109,14 +172,12 @@
       }
     });
 
-    contentRefs.forEach((content, i) => {
-      if (!content || isMobile) return;
+    contentMetrics.forEach((metric, i) => {
+      if (!metric || isMobile) return;
 
-      const rect = content.getBoundingClientRect();
-      if (!isMobile) {
-        const visibleHeight = clamp(revealLine - rect.top, 0, rect.height);
-        nextClipInsets[i] = clamp(rect.height - visibleHeight, 0, rect.height);
-      }
+      const contentTop = metric.top - scrollY;
+      const visibleHeight = clamp(revealLine - contentTop, 0, metric.height);
+      nextClipInsets[i] = clamp(metric.height - visibleHeight, 0, metric.height);
     });
 
     activeIndex = nextActiveIndex;
@@ -128,18 +189,30 @@
   }
 
   function onScroll() {
-    if (!ticking) {
-      ticking = true;
-      requestAnimationFrame(updateProgress);
-    }
+    if (!sliderVisible) return;
+    currentScrollY = window.scrollY || window.pageYOffset || 0;
+    if (ticking) return;
+    ticking = true;
+    queueProgressUpdate();
+    clearTimeout(settleTimer);
+    settleTimer = setTimeout(() => {
+      if (!sliderVisible) return;
+      scheduleLayoutRefresh();
+    }, 120);
   }
 
   function handleResize() {
     clearTimeout(resizeTimeout);
     resizeTimeout = setTimeout(() => {
-      checkMobile();
-      syncStableMobileViewport();
-      onScroll();
+      cancelAnimationFrame(resizeRaf);
+      resizeRaf = requestAnimationFrame(() => {
+        resizeRaf = 0;
+        metricsDirty = true;
+        currentScrollY = window.scrollY || window.pageYOffset || 0;
+        checkMobile();
+        syncStableMobileViewport();
+        scheduleLayoutRefresh();
+      });
     }, 90);
   }
 
@@ -182,7 +255,28 @@
     prefersReducedMotion = window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches ?? false;
     checkMobile();
     syncStableMobileViewport(true);
+    currentScrollY = window.scrollY || window.pageYOffset || 0;
+    measureLayout();
     updateProgress();
+    sliderObserver = new IntersectionObserver(
+      ([entry]) => {
+        sliderVisible = !!entry?.isIntersecting;
+        if (sliderVisible) {
+          currentScrollY = window.scrollY || window.pageYOffset || 0;
+          metricsDirty = true;
+          measureLayout();
+          queueProgressUpdate();
+        }
+      },
+      { rootMargin: "125% 0px 125% 0px", threshold: 0 }
+    );
+    sliderObserver.observe(sliderEl);
+    layoutObserver = new ResizeObserver(() => {
+      scheduleLayoutRefresh();
+    });
+    layoutObserver.observe(sliderEl);
+    sections.forEach((section) => section && layoutObserver.observe(section));
+    contentRefs.forEach((content) => content && layoutObserver.observe(content));
     window.addEventListener("scroll", onScroll, { passive: true });
     window.addEventListener("resize", handleResize);
     window.visualViewport?.addEventListener("resize", handleResize);
@@ -199,7 +293,12 @@
     sliderEl?.removeEventListener("touchstart", handleTouchStart);
     sliderEl?.removeEventListener("touchmove", handleTouchMove);
     sliderEl?.removeEventListener("touchend", handleTouchEnd);
+    sliderObserver?.disconnect();
+    layoutObserver?.disconnect();
     clearTimeout(resizeTimeout);
+    clearTimeout(settleTimer);
+    cancelAnimationFrame(progressRaf);
+    cancelAnimationFrame(resizeRaf);
   });
 </script>
 
@@ -328,6 +427,8 @@
     background: #050b14;
     isolation: isolate;
     z-index: 0;
+    contain: paint;
+    transform: translateZ(0);
   }
 
   .sticky::before {
@@ -343,6 +444,7 @@
     inset: 0;
     z-index: 1;
     background: #050b14;
+    contain: paint;
   }
 
   .bottom-shade {
@@ -395,6 +497,7 @@
     position: relative;
     z-index: 3;
     margin-top: calc(-1 * var(--current-viewport-height));
+    contain: paint;
   }
 
   .mask-anchor {
@@ -575,6 +678,7 @@
 
   .mobile-progress-shell {
     display: none;
+    contain: paint;
   }
 
   .mobile-text-overlay {
@@ -583,6 +687,7 @@
 
   .mobile-text-sticky-shell {
     display: none;
+    contain: paint;
   }
 
   .mobile-progress {
@@ -595,6 +700,7 @@
     padding: 0.55rem 1.25rem calc(0.65rem + env(safe-area-inset-bottom));
     background: #000;
     box-shadow: 0 -12px 0 #000;
+    transform: translateZ(0);
   }
 
   .mobile-progress-line {
@@ -761,6 +867,8 @@
       left: 0;
       right: 0;
       height: var(--current-viewport-height);
+      contain: paint;
+      transform: translateZ(0);
     }
 
     .mobile-text-overlay::before {
@@ -787,6 +895,8 @@
       align-items: start;
       opacity: 0;
       transition: opacity 900ms ease;
+      will-change: opacity;
+      transform: translateZ(0);
     }
 
     .mobile-text-panel.active {
