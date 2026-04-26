@@ -195,36 +195,56 @@
     const nextClipInsets = slides.map(() => 0);
     const progressLine = vh * 0.5;
     const fallbackRevealLine = vh * 0.8;
-    const scrollY = currentScrollY || window.scrollY || window.pageYOffset || 0;
-    const revealLine = maskAnchorTop ? maskAnchorTop - scrollY : fallbackRevealLine;
     let nextActiveIndex = activeIndex;
     let closestDistance = Number.POSITIVE_INFINITY;
 
-    sectionMetrics.forEach((metric, i) => {
-      if (!metric) return;
+    if (isMobile) {
+      const scrollY = currentScrollY || window.scrollY || window.pageYOffset || 0;
+      sectionMetrics.forEach((metric, i) => {
+        if (!metric) return;
 
-      const sectionTop = metric.top - scrollY;
-      const progress = clamp((progressLine - sectionTop) / Math.max(metric.height, 1), 0, 1);
-      const distanceToCenter = Math.abs(sectionTop + metric.height * 0.5 - progressLine);
+        const sectionTop = metric.top - scrollY;
+        const progress = clamp((progressLine - sectionTop) / Math.max(metric.height, 1), 0, 1);
+        const distanceToCenter = Math.abs(sectionTop + metric.height * 0.5 - progressLine);
 
-      next[i] = progress * 100;
-      if (!prefersReducedMotion) {
-        nextScales[i] = isMobile ? 1.01 + progress * 0.03 : 1.02 + progress * 0.08;
-      }
+        next[i] = progress * 100;
+        if (!prefersReducedMotion) {
+          nextScales[i] = 1.01 + progress * 0.03;
+        }
 
-      if (distanceToCenter < closestDistance) {
-        closestDistance = distanceToCenter;
-        nextActiveIndex = i;
-      }
-    });
+        if (distanceToCenter < closestDistance) {
+          closestDistance = distanceToCenter;
+          nextActiveIndex = i;
+        }
+      });
+    } else {
+      const revealLine = maskAnchorEl?.getBoundingClientRect().top ?? fallbackRevealLine;
 
-    contentMetrics.forEach((metric, i) => {
-      if (!metric || isMobile) return;
+      sections.forEach((section, i) => {
+        if (!section) return;
 
-      const contentTop = metric.top - scrollY;
-      const visibleHeight = clamp(revealLine - contentTop, 0, metric.height);
-      nextClipInsets[i] = clamp(metric.height - visibleHeight, 0, metric.height);
-    });
+        const rect = section.getBoundingClientRect();
+        const progress = clamp((progressLine - rect.top) / Math.max(rect.height, 1), 0, 1);
+        const distanceToCenter = Math.abs(rect.top + rect.height * 0.5 - progressLine);
+
+        next[i] = progress * 100;
+        if (!prefersReducedMotion) {
+          nextScales[i] = 1.02 + progress * 0.08;
+        }
+
+        if (distanceToCenter < closestDistance) {
+          closestDistance = distanceToCenter;
+          nextActiveIndex = i;
+        }
+      });
+
+      contentRefs.forEach((content, i) => {
+        if (!content) return;
+        const rect = content.getBoundingClientRect();
+        const visibleHeight = clamp(revealLine - rect.top, 0, rect.height);
+        nextClipInsets[i] = clamp(rect.height - visibleHeight, 0, rect.height);
+      });
+    }
 
     activeIndex = nextActiveIndex;
     fills = next;
