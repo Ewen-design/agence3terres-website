@@ -51,7 +51,7 @@
   }
 
   function setTab(tab) {
-    if (tab === activeTab || isSwitching) return;
+    if (tab === activeTab) return;
 
     clearTimeout(switchTimer);
     clearTimeout(revealTimer);
@@ -63,13 +63,13 @@
 
     revealTimer = setTimeout(() => {
       nextVisible = true;
-    }, 110);
+    }, 90);
 
     switchTimer = setTimeout(() => {
       previousTab = null;
       isSwitching = false;
       nextVisible = false;
-    }, 1040);
+    }, 820);
   }
 
   async function copyEmail() {
@@ -103,7 +103,7 @@
       <div class="hero">
         <h1>
           Parlons<br />
-          de votre projet.
+          de&nbsp;votre&nbsp;projet.
         </h1>
         <p>
           Chaque collaboration commence par une conversation claire, directe et bien cadrée.
@@ -288,14 +288,38 @@
       </div>
     </div>
   </div>
+
+  <p class="contact-legal">
+    Agence 3 Terres — Tous droits réservés — Mentions légales
+  </p>
 </section>
 
 <style>
   .contact {
+    --contact-left-pad: clamp(1.5rem, 6vw, 8vw);
+    --contact-right-pad: clamp(0.75rem, 1.8vw, 1.6rem);
+    --contact-bottom-pad: clamp(1.6rem, 3vw, 2.4rem);
+    --contact-top-pad: clamp(5.5rem, 8vh, 7rem);
+    --contact-panel-width: min(45vw, 660px);
+    --contact-panel-gap: var(--contact-right-pad);
     position: relative;
-    height: 100svh;
+    min-height: 100svh;
     overflow: hidden;
     color: white;
+    background: #050505;
+  }
+
+  .contact::before {
+    content: "";
+    position: absolute;
+    inset: 0 auto 0 0;
+    width: var(--contact-panel-width);
+    background: #050505;
+    z-index: 1;
+  }
+
+  .contact-legal {
+    display: none;
   }
 
   .background {
@@ -316,25 +340,28 @@
     background:
       linear-gradient(
         to right,
-        rgba(0, 0, 0, 0.82) 0%,
-        rgba(0, 0, 0, 0.46) 40%,
-        rgba(0, 0, 0, 0.74) 100%
+        rgba(0, 0, 0, 0.16) 0%,
+        rgba(0, 0, 0, 0.12) 36%,
+        rgba(0, 0, 0, 0.62) 100%
       );
   }
 
   .container {
     position: relative;
     z-index: 2;
-    height: 100svh;
+    min-height: 100svh;
     box-sizing: border-box;
-    padding: clamp(5.5rem, 8vh, 7rem) clamp(1.5rem, 6vw, 8vw) clamp(1.6rem, 3vw, 2.4rem);
-    display: flex;
-    justify-content: space-between;
-    gap: clamp(3rem, 7vw, 7rem);
+    padding: var(--contact-top-pad) var(--contact-right-pad) var(--contact-bottom-pad) var(--contact-left-pad);
+    display: grid;
+    grid-template-columns:
+      minmax(0, calc(var(--contact-panel-width) - var(--contact-left-pad) - var(--contact-right-pad)))
+      minmax(20rem, 34rem);
+    justify-content: start;
+    column-gap: var(--contact-panel-gap);
   }
 
   .right {
-    width: min(100%, 520px);
+    width: 100%;
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -346,7 +373,7 @@
   }
 
   .form-shell {
-    width: 100%;
+    width: min(100%, 30rem);
     display: flex;
     flex-direction: column;
     align-items: flex-start;
@@ -362,7 +389,7 @@
 
   .hero p {
     margin-top: 1rem;
-    max-width: 34rem;
+    max-width: 28rem;
     font-family: "General Sans", sans-serif;
     font-size: 1rem;
     line-height: 1.5;
@@ -370,13 +397,11 @@
   }
 
   .form {
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    background: rgba(255, 255, 255, 0.08);
+    background: rgba(255, 255, 255, 0.02);
     padding: clamp(1.3rem, 2.4vw, 2.35rem);
     border-radius: 2px;
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: none;
+    border: 1px solid rgba(255, 255, 255, 0.12);
     width: 100%;
   }
 
@@ -424,13 +449,15 @@
   }
 
   .contact-info {
-    flex: 1;
+    flex: 0 0 auto;
     display: flex;
     flex-direction: column;
     justify-content: flex-end;
     align-items: flex-start;
     padding-bottom: clamp(0rem, 3vh, 1rem);
+    padding-left: 3rem;
     min-width: 0;
+    max-width: none;
   }
 
   .tabs {
@@ -445,13 +472,15 @@
     position: relative;
     min-height: clamp(6.6rem, 9vw, 8.2rem);
     width: 100%;
-    overflow: hidden;
+    overflow: visible;
   }
 
   .panel {
     min-height: inherit;
     display: flex;
     align-items: flex-end;
+    width: max-content;
+    max-width: none;
     transition:
       transform 0.98s cubic-bezier(.16,.84,.2,1),
       opacity 0.72s ease,
@@ -493,11 +522,14 @@
   }
 
   .email-panel {
-    display: flex;
+    display: grid;
+    grid-template-columns: max-content auto;
     align-items: center;
-    gap: 0.65rem;
-    flex-wrap: nowrap;
-    max-width: 100%;
+    justify-content: flex-start;
+    column-gap: 0.8rem;
+    width: max-content;
+    max-width: none;
+    min-width: max-content;
   }
 
   .headline,
@@ -508,18 +540,20 @@
     font-weight: 500;
     line-height: 0.94;
     letter-spacing: -0.045em;
-    color: #f5f2eb;
+    color: #ffffff;
     text-decoration: none;
     white-space: nowrap;
   }
 
   .headline-link {
-    max-width: 100%;
+    max-width: none;
+    min-width: auto;
   }
 
   .email-panel .headline-link {
     font-size: clamp(1.55rem, 3.35vw, 3.55rem);
     line-height: 0.96;
+    white-space: nowrap;
   }
 
   .socials-group {
@@ -639,10 +673,11 @@
     width: 36px;
     padding: 0;
     margin-bottom: 0;
+    position: relative;
+    z-index: 1;
   }
 
   .copy-btn.has-label {
-    width: auto;
     min-width: 5.1rem;
     padding: 0 0.85rem;
   }
@@ -772,6 +807,10 @@
   }
 
   @media (max-width: 1000px) {
+    .contact::before {
+      width: min(50vw, 580px);
+    }
+
     .contact,
     .container {
       height: auto;
@@ -779,6 +818,7 @@
     }
 
     .container {
+      display: flex;
       flex-direction: column;
       gap: 3rem;
       justify-content: flex-start;
@@ -791,6 +831,8 @@
 
     .contact-info {
       padding-bottom: 0;
+      padding-left: 0;
+      max-width: none;
     }
 
     .content-stage {
@@ -799,20 +841,46 @@
   }
 
   @media (max-width: 768px) {
-    .contact,
-    .container {
-      min-height: 120svh;
+    .contact {
+      min-height: 200svh;
+      overflow: clip;
+    }
+
+    .contact::before {
+      inset: 80svh 0 0;
+      width: auto;
+      background: #050505;
+    }
+
+    .background {
+      position: fixed;
+      inset: 0;
+      height: 100svh;
+    }
+
+    .overlay {
+      background:
+        linear-gradient(
+          to bottom,
+          rgba(0, 0, 0, 0.1) 0%,
+          rgba(0, 0, 0, 0.18) 48%,
+          rgba(0, 0, 0, 0.56) 100%
+        );
     }
 
     .container {
+      min-height: 200svh;
+    }
+
+    .container {
+      display: flex;
       flex-direction: column;
       padding:
-        calc(env(safe-area-inset-top, 0px) + 9rem)
+        0
         1.05rem
-        calc(env(safe-area-inset-bottom, 0px) + 1.15rem);
-      gap: 0.05rem;
+        calc(env(safe-area-inset-bottom, 0px) + 1.4rem);
       align-items: stretch;
-      justify-content: flex-start;
+      gap: 0;
     }
 
     .right {
@@ -823,49 +891,63 @@
     .contact-info,
     .form-shell {
       width: min(100%, 32rem);
-      margin-left: auto;
-      margin-right: auto;
-    }
-
-    .hero,
-    .contact-info {
-      align-items: center;
-      text-align: center;
+      position: relative;
+      z-index: 3;
     }
 
     .hero {
       order: 1;
-      margin-bottom: 2.1rem;
+      min-height: 116svh;
+      margin: 0;
+      padding:
+        calc(env(safe-area-inset-top, 0px) + 80vh)
+        0
+        1.4rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+      align-items: flex-start;
+      gap: clamp(4rem, 8svh, 6.5rem);
+      text-align: left;
+      background: transparent;
     }
 
     .contact-info {
       order: 2;
+      margin: -1.5rem 0 2rem auto;
       justify-content: flex-start;
-      margin-top: 0;
+      align-items: flex-end;
+      text-align: right;
+      margin-top: 2rem;
       padding-bottom: 0;
-      margin-bottom: -1.55rem;
+      padding-left: 0;
+      background: transparent;
     }
 
     .form-shell {
       order: 3;
+      margin: 1rem auto 0 0;
       align-items: stretch;
+      background: transparent;
     }
 
     .hero h1 {
-      font-size: clamp(2rem, 10vw, 3.2rem);
+      font-size: clamp(2.95rem, 10.8vw, 3.75rem);
+      max-width: 9ch;
     }
 
     .hero p {
-      margin-top: 0.82rem;
-      margin-bottom: 1rem;
+      margin: 0;
       font-size: 0.9rem;
       line-height: 1.42;
-      margin-left: auto;
-      margin-right: auto;
+      max-width: 16rem;
+      color: rgba(255, 255, 255, 0.76);
     }
 
     .form {
       padding: 1rem 1rem 0.8rem;
+      background: transparent;
+      border-color: rgba(255, 255, 255, 0.14);
     }
 
     .field {
@@ -904,29 +986,48 @@
     }
 
     .email-panel {
+      width: 100%;
+      justify-content: flex-end;
       align-items: center;
-      flex-direction: column;
-      gap: 0.5rem;
+      column-gap: 0.45rem;
     }
 
     .email-panel .headline-link {
       font-size: clamp(1.2rem, 6.1vw, 2.3rem);
+      text-align: right;
     }
 
     .content-stage {
       min-height: 5.1rem;
       display: flex;
-      justify-content: center;
+      justify-content: flex-end;
+      overflow: hidden;
+    }
+
+    .panel {
+      width: 100%;
+      max-width: 100%;
+      justify-content: flex-end;
     }
 
     .tabs,
     .socials-group {
-      justify-content: center;
+      justify-content: flex-end;
+    }
+
+    .socials-group {
+      width: 100%;
+    }
+
+    .headline {
+      width: 100%;
+      text-align: right;
     }
 
     .tabs {
       gap: 0.55rem;
       margin-bottom: 1.4rem;
+      justify-content: flex-end;
     }
 
     .copy-btn {
@@ -943,6 +1044,22 @@
 
     .form {
       text-align: left;
+    }
+
+    .contact-legal {
+      display: block;
+      position: absolute;
+      left: 50%;
+      bottom: calc(env(safe-area-inset-bottom, 0px) + 1rem);
+      transform: translateX(-50%);
+      width: min(100% - 2.1rem, 30rem);
+      margin: 0;
+      z-index: 4;
+      font-family: "General Sans", sans-serif;
+      font-size: 0.76rem;
+      color: rgba(255, 255, 255, 0.42);
+      text-align: center;
+      line-height: 1.4;
     }
   }
 
