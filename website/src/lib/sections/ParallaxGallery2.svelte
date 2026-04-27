@@ -314,13 +314,6 @@
 
 <section class="gallery" bind:this={gallerySectionEl}>
   <div class="gallery-intro-group" bind:this={galleryIntroGroupEl}>
-    <div class="top-header">
-      <div class="header-title-wrap">
-        <h2>Nos services</h2>
-      </div>
-      <div class="header-spacer" aria-hidden="true"></div>
-    </div>
-
     <div class="gallery-header">
       <div class="intro-card" bind:this={introCardEl}>
         <p>
@@ -446,42 +439,17 @@
     transform: translate3d(0,0,0);
   }
 
-  .top-header {
-    width:      100%;
-    min-height: clamp(120px,16vw,210px);
-    display:    grid;
-    grid-template-columns: 52% 48%;
-    align-items: end;
-    background: var(--section-bg);
-  }
-
-  .header-spacer { min-height: 1px; }
-
-  .header-title-wrap {
-    padding: clamp(2rem,4vw,4rem) clamp(1.5rem,3vw,3rem) clamp(1.2rem,2vw,1.8rem);
-    display: flex;
-    justify-content: flex-start;
-  }
-
-  .header-title-wrap h2 {
-    margin:         0;
-    font-family:    "Titre italic", serif;
-    font-style:     italic;
-    font-weight:    100;
-    font-size:      clamp(2.5rem,5vw,5.5rem);
-    line-height:    0.95;
-    letter-spacing: -0.045em;
-    color:          var(--title-color);
-  }
-
   .gallery-header {
     position: relative;
     z-index:  2;
-    width:    min(1500px,92%);
+    width:    min(1500px,100%);
     margin:   0 auto;
     display:  flex;
     justify-content: flex-end;
-    padding-top: clamp(1rem,1.8vw,1.6rem);
+    padding:
+      clamp(2rem,4vw,4rem)
+      clamp(1.5rem,3vw,3rem)
+      clamp(1.6rem,2.8vw,2.6rem);
   }
 
   .intro-card {
@@ -496,11 +464,11 @@
   .intro-card p {
     margin:         0;
     max-width:      30ch;
-    font-family:    "General Sans", sans-serif;
-    font-weight:    300;
-    font-size:      clamp(1.2rem,2.25vw,2.3rem);
-    line-height:    1.08;
-    letter-spacing: -0.02em;
+    font-family:    "Clash Display", sans-serif;
+    font-weight:    200;
+    font-size:      clamp(1.3rem,2.8vw,2.8rem);
+    line-height:    1;
+   
     color:          var(--intro-body);
   }
 
@@ -659,20 +627,20 @@
   }
 
   .info-primary {
-    font-family:    "Titre italic", serif;
-    font-style:     italic;
-    font-weight:    100;
+    font-family:    "Clash Display", sans-serif;
+    font-style:     normal;
+    font-weight:    300;
     font-size:      clamp(1.5rem,1.8vw,1.95rem);
-    letter-spacing: -0.035em;
+   
     min-height:     48px;
     padding:        .45rem 1.15rem .52rem;
   }
 
   .info-secondary {
-    font-family:    "General Sans", sans-serif;
+    font-family:    "Clash Display", sans-serif;
     font-size:      clamp(.82rem,.9vw,.98rem);
-    font-weight:    400;
-    letter-spacing: -0.02em;
+    font-weight:    300;
+   
   }
 
   .card:hover .info                   { opacity: 1; transform: translate3d(0,0,0); }
@@ -696,9 +664,9 @@
 
   .card-index-inner {
     display:        block;
-    font-family:    "Titre italic", serif;
-    font-style:     italic;
-    font-weight:    100;
+    font-family:    "Clash Display", sans-serif;
+    font-style:     normal;
+    font-weight:    500;
     font-size:      1.05rem;
     line-height:    1;
     letter-spacing: -0.02em;
@@ -722,7 +690,8 @@
   .gallery-footer { text-align: center; margin-top: 6rem; }
 
   .services-btn {
-    font-family: "General Sans", sans-serif;
+    font-family: "Clash Display", sans-serif;
+    font-weight: 300;
     position:   relative;
     height:     40px;
     display:    inline-flex;
@@ -815,8 +784,6 @@
   .services-btn:hover::after { opacity: 1; }
 
   @media (max-width: 1100px) {
-    .top-header           { min-height: clamp(110px,14vw,170px); }
-    .header-title-wrap h2 { font-size: clamp(4rem,12vw,8rem); }
     .gallery-grid         { grid-template-rows: repeat(13,minmax(80px,8.9vw)); }
     .intro-card           { width: min(520px,100%); }
   }
@@ -824,23 +791,16 @@
   @media (max-width: 900px) {
     .gallery { padding: 0 0 8rem 0; }
 
-    .top-header {
-      grid-template-columns: 1fr;
-      min-height:            auto;
-    }
-
-    .header-title-wrap    { padding: 1.5rem 1rem 1rem; }
-    .header-title-wrap h2 { font-size: clamp(2.4rem,11vw,4rem); }
-
     .gallery-header {
-      width:       min(92%,760px);
+      width:       min(100%,760px);
       margin:      0 auto;
-      display:     block;
-      padding-top: 1.15rem;
+      display:     flex;
+      justify-content: center;
+      padding:     2.75rem 1.25rem 2.4rem;
     }
 
-    .intro-card   { width: 100%; }
-    .intro-card p { font-size: clamp(1.2rem,5vw,1.55rem); max-width: 30ch; color: var(--intro-body); }
+    .intro-card   { width: min(72vw,24rem); }
+    .intro-card p { font-size: clamp(1.3rem,6.8vw,2.7rem); max-width: 18ch; line-height: 1.04; color: var(--intro-body); }
 
     .gallery-grid {
       width:      100%;
@@ -957,7 +917,8 @@
 
   @media (max-width: 640px) {
     .gallery              { padding: 0 0 6.8rem 0; }
-    .header-title-wrap    { padding: 1.3rem 1rem .9rem; }
+    .gallery-header       { padding: 2.4rem 1.1rem 2.15rem; }
+    .intro-card           { width: min(76vw,21rem); }
 
     .gallery-grid {
       gap:          .8rem;
@@ -983,8 +944,8 @@
 
   @media (max-width: 420px) {
     .gallery           { padding: 0 0 5.8rem 0; }
-    .header-title-wrap { padding: 1.1rem 1rem .85rem; }
-    .intro-card p      { font-size: clamp(1.15rem,5vw,1.35rem); }
+    .intro-card        { width: min(80vw,18rem); }
+    .intro-card p      { font-size: clamp(1.15rem,6.4vw,1.95rem); line-height: 1.16; }
 
     .gallery-grid {
       gap:          .75rem;

@@ -564,7 +564,8 @@
   }
 
   .nav-btn {
-    font-family: "General Sans", sans-serif;
+    font-family: "Clash Display", sans-serif;
+    font-weight: 400;
     position: relative;
     height: 40px;
     display: flex;
@@ -593,9 +594,9 @@
   }
 
   .logo {
-    font-family: "Titre", serif;
-    font-weight: 500;
-    font-style: italic;
+    font-family: "Clash Display", sans-serif;
+    font-weight: 400;
+    font-style: normal;
   }
 
   .nav-btn-flip {

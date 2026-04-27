@@ -87,7 +87,7 @@
   }
 
   .footer-bg {
-    background-image: url("/images/telephone2.webp");
+    background-image: url("/images/telephone3.webp");
     background-size: cover;
     background-repeat: no-repeat;
     background-position: center bottom;
@@ -149,7 +149,8 @@
   }
 
   .contact-title {
-    font-family: "General Sans", sans-serif;
+    font-family: "Clash Display", sans-serif;
+    font-weight: 400;
     font-size: 0.9rem;
     color: rgba(255, 255, 255, 0.8);
   }
@@ -210,7 +211,8 @@
 
   .legal {
     margin: 0;
-    font-family: "General Sans", sans-serif;
+    font-family: "Clash Display", sans-serif;
+    font-weight: 300;
     font-size: 0.76rem;
     color: rgba(255, 255, 255, 0.42);
     text-align: center;

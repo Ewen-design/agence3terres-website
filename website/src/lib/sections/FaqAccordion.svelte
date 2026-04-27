@@ -97,12 +97,11 @@
 
   .faq-title {
     margin: 0;
-    font-family: "Titre italic", serif;
-    font-style: italic;
-    font-weight: 100;
+    font-family: "Clash Display", sans-serif;
+    font-style: normal;
+    font-weight: 700;
     font-size: clamp(2.5rem, 5vw, 5.5rem);
     line-height: 0.95;
-    letter-spacing: -0.045em;
     color: #f5f1e8;
     text-align: left;
   }
@@ -154,7 +153,7 @@
   .faq-question {
     display: block;
     margin: 0;
-    font-family: "General Sans", sans-serif;
+    font-family: "Clash Display", sans-serif;
     font-weight: 300;
     font-size: clamp(1.2rem, 2.25vw, 2.3rem);
     line-height: 1.08;
@@ -231,7 +230,7 @@
   .faq-answer {
     margin: 0;
     max-width: 32ch;
-    font-family: "General Sans", sans-serif;
+    font-family: "Clash Display", sans-serif;
     font-weight: 300;
     font-size: clamp(1rem, 1.45vw, 1.55rem);
     line-height: 1.12;

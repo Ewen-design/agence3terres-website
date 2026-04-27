@@ -5,11 +5,11 @@
   const slides = [
     {
       number: "01",
-      navTitle: "SEREIN DESIGN",
-      title: "SEREIN\nDESIGN",
+      navTitle: "SEREIN Design",
+      title: "Serein\nDesign",
       description:
         "Un univers objet premium, calme et fonctionnel. Une direction pensée pour traduire une élégance sobre, technologique et durable à travers une identité visuelle claire et sensible.",
-      image: "/images/serein_design.webp"
+      image: "/images/telephone3.webp"
     },
     {
       number: "02",
@@ -586,16 +586,17 @@
     font-size: 1.2rem;
     position: relative;
     z-index: 5;
-    font-family: "Titre italic", serif;
-    font-style: italic;
+    font-family: "Clash Display", sans-serif;
+    font-style: normal;
+    font-weight: 500;
   }
 
   h2 {
-    font-family: "Titre italic", serif;
-    font-style: italic;
+    font-family: "Clash Display", sans-serif;
+    font-style: normal;
     font-size: clamp(4rem, 7vw, 8rem);
     line-height: 0.95;
-    font-weight: 100;
+    font-weight: 500;
     white-space: pre-line;
     margin: 0;
     color: #f5f1e8;
@@ -607,6 +608,8 @@
 
   p {
     margin-top: 2rem;
+    font-family: "Clash Display", sans-serif;
+    font-weight: 300;
     font-size: 1.2rem;
     max-width: 520px;
     opacity: 1;
@@ -669,16 +672,17 @@
   .segment .num {
     flex: 0 0 auto;
     opacity: 0.72;
-    font-family: "Titre italic", serif;
-    font-style: italic;
+    font-family: "Clash Display", sans-serif;
+    font-style: normal;
+    font-weight: 500;
   }
 
   .segment-title {
     display: block;
     min-width: 0;
-    font-family: "General Sans", sans-serif;
+    font-family: "Clash Display", sans-serif;
     font-style: normal;
-    font-weight: 400;
+    font-weight: 300;
     font-size: clamp(0.62rem, 0.82vw, 0.78rem);
     letter-spacing: 0.04em;
     text-transform: uppercase;
@@ -739,15 +743,16 @@
     flex: 0 0 auto;
     opacity: 0.72;
     font-size: 0.92rem;
-    font-family: "Titre italic", serif;
-    font-style: italic;
+    font-family: "Clash Display", sans-serif;
+    font-style: normal;
+    font-weight: 500;
   }
 
   .mobile-progress-title {
     min-width: 0;
-    font-family: "General Sans", sans-serif;
+    font-family: "Clash Display", sans-serif;
     font-size: 0.72rem;
-    font-weight: 400;
+    font-weight: 300;
     letter-spacing: 0.04em;
     line-height: 1.1;
     text-transform: uppercase;
@@ -930,8 +935,9 @@
       grid-row: 1;
       color: #fff;
       font-size: 1.3rem;
-      font-family: "Titre italic", serif;
-      font-style: italic;
+      font-family: "Clash Display", sans-serif;
+      font-style: normal;
+      font-weight: 500;
       opacity: 1;
     }
 
@@ -939,6 +945,8 @@
       margin: 0;
       grid-column: 2;
       grid-row: 1;
+      font-family: "Clash Display", sans-serif;
+      font-weight: 300;
       font-size: 0.96rem;
       max-width: 38ch;
     }

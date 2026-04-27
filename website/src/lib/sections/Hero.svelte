@@ -566,7 +566,7 @@
       <img
         class:media-visible={heroMediaVisible}
         bind:this={heroMediaImgEl}
-        src="images/telephone_parfum.webp"
+        src="images/telephone3.webp"
         alt=""
       />
       <div class="hero-dark-layer" bind:this={heroDarkLayerEl}></div>
@@ -655,7 +655,7 @@
     content: "";
     position: absolute;
     inset: 78svh 0 0;
-    background: #050505;
+    background: #000;
     opacity: 0;
     pointer-events: none;
     z-index: 1;
@@ -756,13 +756,13 @@
   }
 
   .title-left {
-    font-family: "Titre", serif;
-    font-weight: 400;
+    font-family: "Clash Display", sans-serif;
+    font-weight: 100;
   }
 
   .title-right {
-    font-family: "Titre italic", serif;
-    font-style: italic;
+    font-family: "Clash Display", sans-serif;
+    font-style: normal;
     font-weight: 100;
   }
 
@@ -778,7 +778,7 @@
     position: absolute;
     left: 50%;
     bottom: clamp(1.3rem, 3vw, 2.4rem);
-    font-family: "General Sans", sans-serif;
+    font-family: "Clash Display", sans-serif;
     font-size: clamp(0.82rem, 0.95vw, 0.98rem);
     font-weight: 300;
     letter-spacing: 0.04em;
@@ -841,11 +841,12 @@
     margin: 0;
     width: 100%;
     max-width: 30ch;
-    font-family: "General Sans", sans-serif;
-    font-weight:300;
+    font-family: "Clash Display", sans-serif;
+    font-weight: 300;
+    font-style: normal;
     font-size: clamp(1.3rem, 2.8vw, 2.8rem);
     line-height: 1;
-    letter-spacing: -0.05em;
+   
     color: #fff;
   }
 
@@ -939,14 +940,14 @@
   }
 
   .title-mobile-top {
-    font-family: "Titre", serif;
-    font-weight: 400;
+    font-family: "Clash Display", sans-serif;
+    font-weight: 500;
   }
 
   .title-mobile-bottom {
-    font-family: "Titre italic", serif;
-    font-style: italic;
-    font-weight: 100;
+    font-family: "Clash Display", sans-serif;
+    font-style: normal;
+    font-weight: 500;
   }
 
   @keyframes titleEnterRight {
@@ -1059,6 +1060,7 @@
       width: min(92vw, 500px);
       margin: 0;
       padding-top: 79vh;
+     
     }
 
     .title-mobile.intro-visible {
@@ -1068,11 +1070,13 @@
     .title-mobile-top {
       font-size: clamp(2.6rem, 10.6vw, 3.95rem);
       line-height: 0.92;
+       font-weight: 200;
     }
 
     .title-mobile-bottom {
       font-size: clamp(4rem, 17.2vw, 6.3rem);
       line-height: 0.86;
+       font-weight: 200;
     }
 
     .after-section {

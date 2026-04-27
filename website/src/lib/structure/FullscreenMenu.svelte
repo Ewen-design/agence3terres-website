@@ -30,10 +30,10 @@
   ];
 
   const links = [
-    { label: "L'envol", page: "home", image: "/images/photo.webp" },
+    { label: "Accueil", page: "home", image: "/images/photo.webp" },
+    { label: "Services", page: "services", image: "/images/parfum2.webp" },
     { label: "Projets", page: "travail", image: "/images/parfum4.webp" },
     { label: "A propos", page: "apropos", image: "/images/parfum3.webp" },
-    { label: "Services", page: "services", image: "/images/parfum2.webp" },
     { label: "Contact", page: "contact", image: "/images/photo2.webp" }
   ];
 

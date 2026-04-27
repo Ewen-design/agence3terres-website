@@ -452,12 +452,12 @@
 
   .title {
     margin: 0;
-    font-family: "Titre italic", serif;
-    font-style: italic;
+    font-family: "Clash Display", sans-serif;
+    font-style: light;
     font-size: clamp(2.5rem, 6vw, 6rem);
     font-weight: 100;
     line-height: 0.95;
-    letter-spacing: -0.04em;
+   
     text-align: center;
     color: var(--section-text);
     text-wrap: balance;
