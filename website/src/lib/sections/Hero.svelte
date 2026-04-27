@@ -41,10 +41,13 @@
   let fallbackTimeout;
   let mediaIntroTimeout;
   let hintTimeout;
+  let afterImageRotationTimeout;
+  let afterImageFadeTimeout;
   let resizeObserver;
   let resizeTimer;
 
   let isActive = true;
+  let isMobile = false;
   let pendingFrame = null;
   let dirty = false;
 
@@ -67,6 +70,21 @@
 
   const finalText =
     "Nous concevons des identités, des expériences et des univers visuels pensés pour marquer durablement les esprits.";
+  const afterImages = [
+    "images/telephone2.webp",
+    "images/telephone2_parfum.webp",
+    "images/telephone_main.webp"
+  ];
+  let activeAfterImage = afterImages[0];
+  let incomingAfterImage = "";
+  let incomingAfterImageVisible = false;
+  let afterImageIndex = 0;
+  let afterImagesReady = false;
+  let isAfterImageTransitioning = false;
+
+  const IMAGE_ROTATION_INTERVAL = 2600;
+  const IMAGE_FADE_DURATION = 1150;
+  const IMAGE_RETRY_DELAY = 700;
 
   const words = finalText.split(" ");
 
@@ -145,6 +163,7 @@
 
   function measureLayout() {
     vh = window.innerHeight || 1;
+    isMobile = window.innerWidth <= 640;
 
     heroTop = getAbsoluteTop(heroSection);
     pinTop = getAbsoluteTop(pinSection);
@@ -195,10 +214,12 @@
     const globalFade = easeInOutSine(imageFadeProgress);
     const endFade = Math.pow(clamp((imageFadeProgress - 0.78) / 0.22, 0, 1), 1.7);
 
-    const imageDark = clamp(globalFade * 0.42 + endFade * 0.58, 0, 1);
+    const imageDark = isMobile
+      ? lerp(0.46, 0.86, globalFade)
+      : clamp(globalFade * 0.42 + endFade * 0.58, 0, 1);
     const midBrightness = lerp(1, 0.58, globalFade);
-    const imageBrightness = lerp(midBrightness, 0, endFade);
-    const imageScale = lerp(1.06, 1.025, globalFade);
+    const imageBrightness = isMobile ? 1 : lerp(midBrightness, 0, endFade);
+    const imageScale = isMobile ? lerp(1.045, 1.018, globalFade) : lerp(1.06, 1.025, globalFade);
 
     const sideMargin = Math.min(vw * 0.085, 118);
     const joinGap = Math.min(vw * 0.012, 14);
@@ -362,10 +383,116 @@
     return !window.__homeHeroIntroPlayed;
   }
 
+  function preloadImage(src) {
+    return new Promise((resolve) => {
+      const img = new Image();
+      let done = false;
+
+      const finish = () => {
+        if (done) return;
+        done = true;
+        resolve();
+      };
+
+      img.onload = finish;
+      img.onerror = finish;
+      img.src = src;
+
+      if (img.complete) {
+        finish();
+        return;
+      }
+
+      img.decode?.().then(finish).catch(() => {});
+    });
+  }
+
+  async function ensureAfterImagesReady() {
+    if (afterImagesReady || !browser) return;
+    await Promise.allSettled(afterImages.map(preloadImage));
+    afterImagesReady = true;
+  }
+
+  function resetAfterImageRotationState() {
+    clearAfterImageRotationTimers();
+    isAfterImageTransitioning = false;
+    incomingAfterImage = "";
+    incomingAfterImageVisible = false;
+    afterImageIndex = 0;
+    activeAfterImage = afterImages[0];
+  }
+
+  function clearAfterImageRotationTimers() {
+    clearTimeout(afterImageRotationTimeout);
+    clearTimeout(afterImageFadeTimeout);
+  }
+
+  function queueAfterImageRotation(delay = IMAGE_ROTATION_INTERVAL) {
+    clearTimeout(afterImageRotationTimeout);
+    afterImageRotationTimeout = setTimeout(runAfterImageRotation, delay);
+  }
+
+  function runAfterImageRotation() {
+    if (
+      !browser ||
+      document.hidden ||
+      isAfterImageTransitioning ||
+      afterImages.length < 2 ||
+      !afterImagesReady
+    ) {
+      queueAfterImageRotation(IMAGE_RETRY_DELAY);
+      return;
+    }
+
+    isAfterImageTransitioning = true;
+
+    const nextIndex = (afterImageIndex + 1) % afterImages.length;
+    incomingAfterImage = afterImages[nextIndex];
+    incomingAfterImageVisible = false;
+
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        incomingAfterImageVisible = true;
+      });
+    });
+
+    clearTimeout(afterImageFadeTimeout);
+    afterImageFadeTimeout = setTimeout(() => {
+      activeAfterImage = afterImages[nextIndex];
+      afterImageIndex = nextIndex;
+      incomingAfterImage = "";
+      incomingAfterImageVisible = false;
+      isAfterImageTransitioning = false;
+      queueAfterImageRotation();
+    }, IMAGE_FADE_DURATION);
+  }
+
+  async function startAfterImageRotation() {
+    resetAfterImageRotationState();
+    await ensureAfterImagesReady();
+    if (!browser || isMobile || afterImages.length < 2) return;
+    queueAfterImageRotation();
+  }
+
+  function handleDocumentVisibilityChange() {
+    if (!browser) return;
+    if (document.hidden) {
+      clearAfterImageRotationTimers();
+      return;
+    }
+    if (!isAfterImageTransitioning) {
+      queueAfterImageRotation(900);
+    }
+  }
+
   function scheduleResizeUpdate() {
     clearTimeout(resizeTimer);
     resizeTimer = setTimeout(() => {
+      const wasMobile = isMobile;
       updateAllMeasures();
+      if (wasMobile !== isMobile) {
+        startAfterImageRotation();
+      }
       forceScrollEngineUpdate();
     }, 70);
   }
@@ -446,6 +573,9 @@
       startIntro(false);
     }
 
+    startAfterImageRotation();
+    document.addEventListener("visibilitychange", handleDocumentVisibilityChange);
+
     return () => {
       destroyed = true;
       unregisterParallax(handleParallax);
@@ -460,7 +590,9 @@
       clearTimeout(fallbackTimeout);
       clearTimeout(mediaIntroTimeout);
       clearTimeout(hintTimeout);
+      clearAfterImageRotationTimers();
       clearTimeout(resizeTimer);
+      document.removeEventListener("visibilitychange", handleDocumentVisibilityChange);
       resizeObserver?.disconnect();
     };
   });
@@ -534,7 +666,15 @@
         class="after-image"
         bind:this={afterImageEl}
       >
-        <img src="images/telephone2.webp" alt="Visuel 3 Terres" />
+        <img class="after-image-asset" src={activeAfterImage} alt="Visuel 3 Terres" />
+        {#if incomingAfterImage}
+          <img
+            class="after-image-asset after-image-incoming"
+            class:is-visible={incomingAfterImageVisible}
+            src={incomingAfterImage}
+            alt="Visuel 3 Terres"
+          />
+        {/if}
       </div>
     </div>
   </section>
@@ -547,6 +687,17 @@
     background: #000;
     color: #f4efe6;
     overflow: clip;
+  }
+
+  .hero-join-clean::before {
+    content: "";
+    position: absolute;
+    inset: 78svh 0 0;
+    background: #050505;
+    opacity: 0;
+    pointer-events: none;
+    z-index: 1;
+    transition: opacity 0.45s ease;
   }
 
   .hero-media-sticky {
@@ -587,6 +738,14 @@
     position: absolute;
     inset: 0;
     background:
+      linear-gradient(
+        to top,
+        rgba(0, 0, 0, 0.94) 0%,
+        rgba(0, 0, 0, 0.84) 20%,
+        rgba(0, 0, 0, 0.56) 38%,
+        rgba(0, 0, 0, 0.2) 54%,
+        rgba(0, 0, 0, 0) 66%
+      ),
       radial-gradient(
         circle at 50% 50%,
         rgba(0, 0, 0, 0) 0%,
@@ -743,6 +902,7 @@
   }
 
   .after-image {
+    position: relative;
     justify-self: end;
     width: min(100%, 460px);
     aspect-ratio: 1.45 / 1;
@@ -757,11 +917,27 @@
   }
 
   .after-image img {
+    position: absolute;
+    inset: 0;
     width: 100%;
     height: 100%;
     object-fit: cover;
     display: block;
     transform: translateZ(0);
+  }
+
+  .after-image-asset {
+    opacity: 1;
+  }
+
+  .after-image-incoming {
+    opacity: 0;
+    transition: opacity 1.35s cubic-bezier(0.22, 1, 0.36, 1);
+    will-change: opacity;
+  }
+
+  .after-image-incoming.is-visible {
+    opacity: 1;
   }
 
   @keyframes titleEnterLeft {
@@ -869,6 +1045,29 @@
   }
 
   @media (max-width: 640px) {
+    .hero-join-clean::before {
+      opacity: 1;
+    }
+
+    .hero-dark-layer {
+      background:
+        linear-gradient(
+          to top,
+          rgba(0, 0, 0, 0.98) 0%,
+          rgba(0, 0, 0, 0.9) 24%,
+          rgba(0, 0, 0, 0.66) 42%,
+          rgba(0, 0, 0, 0.28) 58%,
+          rgba(0, 0, 0, 0) 68%
+        ),
+        radial-gradient(
+          circle at 50% 50%,
+          rgba(0, 0, 0, 0) 0%,
+          rgba(0, 0, 0, 0.03) 40%,
+          rgba(0, 0, 0, 0.12) 68%,
+          rgba(0, 0, 0, 0.42) 100%
+        );
+    }
+
     .pin-section {
       height: auto;
       min-height: 100svh;
@@ -897,7 +1096,7 @@
       transform: translate3d(-50%, 0, 0);
       width: min(92vw, 500px);
       margin: 0;
-      padding-top: 71vh;
+      padding-top: 79vh;
     }
 
     .title-mobile.intro-visible {
@@ -973,6 +1172,10 @@
       -webkit-mask-image: none !important;
       mask-image: none !important;
       transform: none !important;
+    }
+
+    .after-image-incoming {
+      transition: none !important;
     }
   }
 </style>

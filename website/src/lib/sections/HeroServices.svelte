@@ -10,7 +10,7 @@
   } from "../scrollEngine.js";
 
   let heroSection;
-  let heroMediaImgEl;
+  let heroMediaEl;
   let heroDarkLayerEl;
   let scrollHintEl;
   let afterTextEl;
@@ -26,6 +26,8 @@
 
   let fallbackTimeout;
   let hintTimeout;
+  let heroImageRotationTimeout;
+  let heroImageFadeTimeout;
   let resizeObserver;
   let resizeTimer;
   let afterTextObserver;
@@ -36,6 +38,21 @@
   let pendingFrame = null;
 
   const title = "Services";
+  const heroImages = [
+    "images/telephone_parfum.webp",
+    "images/parfum_rouge.webp",
+    "images/parfum_ordinateur.webp"
+  ];
+  let activeHeroImage = heroImages[0];
+  let incomingHeroImage = "";
+  let incomingHeroImageVisible = false;
+  let heroImageIndex = 0;
+  let heroImagesReady = false;
+  let isHeroImageTransitioning = false;
+
+  const IMAGE_ROTATION_INTERVAL = 2600;
+  const IMAGE_FADE_DURATION = 1150;
+  const IMAGE_RETRY_DELAY = 700;
 
   const finalText =
     "Nous concevons des identités, des expériences et des univers visuels pensés pour marquer durablement les esprits.";
@@ -149,10 +166,12 @@
     const globalFade = easeInOutSine(imageFadeProgress);
     const endFade = Math.pow(clamp((imageFadeProgress - 0.78) / 0.22, 0, 1), 1.7);
 
-    const imageDark = clamp(globalFade * 0.42 + endFade * 0.58, 0, 1);
+    const imageDark = isMobile
+      ? lerp(0.44, 0.84, globalFade)
+      : clamp(globalFade * 0.42 + endFade * 0.58, 0, 1);
     const midBrightness = lerp(1, 0.58, globalFade);
-    const imageBrightness = lerp(midBrightness, 0, endFade);
-    const imageScale = lerp(1.06, 1.025, globalFade);
+    const imageBrightness = isMobile ? 1 : lerp(midBrightness, 0, endFade);
+    const imageScale = isMobile ? lerp(1.045, 1.018, globalFade) : lerp(1.06, 1.025, globalFade);
 
     const hintScrollFade = 1 - easeOutCubic(clamp(imageFadeProgress / 0.06, 0, 1));
     const scrollHintOpacity = hintVisible ? hintScrollFade : 0;
@@ -174,10 +193,10 @@
 
     const f = pendingFrame;
 
-    if (heroMediaImgEl) {
+    if (heroMediaEl) {
       if (f.imageScale !== applied.imageScale || f.imageBrightness !== applied.imageBrightness) {
-        heroMediaImgEl.style.transform = `scale(${f.imageScale})`;
-        heroMediaImgEl.style.filter = `brightness(${f.imageBrightness})`;
+        heroMediaEl.style.setProperty("--hero-image-scale", `${f.imageScale}`);
+        heroMediaEl.style.setProperty("--hero-image-brightness", `${f.imageBrightness}`);
         applied.imageScale = f.imageScale;
         applied.imageBrightness = f.imageBrightness;
       }
@@ -231,9 +250,115 @@
   function scheduleResizeUpdate() {
     clearTimeout(resizeTimer);
     resizeTimer = setTimeout(() => {
+      const wasMobile = isMobile;
       updateAllMeasures();
+      if (wasMobile !== isMobile) {
+        startHeroImageRotation();
+      }
       forceScrollEngineUpdate();
     }, 70);
+  }
+
+  function preloadImage(src) {
+    return new Promise((resolve) => {
+      const img = new Image();
+      let done = false;
+
+      const finish = () => {
+        if (done) return;
+        done = true;
+        resolve();
+      };
+
+      img.onload = finish;
+      img.onerror = finish;
+      img.src = src;
+
+      if (img.complete) {
+        finish();
+        return;
+      }
+
+      img.decode?.().then(finish).catch(() => {});
+    });
+  }
+
+  async function ensureHeroImagesReady() {
+    if (heroImagesReady || !browser) return;
+    await Promise.allSettled(heroImages.map(preloadImage));
+    heroImagesReady = true;
+  }
+
+  function resetHeroImageRotationState() {
+    clearHeroImageRotationTimers();
+    isHeroImageTransitioning = false;
+    incomingHeroImage = "";
+    incomingHeroImageVisible = false;
+    heroImageIndex = 0;
+    activeHeroImage = heroImages[0];
+  }
+
+  function clearHeroImageRotationTimers() {
+    clearTimeout(heroImageRotationTimeout);
+    clearTimeout(heroImageFadeTimeout);
+  }
+
+  function queueHeroImageRotation(delay = IMAGE_ROTATION_INTERVAL) {
+    clearTimeout(heroImageRotationTimeout);
+    heroImageRotationTimeout = setTimeout(runHeroImageRotation, delay);
+  }
+
+  function runHeroImageRotation() {
+    if (
+      !browser ||
+      document.hidden ||
+      isHeroImageTransitioning ||
+      heroImages.length < 2 ||
+      !heroImagesReady
+    ) {
+      queueHeroImageRotation(IMAGE_RETRY_DELAY);
+      return;
+    }
+
+    isHeroImageTransitioning = true;
+
+    const nextIndex = (heroImageIndex + 1) % heroImages.length;
+    incomingHeroImage = heroImages[nextIndex];
+    incomingHeroImageVisible = false;
+
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        incomingHeroImageVisible = true;
+      });
+    });
+
+    clearTimeout(heroImageFadeTimeout);
+    heroImageFadeTimeout = setTimeout(() => {
+      activeHeroImage = heroImages[nextIndex];
+      heroImageIndex = nextIndex;
+      incomingHeroImage = "";
+      incomingHeroImageVisible = false;
+      isHeroImageTransitioning = false;
+      queueHeroImageRotation();
+    }, IMAGE_FADE_DURATION);
+  }
+
+  async function startHeroImageRotation() {
+    resetHeroImageRotationState();
+    await ensureHeroImagesReady();
+    if (!browser || isMobile || heroImages.length < 2) return;
+    queueHeroImageRotation();
+  }
+
+  function handleDocumentVisibilityChange() {
+    if (!browser) return;
+    if (document.hidden) {
+      clearHeroImageRotationTimers();
+      return;
+    }
+    if (!isHeroImageTransitioning) {
+      queueHeroImageRotation(900);
+    }
   }
 
   onMount(() => {
@@ -304,6 +429,8 @@
     fallbackTimeout = setTimeout(() => {
       startIntro();
     }, 120);
+    startHeroImageRotation();
+    document.addEventListener("visibilitychange", handleDocumentVisibilityChange);
 
     return () => {
       destroyed = true;
@@ -315,7 +442,9 @@
       window.removeEventListener("pageshow", handlePageShow);
       clearTimeout(fallbackTimeout);
       clearTimeout(hintTimeout);
+      clearHeroImageRotationTimers();
       clearTimeout(resizeTimer);
+      document.removeEventListener("visibilitychange", handleDocumentVisibilityChange);
       afterTextObserver?.disconnect();
       resizeObserver?.disconnect();
     };
@@ -324,12 +453,20 @@
 
 <section class="hero-single-clean" bind:this={heroSection}>
   <div class="hero-media-sticky" aria-hidden="true">
-    <div class="hero-media">
+    <div class="hero-media" bind:this={heroMediaEl}>
       <img
-        bind:this={heroMediaImgEl}
-        src="images/telephone_parfum.webp"
+        class="hero-media-image"
+        src={activeHeroImage}
         alt=""
       />
+      {#if incomingHeroImage}
+        <img
+          class="hero-media-image hero-media-image-incoming"
+          class:is-visible={incomingHeroImageVisible}
+          src={incomingHeroImage}
+          alt=""
+        />
+      {/if}
       <div class="hero-dark-layer" bind:this={heroDarkLayerEl}></div>
     </div>
   </div>
@@ -368,6 +505,17 @@
     overflow: clip;
   }
 
+  .hero-single-clean::before {
+    content: "";
+    position: absolute;
+    inset: 80svh 0 0;
+    background: #050505;
+    opacity: 0;
+    pointer-events: none;
+    z-index: 1;
+    transition: opacity 0.45s ease;
+  }
+
   .hero-media-sticky {
     position: sticky;
     top: 0;
@@ -382,6 +530,8 @@
     position: absolute;
     inset: 0;
     background: #000;
+    --hero-image-scale: 1.06;
+    --hero-image-brightness: 1;
   }
 
   .hero-media img {
@@ -391,10 +541,24 @@
     height: 100%;
     object-fit: cover;
     will-change: transform, filter;
-    transform: scale(1.06);
-    filter: brightness(1);
+    transform: scale(var(--hero-image-scale));
+    filter: brightness(var(--hero-image-brightness));
     backface-visibility: hidden;
     -webkit-backface-visibility: hidden;
+  }
+
+  .hero-media-image {
+    opacity: 1;
+  }
+
+  .hero-media-image-incoming {
+    opacity: 0;
+    transition: opacity 1.35s cubic-bezier(0.22, 1, 0.36, 1);
+    will-change: opacity, transform, filter;
+  }
+
+  .hero-media-image-incoming.is-visible {
+    opacity: 1;
   }
 
   @media (max-width: 900px) {
@@ -408,6 +572,14 @@
     position: absolute;
     inset: 0;
     background:
+      linear-gradient(
+        to top,
+        rgba(0, 0, 0, 0.94) 0%,
+        rgba(0, 0, 0, 0.84) 20%,
+        rgba(0, 0, 0, 0.56) 38%,
+        rgba(0, 0, 0, 0.2) 54%,
+        rgba(0, 0, 0, 0) 66%
+      ),
       radial-gradient(
         circle at 50% 50%,
         rgba(0, 0, 0, 0) 0%,
@@ -429,6 +601,7 @@
 
   .hero-overlay {
     position: relative;
+    z-index: 2;
     min-height: 100vh;
     min-height: 100svh;
     padding: clamp(1.1rem, 2vw, 2rem);
@@ -589,6 +762,33 @@
   }
 
   @media (max-width: 640px) {
+    .hero-overlay {
+      padding-bottom: 1.3rem;
+    }
+
+    .hero-single-clean::before {
+      opacity: 1;
+    }
+
+    .hero-dark-layer {
+      background:
+        linear-gradient(
+          to top,
+          rgba(0, 0, 0, 0.98) 0%,
+          rgba(0, 0, 0, 0.9) 24%,
+          rgba(0, 0, 0, 0.66) 42%,
+          rgba(0, 0, 0, 0.28) 58%,
+          rgba(0, 0, 0, 0) 68%
+        ),
+        radial-gradient(
+          circle at 50% 50%,
+          rgba(0, 0, 0, 0) 0%,
+          rgba(0, 0, 0, 0.03) 40%,
+          rgba(0, 0, 0, 0.12) 68%,
+          rgba(0, 0, 0, 0.42) 100%
+        );
+    }
+
     .after-section {
       padding: 11vh 0 12vh;
     }
@@ -626,6 +826,10 @@
       -webkit-mask-image: none !important;
       mask-image: none !important;
       transform: none !important;
+    }
+
+    .hero-media-image-incoming {
+      transition: none !important;
     }
   }
 </style>

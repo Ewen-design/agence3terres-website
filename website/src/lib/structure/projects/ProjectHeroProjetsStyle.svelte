@@ -108,10 +108,12 @@
     const globalFade = easeInOutSine(imageFadeProgress);
     const endFade = Math.pow(clamp((imageFadeProgress - 0.78) / 0.22, 0, 1), 1.7);
 
-    const imageDark = clamp(globalFade * 0.42 + endFade * 0.58, 0, 1);
+    const imageDark = isMobile
+      ? lerp(0.44, 0.84, globalFade)
+      : clamp(globalFade * 0.42 + endFade * 0.58, 0, 1);
     const midBrightness = lerp(1, 0.58, globalFade);
-    const imageBrightness = lerp(midBrightness, 0, endFade);
-    const imageScale = lerp(1.06, 1.025, globalFade);
+    const imageBrightness = isMobile ? 1 : lerp(midBrightness, 0, endFade);
+    const imageScale = isMobile ? lerp(1.045, 1.018, globalFade) : lerp(1.06, 1.025, globalFade);
 
     const hintScrollFade = 1 - easeOutCubic(clamp(imageFadeProgress / 0.06, 0, 1));
     const scrollHintOpacity = hintVisible ? hintScrollFade : 0;
@@ -333,6 +335,17 @@
     overflow: clip;
   }
 
+  .hero-single-clean::before {
+    content: "";
+    position: absolute;
+    inset: 80svh 0 0;
+    background: #050505;
+    opacity: 0;
+    pointer-events: none;
+    z-index: 1;
+    transition: opacity 0.45s ease;
+  }
+
   .hero-media-sticky {
     position: sticky;
     top: 0;
@@ -373,6 +386,14 @@
     position: absolute;
     inset: 0;
     background:
+      linear-gradient(
+        to top,
+        rgba(0, 0, 0, 0.94) 0%,
+        rgba(0, 0, 0, 0.84) 20%,
+        rgba(0, 0, 0, 0.56) 38%,
+        rgba(0, 0, 0, 0.2) 54%,
+        rgba(0, 0, 0, 0) 66%
+      ),
       radial-gradient(
         circle at 50% 50%,
         rgba(0, 0, 0, 0) 0%,
@@ -394,6 +415,7 @@
 
   .hero-overlay {
     position: relative;
+    z-index: 2;
     min-height: 100vh;
     min-height: 100svh;
     padding: clamp(1.1rem, 2vw, 2rem);
@@ -581,6 +603,33 @@
   }
 
   @media (max-width: 640px) {
+    .hero-overlay {
+      padding-bottom: 1.3rem;
+    }
+
+    .hero-single-clean::before {
+      opacity: 1;
+    }
+
+    .hero-dark-layer {
+      background:
+        linear-gradient(
+          to top,
+          rgba(0, 0, 0, 0.98) 0%,
+          rgba(0, 0, 0, 0.9) 24%,
+          rgba(0, 0, 0, 0.66) 42%,
+          rgba(0, 0, 0, 0.28) 58%,
+          rgba(0, 0, 0, 0) 68%
+        ),
+        radial-gradient(
+          circle at 50% 50%,
+          rgba(0, 0, 0, 0) 0%,
+          rgba(0, 0, 0, 0.03) 40%,
+          rgba(0, 0, 0, 0.12) 68%,
+          rgba(0, 0, 0, 0.42) 100%
+        );
+    }
+
     .after-section {
       padding: 11vh 0 12vh;
     }
