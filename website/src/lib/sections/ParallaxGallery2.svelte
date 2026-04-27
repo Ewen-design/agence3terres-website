@@ -9,6 +9,11 @@
       date: "2024",
       desc: "Refonte complète de l'identité visuelle et création d'un système graphique minimaliste.",
       image: "images/appareil_photo.webp",
+      images: [
+        "images/appareil_photo.webp",
+        "images/telephone2.webp",
+        "images/telephone_parfum.webp"
+      ],
       hoverInfo: ["Création de logo", "Direction artistique", "Identité visuelle"]
     },
     {
@@ -16,6 +21,11 @@
       date: "2023",
       desc: "Développement d'une plateforme de marque et direction artistique globale.",
       image: "images/telephone2.webp",
+      images: [
+        "images/telephone2.webp",
+        "images/appareil_photo.webp",
+        "images/parfum_ordinateur.webp"
+      ],
       hoverInfo: ["Identité & stratégie", "Brand platform", "Direction créative"]
     },
     {
@@ -23,6 +33,11 @@
       date: "2024",
       desc: "Conception d'interfaces modernes axées sur l'expérience utilisateur.",
       image: "images/appareil_photo.webp",
+      images: [
+        "images/appareil_photo.webp",
+        "images/telephone_main.webp",
+        "images/telephone2.webp"
+      ],
       hoverInfo: ["Événementiel", "Captation & contenu", "Déploiement visuel"]
     },
     {
@@ -30,6 +45,11 @@
       date: "2022",
       desc: "Études utilisateurs et architecture d'information pour application mobile.",
       image: "images/telephone_parfum.webp",
+      images: [
+        "images/telephone_parfum.webp",
+        "images/telephone_main.webp",
+        "images/parfum_ordinateur.webp"
+      ],
       hoverInfo: ["Site web", "UI Design", "UX Design"]
     },
     {
@@ -37,6 +57,11 @@
       date: "2023",
       desc: "Supervision créative et mise en place d'un univers visuel premium.",
       image: "images/parfum_ordinateur.webp",
+      images: [
+        "images/parfum_ordinateur.webp",
+        "images/telephone_parfum.webp",
+        "images/appareil_photo.webp"
+      ],
       hoverInfo: ["Accompagnement", "Conseil créatif", "Suivi de marque"]
     },
     {
@@ -44,6 +69,11 @@
       date: "2024",
       desc: "Concept motion design pour lancement de produit digital.",
       image: "images/telephone_main.webp",
+      images: [
+        "images/telephone_main.webp",
+        "images/telephone2.webp",
+        "images/parfum_ordinateur.webp"
+      ],
       hoverInfo: ["Réseaux sociaux", "Contenus premium", "Stratégie éditoriale"]
     }
   ];
@@ -56,6 +86,9 @@
 
   let isMobile = $state(false);
   let activeMobileIndex = $state(0);
+  let displayedCardImages = $state(items.map((item) => item.image));
+  let incomingCardImages = $state(items.map((item) => item.image));
+  let overlayVisible = $state(items.map(() => false));
 
   let prefersReduced = false;
 
@@ -63,6 +96,9 @@
   let scrollRaf = null;
   let mobileScrollRaf = null;
   let removeMotionListener;
+  let hoverTimers = [];
+  let hoverFadeTimers = [];
+  let hoverIndexes = items.map(() => 0);
   let introOpacity = -1;
   let introY = -999;
 
@@ -75,6 +111,85 @@
 
   function updateDevice() {
     isMobile = window.innerWidth <= 900;
+  }
+
+  function preloadImage(src) {
+    return new Promise((resolve) => {
+      const img = new Image();
+      let done = false;
+
+      const finish = () => {
+        if (done) return;
+        done = true;
+        resolve();
+      };
+
+      img.onload = finish;
+      img.onerror = finish;
+      img.src = src;
+
+      if (img.complete) {
+        finish();
+      }
+    });
+  }
+
+  function clearHoverTimer(index) {
+    if (!hoverTimers[index]) return;
+    clearInterval(hoverTimers[index]);
+    hoverTimers[index] = null;
+  }
+
+  function clearHoverFadeTimer(index) {
+    if (!hoverFadeTimers[index]) return;
+    clearTimeout(hoverFadeTimers[index]);
+    hoverFadeTimers[index] = null;
+  }
+
+  function transitionCardImage(index, nextImage) {
+    clearHoverFadeTimer(index);
+
+    incomingCardImages[index] = nextImage;
+    overlayVisible[index] = true;
+    incomingCardImages = [...incomingCardImages];
+    overlayVisible = [...overlayVisible];
+
+    hoverFadeTimers[index] = setTimeout(() => {
+      displayedCardImages[index] = nextImage;
+      incomingCardImages[index] = nextImage;
+      overlayVisible[index] = false;
+      displayedCardImages = [...displayedCardImages];
+      incomingCardImages = [...incomingCardImages];
+      overlayVisible = [...overlayVisible];
+      hoverFadeTimers[index] = null;
+    }, 220);
+  }
+
+  function handleCardEnter(index) {
+    if (isMobile || prefersReduced) return;
+
+    const variants = items[index].images || [items[index].image];
+    if (variants.length < 2) return;
+
+    clearHoverTimer(index);
+    hoverIndexes[index] = 0;
+
+    hoverTimers[index] = setInterval(() => {
+      hoverIndexes[index] = (hoverIndexes[index] + 1) % variants.length;
+      transitionCardImage(index, variants[hoverIndexes[index]]);
+    }, 440);
+  }
+
+  function handleCardLeave(index) {
+    clearHoverTimer(index);
+    clearHoverFadeTimer(index);
+    hoverIndexes[index] = 0;
+    displayedCardImages[index] = items[index].image;
+    incomingCardImages[index] = items[index].image;
+    overlayVisible[index] = false;
+    displayedCardImages = [...displayedCardImages];
+    incomingCardImages = [...incomingCardImages];
+    overlayVisible = [...overlayVisible];
   }
 
   function updateGalleryFlowMotion() {
@@ -153,6 +268,8 @@
     const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
     prefersReduced = mq.matches;
 
+    Promise.allSettled(items.flatMap((item) => item.images || [item.image]).map(preloadImage));
+
     const onMotion = (e) => {
       prefersReduced = e.matches;
       updateIntro();
@@ -187,6 +304,8 @@
     galleryGridEl?.removeEventListener("scroll", handleMobileGridScroll);
 
     removeMotionListener?.();
+    hoverTimers.forEach((_, index) => clearHoverTimer(index));
+    hoverFadeTimers.forEach((_, index) => clearHoverFadeTimer(index));
     clearTimeout(resizeTimer);
     if (scrollRaf) cancelAnimationFrame(scrollRaf);
     if (mobileScrollRaf) cancelAnimationFrame(mobileScrollRaf);
@@ -217,9 +336,12 @@
       {#each items as item, i}
         <div
           class="card"
+          role="presentation"
           class:mobile-active={isMobile && i === activeMobileIndex}
           class:top-row={!isMobile && i < 3}
           class:bottom-row={!isMobile && i >= 3}
+          onmouseenter={() => handleCardEnter(i)}
+          onmouseleave={() => handleCardLeave(i)}
         >
           <div
             class="card-index-wrap"
@@ -234,13 +356,40 @@
           <div class="card-media">
             <div class="card-image-wrapper">
               <img
-                src={item.image}
+                class="card-image card-image-base"
+                src={displayedCardImages[i]}
                 alt={item.title}
                 loading={i < 2 ? "eager" : "lazy"}
                 fetchpriority={i < 2 ? "high" : "auto"}
                 decoding="async"
                 draggable="false"
               />
+              <img
+                class="card-image card-image-overlay"
+                class:is-visible={overlayVisible[i]}
+                src={incomingCardImages[i]}
+                alt=""
+                aria-hidden="true"
+                loading="lazy"
+                decoding="async"
+                draggable="false"
+              />
+
+              {#if item.images?.length}
+                <div class="mobile-preview-card" aria-hidden="true">
+                  <div class="mobile-preview-slideshow">
+                    {#each item.images as image, slideIndex}
+                      <img
+                        src={image}
+                        alt=""
+                        class="mobile-preview-slide"
+                        loading="lazy"
+                        style={`--slide-index:${slideIndex}; --slide-count:${item.images.length};`}
+                      />
+                    {/each}
+                  </div>
+                </div>
+              {/if}
             </div>
           </div>
 
@@ -361,17 +510,27 @@
   .gallery-grid {
     position: relative;
     z-index:  3;
-    width:    98%;
-    margin:   3rem auto 0;
+    width:    min(2200px, 99vw);
+    margin:   4.75rem auto 0;
     display:  grid;
-    grid-template-columns: repeat(6,minmax(0,1fr));
-    grid-template-rows:    repeat(4,minmax(150px,12vw));
-    gap:      1rem;
+    grid-template-columns: repeat(12,minmax(0,1fr));
+    grid-template-rows:    repeat(13,minmax(114px,9.2vw));
+    gap:      1.15rem;
     grid-template-areas:
-      "card1 card1 card2 card2 card3 card3"
-      "card4 card4 card2 card2 card3 card3"
-      "card4 card4 card2 card2 card6 card6"
-      "card4 card4 card5 card5 card6 card6";
+      "card1 card1 card1 card1 card1 card1 card2 card2 card2 card2 card2 card2"
+      "card1 card1 card1 card1 card1 card1 card2 card2 card2 card2 card2 card2"
+      "card1 card1 card1 card1 card1 card1 card2 card2 card2 card2 card2 card2"
+      "card1 card1 card1 card1 card1 card1 card3 card3 card3 card3 card3 card3"
+      "card1 card1 card1 card1 card1 card1 card3 card3 card3 card3 card3 card3"
+      "card4 card4 card4 card4 card4 card4 card4 card4 card4 card4 card4 card4"
+      "card4 card4 card4 card4 card4 card4 card4 card4 card4 card4 card4 card4"
+      "card4 card4 card4 card4 card4 card4 card4 card4 card4 card4 card4 card4"
+      "card4 card4 card4 card4 card4 card4 card4 card4 card4 card4 card4 card4"
+      "card4 card4 card4 card4 card4 card4 card4 card4 card4 card4 card4 card4"
+      "card5 card5 card5 card5 card5 card5 card5 card6 card6 card6 card6 card6"
+      "card5 card5 card5 card5 card5 card5 card5 card6 card6 card6 card6 card6"
+      "card5 card5 card5 card5 card5 card5 card5 card6 card6 card6 card6 card6"
+      "card5 card5 card5 card5 card5 card5 card5 card6 card6 card6 card6 card6";
     overflow: visible;
   }
 
@@ -394,6 +553,26 @@
   .card:nth-child(5) { grid-area: card5; }
   .card:nth-child(6) { grid-area: card6; }
 
+  .card:nth-child(3) .card-index-wrap,
+  .card:nth-child(4) .card-index-wrap {
+    top: auto;
+    bottom: 14px;
+    left: 14px;
+    z-index: 7;
+    height: auto;
+  }
+
+  .card:nth-child(3) .card-index-inner,
+  .card:nth-child(4) .card-index-inner {
+    transform: translate3d(0, 115%, 0);
+  }
+
+  .card:nth-child(3):hover .card-index-inner,
+  .card:nth-child(4):hover .card-index-inner {
+    transform: translate3d(0, 0, 0);
+    opacity: 1;
+  }
+
   .card-media {
     position:      absolute;
     inset:         0;
@@ -402,9 +581,16 @@
     background:    #161616;
   }
 
-  .card-image-wrapper { position: absolute; inset: 0; transform: translateZ(0); }
+  .card-image-wrapper {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    transform: translateZ(0);
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+  }
 
-  .card img {
+  .card-image {
     width:               100%;
     height:              100%;
     object-fit:          cover;
@@ -419,9 +605,22 @@
     user-select:    none;
     pointer-events: none;
     will-change:    transform, filter;
+    outline:        1px solid transparent;
   }
 
-  .card:hover img { filter: brightness(.68); transform: scale(1.02) translateZ(0); }
+  .card-image-overlay {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    transition:
+      opacity .22s ease,
+      filter .34s ease,
+      transform .42s ease;
+  }
+
+  .card-image-overlay.is-visible { opacity: 1; }
+
+  .card:hover .card-image { filter: brightness(.68); transform: scale(1.02) translateZ(0); }
 
   .info {
     position:  absolute;
@@ -618,7 +817,7 @@
   @media (max-width: 1100px) {
     .top-header           { min-height: clamp(110px,14vw,170px); }
     .header-title-wrap h2 { font-size: clamp(4rem,12vw,8rem); }
-    .gallery-grid         { grid-template-rows: repeat(4,minmax(120px,15vw)); }
+    .gallery-grid         { grid-template-rows: repeat(13,minmax(80px,8.9vw)); }
     .intro-card           { width: min(520px,100%); }
   }
 
@@ -675,30 +874,83 @@
     .card:nth-child(5),
     .card:nth-child(6) { grid-area: auto; }
 
+    .card:nth-child(3) .card-index-wrap,
+    .card:nth-child(4) .card-index-wrap {
+      bottom: -30px;
+      left: 0;
+      height: 1.15em;
+    }
+
     .card {
       flex:             0 0 clamp(285px,82vw,360px);
       width:            clamp(285px,82vw,360px);
-      aspect-ratio:     .84 / 1.22;
+      aspect-ratio:     .84 / 1.4;
       scroll-snap-align: center;
       scroll-snap-stop:  always;
       overflow:         visible;
     }
 
-    .card:hover img        { filter: none; transform: translateZ(0); }
+    .card:hover .card-image { filter: none; transform: translateZ(0); }
     .card:hover .info      { opacity: 0; transform: translate3d(0,-10px,0); }
     .card:hover .info-chip { opacity: 0; transform: translate3d(0,10px,0); }
 
-    .card.mobile-active img              { filter: brightness(.68); transform: scale(1.02) translateZ(0); }
+    .card.mobile-active .card-image-base { filter: brightness(.68); transform: scale(1.02) translateZ(0); }
     .card.mobile-active .info            { opacity: 1; transform: translate3d(0,0,0); }
     .card.mobile-active .info-chip       { opacity: 1; transform: translate3d(0,0,0); }
     .card.mobile-active .info-chip:nth-child(1) { transition-delay: .02s; }
     .card.mobile-active .info-chip:nth-child(2) { transition-delay: .06s; }
     .card.mobile-active .info-chip:nth-child(3) { transition-delay: .10s; }
+    .card.mobile-active .mobile-preview-card {
+      opacity: 1;
+      transform: translate3d(0,0,0) scale(1);
+      transition-delay: .18s;
+    }
 
     .card-index-wrap,
     .index-mobile { z-index: 8; overflow: hidden; width: max-content; height: 1.15em; }
 
     .index-mobile { top: auto; bottom: -30px; left: 0; }
+
+    .mobile-preview-card {
+      position: absolute;
+      right: 12px;
+      bottom: 12px;
+      z-index: 2;
+      width: clamp(5.5rem, 23vw, 7rem);
+      aspect-ratio: 0.88;
+      overflow: hidden;
+      border-radius: 2px;
+      background: rgba(255,255,255,.94);
+      box-shadow: 0 18px 48px rgba(11, 8, 5, 0.28);
+      opacity: 0;
+      transform: translate3d(0,10px,0) scale(0.985);
+      transition:
+        opacity .34s ease,
+        transform .42s cubic-bezier(.22,.61,.36,1);
+      pointer-events: none;
+    }
+
+    .mobile-preview-slideshow {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      background: #111;
+    }
+
+    .mobile-preview-slide {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      opacity: 0;
+      animation-name: parallax-gallery-mobile-slideshow;
+      animation-duration: calc(var(--slide-count) * 1.95s);
+      animation-timing-function: ease-in-out;
+      animation-iteration-count: infinite;
+      animation-delay: calc(var(--slide-index) * 1.95s);
+      animation-fill-mode: both;
+    }
 
     .gallery-footer { margin-top: 4rem; }
   }
@@ -717,6 +969,7 @@
     }
 
     .card           { flex-basis: clamp(270px,82vw,330px); width: clamp(270px,82vw,330px); }
+    .mobile-preview-card { right: 10px; bottom: 10px; width: clamp(5.1rem, 23vw, 6.3rem); }
     .info           { top: 12px; left: 12px; gap: 7px; }
     .info-primary   { font-size: clamp(1.3rem,6vw,1.7rem); min-height: 42px; padding: .42rem 1rem .48rem; }
     .info-secondary { font-size: .78rem; }
@@ -749,6 +1002,7 @@
     .info-chip      { padding: .32rem .72rem .36rem; }
     .card-index-wrap,
     .index-mobile   { bottom: -26px; }
+    .mobile-preview-card { right: 9px; bottom: 9px; width: clamp(4.8rem, 22vw, 5.8rem); }
     .gallery-footer { margin-top: 3rem; }
     .services-btn   { padding: 0 1rem; font-size: .72rem; }
   }
@@ -761,11 +1015,32 @@
     .intro-card,
     .services-btn,
     .services-btn-text,
-    .services-btn-flip::after { transition: none; }
+    .services-btn-flip::after,
+    .mobile-preview-card,
+    .mobile-preview-slide { transition: none; animation: none; }
 
     .intro-card { transform: none !important; opacity: 1 !important; }
     .gallery,
     .gallery-intro-group,
     .gallery-content-group { transform: none !important; }
+  }
+
+  @keyframes parallax-gallery-mobile-slideshow {
+    0% {
+      opacity: 0;
+      transform: scale(1.02);
+    }
+
+    8%,
+    40% {
+      opacity: 1;
+      transform: scale(1);
+    }
+
+    56%,
+    100% {
+      opacity: 0;
+      transform: scale(0.985);
+    }
   }
 </style>
