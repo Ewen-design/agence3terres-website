@@ -63,18 +63,8 @@
   let scrollRaf = null;
   let mobileScrollRaf = null;
   let removeMotionListener;
-  let introFlowOffset = 0;
-  let introFlowTargetOffset = 0;
-  let contentFlowOffset = 0;
-  let contentFlowTargetOffset = 0;
-
   let introOpacity = -1;
   let introY = -999;
-
-  function clamp(v, lo = 0, hi = 1) { return Math.max(lo, Math.min(hi, v)); }
-  function easeOutCubic(t) { return 1 - Math.pow(1 - t, 3); }
-  function easeInCubic(t) { return t * t * t; }
-  function round2(v) { return Math.round(v * 100) / 100; }
 
   function handleButtonMove(e) {
     const btn = e.currentTarget;
@@ -87,101 +77,18 @@
     isMobile = window.innerWidth <= 900;
   }
 
-  function getFlowOffset(progress, distance, centerDrag = 0.12, linear = false) {
-    if (linear) {
-      return distance * (1 - progress * 2);
-    }
-
-    if (progress <= 0.42) {
-      const t = clamp(progress / 0.42);
-      return distance * (1 - easeOutCubic(t));
-    }
-
-    if (progress < 0.54) {
-      const t = clamp((progress - 0.42) / 0.12);
-      return distance * centerDrag * (0.5 - t);
-    }
-
-    const t = clamp((progress - 0.54) / 0.46);
-    return -distance * easeInCubic(t);
-  }
-
   function updateGalleryFlowMotion() {
     if (!gallerySectionEl || !galleryIntroGroupEl || !galleryContentGroupEl) return;
 
-    if (prefersReduced) {
-      if (
-        introFlowOffset !== 0 ||
-        introFlowTargetOffset !== 0 ||
-        contentFlowOffset !== 0 ||
-        contentFlowTargetOffset !== 0
-      ) {
-        introFlowOffset = 0;
-        introFlowTargetOffset = 0;
-        contentFlowOffset = 0;
-        contentFlowTargetOffset = 0;
-        galleryIntroGroupEl.style.transform = "translate3d(0,0,0)";
-        galleryContentGroupEl.style.transform = "translate3d(0,0,0)";
-      }
-      return;
-    }
-
-    if (isMobile) {
-      if (
-        introFlowOffset !== 0 ||
-        introFlowTargetOffset !== 0 ||
-        contentFlowOffset !== 0 ||
-        contentFlowTargetOffset !== 0
-      ) {
-        introFlowOffset = 0;
-        introFlowTargetOffset = 0;
-        contentFlowOffset = 0;
-        contentFlowTargetOffset = 0;
-      }
-
-      galleryIntroGroupEl.style.transform = "translate3d(0,0,0)";
-      galleryContentGroupEl.style.transform = "translate3d(0,0,0)";
-      return;
-    }
-
-    const rect = gallerySectionEl.getBoundingClientRect();
-    const vh = window.innerHeight || 1;
-    const progress = clamp((vh - rect.top) / (vh + rect.height), 0, 1);
-    const introDistance = isMobile ? 260 : 460;
-    const contentDistance = isMobile ? 420 : 760;
-    const introLerp = isMobile ? 1 : 0.1;
-    const contentLerp = isMobile ? 1 : 0.12;
-
-    introFlowTargetOffset = getFlowOffset(progress, introDistance, 0.035, isMobile);
-    contentFlowTargetOffset = getFlowOffset(progress, contentDistance, 0.012, isMobile);
-
-    introFlowOffset += (introFlowTargetOffset - introFlowOffset) * introLerp;
-    contentFlowOffset += (contentFlowTargetOffset - contentFlowOffset) * contentLerp;
-
-    galleryIntroGroupEl.style.transform = `translate3d(0,${round2(introFlowOffset)}px,0)`;
-    galleryContentGroupEl.style.transform = `translate3d(0,${round2(contentFlowOffset)}px,0)`;
+    galleryIntroGroupEl.style.transform = "translate3d(0,0,0)";
+    galleryContentGroupEl.style.transform = "translate3d(0,0,0)";
   }
 
   function updateIntro() {
     if (!introCardEl) return;
 
-    if (prefersReduced) {
-      if (introOpacity !== 1) {
-        introCardEl.style.opacity = "1";
-        introCardEl.style.transform = "translate3d(0,0,0)";
-        introOpacity = 1;
-        introY = 0;
-      }
-      return;
-    }
-
-    const rect = introCardEl.getBoundingClientRect();
-    const vh = window.innerHeight || 1;
-    const raw = clamp((vh * .92 - rect.top) / Math.max(vh * .72, 1), 0, 1);
-    const reveal = isMobile ? raw : easeOutCubic(raw);
-
-    const op = Math.round((0.18 + .82 * reveal) * 1000) / 1000;
-    const y = isMobile ? 0 : Math.round(18 * (1 - reveal) * 100) / 100;
+    const op = 1;
+    const y = 0;
 
     if (op !== introOpacity) {
       introCardEl.style.opacity = `${op}`;

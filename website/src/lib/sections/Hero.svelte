@@ -117,34 +117,6 @@
     return 1 - Math.pow(1 - x, 3);
   }
 
-  function easeOutQuart(t) {
-    const x = clamp(t, 0, 1);
-    return 1 - Math.pow(1 - x, 4);
-  }
-
-  function easeInCubic(t) {
-    const x = clamp(t, 0, 1);
-    return x * x * x;
-  }
-
-  function getPremiumFlowOffset(progress, distance, centerDrag = 0.04) {
-    const entryEnd = 0.46;
-    const centerEnd = 0.56;
-
-    if (progress <= entryEnd) {
-      const t = easeInOutSine(progress / entryEnd);
-      return distance * (1 - t) + distance * centerDrag * 0.5 * t;
-    }
-
-    if (progress < centerEnd) {
-      const t = easeInOutSine((progress - entryEnd) / (centerEnd - entryEnd));
-      return distance * centerDrag * (0.5 - t);
-    }
-
-    const t = easeInOutSine((progress - centerEnd) / (1 - centerEnd));
-    return -distance * centerDrag * 0.5 * (1 - t) + -distance * t;
-  }
-
   function getScrollY() {
     return window.scrollY || window.pageYOffset || 0;
   }
@@ -196,17 +168,9 @@
     const heroScrollable = Math.max(heroHeight - vh, 1);
     const imageFadeProgress = clamp((y - heroTop) / heroScrollable, 0, 1);
 
-    const localTextReveal = easeOutQuart(
-      getLocalRevealFromAbsolute(y, afterTextTop, 0.92, 0.16)
-    );
+    const localTextReveal = getLocalRevealFromAbsolute(y, afterTextTop, 0.92, 0.16);
 
-    const localImageReveal = easeInOutSine(
-      getLocalRevealFromAbsolute(y, afterImageTop, 0.98, 0.12)
-    );
-
-    const sharedAfterReveal = easeInOutSine(
-      getLocalRevealFromAbsolute(y, Math.min(afterTextTop, afterImageTop), 1.02, 0.06)
-    );
+    const localImageReveal = getLocalRevealFromAbsolute(y, afterImageTop, 0.98, 0.12);
 
     const mergeProgress = clamp(heroProgress / 0.9, 0, 1);
     const smoothMerge = easeInOutSine(mergeProgress);
@@ -238,14 +202,12 @@
     const scrollHintOpacity = hintVisible ? hintScrollFade : 0;
 
     const textBlockOpacity = lerp(0.14, 1, localTextReveal);
-    const sharedFlowY = getPremiumFlowOffset(sharedAfterReveal, vh * 0.24, 0.04);
-    const textFlowY = sharedFlowY;
-    const textBlockY = lerp(18, 0, localTextReveal) + textFlowY;
+    const textBlockY = lerp(18, 0, localTextReveal);
     const textBlockX = 0;
     const textRevealEdge = lerp(0, 118, localTextReveal);
 
     const smallImageScale = lerp(0.885, 1.02, localImageReveal);
-    const smallImageY = lerp(22, 0, localImageReveal) + sharedFlowY;
+    const smallImageY = lerp(22, 0, localImageReveal);
 
     pendingFrame = {
       imageScale: q(imageScale, 0.001),
