@@ -62,8 +62,6 @@
   const CLOSE_CONTENT_MS = 860;
   const CLOSE_PANEL_DELAY = 420;
   const PANEL_CLOSE_MS = 1880;
-  const NAVIGATE_DELAY = 1380;
-
   let visible = false;
   let expanded = false;
   let contentVisible = false;
@@ -79,7 +77,6 @@
   let openFooterTimer;
   let closePanelTimer;
   let finishTimer;
-  let navigateTimer;
   let resizeHandler;
 
   function getPageIndex(pathname) {
@@ -101,7 +98,6 @@
     clearTimeout(openFooterTimer);
     clearTimeout(closePanelTimer);
     clearTimeout(finishTimer);
-    clearTimeout(navigateTimer);
   }
 
   function setMenuTransitionSuppressed() {}
@@ -212,25 +208,13 @@
     clearAsync();
 
     navigating = true;
-    closing = true;
-    contentVisible = false;
-    mediaVisible = false;
-    footerVisible = false;
 
-    navigateTimer = setTimeout(() => {
-      navigate(path === "/" ? "home" : path.replace(/^\//, ""));
-    }, NAVIGATE_DELAY);
-
-    closePanelTimer = setTimeout(() => {
-      expanded = false;
-    }, CLOSE_PANEL_DELAY);
-
-    finishTimer = setTimeout(() => {
+    try {
+      await navigate(path === "/" ? "home" : path.replace(/^\//, ""));
+    } finally {
+      open = false;
       finishClose();
-    }, CLOSE_CONTENT_MS + PANEL_CLOSE_MS);
-
-    open = false;
-    await tick();
+    }
   }
 
   async function handleClick(link) {
@@ -943,40 +927,33 @@
   }
 
   .fs-menu.is-closing .ui-content,
-  .fs-menu.is-closing .bottom-strip,
-  .fs-menu.is-navigating .ui-content,
-  .fs-menu.is-navigating .bottom-strip {
+  .fs-menu.is-closing .bottom-strip {
     opacity: 0;
     filter: blur(18px);
     transform: translate3d(0, -18px, 0);
   }
 
-  .fs-menu.is-closing .menu-link-text,
-  .fs-menu.is-navigating .menu-link-text {
+  .fs-menu.is-closing .menu-link-text {
     clip-path: inset(0 0 100% 0);
     -webkit-clip-path: inset(0 0 100% 0);
     opacity: 0;
   }
 
-  .fs-menu.is-closing .menu-media-reveal,
-  .fs-menu.is-navigating .menu-media-reveal {
+  .fs-menu.is-closing .menu-media-reveal {
     clip-path: inset(100% 0 0 0);
     -webkit-clip-path: inset(100% 0 0 0);
   }
 
-  .fs-menu.is-closing .menu-panel,
-  .fs-menu.is-navigating .menu-panel {
+  .fs-menu.is-closing .menu-panel {
     clip-path: inset(0 0 100% 0);
     -webkit-clip-path: inset(0 0 100% 0);
   }
 
-  .fs-menu.is-closing .menu-scrim,
-  .fs-menu.is-navigating .menu-scrim {
+  .fs-menu.is-closing .menu-scrim {
     opacity: 0;
   }
 
-  .fs-menu.is-closing .menu-blur,
-  .fs-menu.is-navigating .menu-blur {
+  .fs-menu.is-closing .menu-blur {
     opacity: 0;
     backdrop-filter: blur(0px);
     -webkit-backdrop-filter: blur(0px);

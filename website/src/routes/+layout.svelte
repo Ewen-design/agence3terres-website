@@ -184,26 +184,26 @@
 
     if (isMobile) {
       return {
-        enterDuration: 560,
-        exitDuration: 500,
-        blurMax: 2,
-        blurBase: 0.08,
-        darknessMax: 0.24,
+        enterDuration: 460,
+        exitDuration: 400,
+        blurMax: 1.2,
+        blurBase: 0.06,
+        darknessMax: 0.2,
         pageFade: 0.04,
-        pageBlurOut: 2.5,
-        pageBlurIn: 2.4
+        pageBlurOut: 1.35,
+        pageBlurIn: 1.25
       };
     }
 
     return {
-      enterDuration: 1040,
-      exitDuration: 920,
-      blurMax: 9,
+      enterDuration: 920,
+      exitDuration: 800,
+      blurMax: 7,
       blurBase: 0.04,
-      darknessMax: 0.42,
-      pageFade: 0.1,
-      pageBlurOut: 7,
-      pageBlurIn: 6
+      darknessMax: 0.38,
+      pageFade: 0.08,
+      pageBlurOut: 5.5,
+      pageBlurIn: 4.8
     };
   }
 
@@ -225,12 +225,13 @@
     const startY = -vh - overscanTop;
     const endY = overscanBottom;
     const baseY = startY + (endY - startY) * p;
-    const arcLift = Math.sin(p * Math.PI) * vh * 0.042;
+    const arcLift = Math.sin(p * Math.PI) * vh * (isMobile ? 0.024 : 0.042);
     const y = baseY - arcLift;
 
-    const drift =
-      Math.sin((p - 0.03) * Math.PI) * vw * 0.02 +
-      Math.sin((p - 0.12) * Math.PI * 2) * vw * 0.0024;
+    const drift = isMobile
+      ? Math.sin((p - 0.04) * Math.PI) * vw * 0.008
+      : Math.sin((p - 0.03) * Math.PI) * vw * 0.02 +
+        Math.sin((p - 0.12) * Math.PI * 2) * vw * 0.0024;
 
     transitionWipe.style.transform = `translate3d(${drift}px, ${y}px, 0)`;
   }

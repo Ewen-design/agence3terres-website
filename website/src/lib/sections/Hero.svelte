@@ -333,7 +333,7 @@
     applyFrame();
   }
 
-  function startIntro() {
+  function startIntro(withDelay = true) {
     if (introStarted) return;
     introStarted = true;
     if (typeof window !== "undefined") {
@@ -347,12 +347,12 @@
         clearTimeout(mediaIntroTimeout);
         mediaIntroTimeout = setTimeout(() => {
           heroMediaVisible = true;
-        }, 180);
+        }, withDelay ? 180 : 0);
 
         hintTimeout = setTimeout(() => {
           hintVisible = true;
           forceScrollEngineUpdate();
-        }, 420);
+        }, withDelay ? 420 : 0);
       });
     });
   }
@@ -379,7 +379,7 @@
     const handlePreloaderDone = () => {
       clearTimeout(fallbackTimeout);
       fallbackTimeout = setTimeout(() => {
-        startIntro();
+        startIntro(true);
       }, 140);
     };
 
@@ -440,10 +440,10 @@
 
     if (shouldDelayIntro) {
       fallbackTimeout = setTimeout(() => {
-        startIntro();
+        startIntro(true);
       }, 1800);
     } else {
-      startIntro();
+      startIntro(false);
     }
 
     return () => {
