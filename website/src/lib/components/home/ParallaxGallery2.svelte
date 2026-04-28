@@ -584,12 +584,13 @@
     display:        block;
     font-family:    "Clash Display", sans-serif;
     font-style:     normal;
-    font-weight:    500;
-    font-size:      1.05rem;
+    font-weight:    400;
+    font-size:      1.34rem;
     line-height:    1;
     letter-spacing: -0.02em;
-    color:          var(--index-color);
+    color:          var(--index-mobile-color);
     opacity:        0;
+    text-shadow:    0 1px 8px rgba(0,0,0,.18);
     transition:
       transform .42s cubic-bezier(.22,.61,.36,1),
       opacity   .32s ease;
@@ -619,7 +620,7 @@
 
   .services-btn {
     font-family: "Clash Display", sans-serif;
-    font-weight: 300;
+    font-weight: 400;
     position:   relative;
     height:     40px;
     display:    inline-flex;
@@ -732,7 +733,7 @@
 
     .gallery-grid {
       width:      100%;
-      margin:     2rem 0 0;
+      margin:     2.8rem 0 0;
       display:    flex;
       grid-template-columns: none;
       grid-template-rows:    none;
@@ -848,7 +849,7 @@
       transform: rotate(45deg);
     }
 
-    .gallery-footer { margin-top: 4rem; }
+    .gallery-footer { margin-top: 2.75rem; }
   }
 
   @media (max-width: 640px) {
@@ -879,7 +880,7 @@
     }
     .mobile-nav-prev { left: .3rem; }
     .mobile-nav-next { right: .3rem; }
-    .gallery-footer { margin-top: 4rem; }
+    .gallery-footer { margin-top: 2.85rem; }
     .services-btn   { padding: 0 1.2rem; font-size: .8rem; }
 
   }
@@ -912,7 +913,7 @@
     }
     .mobile-nav-prev { left: .18rem; }
     .mobile-nav-next { right: .18rem; }
-    .gallery-footer { margin-top: 3rem; }
+    .gallery-footer { margin-top: 2.3rem; }
     .services-btn   { padding: 0 1rem; font-size: .72rem; }
   }
 
