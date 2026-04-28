@@ -137,6 +137,8 @@
           <img src={slide.image} alt="" />
         </div>
       {/each}
+
+      <div class="focus-zone-slider__bg-gradient"></div>
     </div>
 
     <div class="focus-zone-slider__frame">
@@ -233,6 +235,19 @@
     object-fit: cover;
     object-position: center center;
     transform: none;
+  }
+
+  .focus-zone-slider__bg-gradient {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      90deg,
+      rgba(0, 0, 0, 0.56) 0%,
+      rgba(0, 0, 0, 0.32) 28%,
+      rgba(0, 0, 0, 0.12) 55%,
+      rgba(0, 0, 0, 0) 100%
+    );
+    pointer-events: none;
   }
 
   .focus-zone-slider__frame {
@@ -416,6 +431,24 @@
     .focus-zone-slider__number {
       right: 1rem;
       font-size: clamp(1.45rem, 6vw, 1.9rem);
+    }
+
+    .focus-zone-slider__bg-gradient {
+      background:
+        linear-gradient(
+          90deg,
+          rgba(0, 0, 0, 0.42) 0%,
+          rgba(0, 0, 0, 0.22) 28%,
+          rgba(0, 0, 0, 0.08) 55%,
+          rgba(0, 0, 0, 0) 100%
+        ),
+        radial-gradient(
+          120% 58% at 18% 50%,
+          rgba(0, 0, 0, 0.24) 0%,
+          rgba(0, 0, 0, 0.16) 36%,
+          rgba(0, 0, 0, 0.05) 66%,
+          rgba(0, 0, 0, 0) 100%
+        );
     }
   }
 
