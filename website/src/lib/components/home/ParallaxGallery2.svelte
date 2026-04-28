@@ -8,73 +8,37 @@
       title: "Création de logo",
       date: "2024",
       desc: "Refonte complète de l'identité visuelle et création d'un système graphique minimaliste.",
-      image: "images/appareil_photo.webp",
-      images: [
-        "images/appareil_photo.webp",
-        "images/telephone2.webp",
-        "images/telephone_parfum.webp"
-      ],
-      hoverInfo: ["Création de logo", "Direction artistique", "Identité visuelle"]
+      image: "images/telephone3.webp"
     },
     {
       title: "Identité visuelle et stratégie",
       date: "2023",
       desc: "Développement d'une plateforme de marque et direction artistique globale.",
-      image: "images/telephone2.webp",
-      images: [
-        "images/telephone2.webp",
-        "images/appareil_photo.webp",
-        "images/parfum_ordinateur.webp"
-      ],
-      hoverInfo: ["Identité & stratégie", "Brand platform", "Direction créative"]
+      image: "images/telephone2.webp"
     },
     {
       title: "Couverture d'événements",
       date: "2024",
       desc: "Conception d'interfaces modernes axées sur l'expérience utilisateur.",
-      image: "images/appareil_photo.webp",
-      images: [
-        "images/appareil_photo.webp",
-        "images/telephone_main.webp",
-        "images/telephone2.webp"
-      ],
-      hoverInfo: ["Événementiel", "Captation & contenu", "Déploiement visuel"]
+      image: "images/appareil_photo.webp"
     },
     {
       title: "Conception de site web",
       date: "2022",
       desc: "Études utilisateurs et architecture d'information pour application mobile.",
-      image: "images/telephone_parfum.webp",
-      images: [
-        "images/telephone_parfum.webp",
-        "images/telephone_main.webp",
-        "images/parfum_ordinateur.webp"
-      ],
-      hoverInfo: ["Site web", "UI Design", "UX Design"]
+      image: "images/telephone_parfum.webp"
     },
     {
       title: "Accompagnement",
       date: "2023",
       desc: "Supervision créative et mise en place d'un univers visuel premium.",
-      image: "images/parfum_ordinateur.webp",
-      images: [
-        "images/parfum_ordinateur.webp",
-        "images/telephone_parfum.webp",
-        "images/appareil_photo.webp"
-      ],
-      hoverInfo: ["Accompagnement", "Conseil créatif", "Suivi de marque"]
+      image: "images/parfum_ordinateur.webp"
     },
     {
       title: "Gestion des réseaux sociaux",
       date: "2024",
       desc: "Concept motion design pour lancement de produit digital.",
-      image: "images/telephone_main.webp",
-      images: [
-        "images/telephone_main.webp",
-        "images/telephone2.webp",
-        "images/parfum_ordinateur.webp"
-      ],
-      hoverInfo: ["Réseaux sociaux", "Contenus premium", "Stratégie éditoriale"]
+      image: "images/telephone_main.webp"
     }
   ];
 
@@ -86,19 +50,16 @@
 
   let isMobile = $state(false);
   let activeMobileIndex = $state(0);
-  let displayedCardImages = $state(items.map((item) => item.image));
-  let incomingCardImages = $state(items.map((item) => item.image));
-  let overlayVisible = $state(items.map(() => false));
 
   let prefersReduced = false;
 
   let resizeTimer = null;
   let scrollRaf = null;
   let mobileScrollRaf = null;
+  let mobileAutoAdvanceTimer = null;
+  let mobileAutoResumeTimer = null;
+  let isAutoScrollingMobile = false;
   let removeMotionListener;
-  let hoverTimers = [];
-  let hoverFadeTimers = [];
-  let hoverIndexes = items.map(() => 0);
   let introOpacity = -1;
   let introY = -999;
 
@@ -111,85 +72,6 @@
 
   function updateDevice() {
     isMobile = window.innerWidth <= 900;
-  }
-
-  function preloadImage(src) {
-    return new Promise((resolve) => {
-      const img = new Image();
-      let done = false;
-
-      const finish = () => {
-        if (done) return;
-        done = true;
-        resolve();
-      };
-
-      img.onload = finish;
-      img.onerror = finish;
-      img.src = src;
-
-      if (img.complete) {
-        finish();
-      }
-    });
-  }
-
-  function clearHoverTimer(index) {
-    if (!hoverTimers[index]) return;
-    clearInterval(hoverTimers[index]);
-    hoverTimers[index] = null;
-  }
-
-  function clearHoverFadeTimer(index) {
-    if (!hoverFadeTimers[index]) return;
-    clearTimeout(hoverFadeTimers[index]);
-    hoverFadeTimers[index] = null;
-  }
-
-  function transitionCardImage(index, nextImage) {
-    clearHoverFadeTimer(index);
-
-    incomingCardImages[index] = nextImage;
-    overlayVisible[index] = true;
-    incomingCardImages = [...incomingCardImages];
-    overlayVisible = [...overlayVisible];
-
-    hoverFadeTimers[index] = setTimeout(() => {
-      displayedCardImages[index] = nextImage;
-      incomingCardImages[index] = nextImage;
-      overlayVisible[index] = false;
-      displayedCardImages = [...displayedCardImages];
-      incomingCardImages = [...incomingCardImages];
-      overlayVisible = [...overlayVisible];
-      hoverFadeTimers[index] = null;
-    }, 220);
-  }
-
-  function handleCardEnter(index) {
-    if (isMobile || prefersReduced) return;
-
-    const variants = items[index].images || [items[index].image];
-    if (variants.length < 2) return;
-
-    clearHoverTimer(index);
-    hoverIndexes[index] = 0;
-
-    hoverTimers[index] = setInterval(() => {
-      hoverIndexes[index] = (hoverIndexes[index] + 1) % variants.length;
-      transitionCardImage(index, variants[hoverIndexes[index]]);
-    }, 440);
-  }
-
-  function handleCardLeave(index) {
-    clearHoverTimer(index);
-    clearHoverFadeTimer(index);
-    hoverIndexes[index] = 0;
-    displayedCardImages[index] = items[index].image;
-    incomingCardImages[index] = items[index].image;
-    overlayVisible[index] = false;
-    displayedCardImages = [...displayedCardImages];
-    incomingCardImages = [...incomingCardImages];
-    overlayVisible = [...overlayVisible];
   }
 
   function updateGalleryFlowMotion() {
@@ -232,6 +114,52 @@
     activeMobileIndex = nearest;
   }
 
+  function scrollToMobileIndex(index, behavior = "smooth") {
+    if (!galleryGridEl || !isMobile) return;
+    const cards = galleryGridEl.querySelectorAll(".card");
+    const target = cards[index];
+    if (!target) return;
+
+    const left =
+      target.offsetLeft - (galleryGridEl.clientWidth - target.offsetWidth) * 0.5;
+
+    isAutoScrollingMobile = true;
+    galleryGridEl.scrollTo({
+      left: Math.max(0, left),
+      behavior
+    });
+
+    window.setTimeout(() => {
+      isAutoScrollingMobile = false;
+    }, behavior === "smooth" ? 900 : 0);
+  }
+
+  function clearMobileAutoTimers() {
+    clearInterval(mobileAutoAdvanceTimer);
+    clearTimeout(mobileAutoResumeTimer);
+    mobileAutoAdvanceTimer = null;
+    mobileAutoResumeTimer = null;
+  }
+
+  function startMobileAutoAdvance() {
+    clearMobileAutoTimers();
+    if (!isMobile || !galleryGridEl || prefersReduced) return;
+
+    mobileAutoAdvanceTimer = setInterval(() => {
+      const nextIndex = (activeMobileIndex + 1) % items.length;
+      scrollToMobileIndex(nextIndex, "smooth");
+    }, 5000);
+  }
+
+  function pauseAndResumeMobileAutoAdvance() {
+    clearMobileAutoTimers();
+    if (!isMobile || prefersReduced) return;
+
+    mobileAutoResumeTimer = setTimeout(() => {
+      startMobileAutoAdvance();
+    }, 7000);
+  }
+
   function scheduleIntroUpdate() {
     if (scrollRaf) return;
     scrollRaf = requestAnimationFrame(() => {
@@ -243,6 +171,9 @@
 
   function handleMobileGridScroll() {
     if (!isMobile) return;
+    if (!isAutoScrollingMobile) {
+      pauseAndResumeMobileAutoAdvance();
+    }
     if (mobileScrollRaf) cancelAnimationFrame(mobileScrollRaf);
     mobileScrollRaf = requestAnimationFrame(() => {
       updateMobileActive();
@@ -257,6 +188,7 @@
       updateIntro();
       updateGalleryFlowMotion();
       updateMobileActive();
+      startMobileAutoAdvance();
     }, 70);
   }
 
@@ -268,12 +200,11 @@
     const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
     prefersReduced = mq.matches;
 
-    Promise.allSettled(items.flatMap((item) => item.images || [item.image]).map(preloadImage));
-
     const onMotion = (e) => {
       prefersReduced = e.matches;
       updateIntro();
       updateGalleryFlowMotion();
+      startMobileAutoAdvance();
     };
     if (mq.addEventListener) {
       mq.addEventListener("change", onMotion);
@@ -287,6 +218,7 @@
       updateIntro();
       updateGalleryFlowMotion();
       updateMobileActive();
+      startMobileAutoAdvance();
     });
 
     window.addEventListener("scroll", scheduleIntroUpdate, { passive: true });
@@ -304,8 +236,7 @@
     galleryGridEl?.removeEventListener("scroll", handleMobileGridScroll);
 
     removeMotionListener?.();
-    hoverTimers.forEach((_, index) => clearHoverTimer(index));
-    hoverFadeTimers.forEach((_, index) => clearHoverFadeTimer(index));
+    clearMobileAutoTimers();
     clearTimeout(resizeTimer);
     if (scrollRaf) cancelAnimationFrame(scrollRaf);
     if (mobileScrollRaf) cancelAnimationFrame(mobileScrollRaf);
@@ -333,14 +264,23 @@
           class:mobile-active={isMobile && i === activeMobileIndex}
           class:top-row={!isMobile && i < 3}
           class:bottom-row={!isMobile && i >= 3}
-          onmouseenter={() => handleCardEnter(i)}
-          onmouseleave={() => handleCardLeave(i)}
         >
+          <div
+            class="card-title-wrap"
+            class:card-title-mobile={isMobile}
+            class:card-title-overlay={!isMobile}
+            class:stacked-meta={!isMobile && (i === 2 || i === 3)}
+            aria-hidden="true"
+          >
+            <span class="card-title">{item.title}</span>
+          </div>
+
           <div
             class="card-index-wrap"
             class:index-top={!isMobile && i < 3}
             class:index-bottom={!isMobile && i >= 3}
             class:index-mobile={isMobile}
+            class:stacked-index={!isMobile && (i === 2 || i === 3)}
             aria-hidden="true"
           >
             <span class="card-index-inner">{String(i + 1).padStart(2, "0")}</span>
@@ -349,51 +289,47 @@
           <div class="card-media">
             <div class="card-image-wrapper">
               <img
-                class="card-image card-image-base"
-                src={displayedCardImages[i]}
+                class="card-image"
+                src={item.image}
                 alt={item.title}
                 loading={i < 2 ? "eager" : "lazy"}
                 fetchpriority={i < 2 ? "high" : "auto"}
                 decoding="async"
                 draggable="false"
               />
-              <img
-                class="card-image card-image-overlay"
-                class:is-visible={overlayVisible[i]}
-                src={incomingCardImages[i]}
-                alt=""
-                aria-hidden="true"
-                loading="lazy"
-                decoding="async"
-                draggable="false"
-              />
-
-              {#if item.images?.length}
-                <div class="mobile-preview-card" aria-hidden="true">
-                  <div class="mobile-preview-slideshow">
-                    {#each item.images as image, slideIndex}
-                      <img
-                        src={image}
-                        alt=""
-                        class="mobile-preview-slide"
-                        loading="lazy"
-                        style={`--slide-index:${slideIndex}; --slide-count:${item.images.length};`}
-                      />
-                    {/each}
-                  </div>
-                </div>
-              {/if}
             </div>
-          </div>
-
-          <div class="info" aria-hidden="true">
-            <span class="info-chip info-primary">{item.hoverInfo[0]}</span>
-            <span class="info-chip info-secondary">{item.hoverInfo[1]}</span>
-            <span class="info-chip info-secondary">{item.hoverInfo[2]}</span>
           </div>
         </div>
       {/each}
     </div>
+
+    {#if isMobile}
+      <button
+        class="mobile-nav mobile-nav-prev"
+        class:is-hidden={activeMobileIndex === 0}
+        type="button"
+        aria-label="Carte précédente"
+        onclick={() => {
+          pauseAndResumeMobileAutoAdvance();
+          scrollToMobileIndex(Math.max(0, activeMobileIndex - 1));
+        }}
+      >
+        <span class="mobile-nav-chevron" aria-hidden="true"></span>
+      </button>
+
+      <button
+        class="mobile-nav mobile-nav-next"
+        class:is-hidden={activeMobileIndex === items.length - 1}
+        type="button"
+        aria-label="Carte suivante"
+        onclick={() => {
+          pauseAndResumeMobileAutoAdvance();
+          scrollToMobileIndex(Math.min(items.length - 1, activeMobileIndex + 1));
+        }}
+      >
+        <span class="mobile-nav-chevron" aria-hidden="true"></span>
+      </button>
+    {/if}
 
     <div class="gallery-footer">
       <button
@@ -419,6 +355,9 @@
     --intro-main:          #fff;
     --intro-muted:         rgba(255,255,255,.70);
     --index-color:         #fff;
+    --index-mobile-color:  #353535;
+    --mobile-title-color:  #353535;
+    --desktop-title-color: rgba(255,255,255,.96);
     --services-btn-text:   #fff;
     --services-btn-border: rgba(255,255,255,.15);
     --services-btn-bg:     rgba(255,255,255,.10);
@@ -435,6 +374,7 @@
 
   .gallery-intro-group,
   .gallery-content-group {
+    position: relative;
     will-change: transform;
     transform: translate3d(0,0,0);
   }
@@ -535,6 +475,56 @@
     transform: translate3d(0, 115%, 0);
   }
 
+  .card-title-wrap {
+    position: absolute;
+    z-index: 7;
+    pointer-events: none;
+  }
+
+  .card-title-overlay {
+    left: 14px;
+    bottom: 14px;
+    max-width: min(70%, 20rem);
+    overflow: hidden;
+  }
+
+  .card-title-mobile {
+    left: 0;
+    bottom: -56px;
+    width: min(100%, 18rem);
+    overflow: hidden;
+  }
+
+  .stacked-meta.card-title-overlay {
+    bottom: 36px;
+  }
+
+  .card-title {
+    display: block;
+    font-family: "Clash Display", sans-serif;
+    font-weight: 300;
+    line-height: 1;
+    letter-spacing: -0.02em;
+    transition:
+      transform .42s cubic-bezier(.22,.61,.36,1),
+      opacity .32s ease;
+  }
+
+  .card-title-overlay .card-title {
+    font-size: clamp(1rem, 1.2vw, 1.3rem);
+    color: var(--desktop-title-color);
+    text-shadow: 0 2px 12px rgba(0,0,0,.24);
+    opacity: 0;
+    transform: translate3d(0, 115%, 0);
+  }
+
+  .card-title-mobile .card-title {
+    font-size: .76rem;
+    color: var(--mobile-title-color);
+    opacity: 0;
+    transform: translate3d(0, -115%, 0);
+  }
+
   .card:nth-child(3):hover .card-index-inner,
   .card:nth-child(4):hover .card-index-inner {
     transform: translate3d(0, 0, 0);
@@ -568,86 +558,14 @@
     -webkit-backface-visibility: hidden;
     transition:
       filter    .34s ease,
-      transform .42s ease,
-      opacity   .34s ease;
+      transform .42s ease;
     user-select:    none;
     pointer-events: none;
     will-change:    transform, filter;
     outline:        1px solid transparent;
   }
 
-  .card-image-overlay {
-    position: absolute;
-    inset: 0;
-    opacity: 0;
-    transition:
-      opacity .22s ease,
-      filter .34s ease,
-      transform .42s ease;
-  }
-
-  .card-image-overlay.is-visible { opacity: 1; }
-
   .card:hover .card-image { filter: brightness(.68); transform: scale(1.02) translateZ(0); }
-
-  .info {
-    position:  absolute;
-    top:       10px;
-    left:      10px;
-    display:   flex;
-    flex-direction: column;
-    align-items: flex-start;
-    gap:       8px;
-    opacity:   0;
-    transform: translate3d(0,-10px,0);
-    transition: opacity .28s ease, transform .28s ease;
-    z-index:   2;
-    pointer-events: none;
-  }
-
-  .info-chip {
-    display:    inline-flex;
-    align-items: center;
-    min-height: 30px;
-    padding:    .38rem .9rem .42rem;
-    border:     1px solid rgba(255,255,255,.08);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
-    background: rgba(255,255,255,.14);
-    color:      #fff;
-    border-radius: 3px;
-    line-height:   1;
-    white-space:   nowrap;
-    transform:  translate3d(0,10px,0);
-    opacity:    0;
-    transition:
-      opacity   .34s ease,
-      transform .42s cubic-bezier(.22,.61,.36,1),
-      background .28s ease;
-  }
-
-  .info-primary {
-    font-family:    "Clash Display", sans-serif;
-    font-style:     normal;
-    font-weight:    300;
-    font-size:      clamp(1.5rem,1.8vw,1.95rem);
-   
-    min-height:     48px;
-    padding:        .45rem 1.15rem .52rem;
-  }
-
-  .info-secondary {
-    font-family:    "Clash Display", sans-serif;
-    font-size:      clamp(.82rem,.9vw,.98rem);
-    font-weight:    300;
-   
-  }
-
-  .card:hover .info                   { opacity: 1; transform: translate3d(0,0,0); }
-  .card:hover .info-chip              { opacity: 1; transform: translate3d(0,0,0); }
-  .card:hover .info-chip:nth-child(1) { transition-delay: .02s; }
-  .card:hover .info-chip:nth-child(2) { transition-delay: .06s; }
-  .card:hover .info-chip:nth-child(3) { transition-delay: .10s; }
 
   .card-index-wrap {
     position:       absolute;
@@ -682,12 +600,22 @@
   .index-mobile .card-index-inner { transform: translate3d(0,-115%,0); }
 
   .card:hover .card-index-inner,
+  .card:hover .card-title-overlay .card-title,
   .card.mobile-active .card-index-inner {
     transform: translate3d(0,0,0);
     opacity:   1;
   }
 
+  .card.mobile-active .card-title-mobile .card-title {
+    transform: translate3d(0,0,0);
+    opacity: 1;
+  }
+
   .gallery-footer { text-align: center; margin-top: 6rem; }
+
+  .mobile-nav {
+    display: none;
+  }
 
   .services-btn {
     font-family: "Clash Display", sans-serif;
@@ -814,12 +742,12 @@
       overflow-y: visible;
       padding-top:    0;
       padding-bottom: 2.6rem;
-      padding-left:  calc((100vw - clamp(285px,82vw,360px)) / 2);
-      padding-right: calc((100vw - clamp(285px,82vw,360px)) / 2);
+      padding-left:  calc((100vw - clamp(292px,84vw,368px)) / 2);
+      padding-right: calc((100vw - clamp(292px,84vw,368px)) / 2);
       scroll-snap-type:  x mandatory;
       scroll-snap-stop:  always;
-      scroll-padding-left:  calc((100vw - clamp(285px,82vw,360px)) / 2);
-      scroll-padding-right: calc((100vw - clamp(285px,82vw,360px)) / 2);
+      scroll-padding-left:  calc((100vw - clamp(292px,84vw,368px)) / 2);
+      scroll-padding-right: calc((100vw - clamp(292px,84vw,368px)) / 2);
       -webkit-overflow-scrolling: touch;
       overscroll-behavior-x:  contain;
       scrollbar-width: none;
@@ -834,82 +762,90 @@
     .card:nth-child(5),
     .card:nth-child(6) { grid-area: auto; }
 
-    .card:nth-child(3) .card-index-wrap,
-    .card:nth-child(4) .card-index-wrap {
-      bottom: -30px;
-      left: 0;
-      height: 1.15em;
+    .card-title-mobile {
+      left: 14px;
+      right: 14px;
+      bottom: 2.45rem;
+      width: auto;
+      max-width: none;
     }
 
     .card {
-      flex:             0 0 clamp(285px,82vw,360px);
-      width:            clamp(285px,82vw,360px);
-      aspect-ratio:     .84 / 1.4;
+      flex:             0 0 clamp(292px,84vw,368px);
+      width:            clamp(292px,84vw,368px);
+      aspect-ratio:     .8 / 1.76;
       scroll-snap-align: center;
       scroll-snap-stop:  always;
       overflow:         visible;
     }
 
     .card:hover .card-image { filter: none; transform: translateZ(0); }
-    .card:hover .info      { opacity: 0; transform: translate3d(0,-10px,0); }
-    .card:hover .info-chip { opacity: 0; transform: translate3d(0,10px,0); }
-
-    .card.mobile-active .card-image-base { filter: brightness(.68); transform: scale(1.02) translateZ(0); }
-    .card.mobile-active .info            { opacity: 1; transform: translate3d(0,0,0); }
-    .card.mobile-active .info-chip       { opacity: 1; transform: translate3d(0,0,0); }
-    .card.mobile-active .info-chip:nth-child(1) { transition-delay: .02s; }
-    .card.mobile-active .info-chip:nth-child(2) { transition-delay: .06s; }
-    .card.mobile-active .info-chip:nth-child(3) { transition-delay: .10s; }
-    .card.mobile-active .mobile-preview-card {
-      opacity: 1;
-      transform: translate3d(0,0,0) scale(1);
-      transition-delay: .18s;
-    }
+    .card.mobile-active .card-image { filter: brightness(.68); transform: scale(1.02) translateZ(0); }
 
     .card-index-wrap,
     .index-mobile { z-index: 8; overflow: hidden; width: max-content; height: 1.15em; }
 
-    .index-mobile { top: auto; bottom: -30px; left: 0; }
+    .index-mobile { top: auto; bottom: 14px; left: 14px; }
 
-    .mobile-preview-card {
+    .card-index-inner {
+      color: var(--index-mobile-color);
+      font-size: .82rem;
+      font-weight: 400;
+      text-shadow: 0 1px 8px rgba(0,0,0,.32);
+    }
+
+    .card-title-mobile .card-title {
+      font-size: 1.26rem;
+      font-weight: 300;
+      line-height: 1.04;
+      max-width: 15ch;
+      color: #FFF;
+      text-shadow: 0 1px 10px rgba(0,0,0,.34);
+    }
+
+    .mobile-nav {
       position: absolute;
-      right: 12px;
-      bottom: 12px;
-      z-index: 2;
-      width: clamp(5.5rem, 23vw, 7rem);
-      aspect-ratio: 0.88;
-      overflow: hidden;
-      border-radius: 2px;
-      background: rgba(255,255,255,.94);
-      box-shadow: 0 18px 48px rgba(11, 8, 5, 0.28);
+      top: calc(2rem + (clamp(292px,84vw,368px) * 1.76 / 0.8) * 0.5);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 3rem;
+      height: 3rem;
+      transform: translateY(-50%);
+      z-index: 10;
+      border: 0;
+      background: transparent;
+      padding: 0;
+      color: #FFF;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+      opacity: 1;
+      transition: opacity .35s ease;
+    }
+
+    .mobile-nav-prev { left: .45rem; }
+    .mobile-nav-next { right: .45rem; }
+
+    .mobile-nav.is-hidden {
       opacity: 0;
-      transform: translate3d(0,10px,0) scale(0.985);
-      transition:
-        opacity .34s ease,
-        transform .42s cubic-bezier(.22,.61,.36,1);
       pointer-events: none;
     }
 
-    .mobile-preview-slideshow {
-      position: relative;
-      width: 100%;
-      height: 100%;
-      background: #111;
+    .mobile-nav-chevron {
+      display: block;
+      width: 1.35rem;
+      height: 1.35rem;
+      border-top: 1.5px solid currentColor;
+      border-right: 1.5px solid currentColor;
+      filter: drop-shadow(0 1px 8px rgba(0,0,0,.34));
     }
 
-    .mobile-preview-slide {
-      position: absolute;
-      inset: 0;
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      opacity: 0;
-      animation-name: parallax-gallery-mobile-slideshow;
-      animation-duration: calc(var(--slide-count) * 1.95s);
-      animation-timing-function: ease-in-out;
-      animation-iteration-count: infinite;
-      animation-delay: calc(var(--slide-index) * 1.95s);
-      animation-fill-mode: both;
+    .mobile-nav-prev .mobile-nav-chevron {
+      transform: rotate(-135deg);
+    }
+
+    .mobile-nav-next .mobile-nav-chevron {
+      transform: rotate(45deg);
     }
 
     .gallery-footer { margin-top: 4rem; }
@@ -923,20 +859,26 @@
     .gallery-grid {
       gap:          .8rem;
       padding-bottom: 2.45rem;
-      padding-left:  calc((100vw - clamp(270px,82vw,330px)) / 2);
-      padding-right: calc((100vw - clamp(270px,82vw,330px)) / 2);
-      scroll-padding-left:  calc((100vw - clamp(270px,82vw,330px)) / 2);
-      scroll-padding-right: calc((100vw - clamp(270px,82vw,330px)) / 2);
+      padding-left:  calc((100vw - clamp(276px,84vw,338px)) / 2);
+      padding-right: calc((100vw - clamp(276px,84vw,338px)) / 2);
+      scroll-padding-left:  calc((100vw - clamp(276px,84vw,338px)) / 2);
+      scroll-padding-right: calc((100vw - clamp(276px,84vw,338px)) / 2);
     }
 
-    .card           { flex-basis: clamp(270px,82vw,330px); width: clamp(270px,82vw,330px); }
-    .mobile-preview-card { right: 10px; bottom: 10px; width: clamp(5.1rem, 23vw, 6.3rem); }
-    .info           { top: 12px; left: 12px; gap: 7px; }
-    .info-primary   { font-size: clamp(1.3rem,6vw,1.7rem); min-height: 42px; padding: .42rem 1rem .48rem; }
-    .info-secondary { font-size: .78rem; }
-    .info-chip      { padding: .36rem .78rem .4rem; }
+    .card           { flex-basis: clamp(276px,84vw,338px); width: clamp(276px,84vw,338px); }
+    .card-title-mobile { left: 12px; right: 12px; bottom: 2.3rem; }
     .card-index-wrap,
-    .index-mobile   { bottom: -28px; }
+    .index-mobile   { bottom: 12px; left: 12px; }
+    .card-title-mobile .card-title { font-size: 1.14rem; }
+    .mobile-nav { width: 2.6rem; height: 2.6rem; }
+    .mobile-nav-chevron {
+      width: 1.18rem;
+      height: 1.18rem;
+      border-top-width: 1.4px;
+      border-right-width: 1.4px;
+    }
+    .mobile-nav-prev { left: .3rem; }
+    .mobile-nav-next { right: .3rem; }
     .gallery-footer { margin-top: 4rem; }
     .services-btn   { padding: 0 1.2rem; font-size: .8rem; }
 
@@ -950,58 +892,42 @@
     .gallery-grid {
       gap:          .75rem;
       padding-bottom: 2.3rem;
-      padding-left:  calc((100vw - 84vw) / 2);
-      padding-right: calc((100vw - 84vw) / 2);
-      scroll-padding-left:  calc((100vw - 84vw) / 2);
-      scroll-padding-right: calc((100vw - 84vw) / 2);
+      padding-left:  calc((100vw - 86vw) / 2);
+      padding-right: calc((100vw - 86vw) / 2);
+      scroll-padding-left:  calc((100vw - 86vw) / 2);
+      scroll-padding-right: calc((100vw - 86vw) / 2);
     }
 
-    .card           { flex-basis: 84vw; width: 84vw; }
-    .info           { top: 10px; left: 10px; gap: 6px; }
-    .info-primary   { min-height: 38px; padding: .36rem .9rem .42rem; }
-    .info-secondary { font-size: .72rem; }
-    .info-chip      { padding: .32rem .72rem .36rem; }
+    .card           { flex-basis: 86vw; width: 86vw; }
+    .card-title-mobile { left: 10px; right: 10px; bottom: 2.15rem; }
     .card-index-wrap,
-    .index-mobile   { bottom: -26px; }
-    .mobile-preview-card { right: 9px; bottom: 9px; width: clamp(4.8rem, 22vw, 5.8rem); }
+    .index-mobile   { bottom: 10px; left: 10px; }
+    .card-title-mobile .card-title { font-size: 1.06rem; }
+    .mobile-nav { width: 2.35rem; height: 2.35rem; }
+    .mobile-nav-chevron {
+      width: 1.06rem;
+      height: 1.06rem;
+      border-top-width: 1.3px;
+      border-right-width: 1.3px;
+    }
+    .mobile-nav-prev { left: .18rem; }
+    .mobile-nav-next { right: .18rem; }
     .gallery-footer { margin-top: 3rem; }
     .services-btn   { padding: 0 1rem; font-size: .72rem; }
   }
 
   @media (prefers-reduced-motion: reduce) {
     .card img,
-    .info,
-    .info-chip,
     .card-index-inner,
+    .card-title,
     .intro-card,
     .services-btn,
     .services-btn-text,
-    .services-btn-flip::after,
-    .mobile-preview-card,
-    .mobile-preview-slide { transition: none; animation: none; }
+    .services-btn-flip::after { transition: none; animation: none; }
 
     .intro-card { transform: none !important; opacity: 1 !important; }
     .gallery,
     .gallery-intro-group,
     .gallery-content-group { transform: none !important; }
-  }
-
-  @keyframes parallax-gallery-mobile-slideshow {
-    0% {
-      opacity: 0;
-      transform: scale(1.02);
-    }
-
-    8%,
-    40% {
-      opacity: 1;
-      transform: scale(1);
-    }
-
-    56%,
-    100% {
-      opacity: 0;
-      transform: scale(0.985);
-    }
   }
 </style>

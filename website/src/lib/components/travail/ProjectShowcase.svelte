@@ -74,6 +74,11 @@
   let mobileTweenRaf;
   let activeMobileIndex = 0;
   let desktopScrollProgress = 0;
+  let prefersReduced = false;
+  let removeMotionListener;
+  let mobileAutoAdvanceTimer = null;
+  let mobileAutoResumeTimer = null;
+  let isAutoScrollingMobile = false;
 
   const clamp = (v, min = 0, max = 1) => Math.min(max, Math.max(min, v));
 
@@ -142,6 +147,9 @@
   }
 
   function handleMobileRailScroll() {
+    if (!isAutoScrollingMobile) {
+      pauseAndResumeMobileAutoAdvance();
+    }
     if (mobileScrollRaf) cancelAnimationFrame(mobileScrollRaf);
     mobileScrollRaf = requestAnimationFrame(() => {
       updateMobileActive();
@@ -149,11 +157,28 @@
     });
   }
 
-  function scrollToMobileCard(index) {
+  function scrollToMobileCard(index, behavior = "smooth") {
     const card = mobileCardEls[index];
     if (!mobileRailEl || !card) return;
 
     if (mobileTweenRaf) cancelAnimationFrame(mobileTweenRaf);
+
+    if (behavior === "smooth" && "scrollTo" in mobileRailEl) {
+      const target =
+        card.offsetLeft - (mobileRailEl.clientWidth - card.offsetWidth) * 0.5;
+
+      isAutoScrollingMobile = true;
+      mobileRailEl.scrollTo({
+        left: Math.max(0, target),
+        behavior
+      });
+
+      window.setTimeout(() => {
+        isAutoScrollingMobile = false;
+      }, 900);
+
+      return;
+    }
 
     const target =
       card.offsetLeft - (mobileRailEl.clientWidth - card.offsetWidth) * 0.5;
@@ -163,6 +188,7 @@
     const duration = 840;
     const startTime = performance.now();
     mobileRailEl.classList.add("is-programmatic-scrolling");
+    isAutoScrollingMobile = true;
 
     function easeInOutSine(t) {
       return -(Math.cos(Math.PI * t) - 1) / 2;
@@ -182,10 +208,37 @@
       mobileRailEl.scrollLeft = target;
       updateMobileActive();
       mobileRailEl.classList.remove("is-programmatic-scrolling");
+      isAutoScrollingMobile = false;
       mobileTweenRaf = null;
     }
 
     mobileTweenRaf = requestAnimationFrame(frame);
+  }
+
+  function clearMobileAutoTimers() {
+    clearInterval(mobileAutoAdvanceTimer);
+    clearTimeout(mobileAutoResumeTimer);
+    mobileAutoAdvanceTimer = null;
+    mobileAutoResumeTimer = null;
+  }
+
+  function startMobileAutoAdvance() {
+    clearMobileAutoTimers();
+    if (!isMobile || !mobileRailEl || prefersReduced) return;
+
+    mobileAutoAdvanceTimer = setInterval(() => {
+      const nextIndex = (activeMobileIndex + 1) % projects.length;
+      scrollToMobileCard(nextIndex, "smooth");
+    }, 5000);
+  }
+
+  function pauseAndResumeMobileAutoAdvance() {
+    clearMobileAutoTimers();
+    if (!isMobile || prefersReduced) return;
+
+    mobileAutoResumeTimer = setTimeout(() => {
+      startMobileAutoAdvance();
+    }, 7000);
   }
 
   function handleResize() {
@@ -193,6 +246,7 @@
     resizeTimer = setTimeout(() => {
       measure();
       forceScrollEngineUpdate();
+      startMobileAutoAdvance();
     }, 80);
   }
 
@@ -206,12 +260,28 @@
   onMount(() => {
     if (!browser) return;
 
+    const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
+    prefersReduced = mq.matches;
+
+    const onMotion = (event) => {
+      prefersReduced = event.matches;
+      startMobileAutoAdvance();
+    };
+    if (mq.addEventListener) {
+      mq.addEventListener("change", onMotion);
+      removeMotionListener = () => mq.removeEventListener("change", onMotion);
+    } else {
+      mq.addListener(onMotion);
+      removeMotionListener = () => mq.removeListener(onMotion);
+    }
+
     requestAnimationFrame(() => {
       requestAnimationFrame(() => {
         measure();
         registerParallax(handleParallax, { priority: 2 });
         forceScrollEngineUpdate();
         updateMobileActive();
+        startMobileAutoAdvance();
       });
     });
 
@@ -221,6 +291,8 @@
 
     return () => {
       unregisterParallax(handleParallax);
+      removeMotionListener?.();
+      clearMobileAutoTimers();
       clearTimeout(resizeTimer);
       window.removeEventListener("resize", handleResize);
       window.removeEventListener("orientationchange", handleResize);
@@ -231,6 +303,8 @@
   onDestroy(() => {
     if (!browser) return;
     unregisterParallax(handleParallax);
+    removeMotionListener?.();
+    clearMobileAutoTimers();
     clearTimeout(resizeTimer);
     mobileRailEl?.removeEventListener("scroll", handleMobileRailScroll);
     if (mobileScrollRaf) cancelAnimationFrame(mobileScrollRaf);
@@ -331,35 +405,13 @@
         on:mousemove={handleButtonMove}
         on:click={() => navigate(project.page)}
       >
+        <div class="mobile-card-title-wrap" aria-hidden="true">
+          <span class="mobile-card-title">{project.title}</span>
+        </div>
+
         <div class="mobile-image">
           <img src={project.image} alt={project.title} />
-          {#if project.previewImages?.length}
-            <div class="mobile-preview-card" aria-hidden="true">
-              <div class="mobile-preview-slideshow">
-                {#each project.previewImages as image, slideIndex}
-                  <img
-                    src={image.src}
-                    alt=""
-                    class="mobile-preview-slide"
-                    loading="lazy"
-                    style={`--slide-index:${slideIndex}; --slide-count:${project.previewImages.length};`}
-                  />
-                {/each}
-              </div>
-            </div>
-          {/if}
-          <div class="mobile-card-info" aria-hidden="true">
-            <span class="mobile-info-chip mobile-info-title">{project.mobileInfo[0]}</span>
-            {#each project.mobileInfo.slice(1) as info}
-              <span class="mobile-info-chip">{info}</span>
-            {/each}
-          </div>
-          <div
-            class="mobile-card-cta"
-            aria-hidden="true"
-          >
-            {project.button}
-          </div>
+          <div class="mobile-card-plus" aria-hidden="true">+</div>
         </div>
         <div class="mobile-card-index-wrap" aria-hidden="true">
           <span class="mobile-card-index-inner">{project.number}</span>
@@ -368,16 +420,18 @@
     {/each}
     </div>
 
-    <div class="mobile-nav" aria-label="Navigation projets mobile">
+    <div class="mobile-nav-shell" aria-label="Navigation projets mobile">
       <button
         class="mobile-nav-btn mobile-nav-prev"
         class:is-hidden={activeMobileIndex === 0}
         type="button"
         aria-label="Projet précédent"
-        on:mousemove={handleButtonMove}
-        on:click={() => scrollToMobileCard(Math.max(activeMobileIndex - 1, 0))}
+        on:click={() => {
+          pauseAndResumeMobileAutoAdvance();
+          scrollToMobileCard(Math.max(activeMobileIndex - 1, 0), "smooth");
+        }}
       >
-        <span aria-hidden="true">←</span>
+        <span class="mobile-nav-chevron" aria-hidden="true"></span>
       </button>
 
       <button
@@ -385,10 +439,12 @@
         class:is-hidden={activeMobileIndex === projects.length - 1}
         type="button"
         aria-label="Projet suivant"
-        on:mousemove={handleButtonMove}
-        on:click={() => scrollToMobileCard(Math.min(activeMobileIndex + 1, projects.length - 1))}
+        on:click={() => {
+          pauseAndResumeMobileAutoAdvance();
+          scrollToMobileCard(Math.min(activeMobileIndex + 1, projects.length - 1), "smooth");
+        }}
       >
-        <span aria-hidden="true">→</span>
+        <span class="mobile-nav-chevron" aria-hidden="true"></span>
       </button>
     </div>
   </div>
@@ -751,6 +807,7 @@
       display: block;
       width: 100%;
       margin: 0 auto;
+      position: relative;
     }
 
     .mobile-rail {
@@ -762,12 +819,12 @@
       overflow-y: visible;
       padding-top: 0;
       padding-bottom: 2.6rem;
-      padding-left: calc((100vw - clamp(304px, 84vw, 388px)) / 2);
-      padding-right: calc((100vw - clamp(304px, 84vw, 388px)) / 2);
+      padding-left: calc((100vw - clamp(292px,84vw,368px)) / 2);
+      padding-right: calc((100vw - clamp(292px,84vw,368px)) / 2);
       scroll-snap-type: x mandatory;
       scroll-snap-stop: always;
-      scroll-padding-left: calc((100vw - clamp(304px, 84vw, 388px)) / 2);
-      scroll-padding-right: calc((100vw - clamp(304px, 84vw, 388px)) / 2);
+      scroll-padding-left: calc((100vw - clamp(292px,84vw,368px)) / 2);
+      scroll-padding-right: calc((100vw - clamp(292px,84vw,368px)) / 2);
       -webkit-overflow-scrolling: touch;
       overscroll-behavior-x: contain;
       scrollbar-width: none;
@@ -783,8 +840,8 @@
 
     .mobile-card {
       position: relative;
-      flex: 0 0 clamp(304px, 84vw, 388px);
-      width: clamp(304px, 84vw, 388px);
+      flex: 0 0 clamp(292px,84vw,368px);
+      width: clamp(292px,84vw,368px);
       display: block;
       scroll-snap-align: center;
       scroll-snap-stop: always;
@@ -804,9 +861,35 @@
       -webkit-tap-highlight-color: transparent;
     }
 
+    .mobile-card-title-wrap {
+      position: absolute;
+      left: 14px;
+      right: 14px;
+      bottom: 2.45rem;
+      z-index: 8;
+      pointer-events: none;
+      overflow: hidden;
+    }
+
+    .mobile-card-title {
+      display: block;
+      font-family: "Clash Display", sans-serif;
+      font-size: 1.46rem;
+      font-weight: 400;
+      line-height: 1.04;
+      max-width: 15ch;
+      color: rgba(255,255,255,.98);
+      text-shadow: 0 1px 10px rgba(0,0,0,.34);
+      opacity: 0;
+      transform: translate3d(0,-115%,0);
+      transition:
+        transform .42s cubic-bezier(.22,.61,.36,1),
+        opacity .32s ease;
+    }
+
     .mobile-image {
       position: relative;
-      aspect-ratio: 0.88 / 1.34;
+      aspect-ratio: .8 / 1.76;
       overflow: hidden;
       background: #080808;
       border-radius: 3px;
@@ -824,70 +907,14 @@
       will-change: transform, filter;
     }
 
-    .mobile-card-info {
-      position: absolute;
-      top: 12px;
-      left: 12px;
-      display: flex;
-      flex-direction: column;
-      align-items: flex-start;
-      gap: 7px;
-      opacity: 0;
-      transform: translate3d(0, -10px, 0);
-      transition: opacity .28s ease, transform .28s ease;
-      z-index: 2;
-      pointer-events: none;
-    }
-
-    .mobile-preview-card {
-      position: absolute;
-      left: 12px;
-      bottom: 12px;
-      z-index: 2;
-      width: clamp(5.7rem, 24vw, 7.3rem);
-      aspect-ratio: 0.88;
-      overflow: hidden;
-      border-radius: 2px;
-      background: rgba(255, 255, 255, 0.94);
-      box-shadow: 0 18px 48px rgba(11, 8, 5, 0.28);
-      opacity: 0;
-      transform: translate3d(0, 10px, 0) scale(0.985);
-      transition:
-        opacity .34s ease,
-        transform .42s cubic-bezier(.22,.61,.36,1);
-      pointer-events: none;
-    }
-
-    .mobile-preview-slideshow {
-      position: relative;
-      width: 100%;
-      height: 100%;
-      background: #111;
-    }
-
-    .mobile-preview-slide {
-      position: absolute;
-      inset: 0;
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      opacity: 0;
-      animation-name: project-showcase-slideshow;
-      animation-duration: calc(var(--slide-count) * 1.85s);
-      animation-timing-function: ease-in-out;
-      animation-iteration-count: infinite;
-      animation-delay: calc(var(--slide-index) * 1.85s);
-      animation-fill-mode: both;
-    }
-
     .mobile-card-index-wrap {
       position: absolute;
-      left: 0;
-      bottom: -30px;
-      z-index: 6;
+      left: 14px;
+      bottom: 12px;
+      z-index: 8;
       overflow: hidden;
       width: max-content;
-      height: 1.1em;
+      height: 1.15em;
       pointer-events: none;
     }
 
@@ -895,11 +922,12 @@
       display: block;
       font-family: "Clash Display", sans-serif;
       font-style: normal;
-      font-weight: 500;
-      font-size: 1.05rem;
+      font-weight: 400;
+      font-size: .82rem;
       line-height: 1;
       letter-spacing: -0.02em;
-      color: rgba(245, 241, 232, 0.8);
+      color: rgba(53,53,53,.98);
+      text-shadow: 0 1px 8px rgba(0,0,0,.32);
       opacity: 0;
       transform: translate3d(0, -115%, 0);
       transition:
@@ -907,39 +935,26 @@
         opacity .32s ease;
     }
 
-    .mobile-info-chip {
+    .mobile-card-plus {
+      position: absolute;
+      right: 14px;
+      bottom: 12px;
+      z-index: 8;
       display: inline-flex;
       align-items: center;
-      min-height: 30px;
-      padding: .36rem .78rem .4rem;
-      border: 1px solid rgba(255, 255, 255, .08);
-      backdrop-filter: blur(8px);
-      -webkit-backdrop-filter: blur(8px);
-      background: rgba(255, 255, 255, .14);
-      color: #fff;
-      border-radius: 3px;
+      justify-content: center;
+      color: rgba(255,255,255,.98);
+      text-shadow: 0 1px 8px rgba(0,0,0,.32);
+      font-family: "Junicode", serif;
+      font-size: 2.45rem;
+      font-weight: 300;
       line-height: 1;
-      white-space: nowrap;
-      transform: translate3d(0, 10px, 0);
-      opacity: 0;
       transition:
-        opacity .34s ease,
         transform .42s cubic-bezier(.22,.61,.36,1),
-        background .28s ease;
-      font-family: "Clash Display", sans-serif;
-      font-size: .78rem;
-      font-weight: 400;
-      letter-spacing: -0.02em;
-    }
-
-    .mobile-info-title {
-      font-family: "Clash Display", sans-serif;
-      font-style: normal;
-      font-weight: 500;
-      font-size: clamp(1.3rem, 6vw, 1.7rem);
-      letter-spacing: -0.035em;
-      min-height: 42px;
-      padding: .42rem 1rem .48rem;
+        opacity .32s ease;
+      transform: translate3d(0,-115%,0);
+      opacity: 0;
+      pointer-events: none;
     }
 
     .mobile-card.is-active .mobile-image img {
@@ -947,159 +962,64 @@
       transform: scale(1.02) translateZ(0);
     }
 
-    .mobile-card.is-active .mobile-card-info {
-      opacity: 1;
-      transform: translate3d(0, 0, 0);
-    }
-
+    .mobile-card.is-active .mobile-card-title,
     .mobile-card.is-active .mobile-card-index-inner {
       opacity: 1;
       transform: translate3d(0, 0, 0);
     }
 
-    .mobile-card.is-active .mobile-preview-card {
-      opacity: 1;
-      transform: translate3d(0, 0, 0) scale(1);
-      transition-delay: .18s;
-    }
-
-    .mobile-card.is-active .mobile-info-chip {
+    .mobile-card.is-active .mobile-card-plus {
       opacity: 1;
       transform: translate3d(0, 0, 0);
     }
 
-    .mobile-card.is-active .mobile-info-chip:nth-child(1) {
-      transition-delay: .02s;
-    }
-
-    .mobile-card.is-active .mobile-info-chip:nth-child(2) {
-      transition-delay: .06s;
-    }
-
-    .mobile-card.is-active .mobile-info-chip:nth-child(3) {
-      transition-delay: .10s;
-    }
-
-    .mobile-card.is-active .mobile-info-chip:nth-child(4) {
-      transition-delay: .14s;
-    }
-
-    .mobile-card.is-active .mobile-info-chip:nth-child(5) {
-      transition-delay: .18s;
-    }
-
-    .mobile-card-cta {
+    .mobile-nav-shell {
       position: absolute;
-      right: 12px;
-      bottom: 12px;
-      display: inline-flex;
-      align-items: center;
-      min-height: 42px;
-      padding: .42rem 1rem .48rem;
-      border: 1px solid rgba(255, 255, 255, .08);
-      backdrop-filter: blur(8px);
-      -webkit-backdrop-filter: blur(8px);
-      background: rgba(255, 255, 255, .14);
-      color: #fff;
-      border-radius: 3px;
-      line-height: 1;
-      white-space: nowrap;
-      font-family: "Clash Display", sans-serif;
-      font-style: normal;
-      font-weight: 500;
-      font-size: clamp(1.3rem, 6vw, 1.7rem);
-      letter-spacing: -0.035em;
-      z-index: 3;
-      transform: translate3d(0, 10px, 0);
-      opacity: 0;
-      transition:
-        opacity .34s ease,
-        transform .42s cubic-bezier(.22,.61,.36,1);
-    }
-
-    .mobile-card.is-active .mobile-card-cta {
-      opacity: 1;
-      transform: translate3d(0, 0, 0);
-      transition-delay: .22s;
-    }
-
-    .mobile-nav {
-      width: min(92vw, 520px);
-      margin: 0.2rem auto 0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 0.65rem;
+      inset: 0;
+      pointer-events: none;
     }
 
     .mobile-nav-btn {
-      position: relative;
-      width: 42px;
-      height: 42px;
+      position: absolute;
+      top: calc(2rem + (clamp(292px,84vw,368px) * 1.76 / 0.8) * 0.5);
+      width: 3rem;
+      height: 3rem;
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      border: 1px solid rgba(255, 255, 255, .12);
-      border-radius: 2px;
-      background: rgba(255, 255, 255, .08);
+      transform: translateY(-50%);
+      border: 0;
+      background: transparent;
       color: #fff;
-      font-family: "Clash Display", sans-serif;
-      font-size: 1rem;
       cursor: pointer;
       appearance: none;
       -webkit-appearance: none;
       outline: none;
       -webkit-tap-highlight-color: transparent;
+      z-index: 10;
+      pointer-events: auto;
+      padding: 0;
       transition:
-        opacity .32s ease,
-        transform .32s ease;
+        opacity .35s ease;
     }
 
-    .mobile-nav-btn::before,
-    .mobile-nav-btn::after {
-      content: "";
-      position: absolute;
-      inset: -1px;
-      border-radius: inherit;
-      pointer-events: none;
-      opacity: 0;
+    .mobile-nav-prev { left: .45rem; }
+    .mobile-nav-next { right: .45rem; }
+
+    .mobile-nav-chevron {
+      display: block;
+      width: 1.35rem;
+      height: 1.35rem;
+      border-top: 1.5px solid currentColor;
+      border-right: 1.5px solid currentColor;
+      filter: drop-shadow(0 1px 8px rgba(0,0,0,.34));
     }
 
-    .mobile-nav-btn::before {
-      border: 1px solid transparent;
-      border-image-slice: 1;
-      border-image-source: radial-gradient(
-        68px circle at var(--mx, 50%) var(--my, 50%),
-        rgba(255, 225, 140, 1) 0%,
-        rgba(212, 175, 55, 0.95) 22%,
-        rgba(212, 102, 55, 0.55) 45%,
-        rgba(212, 102, 55, 0.12) 62%,
-        transparent 78%
-      );
-      transition: opacity 0.25s ease;
-    }
-
-    .mobile-nav-btn::after {
-      border: 1px solid transparent;
-      border-image-slice: 1;
-      border-image-source: radial-gradient(
-        78px circle at var(--mx, 50%) var(--my, 50%),
-        rgba(212, 175, 55, 0.55) 0%,
-        rgba(212, 102, 55, 0.22) 42%,
-        transparent 72%
-      );
-      filter: blur(2px);
-      transition: opacity 0.25s ease;
-    }
-
-    .mobile-nav-btn:hover::before,
-    .mobile-nav-btn:hover::after {
-      opacity: 1;
-    }
+    .mobile-nav-prev .mobile-nav-chevron { transform: rotate(-135deg); }
+    .mobile-nav-next .mobile-nav-chevron { transform: rotate(45deg); }
 
     .mobile-nav-btn.is-hidden {
       opacity: 0;
-      transform: translate3d(0, 6px, 0);
       pointer-events: none;
     }
   }
@@ -1108,26 +1028,40 @@
     .mobile-rail {
       gap: .8rem;
       padding-bottom: 2.45rem;
-      padding-left: calc((100vw - clamp(292px, 84vw, 360px)) / 2);
-      padding-right: calc((100vw - clamp(292px, 84vw, 360px)) / 2);
-      scroll-padding-left: calc((100vw - clamp(292px, 84vw, 360px)) / 2);
-      scroll-padding-right: calc((100vw - clamp(292px, 84vw, 360px)) / 2);
+      padding-left: calc((100vw - clamp(276px,84vw,338px)) / 2);
+      padding-right: calc((100vw - clamp(276px,84vw,338px)) / 2);
+      scroll-padding-left: calc((100vw - clamp(276px,84vw,338px)) / 2);
+      scroll-padding-right: calc((100vw - clamp(276px,84vw,338px)) / 2);
     }
 
     .mobile-card {
-      flex-basis: clamp(292px, 84vw, 360px);
-      width: clamp(292px, 84vw, 360px);
+      flex-basis: clamp(276px,84vw,338px);
+      width: clamp(276px,84vw,338px);
     }
+
+    .mobile-card-title-wrap { left: 12px; right: 12px; bottom: 2.3rem; }
+    .mobile-card-title { font-size: 1.28rem; }
+    .mobile-card-index-wrap { bottom: 12px; left: 12px; }
+    .mobile-card-plus { right: 12px; bottom: 12px; }
+    .mobile-nav-btn { width: 2.6rem; height: 2.6rem; }
+    .mobile-nav-chevron {
+      width: 1.18rem;
+      height: 1.18rem;
+      border-top-width: 1.4px;
+      border-right-width: 1.4px;
+    }
+    .mobile-nav-prev { left: .3rem; }
+    .mobile-nav-next { right: .3rem; }
   }
 
   @media (max-width: 420px) {
     .mobile-rail {
       gap: .75rem;
       padding-bottom: 2.3rem;
-      padding-left: calc((100vw - 84vw) / 2);
-      padding-right: calc((100vw - 84vw) / 2);
-      scroll-padding-left: calc((100vw - 84vw) / 2);
-      scroll-padding-right: calc((100vw - 84vw) / 2);
+      padding-left: calc((100vw - 86vw) / 2);
+      padding-right: calc((100vw - 86vw) / 2);
+      scroll-padding-left: calc((100vw - 86vw) / 2);
+      scroll-padding-right: calc((100vw - 86vw) / 2);
     }
 
     .mobile-card {
@@ -1135,48 +1069,19 @@
       width: 86vw;
     }
 
-    .mobile-card-info {
-      top: 10px;
-      left: 10px;
-      gap: 6px;
+    .mobile-card-title-wrap { left: 10px; right: 10px; bottom: 2.15rem; }
+    .mobile-card-title { font-size: 1.18rem; }
+    .mobile-card-index-wrap { bottom: 10px; left: 10px; }
+    .mobile-card-plus { right: 10px; bottom: 10px; }
+    .mobile-nav-btn { width: 2.35rem; height: 2.35rem; }
+    .mobile-nav-chevron {
+      width: 1.06rem;
+      height: 1.06rem;
+      border-top-width: 1.3px;
+      border-right-width: 1.3px;
     }
-
-    .mobile-preview-card {
-      left: 10px;
-      bottom: 10px;
-      width: clamp(5.2rem, 24vw, 6.5rem);
-    }
-
-    .mobile-card-index-wrap {
-      bottom: -26px;
-    }
-
-    .mobile-info-title {
-      min-height: 38px;
-      padding: .36rem .9rem .42rem;
-    }
-
-    .mobile-info-chip {
-      padding: .32rem .72rem .36rem;
-      font-size: .72rem;
-    }
-
-    .mobile-card-cta {
-      right: 10px;
-      bottom: 10px;
-      min-height: 38px;
-      padding: .36rem .9rem .42rem;
-      font-size: 1.15rem;
-    }
-
-    .mobile-nav {
-      gap: 0.55rem;
-    }
-
-    .mobile-nav-btn {
-      width: 40px;
-      height: 40px;
-    }
+    .mobile-nav-prev { left: .18rem; }
+    .mobile-nav-next { right: .18rem; }
   }
 
   @media (prefers-reduced-motion: reduce) {
@@ -1185,8 +1090,10 @@
     .nav-btn,
     .nav-btn-text,
     .nav-btn-flip::after,
-    .visual-floating-card,
-    .mobile-preview-card {
+    .mobile-card-title,
+    .mobile-card-index-inner,
+    .mobile-card-plus,
+    .mobile-nav-btn {
       transition: none !important;
       animation: none !important;
     }

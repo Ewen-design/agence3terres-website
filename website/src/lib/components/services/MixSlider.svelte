@@ -22,7 +22,7 @@
       navTitle: "UI DESIGN",
       title: "UI\nDESIGN",
       description: "Nous concevons des interfaces élégantes, lisibles et sensibles, pensées pour traduire l’univers d’une marque dans des expériences digitales fluides et immersives.",
-      image: "/images/parfum4.webp"
+      image: "/images/telephone3.webp"
     },
     {
       number: "04",
@@ -36,14 +36,14 @@
       navTitle: "DIRECTION ARTISTIQUE",
       title: "DIRECTION\nARTISTIQUE",
       description: "Nous définissons des directions artistiques fortes pour donner aux marques une présence cohérente, désirable et reconnaissable sur tous leurs supports.",
-      image: "/images/parfum3.webp"
+      image: "/images/telephone3.webp"
     },
     {
       number: "06",
       navTitle: "MOTION CONCEPT",
       title: "MOTION\nCONCEPT",
       description: "Nous imaginons des principes de mouvement et des récits visuels animés qui renforcent l’impact d’une identité et prolongent son expression dans le digital.",
-      image: "/images/parfum2.webp"
+      image: "/images/telephone2.webp"
     }
   ];
 
