@@ -7,7 +7,7 @@
     registerWrite,
     unregisterWrite,
     forceScrollEngineUpdate
-  } from "../scrollEngine.js";
+  } from "$lib/scrollEngine.js";
 
   const leftImages = [
     {

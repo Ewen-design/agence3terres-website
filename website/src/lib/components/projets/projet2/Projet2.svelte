@@ -3,15 +3,15 @@
 </svelte:head>
 
 <script>
-  import ProjectHeroProjetsStyle from "$lib/structure/projects/ProjectHeroProjetsStyle.svelte";
-  import ProjectScrollScaleReveal from "$lib/structure/projects/ProjectScrollScaleReveal.svelte";
-  import ProjectEditorialRole from "$lib/structure/projects/ProjectEditorialRole.svelte";
-  import ProjectStorySlider from "$lib/structure/projects/ProjectStorySlider.svelte";
-  import ProjectEditorialSplit from "$lib/structure/projects/ProjectEditorialSplit.svelte";
-  import ProjectEditorialStatement from "$lib/structure/projects/ProjectEditorialStatement.svelte";
-  import ProjectEditorialMobileShowcase from "$lib/structure/projects/ProjectEditorialMobileShowcase.svelte";
-  import ProjectEditorialHoverMosaic from "$lib/structure/projects/ProjectEditorialHoverMosaic.svelte";
-  import ProjectLinksCarousel from "$lib/structure/projects/ProjectLinksCarousel.svelte";
+  import ProjectHeroProjetsStyle from "$lib/components/projets/shared/ProjectHeroProjetsStyle.svelte";
+  import ProjectScrollScaleReveal from "$lib/components/projets/shared/ProjectScrollScaleReveal.svelte";
+  import ProjectEditorialRole from "$lib/components/projets/shared/ProjectEditorialRole.svelte";
+  import ProjectStorySlider from "$lib/components/projets/shared/ProjectStorySlider.svelte";
+  import ProjectEditorialSplit from "$lib/components/projets/shared/ProjectEditorialSplit.svelte";
+  import ProjectEditorialStatement from "$lib/components/projets/shared/ProjectEditorialStatement.svelte";
+  import ProjectEditorialMobileShowcase from "$lib/components/projets/shared/ProjectEditorialMobileShowcase.svelte";
+  import ProjectEditorialHoverMosaic from "$lib/components/projets/shared/ProjectEditorialHoverMosaic.svelte";
+  import ProjectLinksCarousel from "$lib/components/projets/shared/ProjectLinksCarousel.svelte";
 </script>
 
 <ProjectHeroProjetsStyle

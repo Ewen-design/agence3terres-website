@@ -1,16 +1,16 @@
 <script>
-  import TexteIntro2 from "$lib/sections/TexteIntro2.svelte";
-  import Fonts from "$lib/sections/Fonts.svelte";
-  import StickySlider from "$lib/sections/StickySlider.svelte";
-  import ParallaxGallery2 from "$lib/sections/ParallaxGallery2.svelte";
-  import ProjetsAccordeon from "$lib/sections/ProjetsAccordeon.svelte";
+  import TexteIntro2 from "$lib/components/home/TexteIntro2.svelte";
+  import Fonts from "$lib/components/home/Fonts.svelte";
+  import StickySlider from "$lib/components/home/StickySlider.svelte";
+  import ParallaxGallery2 from "$lib/components/home/ParallaxGallery2.svelte";
+  import ProjetsAccordeon from "$lib/components/home/ProjetsAccordeon.svelte";
   
-    import GalleryColonnes from "$lib/sections/GalleryColonnes.svelte";
-    import Hero from "$lib/sections/Hero.svelte";
-    import HomeScrollScaleReveal from "$lib/sections/HomeScrollScaleReveal.svelte";
-    import MixSliderNarratif from "$lib/sections/MixSliderNarratif.svelte";
-    import IntroSlider from "$lib/sections/IntroSlider.svelte";
-    import FaqAccordion from "$lib/sections/FaqAccordion.svelte";
+    import GalleryColonnes from "$lib/components/home/GalleryColonnes.svelte";
+    import Hero from "$lib/components/home/Hero.svelte";
+    import HomeScrollScaleReveal from "$lib/components/home/HomeScrollScaleReveal.svelte";
+    import MixSliderNarratif from "$lib/components/home/MixSliderNarratif.svelte";
+    import IntroSlider from "$lib/components/home/IntroSlider.svelte";
+    import FaqAccordion from "$lib/components/home/FaqAccordion.svelte";
 </script>
 
 <Hero />

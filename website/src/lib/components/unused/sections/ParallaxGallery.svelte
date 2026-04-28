@@ -1,6 +1,6 @@
 <script>
   import { onMount, onDestroy } from "svelte";
-  import { registerParallax, unregisterParallax } from "../scrollEngine.js";
+  import { registerParallax, unregisterParallax } from "$lib/scrollEngine.js";
   import ProjectOffCanvas from "./ProjectOffCanvas.svelte";
 
   let selected = null;

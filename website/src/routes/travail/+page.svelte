@@ -1,6 +1,6 @@
 <script>
-  import HeroProjets from "$lib/sections/HeroProjets.svelte";
-  import ProjectShowcase from "$lib/sections/ProjectShowcase.svelte";
+  import HeroProjets from "$lib/components/travail/HeroProjets.svelte";
+  import ProjectShowcase from "$lib/components/travail/ProjectShowcase.svelte";
 </script>
 
 <HeroProjets />

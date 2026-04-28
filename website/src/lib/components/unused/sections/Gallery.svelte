@@ -1,6 +1,6 @@
 <script lang="ts">
   import { onMount, onDestroy } from "svelte";
-  import { registerParallax, unregisterParallax } from "../scrollEngine.js";
+  import { registerParallax, unregisterParallax } from "$lib/scrollEngine.js";
 
   type GalleryCard = {
     image: string;

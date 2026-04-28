@@ -1,7 +1,7 @@
 <script>
   import { onMount, onDestroy } from "svelte";
   import { browser } from "$app/environment";
-  import { registerParallax, unregisterParallax } from "../scrollEngine.js";
+  import { registerParallax, unregisterParallax } from "$lib/scrollEngine.js";
   import { navigate } from "$lib/navigate.js";
   import { sharedLightPhase, setExitedLightZone } from "$lib/sectionThemeSync.js";
 

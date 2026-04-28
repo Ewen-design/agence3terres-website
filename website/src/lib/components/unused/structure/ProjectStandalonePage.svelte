@@ -1,10 +1,10 @@
 <script>
   import { projectPages } from "$lib/data/projectPages.js";
-  import ProjectHero from "$lib/structure/projects/ProjectHero.svelte";
-  import ProjectTextBlock from "$lib/structure/projects/ProjectTextBlock.svelte";
-  import ProjectStorySlider from "$lib/structure/projects/ProjectStorySlider.svelte";
-  import ProjectMediaLayout from "$lib/structure/projects/ProjectMediaLayout.svelte";
-  import ProjectFullscreenPanel from "$lib/structure/projects/ProjectFullscreenPanel.svelte";
+  import ProjectHero from "$lib/components/unused/projects/ProjectHero.svelte";
+  import ProjectTextBlock from "$lib/components/unused/projects/ProjectTextBlock.svelte";
+  import ProjectStorySlider from "$lib/components/projets/shared/ProjectStorySlider.svelte";
+  import ProjectMediaLayout from "$lib/components/unused/projects/ProjectMediaLayout.svelte";
+  import ProjectFullscreenPanel from "$lib/components/unused/projects/ProjectFullscreenPanel.svelte";
 
   export let slug = "";
 

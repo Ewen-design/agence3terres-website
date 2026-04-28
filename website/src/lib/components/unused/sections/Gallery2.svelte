@@ -1,12 +1,10 @@
 <script lang="ts">
-  import { onMount, onDestroy, createEventDispatcher } from "svelte";
+  import { onMount, onDestroy } from "svelte";
   import { browser } from "$app/environment";
-  import { registerParallax, unregisterParallax } from "../scrollEngine.js";
+  import { registerParallax, unregisterParallax } from "$lib/scrollEngine.js";
   import { navigate } from "$lib/navigate.js";
 
   export let darkPhase = false;
-
-  const dispatch = createEventDispatcher();
 
   type Finish = {
     color: string;
@@ -46,7 +44,7 @@
       className: "edge-left",
       items: [
         {
-          src: "images/parfum.jpg",
+          src: "images/photo.webp",
           alt: "Ring close-up",
           title: "Ring close-up",
           year: "2024",
@@ -121,7 +119,7 @@
       className: "edge-right",
       items: [
         {
-          src: "images/parfum.jpg",
+          src: "images/photo.webp",
           alt: "Ring detail",
           title: "Ring detail",
           year: "2024",
@@ -241,14 +239,6 @@
         rafId = requestAnimationFrame(tick);
         return;
       }
-
-      const darkTrigger = sectionMetrics.top + Math.min(120, sectionMetrics.height * -0.027);
-      const nextDarkPhase = scrollY > darkTrigger;
-
-      if (nextDarkPhase !== darkPhase) {
-        darkPhase = nextDarkPhase;
-        dispatch("darkchange", darkPhase);
-      }
     }
 
     const targets = cardData.map((c) => {
@@ -288,8 +278,7 @@
           c.curOpacity > 0.5
             ? "saturate(0.94) brightness(0.68) contrast(0.98)"
             : "saturate(0.94) brightness(1.01) contrast(0.98)";
-        c.img.style.transform =
-          c.curOpacity > 0.5 ? "scale(1.05) translateZ(0)" : "translateZ(0)";
+        c.img.style.transform = c.curOpacity > 0.5 ? "scale(1.05) translateZ(0)" : "translateZ(0)";
       }
     });
 
@@ -352,11 +341,53 @@
 </script>
 
 <section
-  class="lifestyle-section top-aligned"
+  class="lifestyles-section"
   class:dark-phase={darkPhase}
   aria-labelledby="lifestyle-title"
   bind:this={lifestyleSection}
 >
+  <div class="canvas-shell">
+    <div class="top">
+      <h2 id="lifestyle-title" class="heading">
+        <span class="title-main">Un projet de</span>
+        <span class="title-accent">Serein Design</span>
+      </h2>
+
+      <p class="project-description">
+        Une direction plus raffinée, plus calme et plus contemporaine.
+        Un univers pensé pour installer une marque premium avec justesse.
+      </p>
+
+      <div class="controls">
+        <div class="finish-card" aria-label="Choix de couleur">
+          {#each finishes as finish, index (finish.color)}
+            <button
+              type="button"
+              class="swatch"
+              class:active={selectedFinish === index}
+              style={`--swatch:${finish.color}`}
+              aria-label={`Choisir la finition ${finish.label}`}
+              aria-pressed={selectedFinish === index}
+              on:click={() => selectFinish(index)}
+            ></button>
+          {/each}
+        </div>
+      </div>
+
+      <button
+        type="button"
+        class="project-button"
+        data-cursor="button"
+        on:mousemove={handleProjectButtonMove}
+        on:click={() => navigate("projet1")}
+      >
+        <span class="project-button-flip" data-text="Voir le projet">
+          <span class="project-button-text">Voir le projet</span>
+        </span>
+      </button>
+    </div>
+  </div>
+
   <div class="gallery-wrap">
     <div class="gallery" aria-label="Galerie visuelle du projet" bind:this={galleryEl}>
       {#each galleryColumns as column (column.className)}
@@ -393,48 +424,6 @@
       {/each}
     </div>
   </div>
-
-  <div class="canvas-shell">
-    <div class="top text-part">
-      <h2 id="lifestyle-title" class="heading">
-        <span class="title-main">Un projet de</span>
-        <span class="title-accent">Hansatsu</span>
-      </h2>
-
-      <p class="project-description">
-        Une identité plus précise, plus contemporaine et plus désirable.
-        Un univers pensé pour affirmer la marque avec force et subtilité.
-      </p>
-
-      <div class="controls">
-        <div class="finish-card" aria-label="Choix de couleur">
-          {#each finishes as finish, index (finish.color)}
-            <button
-              type="button"
-              class="swatch"
-              class:active={selectedFinish === index}
-              style={`--swatch:${finish.color}`}
-              aria-label={`Choisir la finition ${finish.label}`}
-              aria-pressed={selectedFinish === index}
-              on:click={() => selectFinish(index)}
-            ></button>
-          {/each}
-        </div>
-      </div>
-
-      <button
-        type="button"
-        class="project-button"
-        data-cursor="button"
-        on:mousemove={handleProjectButtonMove}
-        on:click={() => navigate("projet2")}
-      >
-        <span class="project-button-flip" data-text="Voir le projet">
-          <span class="project-button-text">Voir le projet</span>
-        </span>
-      </button>
-    </div>
-  </div>
 </section>
 
 <style>
@@ -446,11 +435,12 @@
     margin: 0;
   }
 
-  .lifestyle-section {
-    --bg: #f3efea;
+  .lifestyles-section {
+    --bg: #f4efe6;
+    --bg-top: #f7f4ef;
     --text: #4e4741;
     --muted: #8d857d;
-    --card: transparent;
+    --card: #e9e3db;
     --line: rgba(96, 86, 78, 0.08);
     --line-soft: rgba(96, 86, 78, 0.06);
     --panel-bg: rgba(255, 255, 255, 0.82);
@@ -477,8 +467,9 @@
       color 520ms ease;
   }
 
-  .lifestyle-section.dark-phase {
+  .lifestyles-section.dark-phase {
     --bg: #111;
+    --bg-top: #111;
     --text: #f5f5f5;
     --muted: rgba(255, 255, 255, 0.62);
     --panel-bg: rgba(0, 0, 0, 0.86);
@@ -487,34 +478,6 @@
     --panel-border: rgba(255, 255, 255, 0.1);
     --shadow-ui: 0 1px 0 rgba(255, 255, 255, 0.05) inset,
       0 12px 28px rgba(0, 0, 0, 0.22);
-  }
-
-  .gallery-wrap {
-    width: 100%;
-  }
-
-  .gallery {
-    width: 100%;
-    margin: 0 auto;
-    padding-inline: clamp(0.55rem, 1vw, 0.95rem);
-    display: grid;
-    grid-template-columns:
-      minmax(72px, 0.6fr)
-      minmax(150px, 1.15fr)
-      minmax(130px, 1fr)
-      minmax(220px, 1.6fr)
-      minmax(72px, 0.6fr);
-    gap: 0.8rem;
-    align-items: start;
-  }
-
-  .col {
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-start;
-    gap: 0.72rem;
-    min-height: 30rem;
-    contain: layout paint;
   }
 
   .canvas-shell {
@@ -531,11 +494,7 @@
     flex-direction: column;
     align-items: center;
     gap: 1.1rem;
-  }
-
-  .text-part {
-    margin-top: clamp(2.8rem, 4.2vw, 4rem);
-    margin-bottom: 0;
+    margin-bottom: clamp(2.8rem, 4.2vw, 4rem);
   }
 
   .heading {
@@ -573,7 +532,7 @@
 
   .dark-phase .title-main,
   .dark-phase .title-accent {
-    color: #f4efe6;
+    color: #fff;
   }
 
   .project-description {
@@ -773,6 +732,34 @@
     opacity: 1;
   }
 
+  .gallery-wrap {
+    width: 100%;
+  }
+
+  .gallery {
+    width: 100%;
+    margin: 0 auto;
+    padding-inline: clamp(0.55rem, 1vw, 0.95rem);
+    display: grid;
+    grid-template-columns:
+      minmax(72px, 0.6fr)
+      minmax(150px, 1.15fr)
+      minmax(130px, 1fr)
+      minmax(220px, 1.6fr)
+      minmax(72px, 0.6fr);
+    gap: 0.8rem;
+    align-items: end;
+  }
+
+  .col {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    gap: 0.72rem;
+    min-height: 30rem;
+    contain: layout paint;
+  }
+
   .card {
     position: relative;
     overflow: hidden;
@@ -785,10 +772,12 @@
   .card-image-wrapper {
     position: absolute;
     inset-inline: 0;
-    height: 150%;
-    top: -25%;
+    height: 124%;
+    top: -12%;
     will-change: transform;
     transform: translate3d(0, 0, 0);
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
   }
 
   .card img {
@@ -863,28 +852,28 @@
 
   .edge-left {
     margin-left: clamp(-1.6rem, -1.8vw, -1rem);
-    padding-bottom: 1.1rem;
+    padding-top: 1.1rem;
   }
 
   .portrait-left {
-    padding-bottom: 5.2rem;
+    padding-top: 5.2rem;
   }
 
   .portrait-center {
-    padding-bottom: 8.3rem;
+    padding-top: 8.3rem;
   }
 
   .hero-product {
-    padding-bottom: 4.2rem;
+    padding-top: 4.2rem;
   }
 
   .edge-right {
     margin-right: clamp(-1.6rem, -1.8vw, -1rem);
-    padding-bottom: 0;
+    padding-top: 0;
   }
 
   .left-top {
-    height: 16rem;
+    height: 18rem;
   }
 
   .left-bottom {
@@ -925,7 +914,7 @@
 
     .col {
       min-height: auto;
-      padding-bottom: 0;
+      padding-top: 0;
       margin: 0;
     }
 
@@ -935,12 +924,12 @@
 
     .portrait-center .single {
       height: 14rem;
-      margin-bottom: 2.8rem;
+      margin-top: 2.8rem;
     }
 
     .hero-product .single {
       height: 20rem;
-      margin-bottom: 0.6rem;
+      margin-top: 0.6rem;
     }
   }
 
@@ -949,8 +938,8 @@
       padding: 0 0.9rem 1.2rem;
     }
 
-    .text-part {
-      margin-top: 2rem;
+    .top {
+      margin-bottom: 2rem;
     }
 
     .title-main {
@@ -987,7 +976,6 @@
     .portrait-center,
     .hero-product {
       margin: 0;
-      padding-bottom: 0;
     }
 
     .card-image-wrapper {
@@ -1000,7 +988,7 @@
     .hero-product .single {
       height: auto;
       min-height: 14rem;
-      margin-bottom: 0;
+      margin-top: 0;
     }
 
     .portrait-left .single,
@@ -1014,7 +1002,7 @@
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .lifestyle-section,
+    .lifestyles-section,
     .title-main,
     .title-accent,
     .finish-card,

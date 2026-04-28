@@ -4,9 +4,9 @@
   import { afterNavigate, onNavigate } from "$app/navigation";
   import "../app.css";
 
-  import Header from "$lib/structure/Header.svelte";
-  import Footer from "$lib/structure/Footer.svelte";
-  import CustomCursor from "$lib/structure/CustomCursor.svelte";
+  import Header from "$lib/components/shared/layout/Header.svelte";
+  import Footer from "$lib/components/shared/layout/Footer.svelte";
+  import CustomCursor from "$lib/components/shared/layout/CustomCursor.svelte";
 
   import {
     initScrollEngine,

@@ -7,7 +7,7 @@
     registerWrite,
     unregisterWrite,
     forceScrollEngineUpdate
-  } from "../scrollEngine.js";
+  } from "$lib/scrollEngine.js";
 
   let heroSection;
   let heroMediaEl;
@@ -37,11 +37,11 @@
   let dirty = false;
   let pendingFrame = null;
 
-  const title = "Services";
+  const title = "Projets";
   const heroImages = [
-    "images/telephone_parfum.webp",
     "images/parfum_rouge.webp",
-    "images/parfum_ordinateur.webp"
+    "images/appareil_photo.webp",
+    "images/ordinateur.webp"
   ];
   let activeHeroImage = heroImages[0];
   let incomingHeroImage = "";

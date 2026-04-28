@@ -1,7 +1,7 @@
 <script>
-  import MixSlider from "$lib/sections/MixSlider.svelte";
-  import HeroServices from "$lib/sections/HeroServices.svelte";
-  import ServicesEditorialHoverShowcase from "$lib/sections/ServicesEditorialHoverShowcase.svelte";
+  import MixSlider from "$lib/components/services/MixSlider.svelte";
+  import HeroServices from "$lib/components/services/HeroServices.svelte";
+  import ServicesEditorialHoverShowcase from "$lib/components/services/ServicesEditorialHoverShowcase.svelte";
 </script>
 
 <HeroServices />

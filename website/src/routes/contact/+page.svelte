@@ -1,5 +1,5 @@
 <script>
-  import Contact from "$lib/structure/Contact.svelte";
+  import Contact from "$lib/components/contact/Contact.svelte";
 </script>
 
 <Contact />
