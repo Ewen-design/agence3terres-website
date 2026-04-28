@@ -8,7 +8,7 @@
     import GalleryColonnes from "$lib/components/home/GalleryColonnes.svelte";
     import Hero from "$lib/components/home/Hero.svelte";
     import HomeScrollScaleReveal from "$lib/components/home/HomeScrollScaleReveal.svelte";
-    import MixSliderNarratif from "$lib/components/home/MixSliderNarratif.svelte";
+    import HomeNarrativeFocusSlider from "$lib/components/slider/HomeNarrativeFocusSlider.svelte";
     import IntroSlider from "$lib/components/home/IntroSlider.svelte";
     import FaqAccordion from "$lib/components/home/FaqAccordion.svelte";
 </script>
@@ -22,6 +22,5 @@
 <ParallaxGallery2 />
 
 <IntroSlider />
-<MixSliderNarratif />
+<HomeNarrativeFocusSlider />
 <FaqAccordion />
-

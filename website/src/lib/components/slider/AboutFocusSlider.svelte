@@ -26,4 +26,9 @@
   ];
 </script>
 
-<FocusZoneSlider {slides} zoneHeight="34svh" />
+<FocusZoneSlider
+  {slides}
+  zoneHeight="33svh"
+  itemHeightDesktop="44vh"
+  itemHeightMobile="48svh"
+/>

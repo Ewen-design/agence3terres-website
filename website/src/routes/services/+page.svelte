@@ -1,12 +1,12 @@
 <script>
-  import MixSlider from "$lib/components/services/MixSlider.svelte";
+  import ServicesFocusSlider from "$lib/components/slider/ServicesFocusSlider.svelte";
   import HeroServices from "$lib/components/services/HeroServices.svelte";
   import ServicesEditorialHoverShowcase from "$lib/components/services/ServicesEditorialHoverShowcase.svelte";
 </script>
 
 <HeroServices />
 
-<MixSlider />
+<ServicesFocusSlider />
 
 <ServicesEditorialHoverShowcase
   eyebrow="Services"

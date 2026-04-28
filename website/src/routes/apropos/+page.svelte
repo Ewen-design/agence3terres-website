@@ -1,9 +1,9 @@
 <script>
-  import SliderApropos from "$lib/components/apropos/SliderApropos.svelte";
+  import AboutFocusSlider from "$lib/components/slider/AboutFocusSlider.svelte";
   import VisionSlider from "$lib/components/apropos/VisionSlider.svelte";
   import HeroApropos from "$lib/components/apropos/HeroApropos.svelte";
 </script>
 <HeroApropos />
-<SliderApropos />
+<AboutFocusSlider />
 
 <VisionSlider />
