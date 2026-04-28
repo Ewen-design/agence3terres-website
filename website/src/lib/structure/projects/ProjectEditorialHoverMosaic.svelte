@@ -120,7 +120,7 @@
 
   .project-editorial-hover-mosaic__intro h2 {
     margin: 0;
-    font-family: "Titre italic", serif;
+    font-family: "Clash Display", sans-serif;
     font-size: clamp(1.4rem, 1.8vw, 2rem);
     font-weight: 400;
     line-height: 1;
@@ -135,7 +135,7 @@
   .project-editorial-hover-mosaic__text {
     margin: 0;
     max-width: 21ch;
-    font-family: "General Sans", sans-serif;
+    font-family: "Clash Display", sans-serif;
     font-weight: 300;
     font-size: clamp(1.3rem, 2.8vw, 2.8rem);
     line-height: 1;
@@ -200,7 +200,7 @@
     top: 50%;
     z-index: 2;
     max-width: clamp(5rem, 11vw, 9rem);
-    font-family: "Titre italic", serif;
+    font-family: "Clash Display", sans-serif;
     font-size: clamp(1.45rem, 2.4vw, 2.65rem);
     line-height: 0.92;
     letter-spacing: -0.05em;

@@ -187,7 +187,7 @@
     margin: 0;
     background: #050b14;
     color: white;
-    font-family: "General Sans", sans-serif;
+    font-family: "Clash Display", sans-serif;
   }
 
   :global(*) { box-sizing: border-box; }
@@ -283,7 +283,7 @@
 
   .bottom-left p {
     margin: 0;
-    font-family: "General Sans", sans-serif;
+    font-family: "Clash Display", sans-serif;
     font-weight: 300;
     font-size: clamp(0.82rem, 0.82vw, 0.95rem);
     line-height: 1.5;
@@ -319,8 +319,8 @@
 
   /* ✅ UNIQUEMENT LA POLICE MODIFIÉE */
   h2 {
-    font-family: "Titre", serif;
-    font-weight: 100;
+    font-family: "Clash Display", sans-serif;
+    font-weight: 500;
     font-size: clamp(4.2rem, 7vw, 8.6rem);
     line-height: 0.9;
     white-space: pre-line;
@@ -337,15 +337,15 @@
   h2 span {
     display: inline;
     will-change: opacity, transform;
-    font-family: "Titre", serif;
-    font-weight: 100;
+    font-family: "Clash Display", sans-serif;
+    font-weight: 500;
   }
 
   h2 br + span,
   h2 br + span ~ span {
-    font-family: "Titre italic", serif;
-    font-style: italic;
-    font-weight: 100;
+    font-family: "Clash Display", sans-serif;
+    font-style: normal;
+    font-weight: 500;
   }
 
   @media (min-width: 1440px) {

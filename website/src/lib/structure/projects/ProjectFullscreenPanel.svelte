@@ -43,8 +43,8 @@
 
   .project-fullscreen-panel__copy h2 {
     margin: 0;
-    font-family: "Titre italic", serif;
-    font-style: italic;
+    font-family: "Clash Display", sans-serif;
+    font-style: normal;
     font-size: clamp(2.8rem, 5vw, 4.6rem);
     line-height: 0.92;
     letter-spacing: -0.06em;
@@ -54,7 +54,7 @@
 
   .project-fullscreen-panel__copy p {
     margin: 0.75rem 0 0;
-    font-family: "General Sans", sans-serif;
+    font-family: "Clash Display", sans-serif;
     font-size: clamp(0.98rem, 1.1vw, 1.04rem);
     line-height: 1.55;
     color: rgba(245, 241, 232, 0.86);

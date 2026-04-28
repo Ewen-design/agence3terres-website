@@ -432,8 +432,8 @@
 
   .project-copy h2 {
     margin: 0.35rem 0 0;
-    font-family: "Titre italic", serif;
-    font-style: italic;
+    font-family: "Clash Display", sans-serif;
+    font-style: normal;
     font-size: clamp(3.5rem, 5.4vw, 6.2rem);
     line-height: 0.9;
     letter-spacing: -0.055em;
@@ -578,7 +578,7 @@
 
   .story-rest {
     margin: 0;
-    font-family: "General Sans", sans-serif;
+    font-family: "Clash Display", sans-serif;
     font-size: 1.02rem;
     line-height: 1.7;
     color: rgba(245, 241, 232, 0.78);
@@ -624,7 +624,7 @@
   }
 
   .nav-btn {
-    font-family: "General Sans", sans-serif;
+    font-family: "Clash Display", sans-serif;
     position: relative;
     height: 40px;
     display: inline-flex;
@@ -893,9 +893,9 @@
 
     .mobile-card-index-inner {
       display: block;
-      font-family: "Titre italic", serif;
-      font-style: italic;
-      font-weight: 100;
+      font-family: "Clash Display", sans-serif;
+      font-style: normal;
+      font-weight: 500;
       font-size: 1.05rem;
       line-height: 1;
       letter-spacing: -0.02em;
@@ -926,16 +926,16 @@
         opacity .34s ease,
         transform .42s cubic-bezier(.22,.61,.36,1),
         background .28s ease;
-      font-family: "General Sans", sans-serif;
+      font-family: "Clash Display", sans-serif;
       font-size: .78rem;
       font-weight: 400;
       letter-spacing: -0.02em;
     }
 
     .mobile-info-title {
-      font-family: "Titre italic", serif;
-      font-style: italic;
-      font-weight: 100;
+      font-family: "Clash Display", sans-serif;
+      font-style: normal;
+      font-weight: 500;
       font-size: clamp(1.3rem, 6vw, 1.7rem);
       letter-spacing: -0.035em;
       min-height: 42px;
@@ -1004,9 +1004,9 @@
       border-radius: 3px;
       line-height: 1;
       white-space: nowrap;
-      font-family: "Titre italic", serif;
-      font-style: italic;
-      font-weight: 100;
+      font-family: "Clash Display", sans-serif;
+      font-style: normal;
+      font-weight: 500;
       font-size: clamp(1.3rem, 6vw, 1.7rem);
       letter-spacing: -0.035em;
       z-index: 3;
@@ -1043,7 +1043,7 @@
       border-radius: 2px;
       background: rgba(255, 255, 255, .08);
       color: #fff;
-      font-family: "General Sans", sans-serif;
+      font-family: "Clash Display", sans-serif;
       font-size: 1rem;
       cursor: pointer;
       appearance: none;

@@ -99,7 +99,7 @@
     left: 0;
     right: 0;
     text-align: center;
-    font-family: system-ui, -apple-system, sans-serif;
+    font-family: "Clash Display", sans-serif;
     font-size: 1.6rem;
     color: black;
     display: flex;

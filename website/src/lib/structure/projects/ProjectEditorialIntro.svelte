@@ -48,9 +48,9 @@
 
   .project-intro__title {
     margin: 0;
-    font-family: "Titre italic", serif;
-    font-style: italic;
-    font-weight: 100;
+    font-family: "Clash Display", sans-serif;
+    font-style: normal;
+    font-weight: 500;
     font-size: clamp(2.5rem, 4.4vw, 4.9rem);
     line-height: 0.96;
     letter-spacing: -0.05em;
@@ -74,7 +74,7 @@
   .project-intro__text {
     margin: 0;
     max-width: 28ch;
-    font-family: "General Sans", sans-serif;
+    font-family: "Clash Display", sans-serif;
     font-weight: 300;
     font-size: clamp(1.15rem, 2vw, 1.9rem);
     line-height: 1.14;
@@ -105,14 +105,14 @@
   }
 
   .project-intro__meta-label {
-    font-family: "General Sans", sans-serif;
+    font-family: "Clash Display", sans-serif;
     font-size: 0.88rem;
     line-height: 1.4;
     color: rgba(245, 241, 232, 0.46);
   }
 
   .project-intro__meta-value {
-    font-family: "General Sans", sans-serif;
+    font-family: "Clash Display", sans-serif;
     font-size: 1rem;
     line-height: 1.55;
     color: rgba(245, 241, 232, 0.84);

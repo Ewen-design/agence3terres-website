@@ -27,7 +27,8 @@ html::-webkit-scrollbar {
 
 body {
   margin: 0;
-  font-family: "Manrope", system-ui, -apple-system, sans-serif;
+  font-family: "Clash Display", sans-serif;
+  font-weight: 300;
   background: #000;
   color: #fff;
   min-height: 100%;
@@ -80,8 +81,8 @@ body {
 @font-face {
   font-family: "Titre italic";
   src: url("/fonts/titre-Italic.woff2") format("woff2");
-  font-weight: 100;
-  font-style: italic;
+  font-weight: 500;
+  font-style: normal;
   font-display: swap;
 }
 
@@ -96,7 +97,7 @@ body {
   font-family: "Titre bold italic";
   src: url("/fonts/titre-BoldItalic.woff2") format("woff2");
   font-weight: 700;
-  font-style: italic;
+  font-style: normal;
   font-display: swap;
 }
 

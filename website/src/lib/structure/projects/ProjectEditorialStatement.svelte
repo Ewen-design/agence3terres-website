@@ -22,8 +22,8 @@
   }
 
   .editorial-statement__eyebrow {
-    font-family: "Titre italic", serif;
-    font-style: italic;
+    font-family: "Clash Display", sans-serif;
+    font-style: normal;
     font-size: clamp(1.4rem, 1.8vw, 2rem);
     line-height: 1;
     letter-spacing: -0.02em;
@@ -37,7 +37,7 @@
   .editorial-statement__body p {
     margin: 0;
     max-width: 21ch;
-    font-family: "General Sans", sans-serif;
+    font-family: "Clash Display", sans-serif;
     font-weight: 300;
     font-size: clamp(1.3rem, 2.8vw, 2.8rem);
     line-height: 1;

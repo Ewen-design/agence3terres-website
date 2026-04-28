@@ -499,7 +499,7 @@
     margin: 0;
     background: #050b14;
     color: white;
-    font-family: Inter, sans-serif;
+    font-family: "Clash Display", sans-serif;
   }
 
   .slider {
@@ -661,16 +661,16 @@
     font-size: 1.2rem;
     position: relative;
     z-index: 5;
-    font-family: "Titre italic", serif;
-    font-style: italic;
+    font-family: "Clash Display", sans-serif;
+    font-style: normal;
   }
 
   h2 {
-    font-family: "Titre italic", serif;
-    font-style: italic;
+    font-family: "Clash Display", sans-serif;
+    font-style: normal;
     font-size: clamp(4rem, 7vw, 8rem);
     line-height: 0.95;
-    font-weight: 100;
+    font-weight: 500;
     white-space: pre-line;
     margin: 0;
     color: #f5f1e8;
@@ -775,14 +775,14 @@
   .segment .num {
     flex: 0 0 auto;
     opacity: 0.72;
-    font-family: "Titre italic", serif;
-    font-style: italic;
+    font-family: "Clash Display", sans-serif;
+    font-style: normal;
   }
 
   .segment-title {
     display: block;
     min-width: 0;
-    font-family: "General Sans", sans-serif;
+    font-family: "Clash Display", sans-serif;
     font-style: normal;
     font-weight: 400;
     font-size: clamp(0.58rem, 0.72vw, 0.72rem);
@@ -845,13 +845,13 @@
     flex: 0 0 auto;
     opacity: 0.72;
     font-size: 0.92rem;
-    font-family: "Titre italic", serif;
-    font-style: italic;
+    font-family: "Clash Display", sans-serif;
+    font-style: normal;
   }
 
   .mobile-progress-title {
     min-width: 0;
-    font-family: "General Sans", sans-serif;
+    font-family: "Clash Display", sans-serif;
     font-size: 0.72rem;
     font-weight: 400;
     letter-spacing: 0.04em;
@@ -1066,8 +1066,8 @@
       grid-row: 1;
       color: #fff;
       font-size: 1.3rem;
-      font-family: "Titre italic", serif;
-      font-style: italic;
+      font-family: "Clash Display", sans-serif;
+      font-style: normal;
       opacity: 1;
     }
 

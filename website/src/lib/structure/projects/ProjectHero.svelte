@@ -93,7 +93,7 @@
     display: flex;
     justify-content: space-between;
     gap: 1rem;
-    font-family: "General Sans", sans-serif;
+    font-family: "Clash Display", sans-serif;
     font-size: 0.86rem;
     color: rgba(245, 241, 232, 0.88);
   }
@@ -101,8 +101,8 @@
   .project-hero__headline h1 {
     margin: 0;
     max-width: 10ch;
-    font-family: "Titre italic", serif;
-    font-style: italic;
+    font-family: "Clash Display", sans-serif;
+    font-style: normal;
     font-weight: 400;
     font-size: clamp(4.3rem, 8.6vw, 9rem);
     line-height: 0.88;
@@ -121,7 +121,7 @@
     padding: 0.52rem 0.82rem;
     border: 1px solid rgba(245, 241, 232, 0.14);
     border-radius: 999px;
-    font-family: "General Sans", sans-serif;
+    font-family: "Clash Display", sans-serif;
     font-size: 0.8rem;
     color: rgba(245, 241, 232, 0.82);
     background: rgba(0, 0, 0, 0.08);
@@ -142,9 +142,9 @@
 
   .project-hero__after-title-wrap h2 {
     margin: 0;
-    font-family: "Titre italic", serif;
-    font-style: italic;
-    font-weight: 100;
+    font-family: "Clash Display", sans-serif;
+    font-style: normal;
+    font-weight: 500;
     font-size: clamp(2.8rem, 5vw, 5.6rem);
     line-height: 0.94;
     letter-spacing: -0.05em;
@@ -162,7 +162,7 @@
   .project-hero__after-text {
     margin: 0;
     max-width: 26ch;
-    font-family: "General Sans", sans-serif;
+    font-family: "Clash Display", sans-serif;
     font-weight: 300;
     font-size: clamp(1.25rem, 2.25vw, 2.35rem);
     line-height: 1.06;

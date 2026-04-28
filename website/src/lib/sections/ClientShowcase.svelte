@@ -119,7 +119,8 @@
 }
 
 h2 {
-  font-family: 'Aboreto', serif;
+  font-family: "Clash Display", sans-serif;
+  font-weight: 500;
   font-size: clamp(2.5rem, 4vw, 4rem);
   margin: 20px 0;
 }

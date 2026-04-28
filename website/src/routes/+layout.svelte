@@ -468,12 +468,6 @@
 </script>
 
 <svelte:head>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous" />
-  <link
-    href="https://fonts.googleapis.com/css2?family=Aboreto&family=Manrope:wght@400;500;600;700&display=swap"
-    rel="stylesheet"
-  />
   <link rel="canonical" href={canonicalUrl} />
 
   <meta property="og:title" content={seoTitle} />

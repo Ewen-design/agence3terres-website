@@ -188,7 +188,8 @@
 }
 
 .bg-text {
-	font-family: "Aboreto", serif;
+	font-family: "Clash Display", sans-serif;
+  font-weight: 500;
 	color: #1a1a1a;
 	font-size: clamp(3rem, 6vw, 6rem);
 	line-height: 1.05;
@@ -204,8 +205,9 @@
 }
 
 .accent {
-	font-family: "Playfair Display", serif;
-	font-style: italic;
+	font-family: "Clash Display", sans-serif;
+  font-weight: 500;
+	font-style: normal;
 	background: linear-gradient(
 		to right,
 		#e8d7b5,
@@ -248,7 +250,8 @@
 	align-items: center;
 	justify-content: center;
 	text-align: center;
-	font-family: "Playfair Display", serif;
+	font-family: "Clash Display", sans-serif;
+  font-weight: 500;
 	font-size: 1.6rem;
 	line-height: 1.4;
 	color: #111;
@@ -256,7 +259,8 @@
 
 .panel.right {
 	padding: 2rem;
-	font-family:'General Sans', sans-serif;
+	font-family: "Clash Display", sans-serif;
+  font-weight: 300;
 	font-size: 1.05rem;
 	line-height: 1.5;
 	color: #505050;
@@ -366,7 +370,8 @@
 		padding: 0;
 		display: block;
 		text-align: center;
-		font-family: "Playfair Display", serif;
+		font-family: "Clash Display", sans-serif;
+  font-weight: 500;
 		font-size: 1rem;
 		line-height: 1.2;
 		color: #111;

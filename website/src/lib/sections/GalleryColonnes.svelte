@@ -458,7 +458,7 @@
     font-family: "Clash Display", sans-serif;
     font-style: light;
     font-size: clamp(2.5rem, 6vw, 6rem);
-    font-weight: 100;
+    font-weight: 300;
     line-height: 0.95;
     text-align: center;
     color: var(--section-text);

@@ -380,7 +380,7 @@
   }
 
   .hero h1 {
-    font-family: "Titre", serif;
+    font-family: "Clash Display", sans-serif;
     font-size: clamp(2.8rem, 4.8vw, 4.6rem);
     line-height: 0.95;
     font-weight: 400;
@@ -390,7 +390,7 @@
   .hero p {
     margin-top: 1rem;
     max-width: 28rem;
-    font-family: "General Sans", sans-serif;
+    font-family: "Clash Display", sans-serif;
     font-size: 1rem;
     line-height: 1.5;
     color: rgba(255, 255, 255, 0.72);
@@ -417,7 +417,7 @@
     border-bottom: 1px solid rgba(255, 255, 255, 0.38);
     background: transparent;
     padding: 0.85rem 0;
-    font-family: "General Sans", sans-serif;
+    font-family: "Clash Display", sans-serif;
     font-size: 1rem;
     outline: none;
     color: white;
@@ -432,7 +432,7 @@
     position: absolute;
     left: 0;
     top: 0.85rem;
-    font-family: "General Sans", sans-serif;
+    font-family: "Clash Display", sans-serif;
     font-size: 0.9rem;
     color: rgba(255, 255, 255, 0.58);
     transition: all 0.3s ease;
@@ -535,7 +535,7 @@
   .headline,
   .headline-link {
     margin: 0;
-    font-family: "General Sans", sans-serif;
+    font-family: "Clash Display", sans-serif;
     font-size: clamp(1.55rem, 3.65vw, 3.9rem);
     font-weight: 500;
     line-height: 0.94;
@@ -631,7 +631,7 @@
   }
 
   .nav-btn {
-    font-family: "General Sans", sans-serif;
+    font-family: "Clash Display", sans-serif;
     position: relative;
     height: 40px;
     display: inline-flex;
@@ -1055,7 +1055,7 @@
       width: min(100% - 2.1rem, 30rem);
       margin: 0;
       z-index: 4;
-      font-family: "General Sans", sans-serif;
+      font-family: "Clash Display", sans-serif;
       font-size: 0.76rem;
       color: rgba(255, 255, 255, 0.42);
       text-align: center;

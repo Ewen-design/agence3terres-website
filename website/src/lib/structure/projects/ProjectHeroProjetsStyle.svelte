@@ -427,9 +427,9 @@
   .hero-overlay h1 {
     margin: 0;
     max-width: 8ch;
-    font-family: "Titre italic", serif;
-    font-style: italic;
-    font-weight: 100;
+    font-family: "Clash Display", sans-serif;
+    font-style: normal;
+    font-weight: 500;
     font-size: clamp(4.2rem, 11vw, 13rem);
     line-height: 0.9;
     letter-spacing: -0.05em;
@@ -450,7 +450,7 @@
     position: absolute;
     left: 50%;
     bottom: clamp(1.3rem, 3vw, 2.4rem);
-    font-family: "General Sans", sans-serif;
+    font-family: "Clash Display", sans-serif;
     font-size: clamp(0.82rem, 0.95vw, 0.98rem);
     font-weight: 300;
     letter-spacing: 0.04em;
@@ -529,7 +529,7 @@
     margin: 0;
     width: 100%;
     max-width: 30ch;
-    font-family: "General Sans", sans-serif;
+    font-family: "Clash Display", sans-serif;
     font-weight: 300;
     font-size: clamp(1.3rem, 2.8vw, 2.8rem);
     line-height: 1;

@@ -200,7 +200,8 @@
 
   .hero-title h1 {
     margin: 0;
-    font-family: Aboreto, sans-serif;
+    font-family: "Clash Display", sans-serif;
+  font-weight: 500;
     font-size:clamp(4rem,4vw,8rem);
     font-weight: 700;
     line-height: 0.9;

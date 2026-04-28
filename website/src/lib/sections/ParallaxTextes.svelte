@@ -129,7 +129,8 @@ h1 {
   position: absolute;
   max-width: 900px;
   text-align: center;
-  font-family: "Aboreto", serif;
+  font-family: "Clash Display", sans-serif;
+  font-weight: 500;
   font-size: clamp(2rem, 4vw, 3.5rem);
   line-height: 1.3;
   color: #fff;

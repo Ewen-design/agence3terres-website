@@ -69,8 +69,8 @@
 
   .editorial-role__title-wrap h2 {
     margin: 0;
-    font-family: "Titre italic", serif;
-    font-style: italic;
+    font-family: "Clash Display", sans-serif;
+    font-style: normal;
     font-weight: 400;
     font-size: clamp(2rem, 3vw, 3.2rem);
     line-height: 0.95;
@@ -91,8 +91,8 @@
 
   .editorial-role__item h3 {
     margin: 0;
-    font-family: "Titre italic", serif;
-    font-style: italic;
+    font-family: "Clash Display", sans-serif;
+    font-style: normal;
     font-weight: 400;
     font-size: clamp(1.3rem, 2vw, 2rem);
     line-height: 1.05;
@@ -102,7 +102,7 @@
   .editorial-role__item p {
     margin: 0;
     max-width: 22rem;
-    font-family: "General Sans", sans-serif;
+    font-family: "Clash Display", sans-serif;
     font-size: clamp(0.98rem, 1.1vw, 1.1rem);
     line-height: 1.48;
     color: rgba(18, 18, 18, 0.48);

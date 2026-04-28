@@ -520,8 +520,8 @@
 
   .menu-link-text {
     display: inline-block;
-    font-family: "Titre", serif;
-    font-style: italic;
+    font-family: "Clash Display", sans-serif;
+    font-style: normal;
     font-size: clamp(3.35rem, 4.7vw, 5.6rem);
     line-height: 0.94;
     letter-spacing: -0.025em;
@@ -636,7 +636,7 @@
   }
 
   .project-card-title {
-    font-family: "General Sans", sans-serif;
+    font-family: "Clash Display", sans-serif;
     font-size: 1rem;
     line-height: 1.1;
     letter-spacing: -0.03em;
@@ -652,7 +652,7 @@
   }
 
   .project-card-meta {
-    font-family: "General Sans", sans-serif;
+    font-family: "Clash Display", sans-serif;
     font-size: 0.72rem;
     line-height: 1.2;
     color: rgba(255, 255, 255, 0.5);
@@ -684,7 +684,7 @@
 
   .project-card-text {
     margin: 0;
-    font-family: "General Sans", sans-serif;
+    font-family: "Clash Display", sans-serif;
     font-size: 0.76rem;
     line-height: 1.25;
     color: rgba(255, 255, 255, 0.72);
@@ -815,7 +815,7 @@
   }
 
   .bottom-kicker {
-    font-family: "General Sans", sans-serif;
+    font-family: "Clash Display", sans-serif;
     font-size: 0.9rem;
     letter-spacing: 0.02em;
     color: rgba(255, 255, 255, 0.58);
@@ -823,7 +823,7 @@
   }
 
   .menu-email a {
-    font-family: "General Sans", sans-serif;
+    font-family: "Clash Display", sans-serif;
     font-size: clamp(1.05rem, 1.45vw, 1.5rem);
     line-height: 1;
     letter-spacing: -0.03em;

@@ -133,7 +133,7 @@
     z-index: 2;
     max-width: clamp(5rem, 11vw, 9rem);
     margin: 0;
-    font-family: "Titre italic", serif;
+    font-family: "Clash Display", sans-serif;
     font-size: clamp(1.45rem, 2.4vw, 2.65rem);
     line-height: 0.92;
     letter-spacing: -0.05em;
@@ -234,8 +234,8 @@
   }
 
   .services-editorial-hover-showcase__eyebrow {
-    font-family: "Titre italic", serif;
-    font-style: italic;
+    font-family: "Clash Display", sans-serif;
+    font-style: normal;
     font-size: clamp(1.4rem, 1.8vw, 2rem);
     line-height: 1;
     letter-spacing: -0.02em;
@@ -244,7 +244,7 @@
   .services-editorial-hover-showcase__text-grid p {
     margin: 0;
     max-width: 23ch;
-    font-family: "General Sans", sans-serif;
+    font-family: "Clash Display", sans-serif;
     font-weight: 300;
     font-size: clamp(1.3rem, 2.8vw, 2.8rem);
     line-height: 1;

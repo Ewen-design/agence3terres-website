@@ -42,8 +42,8 @@
 
   .editorial-split__copy h2 {
     margin: 0;
-    font-family: "Titre italic", serif;
-    font-style: italic;
+    font-family: "Clash Display", sans-serif;
+    font-style: normal;
     font-weight: 400;
     font-size: clamp(1.7rem, 2.2vw, 2.5rem);
     line-height: 1;
@@ -53,7 +53,7 @@
   .editorial-split__copy p {
     margin: 1rem 0 0;
     max-width: 26rem;
-    font-family: "General Sans", sans-serif;
+    font-family: "Clash Display", sans-serif;
     font-size: clamp(0.98rem, 1.05vw, 1.06rem);
     line-height: 1.5;
     color: rgba(18, 18, 18, 0.5);

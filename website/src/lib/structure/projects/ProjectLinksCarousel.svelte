@@ -41,7 +41,7 @@
 
   .project-next-link__intro h2 {
     margin: 0;
-    font-family: "Titre italic", serif;
+    font-family: "Clash Display", sans-serif;
     font-size: clamp(1.4rem, 1.8vw, 2rem);
     line-height: 1;
     letter-spacing: -0.02em;
@@ -58,7 +58,7 @@
   .project-next-link__body p {
     margin: 0;
     max-width: 21ch;
-    font-family: "General Sans", sans-serif;
+    font-family: "Clash Display", sans-serif;
     font-weight: 300;
     font-size: clamp(1.3rem, 2.8vw, 2.8rem);
     line-height: 1;
@@ -72,7 +72,7 @@
     background: transparent;
     color: #121212;
     padding: 0.95rem 1.35rem;
-    font-family: "Manrope", sans-serif;
+    font-family: "Clash Display", sans-serif;
     font-size: 0.82rem;
     font-weight: 600;
     letter-spacing: 0.12em;

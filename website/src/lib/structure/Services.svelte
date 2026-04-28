@@ -84,7 +84,8 @@
 }
 
 .hero h1 {
-  font-family: 'Aboreto', serif;
+  font-family: "Clash Display", sans-serif;
+  font-weight: 500;
   font-size: clamp(3rem, 6vw, 6rem);
   line-height: 1.1;
   font-weight: 400;
@@ -146,7 +147,8 @@
 }
 
 h2 {
-  font-family: 'Aboreto', serif;
+  font-family: "Clash Display", sans-serif;
+  font-weight: 500;
   font-size: clamp(2.5rem, 3.5vw, 4rem);
   margin: 20px 0;
 }

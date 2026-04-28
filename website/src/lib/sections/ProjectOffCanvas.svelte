@@ -245,7 +245,7 @@
   }
 
   .nav-btn {
-    font-family: "General Sans", sans-serif;
+    font-family: "Clash Display", sans-serif;
     position: relative;
     width: 56px;
     height: 56px;
@@ -512,7 +512,7 @@
   }
 
   .info h2 {
-    font-family: "Titre", serif;
+    font-family: "Clash Display", sans-serif;
     font-size: 2.6rem;
     margin: 10px 0 20px;
     letter-spacing: 0.5px;
@@ -520,13 +520,13 @@
   }
 
   .info p {
-    font-family: "General Sans", sans-serif;
+    font-family: "Clash Display", sans-serif;
     line-height: 1.6;
     opacity: 0.9;
   }
 
   .date {
-    font-family: "General Sans", sans-serif;
+    font-family: "Clash Display", sans-serif;
     font-size: 0.9rem;
     opacity: 0.7;
     letter-spacing: 1px;

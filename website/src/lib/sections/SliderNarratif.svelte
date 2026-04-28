@@ -556,8 +556,8 @@
   .story-slider__slide-title {
     margin: 0;
     color: #f5f1e8;
-    font-family: "Titre italic", serif;
-    font-style: italic;
+    font-family: "Clash Display", sans-serif;
+    font-style: normal;
     font-weight: 400;
     font-size: clamp(3.5rem, 8vw, 8.4rem);
     line-height: 0.94;
@@ -619,7 +619,7 @@
     width: 100%;
     margin: 0;
     color: rgba(255, 255, 255, 1);
-    font-family: "General Sans", sans-serif;
+    font-family: "Clash Display", sans-serif;
     font-size: clamp(1.15rem, 2.05vw, 2.05rem);
     font-weight: 300;
     line-height: 1.08;
@@ -640,7 +640,7 @@
   }
 
   .nav-btn {
-    font-family: "General Sans", sans-serif;
+    font-family: "Clash Display", sans-serif;
     position: relative;
     height: 40px;
     display: flex;
@@ -765,8 +765,8 @@
   .story-slider__progress-index {
     flex: 0 0 auto;
     color: #f5f1e8;
-    font-family: "Titre italic", serif;
-    font-style: italic;
+    font-family: "Clash Display", sans-serif;
+    font-style: normal;
     font-size: 0.95rem;
     line-height: 1;
     letter-spacing: 0.02em;

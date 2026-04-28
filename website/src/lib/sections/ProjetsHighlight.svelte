@@ -260,14 +260,15 @@
   }
 
   .projects-header h2 {
-    font-family: "Aboreto", serif;
+    font-family: "Clash Display", sans-serif;
+  font-weight: 500;
     font-size: clamp(2.5rem, 4vw, 4rem);
     letter-spacing: 0.05em;
     margin-bottom: 1.2rem;
   }
 
   .projects-header p {
-    font-family: "Manrope", sans-serif;
+    font-family: "Clash Display", sans-serif;
     opacity: 0.6;
     line-height: 1.6;
   }
@@ -358,7 +359,8 @@
   }
 
   .overlay h3 {
-    font-family: "Aboreto", serif;
+    font-family: "Clash Display", sans-serif;
+  font-weight: 500;
     font-size: 1.8rem;
     margin: 0.5rem 0;
   }
@@ -380,7 +382,7 @@
     position: absolute;
     top: 18px;
     right: 18px;
-    font-family: "Manrope", sans-serif;
+    font-family: "Clash Display", sans-serif;
     font-size: 0.65rem;
     letter-spacing: 0.18em;
     color: rgba(255, 255, 255, 0.3);
@@ -405,7 +407,7 @@
     border: 1px solid white;
     color: white;
     text-decoration: none;
-    font-family: "Manrope", sans-serif;
+    font-family: "Clash Display", sans-serif;
     font-size: 0.8rem;
     letter-spacing: 0.2em;
     text-transform: uppercase;
