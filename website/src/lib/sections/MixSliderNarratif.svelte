@@ -13,16 +13,16 @@
     },
     {
       number: "02",
-      navTitle: "HANSATSU",
-      title: "HANSATSU",
+      navTitle: "Hansatsu",
+      title: "Hansatsu",
       description:
         "Une présence plus sensorielle, plus singulière. Un travail d’image et de narration conçu pour installer une esthétique précise, immersive et raffinée autour du produit.",
       image: "/images/parfum_rouge.webp"
     },
     {
       number: "03",
-      navTitle: "VOTRE PROJET ?",
-      title: "VOTRE\nPROJET ?",
+      navTitle: "Votre projet ?",
+      title: "Votre\nprojet ?",
       description:
         "Une approche sur mesure pour révéler votre singularité. Identité, direction artistique ou territoire de marque : chaque projet est pensé avec exigence, cohérence et impact.",
       image: "/images/telephone2.webp"

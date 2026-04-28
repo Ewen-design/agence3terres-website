@@ -103,13 +103,13 @@
 
   const DESKTOP_TEXT_CENTER = 0.56;
   const DESKTOP_TEXT_ENTER_RANGE = 0.5;
-  const DESKTOP_TEXT_LEAVE_RANGE = 1.08;
+  const DESKTOP_TEXT_LEAVE_RANGE = 1.18;
   const DESKTOP_GALLERY_CENTER = 0.58;
   const DESKTOP_GALLERY_RANGE = 0.72;
 
   const MOBILE_TEXT_CENTER = 0.57;
   const MOBILE_TEXT_ENTER_RANGE = 0.42;
-  const MOBILE_TEXT_LEAVE_RANGE = 0.76;
+  const MOBILE_TEXT_LEAVE_RANGE = 0.84;
   const MOBILE_GALLERY_CENTER = 0.82;
   const MOBILE_GALLERY_RANGE = 0.34;
 
@@ -437,7 +437,10 @@
 
   .fixed-text {
     position: fixed;
-    inset: 0;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: var(--viewport-height);
     display: grid;
     place-items: center;
     z-index: 999;
@@ -457,10 +460,13 @@
     font-size: clamp(2.5rem, 6vw, 6rem);
     font-weight: 100;
     line-height: 0.95;
-   
     text-align: center;
     color: var(--section-text);
     text-wrap: balance;
+    text-shadow:
+      0 26px 56px rgba(0, 0, 0, 0.72),
+      0 12px 28px rgba(0, 0, 0, 0.6),
+      0 4px 10px rgba(0, 0, 0, 0.5);
   }
 
   .letter {
