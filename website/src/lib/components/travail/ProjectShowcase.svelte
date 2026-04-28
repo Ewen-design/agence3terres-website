@@ -15,7 +15,7 @@
       category: "Identite produit",
       lead: "Un univers objet premium, calme et fonctionnel.",
       rest: "Une direction pensée pour traduire une elegance sobre, technologique et durable a travers une identite visuelle claire et sensible.",
-      image: "/images/serein_design.webp",
+      image: "/images/telephone3.webp",
       previewImages: [
         { src: "/images/telephone2.webp", alt: "Apercu mobile Serein Design" },
         { src: "/images/telephone_main.webp", alt: "Detail interface Serein Design" },

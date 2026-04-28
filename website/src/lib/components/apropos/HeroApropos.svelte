@@ -10,52 +10,63 @@
   } from "$lib/scrollEngine.js";
 
   let heroSection;
-  let heroMediaEl;
-  let heroDarkLayerEl;
-  let scrollHintEl;
+  let heroStage;
   let afterTextEl;
-  let afterTextEntered = false;
+  let afterImageEl;
+  let heroMediaImgEl;
+  let heroDarkLayerEl;
+
+  let introStarted = false;
+  let introVisible = false;
+  let heroMediaVisible = false;
+
+  let fallbackTimeout;
+  let mediaIntroTimeout;
+  let afterImageRotationTimeout;
+  let afterImageFadeTimeout;
+  let resizeObserver;
+  let resizeTimer;
 
   let vh = 1;
+  let isMobile = false;
   let heroTop = 0;
   let heroHeight = 1;
   let afterTextTop = 0;
+  let afterImageTop = 0;
 
-  let introVisible = false;
-  let hintVisible = false;
-
-  let fallbackTimeout;
-  let hintTimeout;
-  let heroImageRotationTimeout;
-  let heroImageFadeTimeout;
-  let resizeObserver;
-  let resizeTimer;
-  let afterTextObserver;
-
-  let isActive = true;
-  let isMobile = false;
-  let dirty = false;
   let pendingFrame = null;
+  let dirty = false;
 
-  const title = "À propos";
-  const heroImages = [
+  let applied = {
+    imageScale: -1,
+    imageBrightness: -1,
+    imageOpacity: -1,
+    imageDark: -1,
+    textOpacity: -1,
+    textY: -9999,
+    textEdge: -9999,
+    smallImageScale: -1,
+    smallImageY: -9999
+  };
+
+  const finalText =
+    "Nous concevons des identités, des expériences et des univers visuels pensés pour marquer durablement les esprits.";
+  const afterImages = [
     "images/telephone2.webp",
-    "images/photo2.webp",
-    "images/telephone_parfum.webp"
+    "images/telephone2_parfum.webp",
+    "images/telephone_main.webp"
   ];
-  let activeHeroImage = heroImages[0];
-  let incomingHeroImage = "";
-  let incomingHeroImageVisible = false;
-  let heroImageIndex = 0;
-  let heroImagesReady = false;
-  let isHeroImageTransitioning = false;
+
+  let activeAfterImage = afterImages[0];
+  let incomingAfterImage = "";
+  let incomingAfterImageVisible = false;
+  let afterImageIndex = 0;
+  let afterImagesReady = false;
+  let isAfterImageTransitioning = false;
 
   const IMAGE_ROTATION_INTERVAL = 2600;
   const IMAGE_FADE_DURATION = 1150;
   const IMAGE_RETRY_DELAY = 700;
-
-  const finalText =
-    "Nous concevons des identités, des expériences et des univers visuels pensés pour marquer durablement les esprits.";
 
   const words = finalText.split(" ");
 
@@ -74,60 +85,9 @@
     charCount = nextCount;
   }
 
-  let applied = {
-    imageScale: -1,
-    imageBrightness: -1,
-    imageDark: -1,
-    hintOpacity: -1,
-    hintY: -9999,
-    hintBlur: -1,
-    textOpacity: -1,
-    textX: -9999,
-    textY: -9999,
-    textEdge: -9999
-  };
-
   const clamp = (v, min = 0, max = 1) => Math.max(min, Math.min(max, v));
   const lerp = (a, b, t) => a + (b - a) * t;
   const q = (v, step) => Math.round(v / step) * step;
-
-  function easeInOutSine(t) {
-    const x = clamp(t, 0, 1);
-    return -(Math.cos(Math.PI * x) - 1) / 2;
-  }
-
-  function easeOutCubic(t) {
-    const x = clamp(t, 0, 1);
-    return 1 - Math.pow(1 - x, 3);
-  }
-
-  function easeOutQuart(t) {
-    const x = clamp(t, 0, 1);
-    return 1 - Math.pow(1 - x, 4);
-  }
-
-  function easeInCubic(t) {
-    const x = clamp(t, 0, 1);
-    return x * x * x;
-  }
-
-  function getPremiumFlowOffset(progress, distance, centerDrag = 0.04) {
-    const entryEnd = 0.46;
-    const centerEnd = 0.56;
-
-    if (progress <= entryEnd) {
-      const t = easeInOutSine(progress / entryEnd);
-      return distance * (1 - t) + distance * centerDrag * 0.5 * t;
-    }
-
-    if (progress < centerEnd) {
-      const t = easeInOutSine((progress - entryEnd) / (centerEnd - entryEnd));
-      return distance * centerDrag * (0.5 - t);
-    }
-
-    const t = easeInOutSine((progress - centerEnd) / (1 - centerEnd));
-    return -distance * centerDrag * 0.5 * (1 - t) + -distance * t;
-  }
 
   function getScrollY() {
     return window.scrollY || window.pageYOffset || 0;
@@ -141,17 +101,14 @@
 
   function measureLayout() {
     vh = window.innerHeight || 1;
-    isMobile = window.innerWidth <= 900;
+    isMobile = (window.innerWidth || 0) <= 640;
     heroTop = getAbsoluteTop(heroSection);
-    afterTextTop = getAbsoluteTop(afterTextEl);
     heroHeight = Math.max(heroSection?.offsetHeight || 1, 1);
+    afterTextTop = getAbsoluteTop(afterTextEl);
+    afterImageTop = getAbsoluteTop(afterImageEl);
   }
 
-  function updateAllMeasures() {
-    measureLayout();
-  }
-
-  function getLocalRevealFromAbsolute(scrollY, absTop, startMul = 0.92, endMul = 0.14) {
+  function getLocalRevealFromAbsolute(scrollY, absTop, startMul = 0.9, endMul = 0.2) {
     const topInViewport = absTop - scrollY;
     const start = vh * startMul;
     const end = vh * endMul;
@@ -159,30 +116,25 @@
   }
 
   function computeFrame(y) {
-    if (!heroSection || !afterTextEl || !isActive) return;
+    if (!afterTextEl || !afterImageEl) return;
 
     const heroScrollable = Math.max(heroHeight - vh, 1);
     const imageFadeProgress = clamp((y - heroTop) / heroScrollable, 0, 1);
-    const globalFade = easeInOutSine(imageFadeProgress);
-    const endFade = Math.pow(clamp((imageFadeProgress - 0.78) / 0.22, 0, 1), 1.7);
+    const globalFade = imageFadeProgress * imageFadeProgress * (3 - 2 * imageFadeProgress);
 
-    const imageDark = isMobile
-      ? lerp(0.44, 0.84, globalFade)
-      : clamp(globalFade * 0.42 + endFade * 0.58, 0, 1);
-    const midBrightness = lerp(1, 0.58, globalFade);
-    const imageBrightness = isMobile ? 1 : lerp(midBrightness, 0, endFade);
-    const imageScale = isMobile ? lerp(1.045, 1.018, globalFade) : lerp(1.06, 1.025, globalFade);
-
-    const hintScrollFade = 1 - easeOutCubic(clamp(imageFadeProgress / 0.06, 0, 1));
-    const scrollHintOpacity = hintVisible ? hintScrollFade : 0;
+    const localTextReveal = getLocalRevealFromAbsolute(y, afterTextTop, 0.92, 0.16);
+    const localImageReveal = getLocalRevealFromAbsolute(y, afterImageTop, 0.98, 0.12);
 
     pendingFrame = {
-      imageScale: q(imageScale, 0.001),
-      imageBrightness: q(imageBrightness, 0.001),
-      imageDark: q(imageDark, 0.001),
-      hintOpacity: q(scrollHintOpacity, 0.001),
-      hintY: q(lerp(14, 0, scrollHintOpacity), 0.1),
-      hintBlur: q(isMobile ? 0 : lerp(10, 0, scrollHintOpacity), 0.1)
+      imageScale: q(lerp(1.03, 1.005, globalFade), 0.001),
+      imageBrightness: q(lerp(1, 0.62, globalFade), 0.001),
+      imageOpacity: q(lerp(1, 0, globalFade), 0.001),
+      imageDark: q(lerp(0.08, 0.62, globalFade), 0.001),
+      textOpacity: q(lerp(0.14, 1, localTextReveal), 0.001),
+      textY: q(lerp(18, 0, localTextReveal), 0.1),
+      textEdge: q(lerp(0, 118, localTextReveal), 0.1),
+      smallImageScale: q(lerp(0.885, 1.02, localImageReveal), 0.001),
+      smallImageY: q(lerp(22, 0, localImageReveal), 0.1)
     };
 
     dirty = true;
@@ -193,12 +145,18 @@
 
     const f = pendingFrame;
 
-    if (heroMediaEl) {
-      if (f.imageScale !== applied.imageScale || f.imageBrightness !== applied.imageBrightness) {
-        heroMediaEl.style.setProperty("--hero-image-scale", `${f.imageScale}`);
-        heroMediaEl.style.setProperty("--hero-image-brightness", `${f.imageBrightness}`);
+    if (heroMediaImgEl) {
+      if (
+        f.imageScale !== applied.imageScale ||
+        f.imageBrightness !== applied.imageBrightness ||
+        f.imageOpacity !== applied.imageOpacity
+      ) {
+        heroMediaImgEl.style.transform = `scale(${f.imageScale})`;
+        heroMediaImgEl.style.filter = `brightness(${f.imageBrightness})`;
+        heroMediaImgEl.style.opacity = `${f.imageOpacity}`;
         applied.imageScale = f.imageScale;
         applied.imageBrightness = f.imageBrightness;
+        applied.imageOpacity = f.imageOpacity;
       }
     }
 
@@ -207,56 +165,65 @@
       applied.imageDark = f.imageDark;
     }
 
-    if (scrollHintEl) {
+    if (afterTextEl) {
       if (
-        f.hintOpacity !== applied.hintOpacity ||
-        f.hintY !== applied.hintY ||
-        f.hintBlur !== applied.hintBlur
+        f.textOpacity !== applied.textOpacity ||
+        f.textY !== applied.textY ||
+        f.textEdge !== applied.textEdge
       ) {
-        scrollHintEl.style.opacity = `${f.hintOpacity}`;
-        scrollHintEl.style.transform = `translate3d(-50%, ${f.hintY}px, 0)`;
-        scrollHintEl.style.filter = `blur(${f.hintBlur}px)`;
-        applied.hintOpacity = f.hintOpacity;
-        applied.hintY = f.hintY;
-        applied.hintBlur = f.hintBlur;
+        afterTextEl.style.opacity = `${f.textOpacity}`;
+        afterTextEl.style.transform = `translate3d(0, ${f.textY}px, 0)`;
+        afterTextEl.style.setProperty("--text-reveal-edge", `${f.textEdge}%`);
+        applied.textOpacity = f.textOpacity;
+        applied.textY = f.textY;
+        applied.textEdge = f.textEdge;
       }
     }
+
+    if (afterImageEl) {
+      if (
+        f.smallImageScale !== applied.smallImageScale ||
+        f.smallImageY !== applied.smallImageY
+      ) {
+        afterImageEl.style.transform = `translate3d(0, ${f.smallImageY}px, 0) scale(${f.smallImageScale})`;
+        applied.smallImageScale = f.smallImageScale;
+        applied.smallImageY = f.smallImageY;
+      }
+    }
+
     dirty = false;
   }
 
   function handleParallax(y) {
-    if (!isActive) return;
     computeFrame(y);
   }
 
   function handleWrite() {
-    if (!isActive) return;
     applyFrame();
   }
 
-  function startIntro() {
+  function startIntro(withDelay = true) {
+    if (introStarted) return;
+    introStarted = true;
+
+    if (typeof window !== "undefined") {
+      window.__homeHeroIntroPlayed = true;
+    }
+
     requestAnimationFrame(() => {
       requestAnimationFrame(() => {
         introVisible = true;
-
-        hintTimeout = setTimeout(() => {
-          hintVisible = true;
-          forceScrollEngineUpdate();
-        }, 240);
+        clearTimeout(mediaIntroTimeout);
+        mediaIntroTimeout = setTimeout(() => {
+          heroMediaVisible = true;
+        }, withDelay ? 120 : 0);
       });
     });
   }
 
-  function scheduleResizeUpdate() {
-    clearTimeout(resizeTimer);
-    resizeTimer = setTimeout(() => {
-      const wasMobile = isMobile;
-      updateAllMeasures();
-      if (wasMobile !== isMobile) {
-        startHeroImageRotation();
-      }
-      forceScrollEngineUpdate();
-    }, 70);
+  function shouldDelayIntroForSession() {
+    if (typeof window === "undefined") return false;
+    return !window.__homeHeroIntroPlayed;
   }
 
   function preloadImage(src) {
@@ -283,101 +250,117 @@
     });
   }
 
-  async function ensureHeroImagesReady() {
-    if (heroImagesReady || !browser) return;
-    await Promise.allSettled(heroImages.map(preloadImage));
-    heroImagesReady = true;
+  async function ensureAfterImagesReady() {
+    if (afterImagesReady || !browser) return;
+    await Promise.allSettled(afterImages.map(preloadImage));
+    afterImagesReady = true;
   }
 
-  function resetHeroImageRotationState() {
-    clearHeroImageRotationTimers();
-    isHeroImageTransitioning = false;
-    incomingHeroImage = "";
-    incomingHeroImageVisible = false;
-    heroImageIndex = 0;
-    activeHeroImage = heroImages[0];
+  function clearAfterImageRotationTimers() {
+    clearTimeout(afterImageRotationTimeout);
+    clearTimeout(afterImageFadeTimeout);
   }
 
-  function clearHeroImageRotationTimers() {
-    clearTimeout(heroImageRotationTimeout);
-    clearTimeout(heroImageFadeTimeout);
+  function resetAfterImageRotationState() {
+    clearAfterImageRotationTimers();
+    isAfterImageTransitioning = false;
+    incomingAfterImage = "";
+    incomingAfterImageVisible = false;
+    afterImageIndex = 0;
+    activeAfterImage = afterImages[0];
   }
 
-  function queueHeroImageRotation(delay = IMAGE_ROTATION_INTERVAL) {
-    clearTimeout(heroImageRotationTimeout);
-    heroImageRotationTimeout = setTimeout(runHeroImageRotation, delay);
+  function queueAfterImageRotation(delay = IMAGE_ROTATION_INTERVAL) {
+    clearTimeout(afterImageRotationTimeout);
+    afterImageRotationTimeout = setTimeout(runAfterImageRotation, delay);
   }
 
-  function runHeroImageRotation() {
+  function runAfterImageRotation() {
     if (
       !browser ||
       document.hidden ||
-      isHeroImageTransitioning ||
-      heroImages.length < 2 ||
-      !heroImagesReady
+      isAfterImageTransitioning ||
+      afterImages.length < 2 ||
+      !afterImagesReady
     ) {
-      queueHeroImageRotation(IMAGE_RETRY_DELAY);
+      queueAfterImageRotation(IMAGE_RETRY_DELAY);
       return;
     }
 
-    isHeroImageTransitioning = true;
+    isAfterImageTransitioning = true;
 
-    const nextIndex = (heroImageIndex + 1) % heroImages.length;
-    incomingHeroImage = heroImages[nextIndex];
-    incomingHeroImageVisible = false;
+    const nextIndex = (afterImageIndex + 1) % afterImages.length;
+    incomingAfterImage = afterImages[nextIndex];
+    incomingAfterImageVisible = false;
 
     requestAnimationFrame(() => {
       requestAnimationFrame(() => {
-        incomingHeroImageVisible = true;
+        incomingAfterImageVisible = true;
       });
     });
 
-    clearTimeout(heroImageFadeTimeout);
-    heroImageFadeTimeout = setTimeout(() => {
-      activeHeroImage = heroImages[nextIndex];
-      heroImageIndex = nextIndex;
-      incomingHeroImage = "";
-      incomingHeroImageVisible = false;
-      isHeroImageTransitioning = false;
-      queueHeroImageRotation();
+    clearTimeout(afterImageFadeTimeout);
+    afterImageFadeTimeout = setTimeout(() => {
+      activeAfterImage = afterImages[nextIndex];
+      afterImageIndex = nextIndex;
+      incomingAfterImage = "";
+      incomingAfterImageVisible = false;
+      isAfterImageTransitioning = false;
+      queueAfterImageRotation();
     }, IMAGE_FADE_DURATION);
   }
 
-  async function startHeroImageRotation() {
-    resetHeroImageRotationState();
-    await ensureHeroImagesReady();
-    if (!browser || isMobile || heroImages.length < 2) return;
-    queueHeroImageRotation();
+  async function startAfterImageRotation() {
+    resetAfterImageRotationState();
+    await ensureAfterImagesReady();
+    if (!browser || isMobile || afterImages.length < 2) return;
+    queueAfterImageRotation();
   }
 
   function handleDocumentVisibilityChange() {
     if (!browser) return;
     if (document.hidden) {
-      clearHeroImageRotationTimers();
+      clearAfterImageRotationTimers();
       return;
     }
-    if (!isHeroImageTransitioning) {
-      queueHeroImageRotation(900);
+    if (!isAfterImageTransitioning) {
+      queueAfterImageRotation(900);
     }
+  }
+
+  function scheduleResizeUpdate() {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(() => {
+      measureLayout();
+      forceScrollEngineUpdate();
+    }, 70);
   }
 
   onMount(() => {
     if (!browser) return;
 
     let destroyed = false;
+    const shouldDelayIntro = shouldDelayIntroForSession();
+
+    const handlePreloaderDone = () => {
+      clearTimeout(fallbackTimeout);
+      fallbackTimeout = setTimeout(() => {
+        startIntro(true);
+      }, 140);
+    };
 
     const handleWindowLoad = () => {
-      updateAllMeasures();
+      measureLayout();
       forceScrollEngineUpdate();
     };
 
     const handlePageShow = () => {
-      updateAllMeasures();
+      measureLayout();
       forceScrollEngineUpdate();
     };
 
     const boot = async () => {
-      updateAllMeasures();
+      measureLayout();
 
       if (document.fonts?.ready) {
         try {
@@ -388,9 +371,9 @@
       if (destroyed) return;
 
       requestAnimationFrame(() => {
-        updateAllMeasures();
+        measureLayout();
         requestAnimationFrame(() => {
-          updateAllMeasures();
+          measureLayout();
           forceScrollEngineUpdate();
         });
       });
@@ -405,17 +388,9 @@
     window.addEventListener("orientationchange", scheduleResizeUpdate, { passive: true });
     window.addEventListener("load", handleWindowLoad);
     window.addEventListener("pageshow", handlePageShow);
-
-    afterTextObserver = new IntersectionObserver(
-      ([entry]) => {
-        if (!entry?.isIntersecting || afterTextEntered) return;
-        afterTextEntered = true;
-        afterTextEl?.style.setProperty("--text-reveal-edge", "118%");
-        afterTextObserver?.disconnect();
-      },
-      { rootMargin: "0px 0px -12% 0px", threshold: 0.2 }
-    );
-    if (afterTextEl) afterTextObserver.observe(afterTextEl);
+    if (shouldDelayIntro) {
+      window.addEventListener("preloader:done", handlePreloaderDone);
+    }
 
     if (typeof ResizeObserver !== "undefined") {
       resizeObserver = new ResizeObserver(() => {
@@ -423,13 +398,20 @@
       });
 
       if (heroSection) resizeObserver.observe(heroSection);
+      if (heroStage) resizeObserver.observe(heroStage);
       if (afterTextEl) resizeObserver.observe(afterTextEl);
+      if (afterImageEl) resizeObserver.observe(afterImageEl);
     }
 
-    fallbackTimeout = setTimeout(() => {
-      startIntro();
-    }, 120);
-    startHeroImageRotation();
+    if (shouldDelayIntro) {
+      fallbackTimeout = setTimeout(() => {
+        startIntro(true);
+      }, 1800);
+    } else {
+      startIntro(false);
+    }
+
+    startAfterImageRotation();
     document.addEventListener("visibilitychange", handleDocumentVisibilityChange);
 
     return () => {
@@ -440,64 +422,68 @@
       window.removeEventListener("orientationchange", scheduleResizeUpdate);
       window.removeEventListener("load", handleWindowLoad);
       window.removeEventListener("pageshow", handlePageShow);
+      if (shouldDelayIntro) {
+        window.removeEventListener("preloader:done", handlePreloaderDone);
+      }
       clearTimeout(fallbackTimeout);
-      clearTimeout(hintTimeout);
-      clearHeroImageRotationTimers();
+      clearTimeout(mediaIntroTimeout);
+      clearAfterImageRotationTimers();
       clearTimeout(resizeTimer);
       document.removeEventListener("visibilitychange", handleDocumentVisibilityChange);
-      afterTextObserver?.disconnect();
       resizeObserver?.disconnect();
     };
   });
 </script>
 
-<section class="hero-single-clean" bind:this={heroSection}>
-  <div class="hero-media-sticky" aria-hidden="true">
-    <div class="hero-media" bind:this={heroMediaEl}>
-      <img
-        class="hero-media-image"
-        src={activeHeroImage}
-        alt=""
-      />
-      {#if incomingHeroImage}
+<section class="hero-join-clean" bind:this={heroSection}>
+  <section class="hero-stage">
+    <div class="hero-media-sticky" aria-hidden="true">
+      <div class="hero-media" bind:this={heroStage}>
         <img
-          class="hero-media-image hero-media-image-incoming"
-          class:is-visible={incomingHeroImageVisible}
-          src={incomingHeroImage}
+          bind:this={heroMediaImgEl}
+          class:media-visible={heroMediaVisible}
+          src="images/telephone3.webp"
           alt=""
         />
-      {/if}
-      <div class="hero-dark-layer" bind:this={heroDarkLayerEl}></div>
+        <div class="hero-dark-layer" bind:this={heroDarkLayerEl}></div>
+      </div>
     </div>
-  </div>
 
-  <section class="hero-intro">
-    <div class="hero-overlay">
-      <h1 class:intro-visible={introVisible}>
-        {title}
-      </h1>
+    <div class="hero-stage-content">
+      <div class="hero-scroll-cue" class:intro-visible={introVisible} aria-hidden="true">
+        <span class="hero-scroll-label">À propos</span>
+        <span class="hero-scroll-arrow">↓</span>
+      </div>
     </div>
   </section>
 
   <section class="after-section">
     <div class="after-grid">
-      <div class="after-spacer" aria-hidden="true"></div>
-
-      <div class="after-text" class:after-text-visible={afterTextEntered} bind:this={afterTextEl}>
+      <div class="after-text" bind:this={afterTextEl}>
         <h2 aria-label={finalText}>
           {#each words as word, w}
-            <span class="word" class:muted-word={w >= grayStartsAtWord}>
-              {word}
-            </span>{#if w < words.length - 1}<span class="space">&nbsp;</span>{/if}
+            <span class="word" class:muted-word={w >= grayStartsAtWord}>{word}</span>{#if w < words.length - 1}<span class="space">&nbsp;</span>{/if}
           {/each}
         </h2>
+      </div>
+
+      <div class="after-image" bind:this={afterImageEl}>
+        <img class="after-image-asset" src={activeAfterImage} alt="Visuel 3 Terres" />
+        {#if incomingAfterImage}
+          <img
+            class="after-image-asset after-image-incoming"
+            class:is-visible={incomingAfterImageVisible}
+            src={incomingAfterImage}
+            alt="Visuel 3 Terres"
+          />
+        {/if}
       </div>
     </div>
   </section>
 </section>
 
 <style>
-  .hero-single-clean {
+  .hero-join-clean {
     position: relative;
     width: 100%;
     background: #000;
@@ -505,23 +491,17 @@
     overflow: clip;
   }
 
-  .hero-single-clean::before {
-    content: "";
-    position: absolute;
-    inset: 80svh 0 0;
-    background: #000;
-    opacity: 0;
-    pointer-events: none;
-    z-index: 1;
-    transition: opacity 0.45s ease;
+  .hero-stage {
+    position: relative;
+    min-height: 132svh;
+    z-index: 0;
   }
 
   .hero-media-sticky {
     position: sticky;
     top: 0;
-    height: 100vh;
-    height: 100svh;
-    margin-bottom: -100vh;
+    height: var(--viewport-height);
+    margin-bottom: calc(-1 * var(--viewport-height));
     z-index: 0;
     pointer-events: none;
   }
@@ -529,9 +509,27 @@
   .hero-media {
     position: absolute;
     inset: 0;
+    height: var(--viewport-height);
     background: #000;
-    --hero-image-scale: 1.06;
-    --hero-image-brightness: 1;
+  }
+
+  .hero-media::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 22vh;
+    height: 22svh;
+    background: linear-gradient(
+      to top,
+      rgba(0, 0, 0, 0.88) 0%,
+      rgba(0, 0, 0, 0.58) 34%,
+      rgba(0, 0, 0, 0.2) 68%,
+      rgba(0, 0, 0, 0) 100%
+    );
+    pointer-events: none;
+    z-index: 1;
   }
 
   .hero-media img {
@@ -540,32 +538,18 @@
     width: 100%;
     height: 100%;
     object-fit: cover;
-    will-change: transform, filter;
-    transform: scale(var(--hero-image-scale));
-    filter: brightness(var(--hero-image-brightness));
+    opacity: 1;
+    transform: scale(1.03);
+    filter: brightness(1);
+    transition:
+      opacity 1.2s cubic-bezier(0.22, 1, 0.36, 1),
+      transform 1.2s cubic-bezier(0.22, 1, 0.36, 1);
     backface-visibility: hidden;
     -webkit-backface-visibility: hidden;
   }
 
-  .hero-media-image {
-    opacity: 1;
-  }
-
-  .hero-media-image-incoming {
-    opacity: 0;
-    transition: opacity 1.35s cubic-bezier(0.22, 1, 0.36, 1);
-    will-change: opacity, transform, filter;
-  }
-
-  .hero-media-image-incoming.is-visible {
-    opacity: 1;
-  }
-
-  @media (max-width: 900px) {
-    .hero-media img {
-      will-change: transform;
-      filter: none;
-    }
+  .hero-media img.media-visible {
+    transform: scale(1);
   }
 
   .hero-dark-layer {
@@ -574,96 +558,97 @@
     background:
       linear-gradient(
         to top,
-        rgba(0, 0, 0, 0.94) 0%,
-        rgba(0, 0, 0, 0.84) 20%,
-        rgba(0, 0, 0, 0.56) 38%,
-        rgba(0, 0, 0, 0.2) 54%,
-        rgba(0, 0, 0, 0) 66%
+        rgba(0, 0, 0, 1) 0%,
+        rgba(0, 0, 0, 0.96) 16%,
+        rgba(0, 0, 0, 0.78) 34%,
+        rgba(0, 0, 0, 0.42) 52%,
+        rgba(0, 0, 0, 0.12) 66%,
+        rgba(0, 0, 0, 0) 78%
       ),
       radial-gradient(
         circle at 50% 50%,
         rgba(0, 0, 0, 0) 0%,
-        rgba(0, 0, 0, 0.02) 40%,
-        rgba(0, 0, 0, 0.08) 68%,
-        rgba(0, 0, 0, 0.40) 100%
+        rgba(0, 0, 0, 0.03) 44%,
+        rgba(0, 0, 0, 0.12) 72%,
+        rgba(0, 0, 0, 0.34) 100%
       );
     pointer-events: none;
+    opacity: 0.08;
     will-change: opacity;
-    opacity: 0;
   }
 
-  .hero-intro {
+  .hero-stage-content {
     position: relative;
-    min-height: 100vh;
     min-height: 100svh;
-    z-index: 2;
-  }
-
-  .hero-overlay {
-    position: relative;
-    z-index: 2;
-    min-height: 100vh;
-    min-height: 100svh;
-    padding: clamp(1.1rem, 2vw, 2rem);
     display: flex;
-    align-items: flex-end;
-    justify-content: flex-start;
+    align-items: center;
+    justify-content: center;
+    z-index: 2;
   }
 
-  .hero-overlay h1 {
-    margin: 0;
-    max-width: 8ch;
-    font-family: "Clash Display", sans-serif;
-    font-style: normal;
-    font-weight: 500;
-    font-size: clamp(5.8rem, 15vw, 18rem);
-    line-height: 0.9;
-    letter-spacing: -0.05em;
-    color: #f4efe6;
+  .hero-scroll-cue {
+    position: absolute;
+    left: clamp(1rem, 2vw, 1.8rem);
+    bottom: max(clamp(1rem, 2.2vw, 1.6rem), var(--safe-bottom-offset));
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: flex-end;
+    gap: 0.45rem;
+    color: #fff;
+    z-index: 4;
     opacity: 0;
-    transform: translate3d(0, 42px, 0);
-    filter: blur(18px);
-    will-change: transform, opacity, filter;
-    backface-visibility: hidden;
-    -webkit-backface-visibility: hidden;
+    transform: translate3d(0, 16px, 0);
+    transition:
+      opacity 1s cubic-bezier(0.22, 1, 0.36, 1) 0.16s,
+      transform 1s cubic-bezier(0.22, 1, 0.36, 1) 0.16s;
   }
 
-  .hero-overlay h1.intro-visible {
-    animation: titleEnterUp 1.2s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  .hero-scroll-cue.intro-visible {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+
+  .hero-scroll-label {
+    font-family: "Clash Display", sans-serif;
+    font-size: clamp(5.8rem, 5vw, 18rem);
+    font-weight: 200;
+    line-height: 1;
+    letter-spacing: 0.02em;
+    text-align: left;
+  }
+
+  .hero-scroll-arrow {
+    display: block;
+    font-family: "Clash Display", sans-serif;
+    font-size: clamp(1.1rem, 1.1vw, 1.2rem);
+    line-height: 1;
+    font-weight: 300;
+    color: #fff;
   }
 
   .after-section {
     position: relative;
     z-index: 3;
     background: transparent;
-    padding: 16vh 0 18vh;
+    padding: 12vh 0 18vh;
   }
 
   .after-grid {
     width: min(1400px, 92%);
     margin: 0 auto;
     display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(320px, 0.92fr);
+    grid-template-columns: minmax(0, 1.08fr) minmax(320px, 0.78fr);
     gap: clamp(1.4rem, 4vw, 4.5rem);
     align-items: start;
   }
 
-  .after-spacer {
-    min-height: 1px;
-  }
-
   .after-text {
-    grid-column: 2;
-    justify-self: end;
+    will-change: transform, opacity;
     width: 100%;
     min-width: 0;
-    opacity: 0;
-    transform: translate3d(0, 42px, 0);
-    will-change: transform, opacity;
-    transition:
-      opacity 1s cubic-bezier(0.22, 1, 0.36, 1),
-      transform 1.1s cubic-bezier(0.22, 1, 0.36, 1);
-    pointer-events: none;
+    opacity: 0.14;
+    transform: translate3d(0, 18px, 0);
     -webkit-mask-image: linear-gradient(
       to bottom,
       rgba(0, 0, 0, 1) 0%,
@@ -686,12 +671,6 @@
     mask-size: 100% 140%;
   }
 
-  .after-text.after-text-visible {
-    opacity: 1;
-    transform: translate3d(0, 0, 0);
-    pointer-events: auto;
-  }
-
   .after-text h2 {
     margin: 0;
     width: 100%;
@@ -700,9 +679,7 @@
     font-weight: 300;
     font-size: clamp(1.3rem, 2.8vw, 2.8rem);
     line-height: 1;
-    letter-spacing: -0.05em;
     color: #fff;
-    text-align: left;
   }
 
   .word {
@@ -719,55 +696,74 @@
     display: inline;
   }
 
-  @keyframes titleEnterUp {
-    from {
-      opacity: 0;
-      filter: blur(18px);
-      transform: translate3d(0, 42px, 0);
-    }
-    to {
-      opacity: 1;
-      filter: blur(0);
-      transform: translate3d(0, 0, 0);
-    }
+  .after-image {
+    position: relative;
+    justify-self: end;
+    width: min(100%, 460px);
+    aspect-ratio: 1.45 / 1;
+    overflow: hidden;
+    background: #0b0b0b;
+    will-change: transform;
+    margin-top: clamp(4rem, 6vw, 7rem);
+    transform-origin: 50% 50%;
+    transform: translate3d(0, 22px, 0) scale(0.885);
+  }
+
+  .after-image img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  .after-image-asset {
+    opacity: 1;
+  }
+
+  .after-image-incoming {
+    opacity: 0;
+    transition: opacity 1.35s cubic-bezier(0.22, 1, 0.36, 1);
+    will-change: opacity;
+  }
+
+  .after-image-incoming.is-visible {
+    opacity: 1;
   }
 
   @media (max-width: 900px) {
-    .hero-overlay {
-      padding: 1rem 1rem 2.4rem;
-    }
-
-    .hero-overlay h1 {
-      font-size: clamp(5.4rem, 18vw, 10rem);
-      max-width: 9ch;
-    }
-
     .after-grid {
       width: min(94%, 760px);
-      grid-template-columns: 1fr;
+      grid-template-columns: 1fr 0.82fr;
       gap: 0.8rem;
-    }
-
-    .after-text {
-      grid-column: auto;
-      width: min(100%, 520px);
-      justify-self: end;
     }
 
     .after-text h2 {
       font-size: clamp(1.3rem, 6.8vw, 2.7rem);
       max-width: 11ch;
     }
-
   }
 
   @media (max-width: 640px) {
-    .hero-overlay {
-      padding-bottom: 1.3rem;
+    .hero-media::after {
+      bottom: -12svh;
+      height: 40svh;
+      background: linear-gradient(
+        to top,
+        rgba(0, 0, 0, 1) 0%,
+        rgba(0, 0, 0, 0.98) 18%,
+        rgba(0, 0, 0, 0.82) 38%,
+        rgba(0, 0, 0, 0.48) 60%,
+        rgba(0, 0, 0, 0.16) 80%,
+        rgba(0, 0, 0, 0) 100%
+      );
     }
 
-    .hero-single-clean::before {
-      opacity: 1;
+    .hero-media img,
+    .hero-dark-layer {
+      inset: 0 0 -12svh 0;
+      height: calc(100% + 12svh);
     }
 
     .hero-dark-layer {
@@ -775,10 +771,10 @@
         linear-gradient(
           to top,
           rgba(0, 0, 0, 0.98) 0%,
-          rgba(0, 0, 0, 0.9) 24%,
-          rgba(0, 0, 0, 0.66) 42%,
-          rgba(0, 0, 0, 0.28) 58%,
-          rgba(0, 0, 0, 0) 68%
+          rgba(0, 0, 0, 0.9) 26%,
+          rgba(0, 0, 0, 0.66) 46%,
+          rgba(0, 0, 0, 0.24) 62%,
+          rgba(0, 0, 0, 0) 74%
         ),
         radial-gradient(
           circle at 50% 50%,
@@ -789,21 +785,44 @@
         );
     }
 
-    .after-section {
-      padding: 11vh 0 12vh;
+
+    .hero-join-clean::before {
+      content: "";
+      position: absolute;
+      inset: 110svh 0 0;
+      background: #000;
+      pointer-events: none;
+      z-index: 1;
     }
 
-    .hero-overlay h1 {
-      font-size: clamp(5rem, 19vw, 8.4rem);
-      line-height: 0.92;
+    .hero-scroll-cue {
+      left: 1rem;
+      bottom: max(1rem, var(--safe-bottom-offset));
+      gap: 0.42rem;
+    }
+
+    .hero-scroll-label {
+      font-size: 3rem;
+      letter-spacing: 0.03em;
+    }
+
+    .hero-scroll-arrow {
+      font-size: 1.05rem;
+    }
+
+    .after-section {
+      padding: 0vh 0 28vh;
     }
 
     .after-grid {
       width: min(94%, 520px);
+      grid-template-columns: 1fr;
+      gap: 1rem;
     }
 
     .after-text {
-      width: min(82%, 100%);
+      width: 78%;
+      justify-self: start;
     }
 
     .after-text h2 {
@@ -812,13 +831,29 @@
       max-width: none;
     }
 
+    .after-image {
+      width: min(78%, 340px);
+      justify-self: end;
+      aspect-ratio: 1.6 / 1;
+      margin-top: 3.5rem;
+    }
+
+    .after-text,
+    .after-image {
+      transition: none !important;
+      animation: none !important;
+      filter: none !important;
+      opacity: 1 !important;
+      transform: none !important;
+    }
   }
 
   @media (prefers-reduced-motion: reduce) {
     .hero-media img,
-    .hero-dark-layer,
-    .hero-overlay h1,
-    .after-text {
+    .hero-scroll-cue,
+    .after-text,
+    .after-image,
+    .after-image-incoming {
       transition: none !important;
       animation: none !important;
       filter: none !important;
@@ -828,8 +863,8 @@
       transform: none !important;
     }
 
-    .hero-media-image-incoming {
-      transition: none !important;
+    .hero-dark-layer {
+      opacity: 0.22 !important;
     }
   }
 </style>

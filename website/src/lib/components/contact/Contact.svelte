@@ -383,7 +383,7 @@
     font-family: "Clash Display", sans-serif;
     font-size: clamp(2.8rem, 4.8vw, 4.6rem);
     line-height: 0.95;
-    font-weight: 400;
+    font-weight: 200;
     letter-spacing: -0.03em;
   }
 
@@ -391,6 +391,7 @@
     margin-top: 1rem;
     max-width: 28rem;
     font-family: "Clash Display", sans-serif;
+     font-weight: 400;
     font-size: 1rem;
     line-height: 1.5;
     color: rgba(255, 255, 255, 0.72);
