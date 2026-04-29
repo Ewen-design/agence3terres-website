@@ -151,8 +151,5 @@
 />
 
 <ProjectLinksCarousel
-  title="Projet suivant"
-  text="Continuer avec une direction plus calme, plus nette et plus précise."
-  href="/projet1"
-  label="Voir projet 1"
+  currentPage="projet2"
 />

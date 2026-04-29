@@ -2,13 +2,8 @@
   import { onMount, onDestroy } from "svelte";
   import { browser } from "$app/environment";
   import { navigate } from "$lib/navigate.js";
-  import {
-    registerParallax,
-    unregisterParallax,
-    forceScrollEngineUpdate
-  } from "$lib/scrollEngine.js";
 
-  const projects = [
+  const baseProjects = [
     {
       number: "01",
       title: "Serein Design",
@@ -59,15 +54,17 @@
     }
   ];
 
-  let sectionEl;
-  let slideEls = [];
-  let slideMetrics = [];
-  let viewportH = 1;
-  let measured = false;
-  let resizeTimer;
+  export let excludePages = [];
 
-  let activeIndex = 0;
+  let resizeTimer;
   let isMobile = false;
+  let desktopRailEl;
+  let desktopCardEls = [];
+  let desktopScrollRaf;
+  let activeDesktopIndex = 0;
+  let desktopAutoAdvanceTimer = null;
+  let desktopAutoResumeTimer = null;
+  let isAutoScrollingDesktop = false;
   let mobileRailEl;
   let mobileCardEls = [];
   let mobileScrollRaf;
@@ -81,48 +78,13 @@
   let isAutoScrollingMobile = false;
 
   const clamp = (v, min = 0, max = 1) => Math.min(max, Math.max(min, v));
+  $: filteredProjects = baseProjects.filter((project) => !excludePages.includes(project.page));
+  $: activeDesktopIndex = Math.min(activeDesktopIndex, Math.max(filteredProjects.length - 1, 0));
+  $: activeMobileIndex = Math.min(activeMobileIndex, Math.max(filteredProjects.length - 1, 0));
 
   function measure() {
-    if (!browser || !sectionEl) return;
-    const scrollY = window.scrollY || window.pageYOffset || 0;
-    viewportH = Math.max(window.innerHeight, 1);
+    if (!browser) return;
     isMobile = window.innerWidth <= 900;
-    slideMetrics = slideEls
-      .map((slide) => {
-        if (!slide) return null;
-        const rect = slide.getBoundingClientRect();
-        const top = rect.top + scrollY;
-        const height = Math.max(rect.height, 1);
-
-        return {
-          top,
-          height,
-          center: top + height * 0.5
-        };
-      })
-      .filter(Boolean);
-    measured = true;
-  }
-
-  function handleParallax(y) {
-    if (!measured || slideMetrics.length === 0) return;
-
-    const viewportMid = y + viewportH * 0.5;
-    let nextActiveIndex = activeIndex;
-    let closestDistance = Number.POSITIVE_INFINITY;
-
-    slideMetrics.forEach((metric, index) => {
-      const distance = Math.abs(metric.center - viewportMid);
-      if (distance < closestDistance) {
-        closestDistance = distance;
-        nextActiveIndex = index;
-      }
-    });
-
-    activeIndex = nextActiveIndex;
-    const firstCenter = slideMetrics[0]?.center ?? viewportMid;
-    const lastCenter = slideMetrics[slideMetrics.length - 1]?.center ?? viewportMid;
-    desktopScrollProgress = clamp((viewportMid - firstCenter) / Math.max(lastCenter - firstCenter, 1), 0, 1);
   }
 
   function updateMobileActive() {
@@ -144,6 +106,56 @@
     });
 
     activeMobileIndex = nearest;
+  }
+
+  function updateDesktopActive() {
+    if (!desktopRailEl) return;
+
+    const cards = desktopRailEl.querySelectorAll(".desktop-card");
+    if (!cards.length) return;
+
+    const centerX = desktopRailEl.scrollLeft + desktopRailEl.clientWidth * 0.5;
+    let nearest = 0;
+    let nearestDistance = Infinity;
+
+    cards.forEach((card, index) => {
+      const distance = Math.abs(card.offsetLeft + card.offsetWidth * 0.5 - centerX);
+      if (distance < nearestDistance) {
+        nearestDistance = distance;
+        nearest = index;
+      }
+    });
+
+    activeDesktopIndex = nearest;
+  }
+
+  function handleDesktopRailScroll() {
+    if (!isAutoScrollingDesktop) {
+      pauseAndResumeDesktopAutoAdvance();
+    }
+    if (desktopScrollRaf) cancelAnimationFrame(desktopScrollRaf);
+    desktopScrollRaf = requestAnimationFrame(() => {
+      updateDesktopActive();
+      desktopScrollRaf = null;
+    });
+  }
+
+  function scrollToDesktopCard(index, behavior = "smooth") {
+    const card = desktopCardEls[index];
+    if (!desktopRailEl || !card) return;
+
+    const target =
+      card.offsetLeft - (desktopRailEl.clientWidth - card.offsetWidth) * 0.5;
+
+    isAutoScrollingDesktop = true;
+    desktopRailEl.scrollTo({
+      left: Math.max(0, target),
+      behavior
+    });
+
+    window.setTimeout(() => {
+      isAutoScrollingDesktop = false;
+    }, 900);
   }
 
   function handleMobileRailScroll() {
@@ -222,19 +234,45 @@
     mobileAutoResumeTimer = null;
   }
 
+  function clearDesktopAutoTimers() {
+    clearInterval(desktopAutoAdvanceTimer);
+    clearTimeout(desktopAutoResumeTimer);
+    desktopAutoAdvanceTimer = null;
+    desktopAutoResumeTimer = null;
+  }
+
+  function startDesktopAutoAdvance() {
+    clearDesktopAutoTimers();
+    if (isMobile || !desktopRailEl || prefersReduced || filteredProjects.length < 2) return;
+
+    desktopAutoAdvanceTimer = setInterval(() => {
+      const nextIndex = (activeDesktopIndex + 1) % filteredProjects.length;
+      scrollToDesktopCard(nextIndex, "smooth");
+    }, 5000);
+  }
+
+  function pauseAndResumeDesktopAutoAdvance() {
+    clearDesktopAutoTimers();
+    if (isMobile || prefersReduced || filteredProjects.length < 2) return;
+
+    desktopAutoResumeTimer = setTimeout(() => {
+      startDesktopAutoAdvance();
+    }, 7000);
+  }
+
   function startMobileAutoAdvance() {
     clearMobileAutoTimers();
-    if (!isMobile || !mobileRailEl || prefersReduced) return;
+    if (!isMobile || !mobileRailEl || prefersReduced || filteredProjects.length < 2) return;
 
     mobileAutoAdvanceTimer = setInterval(() => {
-      const nextIndex = (activeMobileIndex + 1) % projects.length;
+      const nextIndex = (activeMobileIndex + 1) % filteredProjects.length;
       scrollToMobileCard(nextIndex, "smooth");
     }, 5000);
   }
 
   function pauseAndResumeMobileAutoAdvance() {
     clearMobileAutoTimers();
-    if (!isMobile || prefersReduced) return;
+    if (!isMobile || prefersReduced || filteredProjects.length < 2) return;
 
     mobileAutoResumeTimer = setTimeout(() => {
       startMobileAutoAdvance();
@@ -245,7 +283,7 @@
     clearTimeout(resizeTimer);
     resizeTimer = setTimeout(() => {
       measure();
-      forceScrollEngineUpdate();
+      startDesktopAutoAdvance();
       startMobileAutoAdvance();
     }, 80);
   }
@@ -257,6 +295,20 @@
     btn.style.setProperty("--my", `${event.clientY - rect.top}px`);
   }
 
+  function handleDesktopCardMove(event) {
+    const card = event.currentTarget;
+    const rect = card.getBoundingClientRect();
+    card.style.setProperty("--mx", `${event.clientX - rect.left}px`);
+    card.style.setProperty("--my", `${event.clientY - rect.top}px`);
+
+    const fauxButton = card.querySelector(".desktop-card-btn");
+    if (!fauxButton) return;
+
+    const buttonRect = fauxButton.getBoundingClientRect();
+    fauxButton.style.setProperty("--mx", `${event.clientX - buttonRect.left}px`);
+    fauxButton.style.setProperty("--my", `${event.clientY - buttonRect.top}px`);
+  }
+
   onMount(() => {
     if (!browser) return;
 
@@ -265,6 +317,7 @@
 
     const onMotion = (event) => {
       prefersReduced = event.matches;
+      startDesktopAutoAdvance();
       startMobileAutoAdvance();
     };
     if (mq.addEventListener) {
@@ -278,35 +331,39 @@
     requestAnimationFrame(() => {
       requestAnimationFrame(() => {
         measure();
-        registerParallax(handleParallax, { priority: 2 });
-        forceScrollEngineUpdate();
+        updateDesktopActive();
         updateMobileActive();
+        startDesktopAutoAdvance();
         startMobileAutoAdvance();
       });
     });
 
     window.addEventListener("resize", handleResize, { passive: true });
     window.addEventListener("orientationchange", handleResize, { passive: true });
+    desktopRailEl?.addEventListener("scroll", handleDesktopRailScroll, { passive: true });
     mobileRailEl?.addEventListener("scroll", handleMobileRailScroll, { passive: true });
 
     return () => {
-      unregisterParallax(handleParallax);
       removeMotionListener?.();
+      clearDesktopAutoTimers();
       clearMobileAutoTimers();
       clearTimeout(resizeTimer);
       window.removeEventListener("resize", handleResize);
       window.removeEventListener("orientationchange", handleResize);
+      desktopRailEl?.removeEventListener("scroll", handleDesktopRailScroll);
       mobileRailEl?.removeEventListener("scroll", handleMobileRailScroll);
     };
   });
 
   onDestroy(() => {
     if (!browser) return;
-    unregisterParallax(handleParallax);
     removeMotionListener?.();
+    clearDesktopAutoTimers();
     clearMobileAutoTimers();
     clearTimeout(resizeTimer);
+    desktopRailEl?.removeEventListener("scroll", handleDesktopRailScroll);
     mobileRailEl?.removeEventListener("scroll", handleMobileRailScroll);
+    if (desktopScrollRaf) cancelAnimationFrame(desktopScrollRaf);
     if (mobileScrollRaf) cancelAnimationFrame(mobileScrollRaf);
     if (mobileTweenRaf) cancelAnimationFrame(mobileTweenRaf);
   });
@@ -314,87 +371,76 @@
 
 <section
   class="project-showcase"
-  bind:this={sectionEl}
-  style={`--project-count:${projects.length};`}
+  style={`--project-count:${filteredProjects.length};`}
 >
-  <div class="sticky-shell">
-    <div class="backdrop"></div>
+  <div class="desktop-stack">
+    <div class="desktop-rail" bind:this={desktopRailEl}>
+      {#each filteredProjects as project, i}
+        <button
+          class="desktop-card"
+          class:is-active={activeDesktopIndex === i}
+          bind:this={desktopCardEls[i]}
+          data-cursor="button"
+          aria-label={project.button}
+          type="button"
+          on:mousemove={handleDesktopCardMove}
+          on:click={() => navigate(project.page)}
+        >
+          <div class="desktop-image">
+            <img src={project.image} alt={project.title} />
+            <div class="desktop-image-shade" aria-hidden="true"></div>
+          </div>
 
-    <div class="showcase-grid">
-      <div class="rail-spacer" aria-hidden="true"></div>
+          <div class="desktop-card-overlay">
+            <div class="desktop-card-meta">
+              <div class="desktop-card-index-wrap" aria-hidden="true">
+                <span class="desktop-card-index-inner">{project.number}</span>
+              </div>
 
-      <div class="visual-stage" aria-hidden="true">
-        <div class="visual-frame" style={`--desktop-zoom:${desktopScrollProgress.toFixed(3)};`}>
-          {#each projects as project, i}
-            <div class="visual-layer" class:is-active={activeIndex === i}>
-              <img src={project.image} alt="" />
-              {#if project.previewImages?.length}
-                <div class="visual-floating-card">
-                  <div class="visual-slideshow">
-                    {#each project.previewImages as image, slideIndex}
-                      <img
-                        src={image.src}
-                        alt={image.alt || ""}
-                        class="visual-slide"
-                        loading="lazy"
-                        style={`--slide-index:${slideIndex}; --slide-count:${project.previewImages.length};`}
-                      />
-                    {/each}
-                  </div>
-                </div>
-              {/if}
+              <div class="desktop-card-title-wrap" aria-hidden="true">
+                <span class="desktop-card-title">{project.title}</span>
+              </div>
             </div>
-          {/each}
-          <div class="visual-shade"></div>
-        </div>
-      </div>
 
-      <div class="story-panel">
-        <div class="story-copy">
-          {#each projects as project, i}
-            <div
-              class="story-layer"
-              class:is-active={activeIndex === i}
-              aria-hidden={activeIndex !== i}
-            >
-              <p class="story-rest">{project.rest}</p>
-              <button
-                class="nav-btn story-btn"
-                type="button"
-                data-cursor="button"
-                on:mousemove={handleButtonMove}
-                on:click={() => navigate(project.page)}
-              >
+            <div class="desktop-card-content" aria-hidden={activeDesktopIndex !== i}>
+              <p class="desktop-card-rest">{project.rest}</p>
+              <span class="nav-btn desktop-card-btn">
                 <span class="nav-btn-flip" data-text={project.button}>
                   <span class="nav-btn-text">{project.button}</span>
                 </span>
-              </button>
+              </span>
             </div>
-          {/each}
-        </div>
-      </div>
+          </div>
+        </button>
+      {/each}
     </div>
-  </div>
 
-  <div class="project-scroll-track">
-    {#each projects as project, i}
-      <section class="project-slide">
-        <div class="project-slide-grid">
-          <article
-            class="project-copy"
-            bind:this={slideEls[i]}
-            class:is-active={activeIndex === i}
-          >
-            <h2>{project.title}</h2>
-          </article>
-        </div>
-      </section>
-    {/each}
+    <div class="desktop-nav-shell" aria-label="Navigation projets desktop">
+      <button
+        class="desktop-nav-btn desktop-nav-prev"
+        class:is-hidden={activeDesktopIndex === 0}
+        type="button"
+        aria-label="Projet précédent"
+        on:click={() => scrollToDesktopCard(Math.max(activeDesktopIndex - 1, 0), "smooth")}
+      >
+        <span class="desktop-nav-chevron" aria-hidden="true"></span>
+      </button>
+
+      <button
+        class="desktop-nav-btn desktop-nav-next"
+        class:is-hidden={activeDesktopIndex === filteredProjects.length - 1}
+        type="button"
+        aria-label="Projet suivant"
+        on:click={() => scrollToDesktopCard(Math.min(activeDesktopIndex + 1, filteredProjects.length - 1), "smooth")}
+      >
+        <span class="desktop-nav-chevron" aria-hidden="true"></span>
+      </button>
+    </div>
   </div>
 
   <div class="mobile-stack">
     <div class="mobile-rail" bind:this={mobileRailEl}>
-    {#each projects as project, i}
+    {#each filteredProjects as project, i}
       <button
         class="mobile-card"
         class:is-active={activeMobileIndex === i}
@@ -436,12 +482,12 @@
 
       <button
         class="mobile-nav-btn mobile-nav-next"
-        class:is-hidden={activeMobileIndex === projects.length - 1}
+        class:is-hidden={activeMobileIndex === filteredProjects.length - 1}
         type="button"
         aria-label="Projet suivant"
         on:click={() => {
           pauseAndResumeMobileAutoAdvance();
-          scrollToMobileCard(Math.min(activeMobileIndex + 1, projects.length - 1), "smooth");
+          scrollToMobileCard(Math.min(activeMobileIndex + 1, filteredProjects.length - 1), "smooth");
         }}
       >
         <span class="mobile-nav-chevron" aria-hidden="true"></span>
@@ -455,228 +501,7 @@
     position: relative;
     background: #000;
     color: #f5f1e8;
-    min-height: calc(var(--project-count, 2) * var(--viewport-height));
-  }
-
-  .sticky-shell {
-    position: sticky;
-    top: 0;
-    height: var(--viewport-height);
-    overflow: hidden;
-  }
-
-  .backdrop {
-    position: absolute;
-    inset: 0;
-    background: #000;
-  }
-
-  .showcase-grid {
-    position: relative;
-    z-index: 2;
-    height: 100%;
-    display: grid;
-    grid-template-columns: minmax(280px, 0.95fr) minmax(340px, 1.05fr) minmax(280px, 0.82fr);
-    gap: clamp(1.2rem, 2vw, 2rem);
-    padding: clamp(5.8rem, 10vh, 7rem) clamp(1.2rem, 2.5vw, 2rem) clamp(1.4rem, 2.5vw, 2rem);
-    align-items: stretch;
-  }
-
-  .rail-spacer {
-    min-width: 0;
-  }
-
-  .project-copy h2 {
-    margin: 0.35rem 0 0;
-    font-family: "Clash Display", sans-serif;
-    font-style: normal;
-    font-size: clamp(3.5rem, 5.4vw, 6.2rem);
-    line-height: 0.9;
-    letter-spacing: -0.055em;
-    font-weight: 400;
-  }
-
-  .visual-stage {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    min-width: 0;
-  }
-
-  .visual-frame {
-    position: relative;
-    width: min(100%, 700px);
-    height: min(76vh, 860px);
-    overflow: hidden;
-    background: #080808;
-  }
-
-  .visual-layer {
-    position: absolute;
-    inset: 0;
-    opacity: 0;
-    transition: opacity 1.35s cubic-bezier(.22,.61,.36,1);
-    will-change: opacity;
-    pointer-events: none;
-  }
-
-  .visual-layer img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    display: block;
-    transform: scale(1.11);
-    filter: brightness(0.78);
-    transition:
-      transform 2.2s cubic-bezier(.22,.61,.36,1),
-      filter 1.35s cubic-bezier(.22,.61,.36,1);
-    will-change: transform, filter;
-  }
-
-  .visual-layer.is-active {
-    opacity: 1;
-    pointer-events: auto;
-  }
-
-  .visual-layer.is-active img {
-    transform: scale(calc(1.03 + var(--desktop-zoom, 0) * 0.035));
-    filter: brightness(0.86);
-  }
-
-  .visual-floating-card {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    z-index: 3;
-    width: clamp(11rem, 23vw, 18rem);
-    aspect-ratio: 1.02;
-    border-radius: 2px;
-    overflow: hidden;
-    background: rgba(255, 255, 255, 0.94);
-    box-shadow: 0 25px 80px rgba(11, 8, 5, 0.28);
-    opacity: 0;
-    transform: translate(-50%, calc(-50% + 16px)) scale(0.985);
-    transition:
-      opacity 0.45s ease,
-      transform 0.75s cubic-bezier(0.16, 1, 0.3, 1);
-    pointer-events: none;
-  }
-
-  .visual-slideshow {
-    position: relative;
-    width: 100%;
-    height: 100%;
-    background: #111;
-  }
-
-  .visual-slide {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    opacity: 0;
-    animation-name: project-showcase-slideshow;
-    animation-duration: calc(var(--slide-count) * 1.85s);
-    animation-timing-function: ease-in-out;
-    animation-iteration-count: infinite;
-    animation-delay: calc(var(--slide-index) * 1.85s);
-    animation-fill-mode: both;
-  }
-
-  .visual-layer.is-active:hover img,
-  .visual-layer.is-active:focus-within img {
-    transform: scale(calc(1.05 + var(--desktop-zoom, 0) * 0.04));
-    filter: saturate(0.95) brightness(0.82);
-  }
-
-  .visual-layer.is-active:hover .visual-floating-card,
-  .visual-layer.is-active:focus-within .visual-floating-card {
-    opacity: 1;
-    transform: translate(-50%, -50%) scale(1);
-  }
-
-  .visual-shade {
-    position: absolute;
-    inset: 0;
-    background:
-      linear-gradient(180deg, rgba(0, 0, 0, 0.06) 0%, rgba(0, 0, 0, 0.22) 100%),
-      linear-gradient(90deg, rgba(0, 0, 0, 0.18) 0%, rgba(0, 0, 0, 0) 32%, rgba(0, 0, 0, 0.12) 100%);
-    pointer-events: none;
-  }
-
-  .story-panel {
-    position: relative;
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-end;
-    padding-bottom: clamp(1rem, 3vh, 2rem);
-    min-width: 0;
-  }
-
-  .story-copy {
-    position: relative;
-    min-height: 18rem;
-  }
-
-  .story-layer {
-    position: absolute;
-    inset: 0;
-    opacity: 0;
-    transition: opacity 0.7s ease;
-    pointer-events: none;
-  }
-
-  .story-layer.is-active {
-    opacity: 1;
-    pointer-events: auto;
-  }
-
-  .story-rest {
-    margin: 0;
-    font-family: "Clash Display", sans-serif;
-    font-size: 1.02rem;
-    line-height: 1.7;
-    color: rgba(245, 241, 232, 0.78);
-    max-width: 25rem;
-  }
-
-  .story-btn {
-    margin-top: 1.4rem;
-  }
-
-  .project-scroll-track {
-    position: relative;
-    z-index: 3;
-    margin-top: calc(-1 * var(--viewport-height));
-    pointer-events: none;
-  }
-
-  .project-slide {
-    min-height: var(--viewport-height);
-    display: flex;
-    align-items: center;
-  }
-
-  .project-slide-grid {
-    width: 100%;
-    display: grid;
-    grid-template-columns: minmax(280px, 0.95fr) minmax(340px, 1.05fr) minmax(280px, 0.82fr);
-    gap: clamp(1.2rem, 2vw, 2rem);
-    padding: clamp(5.8rem, 10vh, 7rem) clamp(1.2rem, 2.5vw, 2rem) clamp(1.4rem, 2.5vw, 2rem);
-    align-items: center;
-  }
-
-  .project-copy {
-    grid-column: 1;
-    align-self: center;
-    pointer-events: auto;
-    max-width: 26rem;
-  }
-
-  .project-copy h2 {
-    font-size: clamp(5.3rem, 8.2vw, 9.4rem);
-    line-height: 0.82;
+    min-height: auto;
   }
 
   .nav-btn {
@@ -688,6 +513,7 @@
     justify-content: center;
     padding: 0 1.5rem;
     font-size: 0.9rem;
+    font-weight: 400;
     white-space: nowrap;
     color: inherit;
     border: 1px solid rgba(255, 255, 255, 0.15);
@@ -785,6 +611,257 @@
     opacity: 1;
   }
 
+  .desktop-stack {
+    display: block;
+    width: 100%;
+    margin: 0 auto;
+    padding: clamp(5.8rem, 9vh, 7rem) 0 clamp(2.2rem, 5vh, 3.4rem);
+    position: relative;
+  }
+
+  .desktop-rail {
+    width: 100%;
+    margin: 0;
+    display: flex;
+    gap: 1.2rem;
+    overflow-x: auto;
+    overflow-y: visible;
+    padding: 0 6.5vw 2rem;
+    scroll-snap-type: x mandatory;
+    scroll-snap-stop: always;
+    scroll-padding-left: 6.5vw;
+    scroll-padding-right: 6.5vw;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-x: contain;
+    scrollbar-width: none;
+  }
+
+  .desktop-rail::-webkit-scrollbar {
+    display: none;
+  }
+
+  .desktop-card {
+    position: relative;
+    flex: 0 0 min(87vw, 1380px);
+    width: min(87vw, 1380px);
+    display: block;
+    scroll-snap-align: center;
+    scroll-snap-stop: always;
+    cursor: pointer;
+    appearance: none;
+    -webkit-appearance: none;
+    border: 0;
+    outline: none;
+    border-radius: 3px;
+    padding: 0;
+    background: transparent;
+    text-align: left;
+    box-shadow: none;
+    font: inherit;
+    color: inherit;
+    line-height: inherit;
+    -webkit-tap-highlight-color: transparent;
+    overflow: hidden;
+  }
+
+  .desktop-image {
+    position: relative;
+    aspect-ratio: 1.72 / 1;
+    min-height: min(78vh, 860px);
+    overflow: hidden;
+    background: #080808;
+    border-radius: 3px;
+  }
+
+  .desktop-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transform: translateZ(0);
+    transition:
+      transform .56s cubic-bezier(.22,.61,.36,1);
+    will-change: transform;
+  }
+
+  .desktop-image-shade {
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(
+      72% 64% at 13% 88%,
+      rgba(0, 0, 0, 0.82) 0%,
+      rgba(0, 0, 0, 0.5) 34%,
+      rgba(0, 0, 0, 0.2) 62%,
+      rgba(0, 0, 0, 0) 100%
+    );
+    pointer-events: none;
+  }
+
+  .desktop-card-overlay {
+    position: absolute;
+    left: clamp(1.2rem, 2.2vw, 2rem);
+    right: clamp(1.2rem, 2.2vw, 2rem);
+    bottom: clamp(1.15rem, 2vw, 1.8rem);
+    z-index: 8;
+    display: grid;
+    gap: 1rem;
+    pointer-events: none;
+  }
+
+  .desktop-card-meta {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.45rem;
+  }
+
+  .desktop-card-title-wrap,
+  .desktop-card-index-wrap {
+    overflow: hidden;
+  }
+
+  .desktop-card-title {
+    display: block;
+    font-family: "Clash Display", sans-serif;
+    font-size: clamp(2.2rem, 4.2vw, 4.2rem);
+    font-weight: 200;
+    line-height: 0.96;
+    max-width: 12ch;
+    color: rgba(255,255,255,.98);
+    text-shadow: 0 1px 12px rgba(0,0,0,.38);
+    opacity: 0;
+    transform: translate3d(0,-115%,0);
+    transition:
+      transform .42s cubic-bezier(.22,.61,.36,1),
+      opacity .32s ease;
+  }
+
+  .desktop-card-index-inner {
+    display: block;
+    font-family: "Clash Display", sans-serif;
+    font-weight: 300;
+    font-size: 1.02rem;
+    line-height: 1;
+    letter-spacing: -0.02em;
+    color: rgba(245,241,232,1);
+    text-shadow: 0 1px 10px rgba(0,0,0,.34);
+    opacity: 0;
+    transform: translate3d(0,-115%,0);
+    transition:
+      transform .42s cubic-bezier(.22,.61,.36,1),
+      opacity .32s ease;
+  }
+
+  .desktop-card-content {
+    max-width: min(36rem, 46vw);
+    opacity: 0;
+    transform: translate3d(0, 18px, 0);
+    transition:
+      transform .52s cubic-bezier(.22,.61,.36,1),
+      opacity .34s ease;
+  }
+
+  .desktop-card-rest {
+    margin: 0;
+    font-family: "Clash Display", sans-serif;
+    color: rgba(245,241,232,1);
+    text-shadow: 0 1px 10px rgba(0,0,0,.34);
+    font-weight: 300;
+  }
+
+  .desktop-card-rest {
+    font-size: clamp(0.94rem, 1.1vw, 1.04rem);
+    line-height: 1.54;
+    max-width: 38rem;
+    color: rgba(245,241,232,.82);
+  }
+
+  .desktop-card-btn {
+    margin-top: 1rem;
+    pointer-events: none;
+  }
+
+  .desktop-card:hover .desktop-card-btn .nav-btn-text,
+  .desktop-card:focus-visible .desktop-card-btn .nav-btn-text {
+    transform: translateY(-100%);
+  }
+
+  .desktop-card:hover .desktop-card-btn .nav-btn-flip::after,
+  .desktop-card:focus-visible .desktop-card-btn .nav-btn-flip::after {
+    transform: translateY(0%);
+  }
+
+  .desktop-card:hover .desktop-card-btn::before,
+  .desktop-card:hover .desktop-card-btn::after,
+  .desktop-card:focus-visible .desktop-card-btn::before,
+  .desktop-card:focus-visible .desktop-card-btn::after {
+    opacity: 1;
+  }
+
+  .desktop-card.is-active .desktop-image img {
+    transform: scale(1.045) translateZ(0);
+  }
+
+  .desktop-card.is-active .desktop-card-title,
+  .desktop-card.is-active .desktop-card-index-inner {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+
+  .desktop-card.is-active .desktop-card-content {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+
+  .desktop-nav-shell {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+  }
+
+  .desktop-nav-btn {
+    position: absolute;
+    top: calc(clamp(5.8rem, 9vh, 7rem) + min(78vh, 860px) * 0.5);
+    width: 3.8rem;
+    height: 3.8rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transform: translateY(-50%);
+    border: 0;
+    background: transparent;
+    color: #fff;
+    cursor: pointer;
+    appearance: none;
+    -webkit-appearance: none;
+    outline: none;
+    -webkit-tap-highlight-color: transparent;
+    z-index: 10;
+    pointer-events: auto;
+    padding: 0;
+    transition: opacity .35s ease;
+  }
+
+  .desktop-nav-prev { left: 1rem; }
+  .desktop-nav-next { right: 1rem; }
+
+  .desktop-nav-chevron {
+    display: block;
+    width: 1.6rem;
+    height: 1.6rem;
+    border-top: 1.5px solid currentColor;
+    border-right: 1.5px solid currentColor;
+    filter: drop-shadow(0 1px 8px rgba(0,0,0,.34));
+  }
+
+  .desktop-nav-prev .desktop-nav-chevron { transform: rotate(-135deg); }
+  .desktop-nav-next .desktop-nav-chevron { transform: rotate(45deg); }
+
+  .desktop-nav-btn.is-hidden {
+    opacity: 0;
+    pointer-events: none;
+  }
+
   .mobile-stack {
     display: none;
   }
@@ -795,11 +872,7 @@
       padding: 6rem 0 4rem;
     }
 
-    .sticky-shell {
-      display: none;
-    }
-
-    .project-scroll-track {
+    .desktop-stack {
       display: none;
     }
 
@@ -1085,14 +1158,16 @@
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .project-copy,
-    .story-layer,
     .nav-btn,
     .nav-btn-text,
     .nav-btn-flip::after,
     .mobile-card-title,
     .mobile-card-index-inner,
     .mobile-card-plus,
+    .desktop-card-title,
+    .desktop-card-index-inner,
+    .desktop-card-content,
+    .desktop-nav-btn,
     .mobile-nav-btn {
       transition: none !important;
       animation: none !important;
