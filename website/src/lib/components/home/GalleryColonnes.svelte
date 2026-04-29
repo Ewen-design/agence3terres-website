@@ -11,7 +11,7 @@
 
   const leftImages = [
     {
-      src: "images/appareil_photo.webp",
+      src: "images/telephone3.webp",
       alt: "",
       ratio: "portrait",
       height: 38
@@ -65,14 +65,15 @@
       height: 23
     },
     {
-      src: "images/parfum_ordinateur.webp",
+      src: "images/telephone3.webp",
       alt: "",
       ratio: "portrait",
       height: 34
     }
   ];
 
-  const text = "Les lumières de la création".split("");
+  const mobileText = "Nous concevons\ndes identités et des sites\navec précision";
+  const desktopText = "Nous concevons des identités\n et des expériences digitales personnalisées\navec précision et exigence";
 
   let sectionEl;
   let fixedTextEl;
@@ -93,6 +94,7 @@
   let dirty = false;
 
   const revealNodes = new Set();
+  $: text = (isMobile ? mobileText : desktopText).split("");
 
   let applied = {
     textOpacity: -1,
@@ -357,7 +359,11 @@
   <div class="fixed-text" bind:this={fixedTextEl}>
     <h2 class="title">
       {#each text as letter}
-        <span class="letter">{letter === " " ? "\u00A0" : letter}</span>
+        {#if letter === "\n"}
+          <br />
+        {:else}
+          <span class="letter">{letter === " " ? "\u00A0" : letter}</span>
+        {/if}
       {/each}
     </h2>
   </div>
@@ -456,8 +462,8 @@
   .title {
     margin: 0;
     font-family: "Clash Display", sans-serif;
-    font-style: light;
-    font-size: clamp(2.5rem, 6vw, 6rem);
+    font-style: normal;
+     font-size: clamp(1.3rem, 2.8vw, 2.8rem);
     font-weight: 300;
     line-height: 0.95;
     text-align: center;
@@ -625,7 +631,7 @@
     }
 
     .title {
-      font-size: clamp(1.6rem, 7vw, 2.6rem);
+      font-size: clamp(1.3rem, 6.8vw, 2.7rem);
     }
   }
 
@@ -660,7 +666,7 @@
     }
 
     .title {
-      font-size: clamp(2rem, 9vw, 3.1rem);
+      font-size: clamp(1.15rem, 6.4vw, 1.95rem);
       line-height: 0.92;
     }
 
