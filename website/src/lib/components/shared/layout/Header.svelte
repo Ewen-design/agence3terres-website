@@ -423,9 +423,9 @@
       role="list"
     >
       {#each [
+        { label: "Services", page: "services" },
         { label: "Projets", page: "travail" },
         { label: "À propos", page: "apropos" },
-        { label: "Services", page: "services" },
         { label: "Contact", page: "contact" }
       ] as link, i}
         <button

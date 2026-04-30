@@ -24,6 +24,8 @@
       image: "/images/telephone2.webp"
     }
   ];
+
+  const slideLinks = ["/projet1", "/projet2", "/contact"];
 </script>
 
-<FocusZoneSlider {slides} zoneHeight="33svh" />
+<FocusZoneSlider {slides} {slideLinks} zoneHeight="33svh" />

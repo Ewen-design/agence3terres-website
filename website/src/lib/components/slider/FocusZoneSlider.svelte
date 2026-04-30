@@ -7,6 +7,7 @@
   export let zoneHeight = "34svh";
   export let itemHeightDesktop = "38vh";
   export let itemHeightMobile = "42svh";
+  export let slideLinks = [];
 
   let sliderEl;
   let itemEls = [];
@@ -28,6 +29,11 @@
     ...slide,
     lines: normalizeSlideLines(slide.description)
   }));
+  $: resolvedSlideLinks = slides.map(
+    (slide, index) => slide.href ?? slide.link ?? slideLinks[index] ?? null
+  );
+  $: activeSlideHref = resolvedSlideLinks[activeIndex] ?? null;
+  $: activeSlideTitle = normalizedSlides[activeIndex]?.title?.replaceAll("\n", " ") ?? "slide";
   $: if (activeIndex !== previousActiveIndex) {
     numberDirection = activeIndex > previousActiveIndex ? 1 : -1;
     previousActiveIndex = activeIndex;
@@ -172,11 +178,16 @@
         <div class="focus-zone-slider__item-inner">
           <h2>{slide.title}</h2>
 
-          <div class="focus-zone-slider__copy" class:is-active={activeIndex === index}>
+          <div
+            class="focus-zone-slider__copy"
+            class:is-active={activeIndex === index}
+            class:is-inactive={activeIndex !== index}
+            style={`--line-count:${slide.lines.length};`}
+          >
             {#each slide.lines as line, lineIndex}
               <span
                 class="focus-zone-slider__copy-line"
-                style={`--line-index:${lineIndex};`}
+                style={`--line-index:${lineIndex}; --line-out-index:${slide.lines.length - lineIndex - 1};`}
               >
                 <span>{line}</span>
               </span>
@@ -188,6 +199,17 @@
 
     <div class="focus-zone-slider__spacer focus-zone-slider__spacer--bottom" aria-hidden="true"></div>
   </div>
+
+  {#if activeSlideHref}
+    <a
+      class="focus-zone-slider__link-overlay"
+      href={activeSlideHref}
+      data-cursor="button"
+      aria-label={`Ouvrir ${activeSlideTitle}`}
+    >
+      <span class="focus-zone-slider__sr-only">Ouvrir {activeSlideTitle}</span>
+    </a>
+  {/if}
 </section>
 
 <style>
@@ -210,6 +232,32 @@
     top: 0;
     height: 100vh;
     overflow: clip;
+  }
+
+  .focus-zone-slider__link-overlay {
+    position: absolute;
+    inset: 0;
+    z-index: 4;
+    display: block;
+    text-decoration: none;
+    color: inherit;
+  }
+
+  .focus-zone-slider__link-overlay:focus-visible {
+    outline: 2px solid rgba(245, 241, 232, 0.95);
+    outline-offset: -0.35rem;
+  }
+
+  .focus-zone-slider__sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
   }
 
   .focus-zone-slider__backgrounds,
@@ -348,7 +396,6 @@
     margin-top: 1rem;
     max-width: 30rem;
     min-height: 7.2rem;
-    visibility: hidden;
   }
 
   .focus-zone-slider__copy-line {
@@ -366,14 +413,21 @@
     color: var(--copy-color);
     opacity: 0;
     transform: translate3d(0, 115%, 0);
-  }
-
-  .focus-zone-slider__copy.is-active {
-    visibility: visible;
+    -webkit-transform: translate3d(0, 115%, 0);
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    will-change: transform, opacity;
+    transition:
+      transform 0.42s cubic-bezier(.22,.61,.36,1),
+      opacity 0.32s ease;
+    transition-delay: calc(var(--line-out-index, 0) * 0.045s);
   }
 
   .focus-zone-slider__copy.is-active .focus-zone-slider__copy-line > span {
-    animation: focus-zone-copy-rise 0.36s cubic-bezier(.22,.61,.36,1) both;
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+    -webkit-transform: translate3d(0, 0, 0);
+    transition-delay: calc(var(--line-index, 0) * 0.05s);
   }
 
   @media (max-width: 900px) {
@@ -478,18 +532,6 @@
     from {
       opacity: 0;
       transform: translate3d(0, -115%, 0);
-    }
-
-    to {
-      opacity: 1;
-      transform: translate3d(0, 0, 0);
-    }
-  }
-
-  @keyframes focus-zone-copy-rise {
-    from {
-      opacity: 0;
-      transform: translate3d(0, 115%, 0);
     }
 
     to {
