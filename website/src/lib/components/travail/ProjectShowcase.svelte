@@ -58,6 +58,9 @@
 
   let resizeTimer;
   let isMobile = false;
+  let showcaseEl;
+  let visibilityObserver;
+  let isInView = false;
   let desktopRailEl;
   let desktopCardEls = [];
   let desktopScrollRaf;
@@ -243,7 +246,7 @@
 
   function startDesktopAutoAdvance() {
     clearDesktopAutoTimers();
-    if (isMobile || !desktopRailEl || prefersReduced || filteredProjects.length < 2) return;
+    if (!isInView || isMobile || !desktopRailEl || prefersReduced || filteredProjects.length < 2) return;
 
     desktopAutoAdvanceTimer = setInterval(() => {
       const nextIndex = (activeDesktopIndex + 1) % filteredProjects.length;
@@ -253,7 +256,7 @@
 
   function pauseAndResumeDesktopAutoAdvance() {
     clearDesktopAutoTimers();
-    if (isMobile || prefersReduced || filteredProjects.length < 2) return;
+    if (!isInView || isMobile || prefersReduced || filteredProjects.length < 2) return;
 
     desktopAutoResumeTimer = setTimeout(() => {
       startDesktopAutoAdvance();
@@ -262,7 +265,7 @@
 
   function startMobileAutoAdvance() {
     clearMobileAutoTimers();
-    if (!isMobile || !mobileRailEl || prefersReduced || filteredProjects.length < 2) return;
+    if (!isInView || !isMobile || !mobileRailEl || prefersReduced || filteredProjects.length < 2) return;
 
     mobileAutoAdvanceTimer = setInterval(() => {
       const nextIndex = (activeMobileIndex + 1) % filteredProjects.length;
@@ -272,7 +275,7 @@
 
   function pauseAndResumeMobileAutoAdvance() {
     clearMobileAutoTimers();
-    if (!isMobile || prefersReduced || filteredProjects.length < 2) return;
+    if (!isInView || !isMobile || prefersReduced || filteredProjects.length < 2) return;
 
     mobileAutoResumeTimer = setTimeout(() => {
       startMobileAutoAdvance();
@@ -338,6 +341,24 @@
       });
     });
 
+    visibilityObserver = new IntersectionObserver(
+      ([entry]) => {
+        isInView = !!entry?.isIntersecting;
+
+        if (isInView) {
+          startDesktopAutoAdvance();
+          startMobileAutoAdvance();
+          return;
+        }
+
+        clearDesktopAutoTimers();
+        clearMobileAutoTimers();
+      },
+      { rootMargin: "-10% 0px -10% 0px", threshold: 0.15 }
+    );
+
+    visibilityObserver.observe(showcaseEl);
+
     window.addEventListener("resize", handleResize, { passive: true });
     window.addEventListener("orientationchange", handleResize, { passive: true });
     desktopRailEl?.addEventListener("scroll", handleDesktopRailScroll, { passive: true });
@@ -345,6 +366,7 @@
 
     return () => {
       removeMotionListener?.();
+      visibilityObserver?.disconnect();
       clearDesktopAutoTimers();
       clearMobileAutoTimers();
       clearTimeout(resizeTimer);
@@ -358,6 +380,7 @@
   onDestroy(() => {
     if (!browser) return;
     removeMotionListener?.();
+    visibilityObserver?.disconnect();
     clearDesktopAutoTimers();
     clearMobileAutoTimers();
     clearTimeout(resizeTimer);
@@ -371,6 +394,7 @@
 
 <section
   class="project-showcase"
+  bind:this={showcaseEl}
   style={`--project-count:${filteredProjects.length};`}
 >
   <div class="desktop-stack">

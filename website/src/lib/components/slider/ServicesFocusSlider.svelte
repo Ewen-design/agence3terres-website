@@ -4,47 +4,48 @@
   const slides = [
     {
       number: "01",
-      title: "Création\nde logo",
+      title: "Identite visuelle\net strategie",
       description:
-        "Des identités fortes, nettes et mémorables, pensées pour durer.",
-      image: "/images/telephone2_parfum.webp"
+        "Une vision de marque claire pour poser un cadre juste, coherent et durable.",
+      image: "/images/telephone3.webp"
     },
     {
       number: "02",
-      title: "Brand\nidentity",
+      title: "Creation\nde logo",
       description:
-        "Un système de marque cohérent pour aligner vision, ton et image.",
-      image: "/images/telephone2.webp"
+        "Des signes distinctifs forts, pensés pour installer une presence immediate et memorable.",
+      image: "/images/creation_logo_desktop.webp",
+      mobileImage: "/images/creation_logo_mobile.webp"
     },
     {
       number: "03",
-      title: "Ui\ndesign",
+      title: "Conception\nde site web",
       description:
-        "Des interfaces lisibles et sensibles, pensées pour prolonger une marque.",
-      image: "/images/telephone3.webp"
+        "Des experiences digitales sensibles, lisibles et construites pour prolonger l'univers de marque.",
+      image: "/images/telephone_parfum.webp"
     },
     {
       number: "04",
-      title: "Ux\nresearch",
+      title: "Gestion des\nreseaux sociaux",
       description:
-        "Des parcours plus justes, fondés sur les usages et les points de friction.",
-      image: "/images/telephone2.webp"
+        "Des contenus et des prises de parole plus coherents pour installer une presence reguliere et desirables.",
+      image: "/images/telephone_main.webp"
     },
     {
       number: "05",
-      title: "Direction\nartistique",
+      title: "Couverture\nd'evenements",
       description:
-        "Une direction visuelle claire pour installer une présence désirable et cohérente.",
-      image: "/images/telephone3.webp"
+        "Des images et recits captes avec justesse pour prolonger l'intensite d'un moment.",
+      image: "/images/appareil_photo.webp"
     },
     {
       number: "06",
-      title: "Motion\nconcept",
+      title: "Suivi\nstrategique",
       description:
-        "Du mouvement pensé pour renforcer le rythme et l’impact d’une identité.",
-      image: "/images/telephone2.webp"
+        "Un regard strategique et creatif pour faire evoluer la marque avec coherence dans le temps.",
+      image: "/images/parfum_ordinateur.webp"
     }
   ];
 </script>
 
-<FocusZoneSlider {slides} headerTone="light" zoneHeight="33svh" />
+<FocusZoneSlider {slides} headerTone="light" zoneHeight="33svh" itemHeightDesktop="47vh" />

@@ -140,7 +140,12 @@
     <div class="focus-zone-slider__backgrounds" aria-hidden="true">
       {#each slides as slide, index}
         <div class="focus-zone-slider__bg" class:is-active={activeIndex === index}>
-          <img src={slide.image} alt="" />
+          <picture>
+            {#if slide.mobileImage}
+              <source media="(max-width: 900px)" srcset={slide.mobileImage} />
+            {/if}
+            <img src={slide.image} alt="" />
+          </picture>
         </div>
       {/each}
 
@@ -262,6 +267,7 @@
 
   .focus-zone-slider__backgrounds,
   .focus-zone-slider__bg,
+  .focus-zone-slider__bg picture,
   .focus-zone-slider__bg img,
   .focus-zone-slider__frame {
     position: absolute;

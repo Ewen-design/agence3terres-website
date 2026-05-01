@@ -29,6 +29,6 @@
 <FocusZoneSlider
   {slides}
   zoneHeight="33svh"
-  itemHeightDesktop="44vh"
+  itemHeightDesktop="53vh"
   itemHeightMobile="48svh"
 />

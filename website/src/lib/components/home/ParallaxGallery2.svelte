@@ -5,28 +5,29 @@
 
   const items = [
     {
-      title: "Creation de logo",
+      title: "Identite visuelle et strategie",
       image: "/images/telephone3.webp"
     },
     {
-      title: "Identite visuelle et strategie",
-      image: "/images/telephone2.webp"
-    },
-    {
-      title: "Couverture d'evenements",
-      image: "/images/appareil_photo.webp"
+      title: "Creation de logo",
+      image: "/images/creation_logo_desktop.webp",
+      mobileImage: "/images/creation_logo_mobile.webp"
     },
     {
       title: "Conception de site web",
       image: "/images/telephone_parfum.webp"
     },
     {
-      title: "Accompagnement",
-      image: "/images/parfum_ordinateur.webp"
-    },
-    {
       title: "Gestion des reseaux sociaux",
       image: "/images/telephone_main.webp"
+    },
+    {
+      title: "Couverture d'evenements",
+      image: "/images/appareil_photo.webp"
+    },
+    {
+      title: "Suivi strategique",
+      image: "/images/parfum_ordinateur.webp"
     }
   ];
 
@@ -34,6 +35,9 @@
   let prefersReduced = false;
   let removeMotionListener;
   let isMobile = false;
+  let galleryEl;
+  let visibilityObserver;
+  let isInView = false;
 
   let desktopRailEl;
   let mobileRailEl;
@@ -44,6 +48,10 @@
   let activeMobileIndex = 0;
   let desktopScrollRaf = null;
   let mobileScrollRaf = null;
+  let desktopAutoAdvanceTimer = null;
+  let desktopAutoResumeTimer = null;
+  let mobileAutoAdvanceTimer = null;
+  let mobileAutoResumeTimer = null;
   let isAutoScrollingDesktop = false;
   let isAutoScrollingMobile = false;
 
@@ -95,7 +103,9 @@
   }
 
   function handleDesktopRailScroll() {
-    if (isAutoScrollingDesktop) return;
+    if (!isAutoScrollingDesktop) {
+      pauseAndResumeDesktopAutoAdvance();
+    }
     if (desktopScrollRaf) cancelAnimationFrame(desktopScrollRaf);
 
     desktopScrollRaf = requestAnimationFrame(() => {
@@ -105,7 +115,9 @@
   }
 
   function handleMobileRailScroll() {
-    if (isAutoScrollingMobile) return;
+    if (!isAutoScrollingMobile) {
+      pauseAndResumeMobileAutoAdvance();
+    }
     if (mobileScrollRaf) cancelAnimationFrame(mobileScrollRaf);
 
     mobileScrollRaf = requestAnimationFrame(() => {
@@ -152,6 +164,58 @@
     }, behavior === "smooth" ? 900 : 0);
   }
 
+  function clearDesktopAutoTimers() {
+    clearInterval(desktopAutoAdvanceTimer);
+    clearTimeout(desktopAutoResumeTimer);
+    desktopAutoAdvanceTimer = null;
+    desktopAutoResumeTimer = null;
+  }
+
+  function clearMobileAutoTimers() {
+    clearInterval(mobileAutoAdvanceTimer);
+    clearTimeout(mobileAutoResumeTimer);
+    mobileAutoAdvanceTimer = null;
+    mobileAutoResumeTimer = null;
+  }
+
+  function startDesktopAutoAdvance() {
+    clearDesktopAutoTimers();
+    if (!isInView || isMobile || !desktopRailEl || prefersReduced || items.length < 2) return;
+
+    desktopAutoAdvanceTimer = setInterval(() => {
+      const nextIndex = (activeDesktopIndex + 1) % items.length;
+      scrollToDesktopCard(nextIndex, "smooth");
+    }, 5000);
+  }
+
+  function pauseAndResumeDesktopAutoAdvance() {
+    clearDesktopAutoTimers();
+    if (!isInView || isMobile || prefersReduced || items.length < 2) return;
+
+    desktopAutoResumeTimer = setTimeout(() => {
+      startDesktopAutoAdvance();
+    }, 7000);
+  }
+
+  function startMobileAutoAdvance() {
+    clearMobileAutoTimers();
+    if (!isInView || !isMobile || !mobileRailEl || prefersReduced || items.length < 2) return;
+
+    mobileAutoAdvanceTimer = setInterval(() => {
+      const nextIndex = (activeMobileIndex + 1) % items.length;
+      scrollToMobileCard(nextIndex, "smooth");
+    }, 5000);
+  }
+
+  function pauseAndResumeMobileAutoAdvance() {
+    clearMobileAutoTimers();
+    if (!isInView || !isMobile || prefersReduced || items.length < 2) return;
+
+    mobileAutoResumeTimer = setTimeout(() => {
+      startMobileAutoAdvance();
+    }, 7000);
+  }
+
   function handleButtonMove(event) {
     const button = event.currentTarget;
     const rect = button.getBoundingClientRect();
@@ -165,6 +229,8 @@
       measure();
       scrollToDesktopCard(activeDesktopIndex, "auto");
       scrollToMobileCard(activeMobileIndex, "auto");
+      startDesktopAutoAdvance();
+      startMobileAutoAdvance();
     }, 80);
   }
 
@@ -176,6 +242,8 @@
 
     const onMotion = (event) => {
       prefersReduced = event.matches;
+      startDesktopAutoAdvance();
+      startMobileAutoAdvance();
     };
 
     if (mq.addEventListener) {
@@ -191,8 +259,28 @@
         measure();
         updateDesktopActive();
         updateMobileActive();
+        startDesktopAutoAdvance();
+        startMobileAutoAdvance();
       });
     });
+
+    visibilityObserver = new IntersectionObserver(
+      ([entry]) => {
+        isInView = !!entry?.isIntersecting;
+
+        if (isInView) {
+          startDesktopAutoAdvance();
+          startMobileAutoAdvance();
+          return;
+        }
+
+        clearDesktopAutoTimers();
+        clearMobileAutoTimers();
+      },
+      { rootMargin: "-10% 0px -10% 0px", threshold: 0.15 }
+    );
+
+    visibilityObserver.observe(galleryEl);
 
     window.addEventListener("resize", handleResize, { passive: true });
     window.addEventListener("orientationchange", handleResize, { passive: true });
@@ -201,6 +289,9 @@
 
     return () => {
       removeMotionListener?.();
+      visibilityObserver?.disconnect();
+      clearDesktopAutoTimers();
+      clearMobileAutoTimers();
       clearTimeout(resizeTimer);
       window.removeEventListener("resize", handleResize);
       window.removeEventListener("orientationchange", handleResize);
@@ -213,6 +304,9 @@
     if (!browser) return;
 
     removeMotionListener?.();
+    visibilityObserver?.disconnect();
+    clearDesktopAutoTimers();
+    clearMobileAutoTimers();
     clearTimeout(resizeTimer);
     desktopRailEl?.removeEventListener("scroll", handleDesktopRailScroll);
     mobileRailEl?.removeEventListener("scroll", handleMobileRailScroll);
@@ -221,7 +315,7 @@
   });
 </script>
 
-<section class="gallery">
+<section class="gallery" bind:this={galleryEl}>
   <div class="gallery-intro-group">
     <div class="gallery-header">
       <div class="intro-card">
@@ -247,14 +341,19 @@
             draggable="false"
           >
             <div class="desktop-image">
-              <img
-                src={item.image}
-                alt={item.title}
-                loading={index < 2 ? "eager" : "lazy"}
-                fetchpriority={index < 2 ? "high" : "auto"}
-                decoding="async"
-                draggable="false"
-              />
+              <picture>
+                {#if item.mobileImage}
+                  <source media="(max-width: 900px)" srcset={item.mobileImage} />
+                {/if}
+                <img
+                  src={item.image}
+                  alt={item.title}
+                  loading={index < 2 ? "eager" : "lazy"}
+                  fetchpriority={index < 2 ? "high" : "auto"}
+                  decoding="async"
+                  draggable="false"
+                />
+              </picture>
               <div class="desktop-image-shade" aria-hidden="true"></div>
             </div>
 
@@ -273,7 +372,10 @@
           class:is-hidden={activeDesktopIndex === 0}
           type="button"
           aria-label="Service precedent"
-          onclick={() => scrollToDesktopCard(Math.max(activeDesktopIndex - 1, 0), prefersReduced ? "auto" : "smooth")}
+          onclick={() => {
+            pauseAndResumeDesktopAutoAdvance();
+            scrollToDesktopCard(Math.max(activeDesktopIndex - 1, 0), prefersReduced ? "auto" : "smooth");
+          }}
         >
           <span class="desktop-nav-chevron" aria-hidden="true"></span>
         </button>
@@ -283,7 +385,10 @@
           class:is-hidden={activeDesktopIndex === items.length - 1}
           type="button"
           aria-label="Service suivant"
-          onclick={() => scrollToDesktopCard(Math.min(activeDesktopIndex + 1, items.length - 1), prefersReduced ? "auto" : "smooth")}
+          onclick={() => {
+            pauseAndResumeDesktopAutoAdvance();
+            scrollToDesktopCard(Math.min(activeDesktopIndex + 1, items.length - 1), prefersReduced ? "auto" : "smooth");
+          }}
         >
           <span class="desktop-nav-chevron" aria-hidden="true"></span>
         </button>
@@ -307,14 +412,19 @@
             </div>
 
             <div class="mobile-image">
-              <img
-                src={item.image}
-                alt={item.title}
-                loading={index < 2 ? "eager" : "lazy"}
-                fetchpriority={index < 2 ? "high" : "auto"}
-                decoding="async"
-                draggable="false"
-              />
+              <picture>
+                {#if item.mobileImage}
+                  <source media="(max-width: 900px)" srcset={item.mobileImage} />
+                {/if}
+                <img
+                  src={item.image}
+                  alt={item.title}
+                  loading={index < 2 ? "eager" : "lazy"}
+                  fetchpriority={index < 2 ? "high" : "auto"}
+                  decoding="async"
+                  draggable="false"
+                />
+              </picture>
             </div>
           </a>
         {/each}
@@ -326,7 +436,10 @@
           class:is-hidden={activeMobileIndex === 0}
           type="button"
           aria-label="Service precedent"
-          onclick={() => scrollToMobileCard(Math.max(activeMobileIndex - 1, 0), prefersReduced ? "auto" : "smooth")}
+          onclick={() => {
+            pauseAndResumeMobileAutoAdvance();
+            scrollToMobileCard(Math.max(activeMobileIndex - 1, 0), prefersReduced ? "auto" : "smooth");
+          }}
         >
           <span class="mobile-nav-chevron" aria-hidden="true"></span>
         </button>
@@ -336,7 +449,10 @@
           class:is-hidden={activeMobileIndex === items.length - 1}
           type="button"
           aria-label="Service suivant"
-          onclick={() => scrollToMobileCard(Math.min(activeMobileIndex + 1, items.length - 1), prefersReduced ? "auto" : "smooth")}
+          onclick={() => {
+            pauseAndResumeMobileAutoAdvance();
+            scrollToMobileCard(Math.min(activeMobileIndex + 1, items.length - 1), prefersReduced ? "auto" : "smooth");
+          }}
         >
           <span class="mobile-nav-chevron" aria-hidden="true"></span>
         </button>
@@ -465,11 +581,19 @@
   }
 
   .desktop-image img,
+  .desktop-image picture,
+  .mobile-image picture,
+  .mobile-image img {
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
+
+  .desktop-image img,
   .mobile-image img {
     width: 100%;
     height: 100%;
     object-fit: cover;
-    display: block;
     transform: translateZ(0);
     transition: transform .56s cubic-bezier(.22,.61,.36,1);
     will-change: transform;
@@ -531,13 +655,16 @@
 
   .desktop-nav-shell {
     position: absolute;
-    inset: 0;
+    top: clamp(5.8rem, 9vh, 7rem);
+    left: 0;
+    right: 0;
+    height: min(62vh, 680px);
     pointer-events: none;
   }
 
   .desktop-nav-btn {
     position: absolute;
-    top: calc(clamp(5.8rem, 9vh, 7rem) + min(62vh, 680px) * 0.5);
+    top: 50%;
     width: 3.8rem;
     height: 3.8rem;
     display: inline-flex;
