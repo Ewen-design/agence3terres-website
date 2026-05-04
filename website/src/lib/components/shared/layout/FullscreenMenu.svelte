@@ -338,10 +338,6 @@
         </button>
 
         <div class="mobile-actions-panel" class:is-open={mobileActionsOpen}>
-          <a class="mobile-mail-link" href="mailto:contact@agence3terres.com">
-            contact@agence3terres.com
-          </a>
-
           <div class="mobile-socials">
             {#each socialLinks as social}
               <a
@@ -356,6 +352,10 @@
               </a>
             {/each}
           </div>
+
+          <a class="mobile-mail-link" href="mailto:contact@agence3terres.com">
+            contact@agence3terres.com
+          </a>
         </div>
       </div>
     </div>
@@ -517,6 +517,8 @@
     --menu-scrim-duration: 920ms;
     --menu-blur-strength: 13px;
     --menu-ease: cubic-bezier(.22, 1, .36, 1);
+    --menu-card-surface: rgba(24, 24, 24, 0.88);
+    --menu-muted-gray: rgb(157, 156, 156);
   }
 
   .fs-menu.is-visible {
@@ -659,7 +661,7 @@
     clip-path: inset(100% 0 0 0);
     -webkit-clip-path: inset(100% 0 0 0);
     opacity: 0;
-    color: rgba(255, 255, 255, 0.42);
+    color: var(--menu-muted-gray);
     padding-right: 0.08em;
     transition:
       clip-path var(--menu-content-duration) var(--menu-ease),
@@ -708,7 +710,7 @@
     padding: 0.95rem;
     border: 0;
     border-radius: 2px;
-    background: #171717;
+    background: var(--menu-card-surface);
     color: #fff;
     text-align: left;
     cursor: pointer;
@@ -716,7 +718,7 @@
 
   .project-card.large {
     gap: 0.9rem;
-    background: #151515;
+    background: var(--menu-card-surface);
   }
 
   .nav-btn::before,
@@ -984,7 +986,7 @@
     gap: 0.7rem;
     align-items: center;
     padding: 0.75rem;
-    background: rgba(24, 24, 24, 0.88);
+    background: var(--menu-card-surface);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
     text-align: left;
@@ -1075,7 +1077,7 @@
     font-family: "Clash Display", sans-serif;
     font-size: 0.9rem;
     letter-spacing: 0.02em;
-    color: rgba(255, 255, 255, 0.58);
+    color: var(--menu-muted-gray);
     margin-bottom: 0.8rem;
   }
 
@@ -1109,7 +1111,7 @@
     align-items: center;
     justify-content: center;
     border: 0px solid rgba(255, 255, 255, 0.14);
-    background: rgba(255, 255, 255, 0.15);
+    background: var(--menu-card-surface);
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
     transition:
@@ -1203,8 +1205,8 @@
   }
 
   .fs-menu.is-closing .menu-media-reveal {
-    clip-path: inset(100% 0 0 0);
-    -webkit-clip-path: inset(100% 0 0 0);
+    clip-path: inset(0 0 100% 0);
+    -webkit-clip-path: inset(0 0 100% 0);
   }
 
   .fs-menu.is-closing .menu-panel {
@@ -1320,7 +1322,7 @@
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      background: rgba(255, 255, 255, 0.12);
+      background: var(--menu-card-surface);
       backdrop-filter: blur(10px);
       -webkit-backdrop-filter: blur(10px);
       padding: 0;
@@ -1344,11 +1346,11 @@
       position: absolute;
       top: calc(100% + 0.55rem);
       right: 0;
-      min-width: min(15rem, 74vw);
-      padding: 0.95rem 0.9rem 1rem;
-      background: rgba(18, 18, 18, 0.9);
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
+      width: 2.75rem;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
       opacity: 0;
       pointer-events: none;
       transform: translate3d(0, -8px, 0);
@@ -1366,18 +1368,24 @@
     .mobile-mail-link {
       display: block;
       font-family: "Clash Display", sans-serif;
-      font-size: 0.86rem;
-      line-height: 1.2;
+      font-size: 0.76rem;
+      line-height: 1.15;
       color: #fff;
       text-decoration: none;
-      margin-bottom: 0.95rem;
-      word-break: break-word;
+      margin-top: 0.55rem;
+      width: max-content;
+      min-width: 0;
+      margin-left: 0;
+      margin-right: 0;
+      text-align: right;
+      white-space: nowrap;
     }
 
     .mobile-socials {
       display: flex;
-      justify-content: flex-end;
-      gap: 0.6rem;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.5rem;
     }
 
     .mobile-top-logo {
