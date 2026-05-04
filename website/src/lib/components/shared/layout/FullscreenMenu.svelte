@@ -386,7 +386,7 @@
       </nav>
 
       <aside class="project-previews" aria-label="Aperçus projets">
-        {#each projectPreviewCards as card}
+        {#each projectPreviewCards.filter((card) => card.page !== "contact") as card}
           <button
             class="project-card"
             class:large={card.large}
@@ -628,7 +628,7 @@
     flex-direction: column;
     align-items: flex-start;
     gap: clamp(0.3rem, 0.58vh, 0.62rem);
-    padding-top: clamp(6.4rem, 12vh, 8.8rem);
+    padding-top: clamp(4.9rem, 8.9vh, 6.9rem);
   }
 
   .menu-link {
@@ -685,7 +685,7 @@
     flex-direction: column;
     gap: 0.75rem;
     width: min(22vw, 290px);
-    padding-top: 0.2rem;
+    padding-top: clamp(4.9rem, 8.9vh, 6.9rem);
   }
 
   .mobile-preview-card,
