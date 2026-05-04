@@ -6,16 +6,17 @@
   const items = [
     {
       title: "Identite visuelle et strategie",
-      image: "/images/telephone3.webp"
+      image: "/images/carte_visite_desktop.webp",
+      mobileImage: "/images/carte_visite_mobile.webp"
+    },
+    {
+      title: "Conception de site web",
+      image: "/images/telephone_parfum.webp"
     },
     {
       title: "Creation de logo",
       image: "/images/creation_logo_desktop.webp",
       mobileImage: "/images/creation_logo_mobile.webp"
-    },
-    {
-      title: "Conception de site web",
-      image: "/images/telephone_parfum.webp"
     },
     {
       title: "Gestion des reseaux sociaux",
@@ -726,7 +727,7 @@
     font-size: .9rem;
     white-space: nowrap;
     color: var(--services-btn-text);
-    border: 1px solid var(--services-btn-border);
+    border: 0px solid var(--services-btn-border);
     cursor: pointer;
     background: var(--services-btn-bg);
     backdrop-filter: blur(10px);

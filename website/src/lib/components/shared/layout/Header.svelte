@@ -575,9 +575,9 @@
     font-size: 0.9rem;
     white-space: nowrap;
     color: inherit;
-    border: 1px solid rgba(255, 255, 255, 0.15);
+    border: 0px solid rgba(255, 255, 255, 0.15);
     cursor: pointer;
-    background: rgba(255, 255, 255, 0.10);
+    background: rgba(255, 255, 255, 0.15);
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
     will-change: transform, opacity, backdrop-filter, -webkit-backdrop-filter;

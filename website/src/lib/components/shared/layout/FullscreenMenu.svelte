@@ -31,7 +31,7 @@
 
   const links = [
     { label: "Accueil", page: "home", image: "/images/photo.webp" },
-    { label: "Services", page: "services", image: "/images/parfum2.webp" },
+    { label: "Services", page: "services", image: "/images/creation_logo_desktop2.webp" },
     { label: "Projets", page: "travail", image: "/images/parfum4.webp" },
     { label: "A propos", page: "apropos", image: "/images/parfum3.webp" },
     { label: "Contact", page: "contact", image: "/images/photo2.webp" }
@@ -521,6 +521,7 @@
   .menu-link-text {
     display: inline-block;
     font-family: "Clash Display", sans-serif;
+    font-weight: 300;
     font-style: normal;
     font-size: clamp(3.35rem, 4.7vw, 5.6rem);
     line-height: 0.94;
@@ -755,8 +756,8 @@
     font-family: inherit;
     white-space: nowrap;
     color: inherit;
-    border: 1px solid rgba(255, 255, 255, 0.14);
-    background: rgba(255, 255, 255, 0.10);
+    border: 0px solid rgba(255, 255, 255, 0.14);
+    background: rgba(255, 255, 255, 0.15);
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
     border-radius: 2px;
@@ -851,8 +852,8 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    border: 1px solid rgba(255, 255, 255, 0.14);
-    background: rgba(255, 255, 255, 0.08);
+    border: 0px solid rgba(255, 255, 255, 0.14);
+    background: rgba(255, 255, 255, 0.15);
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
     transition:

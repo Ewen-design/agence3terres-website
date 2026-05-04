@@ -442,7 +442,7 @@
         <img
           bind:this={heroMediaImgEl}
           class:media-visible={heroMediaVisible}
-          src="images/telephone3.webp"
+          src="images/carte_visite_desktop2.webp"
           alt=""
         />
         <div class="hero-dark-layer" bind:this={heroDarkLayerEl}></div>

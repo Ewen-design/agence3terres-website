@@ -315,7 +315,7 @@
   .vision-header h2 {
     font-family: "Clash Display", sans-serif;
     font-size: clamp(2.5rem, 4vw, 4rem);
-    font-weight: 400;
+    font-weight: 200;
     margin-bottom: 1.5rem;
     line-height: 0.96;
     letter-spacing: -0.04em;
@@ -406,7 +406,7 @@
   .quote p {
     font-family: "Clash Display", sans-serif;
     font-style: normal;
-    font-weight: 500;
+    font-weight: 300;
     font-size: 1.5rem;
     color: #fff;
     line-height: 1.6;

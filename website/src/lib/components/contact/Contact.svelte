@@ -398,11 +398,11 @@
   }
 
   .form {
-    background: rgba(255, 255, 255, 0.02);
+    background: rgba(255, 255, 255, 0.03);
     padding: clamp(1.3rem, 2.4vw, 2.35rem);
     border-radius: 2px;
     box-shadow: none;
-    border: 1px solid rgba(255, 255, 255, 0.12);
+    border: 0px solid rgba(255, 255, 255, 0.12);
     width: 100%;
   }
 
@@ -570,8 +570,8 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    border: 1px solid rgba(255, 255, 255, 0.14);
-    background: rgba(255, 255, 255, 0.08);
+    border: 0px solid rgba(255, 255, 255, 0.14);
+    background: rgba(255, 255, 255, 0.15);
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
     transition:
@@ -583,7 +583,7 @@
 
   .social-link:hover {
     transform: translateY(-4px);
-    background: rgba(255, 255, 255, 0.12);
+    background: rgba(255, 255, 255, 0.16);
     border-color: rgba(255, 255, 255, 0.24);
   }
 
@@ -642,9 +642,9 @@
     font-size: 0.9rem;
     white-space: nowrap;
     color: inherit;
-    border: 1px solid rgba(255, 255, 255, 0.15);
+    border: 0px solid rgba(255, 255, 255, 0.15);
     cursor: pointer;
-    background: rgba(255, 255, 255, 0.10);
+    background: rgba(255, 255, 255, 0.15);
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
     border-radius: 2px;

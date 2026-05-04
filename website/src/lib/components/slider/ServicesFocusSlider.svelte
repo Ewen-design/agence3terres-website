@@ -7,23 +7,26 @@
       title: "Identite visuelle\net strategie",
       description:
         "Une vision de marque claire pour poser un cadre juste, coherent et durable.",
-      image: "/images/telephone3.webp"
+      image: "/images/carte_visite_desktop.webp"
+      ,
+      mobileImage: "/images/carte_visite_mobile.webp"
     },
     {
       number: "02",
+      title: "Conception\nde site web",
+      description:
+        "Des experiences digitales sensibles, lisibles et construites pour prolonger l'univers de marque.",
+      image: "/images/telephone_parfum.webp"
+    },
+    {
+      number: "03",
       title: "Creation\nde logo",
       description:
         "Des signes distinctifs forts, pensés pour installer une presence immediate et memorable.",
       image: "/images/creation_logo_desktop.webp",
       mobileImage: "/images/creation_logo_mobile.webp"
     },
-    {
-      number: "03",
-      title: "Conception\nde site web",
-      description:
-        "Des experiences digitales sensibles, lisibles et construites pour prolonger l'univers de marque.",
-      image: "/images/telephone_parfum.webp"
-    },
+  
     {
       number: "04",
       title: "Gestion des\nreseaux sociaux",
