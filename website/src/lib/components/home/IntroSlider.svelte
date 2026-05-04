@@ -1,9 +1,9 @@
 <script>
   export let main =
-    "Nous imaginons des identités fortes, des expériences digitales immersives";
+    "Des projets conçus comme des signatures, où chaque détail sert une vision claire";
 
   export let muted =
-    "et des directions artistiques pensées pour laisser une empreinte durable.";
+    "et donne à chaque marque une présence plus juste, plus désirable.";
 </script>
 
 <section class="story-slider-intro">

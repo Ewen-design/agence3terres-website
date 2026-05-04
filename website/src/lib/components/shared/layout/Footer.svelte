@@ -1,9 +1,23 @@
 <script>
   import { onMount } from "svelte";
   import { browser } from "$app/environment";
+  import { page } from "$app/stores";
 
   let footerEl;
   let isVisible = false;
+
+  const footerImages = {
+    "/": "/images/telephone3.webp",
+    "/services": "/images/creation_logo_desktop2.webp",
+    "/travail": "/images/parfum4.webp",
+    "/apropos": "/images/parfum3.webp",
+    "/contact": "/images/photo2.webp",
+    "/projet1": "/images/parfum4.webp",
+    "/projet2": "/images/telephone2_parfum.webp"
+  };
+
+  $: pathname = $page.url.pathname.replace(/\/+$/, "") || "/";
+  $: footerImage = footerImages[pathname] ?? footerImages["/"];
 
   onMount(() => {
     if (!browser || !footerEl) return;
@@ -27,7 +41,7 @@
 </script>
 
 <footer class="footer section-full" class:is-visible={isVisible} bind:this={footerEl}>
-  <div class="footer-bg"></div>
+  <div class="footer-bg" style={`background-image: url('${footerImage}')`}></div>
   <div class="footer-overlay"></div>
 
   <div class="footer-content">
@@ -87,7 +101,6 @@
   }
 
   .footer-bg {
-    background-image: url("/images/telephone3.webp");
     background-size: cover;
     background-repeat: no-repeat;
     background-position: center bottom;

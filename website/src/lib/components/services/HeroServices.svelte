@@ -50,7 +50,7 @@
   };
 
   const finalText =
-    "Nous concevons des identités, des expériences et des univers visuels pensés pour marquer durablement les esprits.";
+    "Nous structurons des services créatifs sur mesure, pensés pour donner aux marques une présence juste et durable.";
   const afterImages = [
     "images/telephone2.webp",
     "images/telephone2_parfum.webp",

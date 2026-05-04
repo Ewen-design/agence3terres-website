@@ -50,7 +50,7 @@
   };
 
   const finalText =
-    "Nous concevons des identités, des expériences et des univers visuels pensés pour marquer durablement les esprits.";
+    "Une agence indépendante qui aborde chaque projet avec exigence, sens du détail et vision d'ensemble durable.";
   const afterImages = [
     "images/telephone2.webp",
     "images/telephone2_parfum.webp",

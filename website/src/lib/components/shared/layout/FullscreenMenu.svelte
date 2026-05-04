@@ -44,6 +44,7 @@
       meta: "Projet sélectionné",
       image: projectPages.projet1.hero.image,
       alt: projectPages.projet1.hero.alt,
+      text: "Une identité et une présence visuelle pensées avec justesse, rythme et précision.",
       large: true
     },
     {
@@ -53,15 +54,25 @@
       alt: projectPages.projet2.hero.alt,
       text: projectPages.projet2.hero.summaryMain,
       large: false
+    },
+    {
+      page: "services",
+      title: "Conception de site web",
+      image: "/images/creation_logo_desktop2.webp",
+      alt: "Aperçu service conception de site web",
+      text: "Des sites pensés comme des expériences fluides, désirables et précisées dans le détail.",
+      large: false
+    },
+    {
+      page: "contact",
+      title: "Contact",
+      image: "/images/photo2.webp",
+      alt: "Aperçu page contact",
+      text: "Un point d'entrée direct pour cadrer votre projet avec clarté et exigence.",
+      large: false
     }
   ];
 
-  const PANEL_OPEN_DELAY = 170;
-  const CONTENT_REVEAL_DELAY = 780;
-  const FOOTER_REVEAL_DELAY = 1380;
-  const CLOSE_CONTENT_MS = 860;
-  const CLOSE_PANEL_DELAY = 420;
-  const PANEL_CLOSE_MS = 1880;
   let visible = false;
   let expanded = false;
   let contentVisible = false;
@@ -71,6 +82,7 @@
   let navigating = false;
   let isMobile = false;
   let previewIndex = 0;
+  let mobileActionsOpen = false;
 
   let openPanelTimer;
   let openContentTimer;
@@ -78,6 +90,24 @@
   let closePanelTimer;
   let finishTimer;
   let resizeHandler;
+
+  function getMotionProfile() {
+    if (isMobile) {
+      return {
+        openPanelDelay: 0,
+        openContentDelay: 150,
+        openFooterDelay: 240,
+        closeFinishMs: 420
+      };
+    }
+
+    return {
+      openPanelDelay: 0,
+      openContentDelay: 220,
+      openFooterDelay: 340,
+      closeFinishMs: 760
+    };
+  }
 
   function getPageIndex(pathname) {
     const clean = pathname?.replace(/\/+$/, "") || "/";
@@ -111,15 +141,13 @@
     closing = false;
     navigating = false;
     open = false;
+    mobileActionsOpen = false;
     document.body.classList.remove("menu-open");
-
-    setTimeout(() => {
-      setMenuTransitionSuppressed(false);
-    }, 80);
   }
 
   function startOpen() {
     clearAsync();
+    const motion = getMotionProfile();
 
     visible = true;
     expanded = false;
@@ -128,28 +156,30 @@
     footerVisible = false;
     closing = false;
     navigating = false;
+    mobileActionsOpen = false;
     previewIndex = getPageIndex($page.url.pathname);
 
     document.body.classList.add("menu-open");
 
     openPanelTimer = setTimeout(() => {
       expanded = true;
-    }, PANEL_OPEN_DELAY);
+    }, motion.openPanelDelay);
 
     openContentTimer = setTimeout(() => {
       contentVisible = true;
       mediaVisible = true;
-    }, isMobile ? 560 : CONTENT_REVEAL_DELAY);
+    }, motion.openContentDelay);
 
     openFooterTimer = setTimeout(() => {
       footerVisible = true;
-    }, isMobile ? 860 : FOOTER_REVEAL_DELAY);
+    }, motion.openFooterDelay);
   }
 
   function startClose() {
     if (!visible || closing) return;
 
     clearAsync();
+    const motion = getMotionProfile();
 
     closing = true;
     contentVisible = false;
@@ -158,14 +188,18 @@
 
     closePanelTimer = setTimeout(() => {
       expanded = false;
-    }, CLOSE_PANEL_DELAY);
+    }, 0);
 
     finishTimer = setTimeout(() => {
       finishClose();
-    }, CLOSE_CONTENT_MS + PANEL_CLOSE_MS);
+    }, motion.closeFinishMs);
   }
 
   $: if (open && !visible) {
+    startOpen();
+  }
+
+  $: if (open && visible && closing) {
     startOpen();
   }
 
@@ -239,6 +273,10 @@
     el.style.setProperty("--my", `${event.clientY - rect.top}px`);
   }
 
+  function toggleMobileActions() {
+    mobileActionsOpen = !mobileActionsOpen;
+  }
+
   $: originStyle = `
     --origin-x:${origin?.x ?? 0}px;
     --origin-y:${origin?.y ?? 0}px;
@@ -268,6 +306,59 @@
 
   <div class="menu-shell">
     <div class="menu-panel"></div>
+
+    <div class="mobile-topbar ui-content">
+      <button
+        class="mobile-square-btn mobile-close-btn"
+        type="button"
+        aria-label="Fermer le menu"
+        on:mousemove={handleGlowMove}
+        on:click|stopPropagation={close}
+      >
+        <svg class="mobile-topbar-icon mobile-close-icon" viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M6 6L18 18" />
+          <path d="M18 6L6 18" />
+        </svg>
+      </button>
+
+      <div class="mobile-top-logo" aria-hidden="true">
+        <img src="/images/logo_prisme.png" alt="" />
+      </div>
+
+      <div class="mobile-actions">
+        <button
+          class="mobile-square-btn mobile-actions-toggle"
+          type="button"
+          aria-label="Ouvrir les actions"
+          aria-expanded={mobileActionsOpen}
+          on:mousemove={handleGlowMove}
+          on:click|stopPropagation={toggleMobileActions}
+        >
+          <img class="mobile-action-mail-icon" src="/images/mail.png" alt="" aria-hidden="true" />
+        </button>
+
+        <div class="mobile-actions-panel" class:is-open={mobileActionsOpen}>
+          <a class="mobile-mail-link" href="mailto:contact@agence3terres.com">
+            contact@agence3terres.com
+          </a>
+
+          <div class="mobile-socials">
+            {#each socialLinks as social}
+              <a
+                class="social-link"
+                href={social.href}
+                aria-label={social.label}
+                data-cursor="button"
+                on:mousemove={handleGlowMove}
+                on:click|preventDefault
+              >
+                <img src={social.icon} alt={social.label} class={`icon ${social.className}`} />
+              </a>
+            {/each}
+          </div>
+        </div>
+      </div>
+    </div>
 
     <div class="menu-upper ui-content">
       <div class="menu-top-logo" aria-hidden="true">
@@ -375,6 +466,27 @@
         </div>
       </div>
     </div>
+
+    <div class="mobile-preview-rail ui-bottom" aria-label="Aperçus secondaires">
+      <div class="mobile-preview-scroll">
+        {#each projectPreviewCards as card}
+          <button
+            class="mobile-preview-card"
+            type="button"
+            on:click={() => handlePath(`/${card.page}`)}
+          >
+            <div class="mobile-preview-copy">
+              <span class="mobile-preview-title">{card.title}</span>
+              <p class="mobile-preview-text">{card.text}</p>
+            </div>
+
+            <div class="mobile-preview-row">
+              <img class="mobile-preview-image" src={card.image} alt={card.alt} loading="lazy" />
+            </div>
+          </button>
+        {/each}
+      </div>
+    </div>
   </div>
 </div>
 
@@ -386,12 +498,25 @@
 
   .fs-menu {
     position: fixed;
-    inset: 0;
+    inset: 0 auto auto 0;
+    width: 100%;
+    height: 100vh;
+    height: 100lvh;
+    min-height: 100vh;
+    min-height: 100lvh;
     z-index: 9999;
     opacity: 0;
     visibility: hidden;
     pointer-events: none;
     color: #fff;
+    overflow: hidden;
+    --menu-panel-duration: 920ms;
+    --menu-content-duration: 800ms;
+    --menu-footer-duration: 760ms;
+    --menu-media-duration: 920ms;
+    --menu-scrim-duration: 920ms;
+    --menu-blur-strength: 13px;
+    --menu-ease: cubic-bezier(.22, 1, .36, 1);
   }
 
   .fs-menu.is-visible {
@@ -407,6 +532,11 @@
     background: transparent;
   }
 
+  .mobile-topbar,
+  .mobile-preview-rail {
+    display: none;
+  }
+
   .menu-scrim,
   .menu-blur {
     position: absolute;
@@ -418,7 +548,7 @@
     z-index: 2;
     opacity: 0;
     background: rgba(0, 0, 0, 0.84);
-    transition: opacity 1.8s cubic-bezier(.16, 1, .3, 1);
+    transition: opacity var(--menu-scrim-duration) var(--menu-ease);
   }
 
   .menu-blur {
@@ -427,9 +557,9 @@
     backdrop-filter: blur(0px);
     -webkit-backdrop-filter: blur(0px);
     transition:
-      opacity 1.8s cubic-bezier(.16, 1, .3, 1),
-      backdrop-filter 1.8s cubic-bezier(.16, 1, .3, 1),
-      -webkit-backdrop-filter 1.8s cubic-bezier(.16, 1, .3, 1);
+      opacity var(--menu-scrim-duration) var(--menu-ease),
+      backdrop-filter var(--menu-scrim-duration) var(--menu-ease),
+      -webkit-backdrop-filter var(--menu-scrim-duration) var(--menu-ease);
   }
 
   .menu-shell {
@@ -448,8 +578,8 @@
     -webkit-clip-path: inset(0 0 100% 0);
     will-change: clip-path;
     transition:
-      clip-path 1.9s cubic-bezier(.16, 1, .3, 1),
-      -webkit-clip-path 1.9s cubic-bezier(.16, 1, .3, 1);
+      clip-path var(--menu-panel-duration) var(--menu-ease),
+      -webkit-clip-path var(--menu-panel-duration) var(--menu-ease);
   }
 
   .ui-content {
@@ -457,9 +587,9 @@
     filter: blur(18px);
     transform: translate3d(0, 26px, 0);
     transition:
-      opacity 1.6s cubic-bezier(.16, 1, .3, 1),
-      filter 1.6s cubic-bezier(.16, 1, .3, 1),
-      transform 1.6s cubic-bezier(.16, 1, .3, 1);
+      opacity var(--menu-content-duration) var(--menu-ease),
+      filter var(--menu-content-duration) var(--menu-ease),
+      transform var(--menu-content-duration) var(--menu-ease);
   }
 
   .menu-upper {
@@ -497,8 +627,8 @@
     display: flex;
     flex-direction: column;
     align-items: flex-start;
-    gap: clamp(0.35rem, 0.7vh, 0.75rem);
-    padding-top: clamp(1rem, 2.6vh, 2rem);
+    gap: clamp(0.3rem, 0.58vh, 0.62rem);
+    padding-top: clamp(6.4rem, 12vh, 8.8rem);
   }
 
   .menu-link {
@@ -523,7 +653,7 @@
     font-family: "Clash Display", sans-serif;
     font-weight: 300;
     font-style: normal;
-    font-size: clamp(3.35rem, 4.7vw, 5.6rem);
+    font-size: clamp(2.95rem, 4.15vw, 4.8rem);
     line-height: 0.94;
     letter-spacing: -0.025em;
     clip-path: inset(100% 0 0 0);
@@ -532,11 +662,11 @@
     color: rgba(255, 255, 255, 0.42);
     padding-right: 0.08em;
     transition:
-      clip-path 1.6s cubic-bezier(.16, 1, .3, 1),
-      -webkit-clip-path 1.6s cubic-bezier(.16, 1, .3, 1),
-      opacity 1.05s ease,
-      color 1.05s ease,
-      filter 1.2s ease;
+      clip-path var(--menu-content-duration) var(--menu-ease),
+      -webkit-clip-path var(--menu-content-duration) var(--menu-ease),
+      opacity 620ms ease,
+      color 620ms ease,
+      filter 720ms ease;
   }
 
   .menu-link.is-current .menu-link-text,
@@ -556,6 +686,17 @@
     gap: 0.75rem;
     width: min(22vw, 290px);
     padding-top: 0.2rem;
+  }
+
+  .mobile-preview-card,
+  .mobile-square-btn {
+    border: 0;
+    color: inherit;
+  }
+
+  .mobile-square-btn {
+    position: relative;
+    overflow: hidden;
   }
 
   .project-card {
@@ -695,19 +836,25 @@
     position: relative;
     z-index: 7;
     min-height: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
   }
 
   .menu-media-reveal {
-    position: absolute;
-    inset: 0;
+    position: relative;
+    width: min(28vw, 34rem);
+    height: min(74vh, 52rem);
     overflow: hidden;
     pointer-events: none;
+    border-radius: 2px;
     clip-path: inset(100% 0 0 0);
     -webkit-clip-path: inset(100% 0 0 0);
     will-change: clip-path;
     transition:
-      clip-path 1.95s cubic-bezier(.16, 1, .3, 1),
-      -webkit-clip-path 1.95s cubic-bezier(.16, 1, .3, 1);
+      clip-path var(--menu-media-duration) var(--menu-ease),
+      -webkit-clip-path var(--menu-media-duration) var(--menu-ease);
   }
 
   .menu-media-stack {
@@ -726,9 +873,9 @@
     transform: scale(1.04);
     filter: brightness(0.72) saturate(0.9) contrast(1.02);
     transition:
-      opacity 1.15s cubic-bezier(.16, 1, .3, 1),
-      transform 1.7s cubic-bezier(.16, 1, .3, 1),
-      filter 1.15s cubic-bezier(.16, 1, .3, 1);
+      opacity 760ms var(--menu-ease),
+      transform var(--menu-media-duration) var(--menu-ease),
+      filter 760ms var(--menu-ease);
   }
 
   .menu-media-image.is-active {
@@ -809,10 +956,119 @@
     filter: blur(16px);
     transform: translate3d(0, 26px, 0);
     transition:
-      opacity 1.65s cubic-bezier(.16, 1, .3, 1),
-      filter 1.65s cubic-bezier(.16, 1, .3, 1),
-      transform 1.65s cubic-bezier(.16, 1, .3, 1);
+      opacity var(--menu-footer-duration) var(--menu-ease),
+      filter var(--menu-footer-duration) var(--menu-ease),
+      transform var(--menu-footer-duration) var(--menu-ease);
     pointer-events: none;
+  }
+
+  .mobile-preview-scroll {
+    display: flex;
+    gap: 0.75rem;
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding: 0 1rem;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    overscroll-behavior-x: contain;
+  }
+
+  .mobile-preview-scroll::-webkit-scrollbar {
+    display: none;
+  }
+
+  .mobile-preview-card {
+    flex: 0 0 min(18.5rem, 76vw);
+    display: grid;
+    grid-template-columns: 4.3rem minmax(0, 1fr);
+    gap: 0.7rem;
+    align-items: center;
+    padding: 0.75rem;
+    background: rgba(24, 24, 24, 0.88);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    text-align: left;
+    cursor: pointer;
+  }
+
+  .mobile-preview-copy {
+    order: 2;
+    min-width: 0;
+  }
+
+  .mobile-preview-row {
+    order: 1;
+  }
+
+  .mobile-preview-image {
+    width: 4.3rem;
+    height: 4.3rem;
+    object-fit: cover;
+    border-radius: 2px;
+    filter: brightness(0.88) saturate(0.92);
+  }
+
+  .mobile-preview-title {
+    display: block;
+    font-family: "Clash Display", sans-serif;
+    font-size: 0.82rem;
+    line-height: 1.04;
+    letter-spacing: -0.03em;
+    color: #fff;
+  }
+
+  .mobile-preview-text {
+    margin: 0.28rem 0 0;
+    font-family: "Clash Display", sans-serif;
+    font-size: 0.64rem;
+    line-height: 1.14;
+    color: rgba(255, 255, 255, 0.68);
+  }
+
+  .mobile-square-btn::before,
+  .mobile-square-btn::after {
+    content: "";
+    position: absolute;
+    inset: -1px;
+    border-radius: inherit;
+    pointer-events: none;
+    opacity: 0;
+  }
+
+  .mobile-square-btn::before {
+    border: 1px solid transparent;
+    border-image-slice: 1;
+    border-image-source: radial-gradient(
+      68px circle at var(--mx, 50%) var(--my, 50%),
+      rgba(255, 225, 140, 1) 0%,
+      rgba(212, 175, 55, 0.95) 22%,
+      rgba(212, 102, 55, 0.55) 45%,
+      rgba(212, 102, 55, 0.12) 62%,
+      transparent 78%
+    );
+    transition: opacity 0.25s ease;
+  }
+
+  .mobile-square-btn::after {
+    border: 1px solid transparent;
+    border-image-slice: 1;
+    border-image-source: radial-gradient(
+      78px circle at var(--mx, 50%) var(--my, 50%),
+      rgba(212, 175, 55, 0.55) 0%,
+      rgba(212, 102, 55, 0.22) 42%,
+      transparent 72%
+    );
+    filter: blur(2px);
+    transition: opacity 0.25s ease;
+  }
+
+  .mobile-square-btn:hover::before,
+  .mobile-square-btn:hover::after,
+  .mobile-square-btn:focus-visible::before,
+  .mobile-square-btn:focus-visible::after,
+  .mobile-square-btn:active::before,
+  .mobile-square-btn:active::after {
+    opacity: 1;
   }
 
   .bottom-kicker {
@@ -895,8 +1151,8 @@
 
   .fs-menu.expanded .menu-blur {
     opacity: 1;
-    backdrop-filter: blur(13px);
-    -webkit-backdrop-filter: blur(13px);
+    backdrop-filter: blur(var(--menu-blur-strength));
+    -webkit-backdrop-filter: blur(var(--menu-blur-strength));
   }
 
   .fs-menu.expanded .menu-panel {
@@ -922,6 +1178,12 @@
   }
 
   .fs-menu.footer-visible .bottom-strip {
+    opacity: 1;
+    filter: blur(0);
+    transform: translate3d(0, 0, 0);
+  }
+
+  .fs-menu.footer-visible .mobile-preview-rail {
     opacity: 1;
     filter: blur(0);
     transform: translate3d(0, 0, 0);
@@ -979,11 +1241,44 @@
       grid-column: auto;
       justify-self: center;
       align-items: flex-start;
-      padding-top: clamp(4rem, 10vw, 5.5rem);
+      padding-top: clamp(7.1rem, 15vw, 8.9rem);
+    }
+  }
+
+  @media (min-width: 901px) {
+    .menu-media-shell {
+      position: absolute;
+      top: clamp(6.75rem, 9vh, 7.75rem);
+      bottom: clamp(2.5rem, 4vh, 3.5rem);
+      left: 0;
+      right: 0;
+      width: min(32vw, 39rem);
+      min-height: 0;
+      margin: 0 auto;
+      display: block;
+      padding: 0;
+    }
+
+    .menu-media-reveal {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      max-height: none;
+      min-height: 0;
     }
   }
 
   @media (max-width: 900px) {
+    .fs-menu {
+      --menu-panel-duration: 460ms;
+      --menu-content-duration: 420ms;
+      --menu-footer-duration: 380ms;
+      --menu-media-duration: 460ms;
+      --menu-scrim-duration: 460ms;
+      --menu-blur-strength: 8px;
+    }
+
     .menu-top-logo {
       top: calc(clamp(1.25rem, 2vw, 1.75rem) + 0.2rem);
     }
@@ -993,58 +1288,235 @@
     }
 
     .menu-shell {
-      grid-template-rows: minmax(0, 1fr) minmax(220px, 36vh);
+      display: flex;
+      flex-direction: column;
+      inset: 0;
+      padding-top: calc(env(safe-area-inset-top, 0px) + 0.9rem);
+      padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 5.25rem);
+      gap: 0;
+    }
+
+    .mobile-topbar {
+      position: relative;
+      z-index: 18;
+      display: grid;
+      grid-template-columns: 2.75rem 1fr 2.75rem;
+      align-items: center;
+      width: 100%;
+      padding: 0 1rem;
+      margin-bottom: 0.9rem;
+      opacity: 0;
+      filter: blur(18px);
+      transform: translate3d(0, 26px, 0);
+      transition:
+        opacity var(--menu-content-duration) var(--menu-ease),
+        filter var(--menu-content-duration) var(--menu-ease),
+        transform var(--menu-content-duration) var(--menu-ease);
+    }
+
+    .mobile-square-btn {
+      width: 2.75rem;
+      height: 2.75rem;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(255, 255, 255, 0.12);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      padding: 0;
+      cursor: pointer;
+      transition:
+        transform 0.35s cubic-bezier(.22, .61, .36, 1),
+        background 0.35s ease,
+        border-color 0.35s ease;
+    }
+
+    .mobile-close-btn {
+      justify-self: start;
+    }
+
+    .mobile-actions {
+      position: relative;
+      justify-self: end;
+    }
+
+    .mobile-actions-panel {
+      position: absolute;
+      top: calc(100% + 0.55rem);
+      right: 0;
+      min-width: min(15rem, 74vw);
+      padding: 0.95rem 0.9rem 1rem;
+      background: rgba(18, 18, 18, 0.9);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      opacity: 0;
+      pointer-events: none;
+      transform: translate3d(0, -8px, 0);
+      transition:
+        opacity 260ms ease,
+        transform 260ms ease;
+    }
+
+    .mobile-actions-panel.is-open {
+      opacity: 1;
+      pointer-events: auto;
+      transform: translate3d(0, 0, 0);
+    }
+
+    .mobile-mail-link {
+      display: block;
+      font-family: "Clash Display", sans-serif;
+      font-size: 0.86rem;
+      line-height: 1.2;
+      color: #fff;
+      text-decoration: none;
+      margin-bottom: 0.95rem;
+      word-break: break-word;
+    }
+
+    .mobile-socials {
+      display: flex;
+      justify-content: flex-end;
+      gap: 0.6rem;
+    }
+
+    .mobile-top-logo {
+      display: flex;
+      justify-content: center;
+      pointer-events: none;
+    }
+
+    .mobile-top-logo img {
+      width: 2rem;
+      height: auto;
+      object-fit: contain;
+    }
+
+    .mobile-topbar-icon {
+      width: 1rem;
+      height: 1rem;
+      stroke: currentColor;
+      stroke-width: 1.8;
+      fill: none;
+      transition: transform 0.5s ease;
+    }
+
+    .mobile-action-mail-icon {
+      width: 1.45rem;
+      height: 1.45rem;
+      object-fit: contain;
+      filter: brightness(0) invert(1);
+      transition: transform 0.35s ease;
+    }
+
+    .mobile-close-btn:hover .mobile-close-icon,
+    .mobile-close-btn:focus-visible .mobile-close-icon,
+    .mobile-close-btn:active .mobile-close-icon {
+      transform: rotate(90deg) scale(1.12);
+    }
+
+    .mobile-actions-toggle:hover .mobile-action-mail-icon,
+    .mobile-actions-toggle:focus-visible .mobile-action-mail-icon,
+    .mobile-actions-toggle:active .mobile-action-mail-icon,
+    .mobile-actions-toggle[aria-expanded="true"] .mobile-action-mail-icon {
+      transform: scale(1.08);
+    }
+
+    .menu-top-logo,
+    .project-previews,
+    .close-block,
+    .bottom-strip {
+      display: none;
+    }
+
+    .menu-media-shell {
+      order: 2;
+      height: 25vh;
+      min-height: 10.6rem;
+      padding: 0 1rem;
+      margin-bottom: 0.7rem;
+      opacity: 0;
+      filter: blur(18px);
+      transform: translate3d(0, 26px, 0);
+      transition:
+        opacity var(--menu-content-duration) var(--menu-ease),
+        filter var(--menu-content-duration) var(--menu-ease),
+        transform var(--menu-content-duration) var(--menu-ease);
+    }
+
+    .menu-media-reveal {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      border-radius: 2px;
     }
 
     .menu-upper {
+      order: 3;
       display: flex;
-      align-items: center;
+      align-items: flex-start;
       justify-content: center;
-      padding: 1.2rem 1rem 0;
+      padding: 2.2rem 1.25rem 0;
+      flex: 1 1 auto;
     }
 
     .menu-nav {
       width: 100%;
-      padding-top: 1.2rem;
-      gap: 0.45rem;
+      max-width: 19rem;
+      padding-top: 0;
+      gap: 0.42rem;
+      align-items: center;
     }
 
     .menu-link-text {
-      font-size: clamp(2.85rem, 10.5vw, 4.5rem);
+      font-size: clamp(2.3rem, 8vw, 3.45rem);
       line-height: 0.92;
+      text-align: center;
     }
 
-    .project-previews {
-      display: none;
+    .menu-link {
+      width: 100%;
+      text-align: center;
     }
 
-    .close-block {
-      width: min(260px, calc(100% - 2rem));
-      height: 40px;
+    .menu-link-line {
+      display: flex;
+      justify-content: center;
     }
 
-    .bottom-strip {
-      left: 1rem;
-      right: 1rem;
-      top: calc(64svh + 1rem);
-      bottom: auto;
-      flex-direction: row;
-      align-items: flex-start;
-      justify-content: space-between;
-      gap: 1rem;
-    }
-
-    .menu-socials {
-      align-items: flex-end;
-    }
-
-    .socials-group {
-      justify-content: flex-end;
+    .mobile-preview-rail {
+      order: 4;
+      display: block;
+      width: 100%;
+      margin-top: 1.35rem;
+      padding-bottom: 0.2rem;
+      opacity: 0;
+      filter: blur(16px);
+      transform: translate3d(0, 26px, 0);
+      transition:
+        opacity var(--menu-footer-duration) var(--menu-ease),
+        filter var(--menu-footer-duration) var(--menu-ease),
+        transform var(--menu-footer-duration) var(--menu-ease);
     }
 
     .social-link {
-      width: 3.1rem;
-      height: 3.1rem;
+      width: 2.7rem;
+      height: 2.7rem;
+    }
+
+    .icon-instagram {
+      width: 1.05rem;
+      height: 1.05rem;
+    }
+
+    .icon-facebook {
+      width: 0.98rem;
+      height: 0.98rem;
+    }
+
+    .icon-x {
+      width: 1rem;
+      height: 1rem;
     }
   }
 

@@ -373,6 +373,8 @@
   }
 
   .form-shell {
+    --contact-surface: rgba(255, 255, 255, 0.055);
+    --contact-surface-hover: rgba(255, 255, 255, 0.075);
     width: min(100%, 30rem);
     display: flex;
     flex-direction: column;
@@ -398,7 +400,7 @@
   }
 
   .form {
-    background: rgba(255, 255, 255, 0.03);
+    background: var(--contact-surface);
     padding: clamp(1.3rem, 2.4vw, 2.35rem);
     border-radius: 2px;
     box-shadow: none;
@@ -666,6 +668,11 @@
   .submit-btn {
     margin-top: 1rem;
     padding: 0 1.5rem;
+    background: var(--contact-surface);
+  }
+
+  .submit-btn:hover {
+    background: var(--contact-surface-hover);
   }
 
   .copy-btn {

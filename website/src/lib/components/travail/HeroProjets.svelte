@@ -50,7 +50,7 @@
   };
 
   const finalText =
-    "Nous concevons des identités, des expériences et des univers visuels pensés pour marquer durablement les esprits.";
+    "Une sélection de projets où stratégie, direction artistique et exécution dialoguent avec précision jusque dans le détail.";
   const afterImages = [
     "images/telephone2.webp",
     "images/telephone2_parfum.webp",
