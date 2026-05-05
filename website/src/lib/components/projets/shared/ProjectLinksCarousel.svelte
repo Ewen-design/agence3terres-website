@@ -396,7 +396,7 @@
 <style>
   .project-showcase {
     position: relative;
-    background: #000;
+    background: var(--project-showcase-bg, #000);
     color: #f5f1e8;
     min-height: auto;
   }
@@ -566,7 +566,7 @@
     aspect-ratio: 1.72 / 1;
     min-height: min(78vh, 860px);
     overflow: hidden;
-    background: #080808;
+    background: var(--project-showcase-card-bg, #080808);
     border-radius: 3px;
   }
 
@@ -839,7 +839,7 @@
       position: relative;
       aspect-ratio: .8 / 1.76;
       overflow: hidden;
-      background: #080808;
+      background: var(--project-showcase-card-bg, #080808);
       border-radius: 3px;
     }
 

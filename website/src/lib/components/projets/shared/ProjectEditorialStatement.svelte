@@ -16,22 +16,23 @@
     grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
     gap: 2rem;
     align-items: start;
-    padding: 0 1.25rem 7rem;
-    background: #f7f5f1;
-    color: #121212;
+    padding: 0 var(--project-side-padding, 1.25rem) 6.5rem;
+    background: var(--project-surface-bg, #f7f5f1);
+    color: var(--project-surface-ink, #121212);
   }
 
   .editorial-statement__eyebrow {
+    padding-inline: var(--project-text-inset, 0);
     font-family: "Clash Display", sans-serif;
     font-style: normal;
-    font-size: clamp(1.4rem, 1.8vw, 2rem);
+    font-size: var(--project-overline-size, clamp(1.08rem, 1.45vw, 1.5rem));
     line-height: 1;
-    letter-spacing: -0.02em;
+    letter-spacing: -0.03em;
   }
 
   .editorial-statement__body {
     display: flex;
-    justify-content: flex-end;
+    justify-content: flex-start;
   }
 
   .editorial-statement__body p {
@@ -39,8 +40,8 @@
     max-width: 21ch;
     font-family: "Clash Display", sans-serif;
     font-weight: 300;
-    font-size: clamp(1.3rem, 2.8vw, 2.8rem);
-    line-height: 1;
+    font-size: var(--project-lead-size, clamp(1.35rem, 2.7vw, 2.8rem));
+    line-height: 0.98;
     letter-spacing: -0.05em;
   }
 
@@ -48,7 +49,7 @@
     .editorial-statement {
       grid-template-columns: 1fr;
       gap: 1rem;
-      padding: 0 0.8rem 4rem;
+      padding: 0 var(--project-side-padding, 0.8rem) 4rem;
     }
 
     .editorial-statement__body {
@@ -56,8 +57,9 @@
     }
 
     .editorial-statement__body p {
-      max-width: 14ch;
-      font-size: clamp(1.6rem, 9vw, 2.8rem);
+      max-width: 12ch;
+      padding-inline: var(--project-text-inset, 0);
+      font-size: clamp(1.7rem, 8.5vw, 2.55rem);
     }
   }
 </style>

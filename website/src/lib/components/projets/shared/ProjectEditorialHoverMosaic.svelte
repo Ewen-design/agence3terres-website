@@ -1,5 +1,7 @@
 <script>
-  export let title = "";
+  import { onMount } from "svelte";
+  import { browser } from "$app/environment";
+
   export let text = "";
   export let feature = {
     src: "",
@@ -9,23 +11,67 @@
     hoverImages: [],
   };
   export let items = [];
+
+  let tileEls = [];
+  let centeredIndex = -1;
+  let resizeTimer;
+
+  function updateCenteredTile() {
+    if (!browser || window.innerWidth > 900) {
+      centeredIndex = -1;
+      return;
+    }
+
+    const viewportCenter = (window.innerHeight || 0) * 0.5;
+    let nextIndex = -1;
+    let nearest = Infinity;
+
+    tileEls.forEach((tile, index) => {
+      const media = tile?.querySelector(".project-editorial-hover-mosaic__media");
+      if (!media) return;
+      const rect = media.getBoundingClientRect();
+      const center = rect.top + rect.height * 0.5;
+      const distance = Math.abs(center - viewportCenter);
+
+      if (distance < nearest) {
+        nearest = distance;
+        nextIndex = index;
+      }
+    });
+
+    centeredIndex = nextIndex;
+  }
+
+  function handleResize() {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(updateCenteredTile, 80);
+  }
+
+  onMount(() => {
+    if (!browser) return;
+
+    updateCenteredTile();
+
+    window.addEventListener("scroll", updateCenteredTile, { passive: true });
+    window.addEventListener("resize", handleResize, { passive: true });
+    window.addEventListener("orientationchange", handleResize, { passive: true });
+
+    return () => {
+      window.removeEventListener("scroll", updateCenteredTile);
+      window.removeEventListener("resize", handleResize);
+      window.removeEventListener("orientationchange", handleResize);
+      clearTimeout(resizeTimer);
+    };
+  });
 </script>
 
 <section class="project-editorial-hover-mosaic">
-  <div class="project-editorial-hover-mosaic__intro">
-    {#if title}
-      <h2>{title}</h2>
-    {/if}
-
-    <div class="project-editorial-hover-mosaic__body">
-      {#if text}
-        <p class="project-editorial-hover-mosaic__text">{text}</p>
-      {/if}
-    </div>
-  </div>
-
   <div class="project-editorial-hover-mosaic__grid">
-    <article class="project-editorial-hover-mosaic__tile project-editorial-hover-mosaic__tile--feature">
+    <article
+      class="project-editorial-hover-mosaic__tile project-editorial-hover-mosaic__tile--feature"
+      class:is-centered={centeredIndex === 0}
+      bind:this={tileEls[0]}
+    >
       <figure class="project-editorial-hover-mosaic__media">
         <img src={feature.src} alt={feature.alt} loading="lazy" />
 
@@ -61,8 +107,12 @@
       </figure>
     </article>
 
-    {#each items.slice(0, 2) as item}
-      <article class="project-editorial-hover-mosaic__tile">
+    {#each items.slice(0, 2) as item, index}
+      <article
+        class="project-editorial-hover-mosaic__tile"
+        class:is-centered={centeredIndex === index + 1}
+        bind:this={tileEls[index + 1]}
+      >
         <figure class="project-editorial-hover-mosaic__media">
           <img src={item.src} alt={item.alt} loading="lazy" />
 
@@ -99,46 +149,47 @@
       </article>
     {/each}
   </div>
+
+  {#if text}
+    <div class="project-editorial-hover-mosaic__intro">
+      <div class="project-editorial-hover-mosaic__body">
+        <p class="project-editorial-hover-mosaic__text">{text}</p>
+      </div>
+    </div>
+  {/if}
 </section>
 
 <style>
   .project-editorial-hover-mosaic {
-    padding: clamp(4.5rem, 7vw, 7rem) clamp(0.45rem, 0.9vw, 0.7rem) clamp(5rem, 8vw, 8rem);
+    padding:
+      clamp(4.5rem, 7vw, 7rem)
+      max(0.45rem, calc(var(--project-side-padding, 1.25rem) * 0.55))
+      clamp(5rem, 8vw, 8rem);
     background:
       radial-gradient(circle at top, rgba(255, 255, 255, 0.1), transparent 40%),
-      #f7f5f1;
-    color: #171412;
+      var(--project-surface-bg, #f7f5f1);
+    color: var(--project-surface-ink, #171412);
   }
 
   .project-editorial-hover-mosaic__intro {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
-    gap: 2rem;
-    align-items: start;
-    margin: 0 0 clamp(1.35rem, 2vw, 1.8rem);
-  }
-
-  .project-editorial-hover-mosaic__intro h2 {
-    margin: 0;
-    font-family: "Clash Display", sans-serif;
-    font-size: clamp(1.4rem, 1.8vw, 2rem);
-    font-weight: 400;
-    line-height: 1;
-    letter-spacing: -0.02em;
+    display: flex;
+    justify-content: flex-start;
+    margin: clamp(1.35rem, 2vw, 1.8rem) 0 0;
   }
 
   .project-editorial-hover-mosaic__body {
     display: flex;
-    justify-content: flex-end;
+    justify-content: flex-start;
   }
 
   .project-editorial-hover-mosaic__text {
     margin: 0;
     max-width: 21ch;
+    padding-inline: var(--project-text-inset, 0);
     font-family: "Clash Display", sans-serif;
     font-weight: 300;
-    font-size: clamp(1.3rem, 2.8vw, 2.8rem);
-    line-height: 1;
+    font-size: var(--project-lead-size, clamp(1.35rem, 2.7vw, 2.8rem));
+    line-height: 0.98;
     letter-spacing: -0.05em;
   }
 
@@ -169,7 +220,7 @@
     position: relative;
     overflow: hidden;
     border-radius: 2px;
-    background: #ddd3c3;
+    background: var(--project-surface-card, #ddd3c3);
     isolation: isolate;
   }
 
@@ -183,6 +234,10 @@
       transform 1.45s cubic-bezier(0.16, 1, 0.3, 1),
       filter 1.15s ease;
     will-change: transform, filter;
+  }
+
+  .project-editorial-hover-mosaic__tile.is-centered .project-editorial-hover-mosaic__media > img {
+    transform: scale(1.03);
   }
 
   .project-editorial-hover-mosaic__veil {
@@ -322,8 +377,7 @@
     }
 
     .project-editorial-hover-mosaic__intro {
-      grid-template-columns: 1fr;
-      gap: 1rem;
+      margin-top: 1rem;
     }
 
     .project-editorial-hover-mosaic__body {
@@ -331,8 +385,8 @@
     }
 
     .project-editorial-hover-mosaic__text {
-      max-width: 14ch;
-      font-size: clamp(1.6rem, 9vw, 2.8rem);
+      max-width: 12ch;
+      font-size: clamp(1.7rem, 8.5vw, 2.55rem);
     }
 
     .project-editorial-hover-mosaic__tile--feature {
@@ -341,8 +395,12 @@
 
     .project-editorial-hover-mosaic__tile--feature .project-editorial-hover-mosaic__media,
     .project-editorial-hover-mosaic__tile:not(.project-editorial-hover-mosaic__tile--feature) .project-editorial-hover-mosaic__media {
-      aspect-ratio: 0.98;
+      aspect-ratio: 0.82;
       height: auto;
+    }
+
+    .project-editorial-hover-mosaic__tile:not(.project-editorial-hover-mosaic__tile--feature) .project-editorial-hover-mosaic__media {
+      aspect-ratio: 0.74;
     }
 
     .project-editorial-hover-mosaic__side-title {
@@ -351,13 +409,26 @@
     }
 
     .project-editorial-hover-mosaic__floating-card {
-      width: min(14rem, calc(100% - 2.4rem));
-      opacity: 1;
-      transform: translate(-50%, -50%) scale(1);
+      display: none;
     }
 
     .project-editorial-hover-mosaic__veil {
-      opacity: 0.44;
+      opacity: 0.3;
+    }
+
+    .project-editorial-hover-mosaic__side-title {
+      display: none;
+    }
+
+    .project-editorial-hover-mosaic__media:hover > img,
+    .project-editorial-hover-mosaic__media:focus-within > img {
+      transform: none;
+      filter: none;
+    }
+
+    .project-editorial-hover-mosaic__media:hover .project-editorial-hover-mosaic__veil,
+    .project-editorial-hover-mosaic__media:focus-within .project-editorial-hover-mosaic__veil {
+      opacity: 0.3;
     }
   }
 

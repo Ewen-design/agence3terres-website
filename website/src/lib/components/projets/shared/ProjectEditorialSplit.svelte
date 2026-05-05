@@ -4,6 +4,7 @@
   export let image = "";
   export let alt = "";
   export let reverse = false;
+  export let mediaMinHeight = "38rem";
 </script>
 
 <section class="editorial-split" class:editorial-split--reverse={reverse}>
@@ -12,7 +13,7 @@
     <p>{text}</p>
   </div>
 
-  <figure class="editorial-split__media">
+  <figure class="editorial-split__media" style={`--editorial-split-media-min-height:${mediaMinHeight};`}>
     <img src={image} alt={alt} loading="lazy" />
   </figure>
 </section>
@@ -20,12 +21,12 @@
 <style>
   .editorial-split {
     display: grid;
-    grid-template-columns: minmax(0, 0.92fr) minmax(0, 1fr);
-    gap: 2rem;
+    grid-template-columns: minmax(0, 0.9fr) minmax(0, 1fr);
+    gap: 2.2rem;
     align-items: start;
-    padding: 0 1.25rem 7rem;
-    background: #f7f5f1;
-    color: #121212;
+    padding: 0 var(--project-side-padding, 1.25rem) 6.5rem;
+    background: var(--project-surface-bg, #f7f5f1);
+    color: var(--project-surface-ink, #121212);
   }
 
   .editorial-split--reverse .editorial-split__copy {
@@ -38,6 +39,7 @@
 
   .editorial-split__copy {
     max-width: 31rem;
+    padding-inline: var(--project-text-inset, 0);
   }
 
   .editorial-split__copy h2 {
@@ -45,8 +47,8 @@
     font-family: "Clash Display", sans-serif;
     font-style: normal;
     font-weight: 400;
-    font-size: clamp(1.7rem, 2.2vw, 2.5rem);
-    line-height: 1;
+    font-size: var(--project-title-size, clamp(1.8rem, 2.45vw, 2.7rem));
+    line-height: 0.98;
     letter-spacing: -0.03em;
   }
 
@@ -54,17 +56,18 @@
     margin: 1rem 0 0;
     max-width: 26rem;
     font-family: "Clash Display", sans-serif;
-    font-size: clamp(0.98rem, 1.05vw, 1.06rem);
-    line-height: 1.5;
-    color: rgba(18, 18, 18, 0.5);
+    font-weight: 400;
+    font-size: var(--project-body-size, clamp(0.98rem, 1.04vw, 1.08rem));
+    line-height: var(--project-body-line-height, 1.52);
+    color: var(--project-surface-muted, rgba(18, 18, 18, 0.5));
   }
 
   .editorial-split__media {
     margin: 0;
+    height: var(--editorial-split-media-min-height, 38rem);
     overflow: hidden;
     border-radius: 0.35rem;
-    min-height: 38rem;
-    background: #ded8cf;
+    background: var(--project-surface-bg-soft, #ded8cf);
   }
 
   .editorial-split__media img {
@@ -77,12 +80,18 @@
   @media (max-width: 900px) {
     .editorial-split {
       grid-template-columns: 1fr;
-      gap: 1.2rem;
-      padding: 0 0.8rem 4rem;
+      gap: 1.1rem;
+      padding: 0 var(--project-side-padding, 0.8rem) 4rem;
     }
 
     .editorial-split__media {
-      min-height: 22rem;
+      height: auto;
+      min-height: auto;
+      aspect-ratio: 0.82;
+    }
+
+    .editorial-split__copy {
+      max-width: 28rem;
     }
   }
 </style>

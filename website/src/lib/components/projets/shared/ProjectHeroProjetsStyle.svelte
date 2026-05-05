@@ -10,14 +10,16 @@
   } from "$lib/scrollEngine.js";
 
   export let title = "";
-  export let finalText = "";
   export let image = "";
-  export let afterImages = [];
-  export let afterImageAlt = "";
+  export let metaBlocks = [];
+  export let ctaLabel = "Visit Website";
+  export let ctaHref = "";
+  export let ctaExternal = false;
+
   let heroSection;
   let heroStage;
   let afterTextEl;
-  let afterImageEl;
+  let afterActionEl;
   let heroMediaImgEl;
   let heroDarkLayerEl;
 
@@ -27,60 +29,28 @@
 
   let fallbackTimeout;
   let mediaIntroTimeout;
-  let afterImageRotationTimeout;
-  let afterImageFadeTimeout;
   let resizeObserver;
   let resizeTimer;
 
   let vh = 1;
-  let isMobile = false;
   let heroTop = 0;
   let heroHeight = 1;
   let afterTextTop = 0;
-  let afterImageTop = 0;
+  let afterActionTop = 0;
 
   let pendingFrame = null;
   let dirty = false;
 
-  let applied = {
+  const applied = {
     imageScale: -1,
     imageBrightness: -1,
     imageOpacity: -1,
     imageDark: -1,
     textOpacity: -1,
     textY: -9999,
-    textEdge: -9999,
-    smallImageScale: -1,
-    smallImageY: -9999
+    actionOpacity: -1,
+    actionY: -9999
   };
-
-  $: words = finalText.split(" ");
-  $: totalChars = finalText.replace(/\s/g, "").length;
-  $: halfChars = totalChars / 2;
-  $: grayStartsAtWord = (() => {
-    let count = 0;
-
-    for (let w = 0; w < words.length; w++) {
-      const nextCount = count + words[w].length;
-      if (nextCount >= halfChars) {
-        return w + 1;
-      }
-      count = nextCount;
-    }
-
-    return words.length;
-  })();
-
-  let activeAfterImage = afterImages[0] || image;
-  let incomingAfterImage = "";
-  let incomingAfterImageVisible = false;
-  let afterImageIndex = 0;
-  let afterImagesReady = false;
-  let isAfterImageTransitioning = false;
-
-  const IMAGE_ROTATION_INTERVAL = 2600;
-  const IMAGE_FADE_DURATION = 1150;
-  const IMAGE_RETRY_DELAY = 700;
 
   const clamp = (v, min = 0, max = 1) => Math.max(min, Math.min(max, v));
   const lerp = (a, b, t) => a + (b - a) * t;
@@ -98,14 +68,13 @@
 
   function measureLayout() {
     vh = window.innerHeight || 1;
-    isMobile = (window.innerWidth || 0) <= 640;
     heroTop = getAbsoluteTop(heroSection);
     heroHeight = Math.max(heroSection?.offsetHeight || 1, 1);
     afterTextTop = getAbsoluteTop(afterTextEl);
-    afterImageTop = getAbsoluteTop(afterImageEl);
+    afterActionTop = getAbsoluteTop(afterActionEl);
   }
 
-  function getLocalRevealFromAbsolute(scrollY, absTop, startMul = 0.9, endMul = 0.2) {
+  function getLocalRevealFromAbsolute(scrollY, absTop, startMul = 0.9, endMul = 0.22) {
     const topInViewport = absTop - scrollY;
     const start = vh * startMul;
     const end = vh * endMul;
@@ -113,25 +82,24 @@
   }
 
   function computeFrame(y) {
-    if (!afterTextEl || !afterImageEl) return;
+    if (!afterTextEl || !afterActionEl) return;
 
     const heroScrollable = Math.max(heroHeight - vh, 1);
     const imageFadeProgress = clamp((y - heroTop) / heroScrollable, 0, 1);
     const globalFade = imageFadeProgress * imageFadeProgress * (3 - 2 * imageFadeProgress);
 
-    const localTextReveal = getLocalRevealFromAbsolute(y, afterTextTop, 0.92, 0.16);
-    const localImageReveal = getLocalRevealFromAbsolute(y, afterImageTop, 0.98, 0.12);
+    const textReveal = getLocalRevealFromAbsolute(y, afterTextTop, 0.92, 0.16);
+    const actionReveal = getLocalRevealFromAbsolute(y, afterActionTop, 0.96, 0.2);
 
     pendingFrame = {
       imageScale: q(lerp(1.03, 1.005, globalFade), 0.001),
       imageBrightness: q(lerp(1, 0.62, globalFade), 0.001),
       imageOpacity: q(lerp(1, 0, globalFade), 0.001),
       imageDark: q(lerp(0.08, 0.62, globalFade), 0.001),
-      textOpacity: q(lerp(0.14, 1, localTextReveal), 0.001),
-      textY: q(lerp(18, 0, localTextReveal), 0.1),
-      textEdge: q(lerp(0, 118, localTextReveal), 0.1),
-      smallImageScale: q(lerp(0.885, 1.02, localImageReveal), 0.001),
-      smallImageY: q(lerp(22, 0, localImageReveal), 0.1)
+      textOpacity: q(lerp(0.16, 1, textReveal), 0.001),
+      textY: q(lerp(22, 0, textReveal), 0.1),
+      actionOpacity: q(lerp(0.16, 1, actionReveal), 0.001),
+      actionY: q(lerp(18, 0, actionReveal), 0.1)
     };
 
     dirty = true;
@@ -140,51 +108,43 @@
   function applyFrame() {
     if (!dirty || !pendingFrame) return;
 
-    const f = pendingFrame;
+    const frame = pendingFrame;
 
     if (heroMediaImgEl) {
       if (
-        f.imageScale !== applied.imageScale ||
-        f.imageBrightness !== applied.imageBrightness ||
-        f.imageOpacity !== applied.imageOpacity
+        frame.imageScale !== applied.imageScale ||
+        frame.imageBrightness !== applied.imageBrightness ||
+        frame.imageOpacity !== applied.imageOpacity
       ) {
-        heroMediaImgEl.style.transform = `scale(${f.imageScale})`;
-        heroMediaImgEl.style.filter = `brightness(${f.imageBrightness})`;
-        heroMediaImgEl.style.opacity = `${f.imageOpacity}`;
-        applied.imageScale = f.imageScale;
-        applied.imageBrightness = f.imageBrightness;
-        applied.imageOpacity = f.imageOpacity;
+        heroMediaImgEl.style.transform = `scale(${frame.imageScale})`;
+        heroMediaImgEl.style.filter = `brightness(${frame.imageBrightness})`;
+        heroMediaImgEl.style.opacity = `${frame.imageOpacity}`;
+        applied.imageScale = frame.imageScale;
+        applied.imageBrightness = frame.imageBrightness;
+        applied.imageOpacity = frame.imageOpacity;
       }
     }
 
-    if (heroDarkLayerEl && f.imageDark !== applied.imageDark) {
-      heroDarkLayerEl.style.opacity = `${f.imageDark}`;
-      applied.imageDark = f.imageDark;
+    if (heroDarkLayerEl && frame.imageDark !== applied.imageDark) {
+      heroDarkLayerEl.style.opacity = `${frame.imageDark}`;
+      applied.imageDark = frame.imageDark;
     }
 
     if (afterTextEl) {
-      if (
-        f.textOpacity !== applied.textOpacity ||
-        f.textY !== applied.textY ||
-        f.textEdge !== applied.textEdge
-      ) {
-        afterTextEl.style.opacity = `${f.textOpacity}`;
-        afterTextEl.style.transform = `translate3d(0, ${f.textY}px, 0)`;
-        afterTextEl.style.setProperty("--text-reveal-edge", `${f.textEdge}%`);
-        applied.textOpacity = f.textOpacity;
-        applied.textY = f.textY;
-        applied.textEdge = f.textEdge;
+      if (frame.textOpacity !== applied.textOpacity || frame.textY !== applied.textY) {
+        afterTextEl.style.opacity = `${frame.textOpacity}`;
+        afterTextEl.style.transform = `translate3d(0, ${frame.textY}px, 0)`;
+        applied.textOpacity = frame.textOpacity;
+        applied.textY = frame.textY;
       }
     }
 
-    if (afterImageEl) {
-      if (
-        f.smallImageScale !== applied.smallImageScale ||
-        f.smallImageY !== applied.smallImageY
-      ) {
-        afterImageEl.style.transform = `translate3d(0, ${f.smallImageY}px, 0) scale(${f.smallImageScale})`;
-        applied.smallImageScale = f.smallImageScale;
-        applied.smallImageY = f.smallImageY;
+    if (afterActionEl) {
+      if (frame.actionOpacity !== applied.actionOpacity || frame.actionY !== applied.actionY) {
+        afterActionEl.style.opacity = `${frame.actionOpacity}`;
+        afterActionEl.style.transform = `translate3d(0, ${frame.actionY}px, 0)`;
+        applied.actionOpacity = frame.actionOpacity;
+        applied.actionY = frame.actionY;
       }
     }
 
@@ -197,6 +157,13 @@
 
   function handleWrite() {
     applyFrame();
+  }
+
+  function handleButtonMove(event) {
+    const button = event.currentTarget;
+    const rect = button.getBoundingClientRect();
+    button.style.setProperty("--mx", `${event.clientX - rect.left}px`);
+    button.style.setProperty("--my", `${event.clientY - rect.top}px`);
   }
 
   function startIntro(withDelay = true) {
@@ -221,108 +188,6 @@
   function shouldDelayIntroForSession() {
     if (typeof window === "undefined") return false;
     return !window.__homeHeroIntroPlayed;
-  }
-
-  function preloadImage(src) {
-    return new Promise((resolve) => {
-      const img = new Image();
-      let done = false;
-
-      const finish = () => {
-        if (done) return;
-        done = true;
-        resolve();
-      };
-
-      img.onload = finish;
-      img.onerror = finish;
-      img.src = src;
-
-      if (img.complete) {
-        finish();
-        return;
-      }
-
-      img.decode?.().then(finish).catch(() => {});
-    });
-  }
-
-  async function ensureAfterImagesReady() {
-    if (afterImagesReady || !browser || afterImages.length === 0) return;
-    await Promise.allSettled(afterImages.map(preloadImage));
-    afterImagesReady = true;
-  }
-
-  function clearAfterImageRotationTimers() {
-    clearTimeout(afterImageRotationTimeout);
-    clearTimeout(afterImageFadeTimeout);
-  }
-
-  function resetAfterImageRotationState() {
-    clearAfterImageRotationTimers();
-    isAfterImageTransitioning = false;
-    incomingAfterImage = "";
-    incomingAfterImageVisible = false;
-    afterImageIndex = 0;
-    activeAfterImage = afterImages[0] || image;
-  }
-
-  function queueAfterImageRotation(delay = IMAGE_ROTATION_INTERVAL) {
-    clearTimeout(afterImageRotationTimeout);
-    afterImageRotationTimeout = setTimeout(runAfterImageRotation, delay);
-  }
-
-  function runAfterImageRotation() {
-    if (
-      !browser ||
-      document.hidden ||
-      isAfterImageTransitioning ||
-      afterImages.length < 2 ||
-      !afterImagesReady
-    ) {
-      queueAfterImageRotation(IMAGE_RETRY_DELAY);
-      return;
-    }
-
-    isAfterImageTransitioning = true;
-
-    const nextIndex = (afterImageIndex + 1) % afterImages.length;
-    incomingAfterImage = afterImages[nextIndex];
-    incomingAfterImageVisible = false;
-
-    requestAnimationFrame(() => {
-      requestAnimationFrame(() => {
-        incomingAfterImageVisible = true;
-      });
-    });
-
-    clearTimeout(afterImageFadeTimeout);
-    afterImageFadeTimeout = setTimeout(() => {
-      activeAfterImage = afterImages[nextIndex];
-      afterImageIndex = nextIndex;
-      incomingAfterImage = "";
-      incomingAfterImageVisible = false;
-      isAfterImageTransitioning = false;
-      queueAfterImageRotation();
-    }, IMAGE_FADE_DURATION);
-  }
-
-  async function startAfterImageRotation() {
-    resetAfterImageRotationState();
-    await ensureAfterImagesReady();
-    if (!browser || isMobile || afterImages.length < 2) return;
-    queueAfterImageRotation();
-  }
-
-  function handleDocumentVisibilityChange() {
-    if (!browser) return;
-    if (document.hidden) {
-      clearAfterImageRotationTimers();
-      return;
-    }
-    if (!isAfterImageTransitioning) {
-      queueAfterImageRotation(900);
-    }
   }
 
   function scheduleResizeUpdate() {
@@ -397,7 +262,7 @@
       if (heroSection) resizeObserver.observe(heroSection);
       if (heroStage) resizeObserver.observe(heroStage);
       if (afterTextEl) resizeObserver.observe(afterTextEl);
-      if (afterImageEl) resizeObserver.observe(afterImageEl);
+      if (afterActionEl) resizeObserver.observe(afterActionEl);
     }
 
     if (shouldDelayIntro) {
@@ -407,9 +272,6 @@
     } else {
       startIntro(false);
     }
-
-    startAfterImageRotation();
-    document.addEventListener("visibilitychange", handleDocumentVisibilityChange);
 
     return () => {
       destroyed = true;
@@ -424,9 +286,7 @@
       }
       clearTimeout(fallbackTimeout);
       clearTimeout(mediaIntroTimeout);
-      clearAfterImageRotationTimers();
       clearTimeout(resizeTimer);
-      document.removeEventListener("visibilitychange", handleDocumentVisibilityChange);
       resizeObserver?.disconnect();
     };
   });
@@ -456,23 +316,42 @@
 
   <section class="after-section">
     <div class="after-grid">
-      <div class="after-text" bind:this={afterTextEl}>
-        <h2 aria-label={finalText}>
-          {#each words as word, w}
-            <span class="word" class:muted-word={w >= grayStartsAtWord}>{word}</span>{#if w < words.length - 1}<span class="space">&nbsp;</span>{/if}
-          {/each}
-        </h2>
+      <div class="after-meta" bind:this={afterTextEl}>
+        {#each metaBlocks as block}
+          <article class="after-meta__block">
+            <h2>{block.label}</h2>
+            {#if Array.isArray(block.value)}
+              <ul>
+                {#each block.value as item}
+                  <li>{item}</li>
+                {/each}
+              </ul>
+            {:else}
+              <p>{block.value}</p>
+            {/if}
+          </article>
+        {/each}
       </div>
 
-      <div class="after-image" bind:this={afterImageEl}>
-        <img class="after-image-asset" src={activeAfterImage} alt={afterImageAlt || title} />
-        {#if incomingAfterImage}
-          <img
-            class="after-image-asset after-image-incoming"
-            class:is-visible={incomingAfterImageVisible}
-            src={incomingAfterImage}
-            alt={afterImageAlt || title}
-          />
+      <div class="after-action" bind:this={afterActionEl}>
+        {#if ctaHref}
+          <a
+            class="hero-cta"
+            href={ctaHref}
+            target={ctaExternal ? "_blank" : undefined}
+            rel={ctaExternal ? "noreferrer" : undefined}
+            on:mousemove={handleButtonMove}
+          >
+            <span class="hero-cta__flip" data-text={ctaLabel}>
+              <span class="hero-cta__text">{ctaLabel}</span>
+            </span>
+          </a>
+        {:else}
+          <button class="hero-cta" type="button" on:mousemove={handleButtonMove}>
+            <span class="hero-cta__flip" data-text={ctaLabel}>
+              <span class="hero-cta__text">{ctaLabel}</span>
+            </span>
+          </button>
         {/if}
       </div>
     </div>
@@ -483,7 +362,7 @@
   .hero-join-clean {
     position: relative;
     width: 100%;
-    background: #000;
+    background: var(--project-surface-bg, #000);
     color: #f4efe6;
     overflow: clip;
   }
@@ -516,7 +395,6 @@
     left: 0;
     right: 0;
     bottom: 0;
-    height: 22vh;
     height: 22svh;
     background: linear-gradient(
       to top,
@@ -639,123 +517,175 @@
     width: min(1400px, 92%);
     margin: 0 auto;
     display: grid;
-    grid-template-columns: minmax(0, 1.08fr) minmax(320px, 0.78fr);
-    gap: clamp(1.4rem, 4vw, 4.5rem);
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: clamp(2rem, 5vw, 6rem);
     align-items: start;
   }
 
-  .after-text {
+  .after-meta {
+    display: grid;
+    gap: clamp(2rem, 3vw, 2.9rem);
+    width: min(26rem, 100%);
+    padding-inline: var(--project-text-inset, 0);
+    opacity: 0.16;
+    transform: translate3d(0, 22px, 0);
     will-change: transform, opacity;
-    width: 100%;
-    min-width: 0;
-    opacity: 0.14;
-    transform: translate3d(0, 18px, 0);
-    -webkit-mask-image: linear-gradient(
-      to bottom,
-      rgba(0, 0, 0, 1) 0%,
-      rgba(0, 0, 0, 1) calc(var(--text-reveal-edge, 0%) - 12%),
-      rgba(0, 0, 0, 0.75) calc(var(--text-reveal-edge, 0%) + 2%),
-      rgba(0, 0, 0, 0.2) calc(var(--text-reveal-edge, 0%) + 14%),
-      rgba(0, 0, 0, 0) calc(var(--text-reveal-edge, 0%) + 28%)
-    );
-    mask-image: linear-gradient(
-      to bottom,
-      rgba(0, 0, 0, 1) 0%,
-      rgba(0, 0, 0, 1) calc(var(--text-reveal-edge, 0%) - 12%),
-      rgba(0, 0, 0, 0.75) calc(var(--text-reveal-edge, 0%) + 2%),
-      rgba(0, 0, 0, 0.2) calc(var(--text-reveal-edge, 0%) + 14%),
-      rgba(0, 0, 0, 0) calc(var(--text-reveal-edge, 0%) + 28%)
-    );
-    -webkit-mask-repeat: no-repeat;
-    mask-repeat: no-repeat;
-    -webkit-mask-size: 100% 140%;
-    mask-size: 100% 140%;
   }
 
-  .after-text h2 {
-    margin: 0;
-    width: 100%;
-    max-width: 30ch;
+  .after-meta__block h2 {
+    margin: 0 0 0.7rem;
     font-family: "Clash Display", sans-serif;
+    font-size: clamp(1.55rem, 2vw, 2rem);
     font-weight: 300;
-    font-size: clamp(1.3rem, 2.8vw, 2.8rem);
-    line-height: 1;
-    color: #fff;
+    line-height: 0.98;
+    
+    color: #f7f2e8;
   }
 
-  .word {
-    display: inline-block;
-    white-space: nowrap;
-    color: #fff;
+  .after-meta__block p,
+  .after-meta__block li {
+    margin: 0;
+    font-family: "Clash Display", sans-serif;
+    font-size: clamp(1.28rem, 2vw, 2.05rem);
+    font-weight: 300;
+    line-height: 1.14;
+    
+    color: rgba(244, 239, 230, 0.72);
   }
 
-  .word.muted-word {
-    color: rgba(255, 255, 255, 0.7);
+  .after-meta__block ul {
+    list-style: none;
+    display: grid;
+    gap: 0.35rem;
+    padding: 0;
+    margin: 0;
   }
 
-  .space {
-    display: inline;
-  }
-
-  .after-image {
-    position: relative;
+  .after-action {
     justify-self: end;
-    width: min(100%, 460px);
-    aspect-ratio: 1.45 / 1;
-    overflow: hidden;
-    background: #0b0b0b;
-    will-change: transform;
-    margin-top: clamp(4rem, 6vw, 7rem);
-    transform-origin: 50% 50%;
-    transform: translate3d(0, 22px, 0) scale(0.885);
+    padding-inline: var(--project-text-inset, 0);
+    opacity: 0.16;
+    transform: translate3d(0, 18px, 0);
+    will-change: transform, opacity;
   }
 
-  .after-image img {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
+  .hero-cta {
+    font-family: "Clash Display", sans-serif;
+    position: relative;
+    min-width: clamp(10.5rem, 16vw, 14rem);
+    height: clamp(3.15rem, 4vw, 3.9rem);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0;
+    padding: 0 1.2rem;
+    font-size: clamp(0.95rem, 1.1vw, 1.12rem);
+    font-weight: 400;
+    color: #f7f2e8;
+    border: 0;
+    cursor: pointer;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-radius: 2px;
+    box-shadow: 0 6px 8px rgba(0, 0, 0, 0.04);
+    text-decoration: none;
+    transition:
+      transform 1.2s cubic-bezier(.22,.61,.36,1),
+      box-shadow 1.2s cubic-bezier(.22,.61,.36,1),
+      background 1.2s cubic-bezier(.22,.61,.36,1),
+      color 220ms ease;
+  }
+
+  .hero-cta__flip {
+    position: relative;
     display: block;
+    overflow: hidden;
+    height: 1.2em;
+    line-height: 1.2em;
   }
 
-  .after-image-asset {
-    opacity: 1;
+  .hero-cta__text {
+    display: block;
+    transform: translateY(0%);
+    transition:
+      transform 0.45s cubic-bezier(.22,.61,.36,1),
+      opacity 0.28s ease;
   }
 
-  .after-image-incoming {
+  .hero-cta__flip::after {
+    content: attr(data-text);
+    position: absolute;
+    left: 0;
+    top: 0;
+    line-height: 1.2em;
+    transform: translateY(100%);
+    transition:
+      transform 0.45s cubic-bezier(.22,.61,.36,1),
+      opacity 0.28s ease;
+    white-space: nowrap;
+    color: inherit;
+  }
+
+  .hero-cta::before,
+  .hero-cta::after {
+    content: "";
+    position: absolute;
+    inset: -1px;
+    border-radius: inherit;
+    pointer-events: none;
     opacity: 0;
-    transition: opacity 1.35s cubic-bezier(0.22, 1, 0.36, 1);
-    will-change: opacity;
   }
 
-  .after-image-incoming.is-visible {
+  .hero-cta::before {
+    border: 1px solid transparent;
+    border-image-slice: 1;
+    border-image-source: radial-gradient(
+      68px circle at var(--mx, 50%) var(--my, 50%),
+      rgba(220, 240, 255, 1) 0%,
+      rgba(145, 205, 255, 0.98) 22%,
+      rgba(74, 140, 255, 0.62) 45%,
+      rgba(18, 45, 120, 0.14) 62%,
+      transparent 78%
+    );
+    transition: opacity 0.25s ease;
+  }
+
+  .hero-cta::after {
+    border: 1px solid transparent;
+    border-image-slice: 1;
+    border-image-source: radial-gradient(
+      78px circle at var(--mx, 50%) var(--my, 50%),
+      rgba(95, 165, 255, 0.42) 0%,
+      rgba(74, 140, 255, 0.18) 42%,
+      transparent 72%
+    );
+    filter: blur(2px);
+    transition: opacity 0.25s ease;
+  }
+
+  .hero-cta:hover .hero-cta__text {
+    transform: translateY(-100%);
+  }
+
+  .hero-cta:hover .hero-cta__flip::after {
+    transform: translateY(0%);
+  }
+
+  .hero-cta:hover::before,
+  .hero-cta:hover::after {
     opacity: 1;
-  }
-
-  @keyframes titleEnterUp {
-    from {
-      opacity: 0;
-      filter: blur(18px);
-      transform: translate3d(0, 42px, 0);
-    }
-    to {
-      opacity: 1;
-      filter: blur(0);
-      transform: translate3d(0, 0, 0);
-    }
   }
 
   @media (max-width: 900px) {
     .after-grid {
       width: min(94%, 760px);
-      grid-template-columns: 1fr 0.82fr;
-      gap: 0.8rem;
+      grid-template-columns: 1fr;
+      gap: 1rem;
     }
 
-    .after-text h2 {
-      font-size: clamp(1.3rem, 6.8vw, 2.7rem);
-      max-width: 11ch;
+    .after-action {
+      justify-self: start;
     }
 
     .hero-scroll-label {
@@ -804,21 +734,30 @@
 
     .after-grid {
       width: min(94%, 520px);
-      grid-template-columns: 1fr;
-      gap: 1.2rem;
+      gap: 1.25rem;
     }
 
-    .after-text h2 {
-      font-size: clamp(1.15rem, 6.4vw, 1.95rem);
-      line-height: 1.04;
-      max-width: none;
+    .after-meta {
+      width: 100%;
+      gap: 1.6rem;
     }
 
-    .after-image {
-      justify-self: end;
-      width: min(82%, 100%);
-      margin-top: 0;
-      aspect-ratio: 1.05 / 1.2;
+    .after-meta__block h2 {
+      margin-bottom: 0.5rem;
+      font-size: clamp(1.35rem, 5.3vw, 1.8rem);
+    }
+
+    .after-meta__block p,
+    .after-meta__block li {
+      font-size: clamp(1.2rem, 6vw, 1.6rem);
+    }
+
+    .hero-cta {
+      min-width: min(100%, 18rem);
+      width: 100%;
+      height: 3.45rem;
+      font-size: 1rem;
+      padding: 0 1rem;
     }
   }
 
@@ -827,15 +766,15 @@
     .hero-dark-layer,
     .hero-scroll-label,
     .hero-scroll-cue,
-    .after-text,
-    .after-image,
-    .after-image-incoming {
+    .after-meta,
+    .after-action,
+    .hero-cta,
+    .hero-cta__text,
+    .hero-cta__flip::after {
       transition: none !important;
       animation: none !important;
       filter: none !important;
       opacity: 1 !important;
-      -webkit-mask-image: none !important;
-      mask-image: none !important;
       transform: none !important;
     }
   }

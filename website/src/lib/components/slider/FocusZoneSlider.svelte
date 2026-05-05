@@ -1,9 +1,8 @@
 <script>
-  import { onMount, onDestroy } from "svelte";
+  import { createEventDispatcher, onMount, onDestroy } from "svelte";
   import { browser } from "$app/environment";
 
   export let slides = [];
-  export let headerTone = null;
   export let zoneHeight = "34svh";
   export let itemHeightDesktop = "38vh";
   export let itemHeightMobile = "42svh";
@@ -19,7 +18,11 @@
   let resizeTimer;
   let prefersReducedMotion = false;
   let isInView = false;
+  let isHeaderToneActive = false;
+  let hasEnteredHeaderToneZone = false;
   let visibilityObserver;
+
+  const dispatch = createEventDispatcher();
 
   const clamp = (value, min = 0, max = 1) => Math.max(min, Math.min(max, value));
   const normalizeSlideLines = (description = "") => description.split("\n").filter(Boolean);
@@ -41,13 +44,7 @@
   }
 
   function syncHeaderTone() {
-    if (!browser || !headerTone) return;
-
-    window.dispatchEvent(
-      new CustomEvent("mixslider:header-tone", {
-        detail: { tone: isInView ? headerTone : null }
-      })
-    );
+    dispatch("slideractivechange", { active: isHeaderToneActive });
   }
 
   function updateState() {
@@ -57,7 +54,30 @@
     }
 
     const viewportHeight = window.innerHeight || 1;
+    const sliderRect = sliderEl.getBoundingClientRect();
     const zoneCenter = viewportHeight * 0.5;
+    const sliderIsVisible = sliderRect.top < viewportHeight && sliderRect.bottom > 0;
+    const sliderReachedFullscreen =
+      sliderRect.top <= viewportHeight * 0.08 && sliderRect.bottom >= viewportHeight * 0.92;
+    let nextHeaderToneActive = false;
+
+    if (sliderRect.top >= viewportHeight) {
+      hasEnteredHeaderToneZone = false;
+    }
+
+    if (sliderReachedFullscreen) {
+      hasEnteredHeaderToneZone = true;
+    }
+
+    if (sliderIsVisible) {
+      if (hasEnteredHeaderToneZone && sliderRect.top > viewportHeight * 0.08) {
+        hasEnteredHeaderToneZone = false;
+        nextHeaderToneActive = false;
+      } else {
+        nextHeaderToneActive = hasEnteredHeaderToneZone;
+      }
+    }
+
     let nextActiveIndex = activeIndex;
     let closestDistance = Number.POSITIVE_INFINITY;
 
@@ -75,6 +95,10 @@
     });
 
     activeIndex = nextActiveIndex;
+    if (nextHeaderToneActive !== isHeaderToneActive) {
+      isHeaderToneActive = nextHeaderToneActive;
+      syncHeaderTone();
+    }
     ticking = false;
   }
 
@@ -98,10 +122,9 @@
     visibilityObserver = new IntersectionObserver(
       ([entry]) => {
         isInView = !!entry?.isIntersecting;
-        syncHeaderTone();
         if (isInView) queueUpdate();
       },
-      { rootMargin: "-15% 0px -15% 0px", threshold: 0 }
+      { rootMargin: "-42% 0px -42% 0px", threshold: 0 }
     );
 
     visibilityObserver.observe(sliderEl);
@@ -115,6 +138,8 @@
       window.removeEventListener("resize", handleResize);
       visibilityObserver?.disconnect();
       isInView = false;
+      isHeaderToneActive = false;
+      hasEnteredHeaderToneZone = false;
       syncHeaderTone();
       clearTimeout(resizeTimer);
     };
@@ -126,6 +151,8 @@
     window.removeEventListener("resize", handleResize);
     visibilityObserver?.disconnect();
     isInView = false;
+    isHeaderToneActive = false;
+    hasEnteredHeaderToneZone = false;
     syncHeaderTone();
     clearTimeout(resizeTimer);
   });

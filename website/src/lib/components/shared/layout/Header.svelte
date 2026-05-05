@@ -42,7 +42,7 @@
   let themedSections = [];
   let refreshSectionsRaf = 0;
   let mixSliderHeaderTone = null;
-
+  let projectHeaderTone = null;
   const SCROLL_THRESHOLD = 10;
   const LIGHT_TEXT_COLOR = "#353535";
   const SECTION_SELECTOR =
@@ -79,6 +79,14 @@
 
   function updateTextColor() {
     if (!headerEl) return;
+    if (projectHeaderTone === "dark") {
+      if (textColor !== LIGHT_TEXT_COLOR) textColor = LIGHT_TEXT_COLOR;
+      return;
+    }
+    if (projectHeaderTone === "light") {
+      if (textColor !== "white") textColor = "white";
+      return;
+    }
     if (mixSliderHeaderTone === "dark") {
       if (textColor !== LIGHT_TEXT_COLOR) textColor = LIGHT_TEXT_COLOR;
       return;
@@ -260,7 +268,7 @@
 
   $: themeClass =
     $page.url.pathname === "/services" ? "theme-services" :
-    $page.url.pathname === "/travail" ? "theme-projets" :
+    ["/travail", "/projet1", "/projet2"].includes($page.url.pathname) ? "theme-projets" :
     $page.url.pathname === "/apropos" ? "theme-apropos" :
     $page.url.pathname === "/contact" ? "theme-contact" :
     "";
@@ -282,8 +290,8 @@
     scheduleThemeSectionsRefresh();
   }
 
-  function handleMixSliderHeaderTone(event) {
-    mixSliderHeaderTone = event.detail?.tone ?? null;
+  function handleProjectHeaderTone(event) {
+    projectHeaderTone = event.detail?.tone ?? null;
     updateTextColor();
   }
 
@@ -330,7 +338,7 @@
     });
 
     window.addEventListener("preloader:done", handlePreloaderDone);
-    window.addEventListener("mixslider:header-tone", handleMixSliderHeaderTone);
+    window.addEventListener("project-header-tone", handleProjectHeaderTone);
 
     markHeaderReady();
 
@@ -353,7 +361,7 @@
       destroyed = true;
       unregisterRead(processScrollState);
       window.removeEventListener("preloader:done", handlePreloaderDone);
-      window.removeEventListener("mixslider:header-tone", handleMixSliderHeaderTone);
+      window.removeEventListener("project-header-tone", handleProjectHeaderTone);
       window.removeEventListener("resize", scheduleThemeSectionsRefresh);
     };
   });

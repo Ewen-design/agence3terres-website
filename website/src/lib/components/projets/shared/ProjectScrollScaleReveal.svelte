@@ -1,5 +1,5 @@
 <script>
-  import { onMount } from "svelte";
+  import { createEventDispatcher, onMount } from "svelte";
   import { browser } from "$app/environment";
   import {
     registerParallax,
@@ -21,6 +21,9 @@
   export let reverse = false;
   export let startBackground = "#000";
   export let endBackground = "#f7f5f1";
+  export let snapBackground = false;
+  export let themeBeforeSwitch = null;
+  export let themeAfterSwitch = null;
 
   let sectionEl;
   let frameEl;
@@ -31,6 +34,9 @@
 
   let pendingFrame = null;
   let dirty = false;
+  let currentTheme = null;
+
+  const dispatch = createEventDispatcher();
 
   const applied = {
     progress: -1,
@@ -68,27 +74,46 @@
     const viewportH = ctx?.vh || window.innerHeight || 1;
     const rawProgress = (y + viewportH - sectionTop) / (sectionHeightPx + viewportH);
     const progress = clamp(rawProgress, 0, 1);
+    const sectionMidViewport = sectionTop - y + sectionHeightPx * 0.5;
 
     const motionProgress = ctx?.prefersReducedMotion
       ? progress > 0.5
         ? 1
         : 0
       : smoothstep(0.08, 0.88, progress);
+    const switchProgress = ctx?.prefersReducedMotion
+      ? sectionMidViewport <= viewportH * 0.5
+        ? 1
+        : 0
+      : snapBackground
+        ? sectionMidViewport <= viewportH * 0.5
+          ? 1
+          : 0
+        : smoothstep(0.4, 0.7, progress);
 
     const directionalMotion = reverse ? 1 - motionProgress : motionProgress;
-    const directionalBackground = reverse
-      ? 1 - smoothstep(0.4, 0.7, progress)
-      : smoothstep(0.4, 0.7, progress);
     const imageScale = lerp(startScale, endScale, directionalMotion);
     const frameWidth = lerp(startWidth, endWidth, directionalMotion);
     const frameRadius = lerp(startRadius, endRadius, directionalMotion);
 
     pendingFrame = {
-      progress: q(directionalBackground, 0.001),
+      progress: q(switchProgress, 0.001),
       scale: q(imageScale, 0.001),
       width: q(frameWidth, 0.1),
       radius: q(frameRadius, 0.01)
     };
+
+    const nextTheme =
+      themeBeforeSwitch && themeAfterSwitch
+        ? switchProgress >= 0.5
+          ? themeAfterSwitch
+          : themeBeforeSwitch
+        : null;
+
+    if (nextTheme && nextTheme !== currentTheme) {
+      currentTheme = nextTheme;
+      dispatch("themechange", { theme: nextTheme, progress: switchProgress });
+    }
 
     dirty = true;
   }
@@ -216,6 +241,7 @@
     opacity: var(--bg-progress);
     will-change: opacity;
     pointer-events: none;
+    transition: opacity 520ms cubic-bezier(0.22, 1, 0.36, 1);
   }
 
   .project-scroll-reveal__inner {
@@ -256,7 +282,7 @@
     }
 
     .project-scroll-reveal__frame {
-      aspect-ratio: 1.08;
+      aspect-ratio: 0.82;
       width: min(var(--frame-width), calc(100vw - 1.6rem));
     }
   }
