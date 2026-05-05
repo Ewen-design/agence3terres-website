@@ -33,6 +33,7 @@
   let resizeTimer;
 
   let vh = 1;
+  let isMobile = false;
   let heroTop = 0;
   let heroHeight = 1;
   let afterTextTop = 0;
@@ -68,6 +69,7 @@
 
   function measureLayout() {
     vh = window.innerHeight || 1;
+    isMobile = (window.innerWidth || 0) <= 640;
     heroTop = getAbsoluteTop(heroSection);
     heroHeight = Math.max(heroSection?.offsetHeight || 1, 1);
     afterTextTop = getAbsoluteTop(afterTextEl);
@@ -94,8 +96,8 @@
     pendingFrame = {
       imageScale: q(lerp(1.03, 1.005, globalFade), 0.001),
       imageBrightness: q(lerp(1, 0.62, globalFade), 0.001),
-      imageOpacity: q(lerp(1, 0, globalFade), 0.001),
-      imageDark: q(lerp(0.08, 0.62, globalFade), 0.001),
+      imageOpacity: isMobile ? 1 : q(lerp(1, 0, globalFade), 0.001),
+      imageDark: isMobile ? 0 : q(lerp(0.08, 0.62, globalFade), 0.001),
       textOpacity: q(lerp(0.16, 1, textReveal), 0.001),
       textY: q(lerp(22, 0, textReveal), 0.1),
       actionOpacity: q(lerp(0.16, 1, actionReveal), 0.001),
@@ -338,6 +340,11 @@
       </div>
     </div>
   </section>
+
+  <div class="hero-scroll-cue-mobile" aria-hidden="true">
+    <h1 class="hero-scroll-label">{title}</h1>
+    <span class="hero-scroll-arrow">↓</span>
+  </div>
 </section>
 
 <style>
@@ -456,6 +463,10 @@
     z-index: 4;
     opacity: 1;
     transform: none;
+  }
+
+  .hero-scroll-cue-mobile {
+    display: none;
   }
 
   .hero-scroll-label {
@@ -670,21 +681,22 @@
 
   @media (max-width: 640px) {
     .hero-media::after {
-      bottom: -12svh;
-      height: 40svh;
-      background: linear-gradient(
-        to top,
-        rgba(0, 0, 0, 1) 0%,
-        rgba(0, 0, 0, 0.98) 18%,
-        rgba(0, 0, 0, 0.82) 38%,
-        rgba(0, 0, 0, 0.48) 60%,
-        rgba(0, 0, 0, 0.16) 80%,
-        rgba(0, 0, 0, 0) 100%
-      );
+      display: none;
     }
 
     .hero-stage {
       min-height: 128svh;
+    }
+
+    .hero-media img,
+    .hero-dark-layer {
+      inset: 0 0 -12svh 0;
+      height: calc(100% + 12svh);
+    }
+
+    .hero-dark-layer {
+      background: none;
+      opacity: 0 !important;
     }
 
     .hero-scroll-label {
@@ -694,8 +706,21 @@
     }
 
     .hero-scroll-cue {
+      display: none;
+    }
+
+    .hero-scroll-cue-mobile {
+      position: absolute;
       left: 1rem;
-      bottom: max(1rem, var(--safe-bottom-offset));
+      top: calc(100svh - max(8.8rem, calc(var(--safe-bottom-offset) + 8rem)));
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      justify-content: flex-end;
+      gap: 0.42rem;
+      color: #fff;
+      z-index: 20;
+      pointer-events: none;
     }
 
     .hero-scroll-arrow {
@@ -704,11 +729,37 @@
 
     .after-section {
       padding: 10vh 0 12vh;
+      background: #000;
+    }
+
+    .after-section::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: -68rem;
+      height: 68rem;
+      background: linear-gradient(
+        to bottom,
+        rgba(0, 0, 0, 0) 0%,
+        rgba(0, 0, 0, 0.01) 16%,
+        rgba(0, 0, 0, 0.03) 32%,
+        rgba(0, 0, 0, 0.08) 48%,
+        rgba(0, 0, 0, 0.18) 64%,
+        rgba(0, 0, 0, 0.38) 78%,
+        rgba(0, 0, 0, 0.68) 90%,
+        rgba(0, 0, 0, 0.92) 97%,
+        rgba(0, 0, 0, 1) 100%
+      );
+      pointer-events: none;
+      z-index: 0;
     }
 
     .after-grid {
       width: min(94%, 520px);
       gap: 1.25rem;
+      position: relative;
+      z-index: 1;
     }
 
     .after-meta {

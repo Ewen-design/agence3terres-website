@@ -72,13 +72,13 @@
     image="/images/parfum_rouge.webp"
     metaBlocks={[
       { label: "Date", value: "2025 - Present" },
-      { label: "Location", value: "Digital" },
+      { label: "Localisation", value: "Digital" },
       {
         label: "Services",
         value: ["Direction artistique", "Narration", "UI Design"]
       }
     ]}
-    ctaLabel="Visit Website"
+    ctaLabel="Visiter le site"
   />
 
   <ProjectScrollScaleReveal

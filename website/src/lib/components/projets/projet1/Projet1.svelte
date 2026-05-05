@@ -67,18 +67,18 @@
 </script>
 
 <div class={`project-theme-band ${introBandTheme}`}>
-  <ProjectHeroProjetsStyle
+      <ProjectHeroProjetsStyle
     title="Serein Design"
     image="/images/serein_design.webp"
     metaBlocks={[
       { label: "Date", value: "2025 - Present" },
-      { label: "Location", value: "France" },
+      { label: "Localisation", value: "France" },
       {
         label: "Services",
         value: ["UI Design", "UX Design", "Direction visuelle"]
       }
     ]}
-    ctaLabel="Visit Website"
+    ctaLabel="Visiter le site"
   />
 
   <ProjectScrollScaleReveal

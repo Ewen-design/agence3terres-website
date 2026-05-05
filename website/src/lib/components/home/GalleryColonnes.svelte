@@ -81,7 +81,6 @@
 
   let resizeObserver;
   let intersectionObserver;
-  let revealObserver;
   let resizeTimer = null;
 
   let isMobile = false;
@@ -93,7 +92,6 @@
   let pending = null;
   let dirty = false;
 
-  const revealNodes = new Set();
   $: text = (isMobile ? mobileText : desktopText).split("");
 
   let applied = {
@@ -254,22 +252,6 @@
     }, 70);
   }
 
-  function revealCard(node) {
-    node.classList.add("is-reveal-init");
-    revealNodes.add(node);
-
-    if (revealObserver) {
-      revealObserver.observe(node);
-    }
-
-    return {
-      destroy() {
-        revealObserver?.unobserve(node);
-        revealNodes.delete(node);
-      }
-    };
-  }
-
   onMount(() => {
     if (!browser) return;
 
@@ -317,23 +299,6 @@
 
     if (sectionEl) intersectionObserver.observe(sectionEl);
 
-    revealObserver = new IntersectionObserver(
-      (entries) => {
-        for (const entry of entries) {
-          if (entry.isIntersecting) {
-            entry.target.classList.add("is-visible");
-            revealObserver.unobserve(entry.target);
-          }
-        }
-      },
-      {
-        rootMargin: "0px 0px -8% 0px",
-        threshold: 0.12
-      }
-    );
-
-    revealNodes.forEach((node) => revealObserver.observe(node));
-
     window.addEventListener("resize", handleResize, { passive: true });
     window.addEventListener("orientationchange", handleResize, { passive: true });
   });
@@ -346,7 +311,6 @@
 
     resizeObserver?.disconnect();
     intersectionObserver?.disconnect();
-    revealObserver?.disconnect();
 
     if (resizeTimer) clearTimeout(resizeTimer);
 
@@ -374,7 +338,6 @@
         <div class="col col-left">
           {#each leftImages as image}
             <figure
-              use:revealCard
               class={`card ${image.ratio}`}
               style={`--h:${image.height}vw`}
             >
@@ -392,7 +355,6 @@
         <div class="col col-center">
           {#each centerImages as image}
             <figure
-              use:revealCard
               class={`card ${image.ratio}`}
               style={`--h:${image.height}vw`}
             >
@@ -410,7 +372,6 @@
         <div class="col col-right">
           {#each rightImages as image}
             <figure
-              use:revealCard
               class={`card ${image.ratio}`}
               style={`--h:${image.height}vw`}
             >
@@ -545,13 +506,11 @@
   .card {
     overflow: hidden;
     background: var(--card-bg);
-    opacity: 0.001;
+    opacity: 1;
     transform: translateZ(0);
     backface-visibility: hidden;
     -webkit-backface-visibility: hidden;
     contain: paint;
-    will-change: opacity;
-    transition: opacity 0.9s cubic-bezier(0.22, 1, 0.36, 1);
   }
 
   .card img {
@@ -559,22 +518,12 @@
     height: 100%;
     display: block;
     object-fit: cover;
-    transform: translateZ(0) scale(1.045);
+    transform: translateZ(0) scale(1);
     transform-origin: center center;
-    transition: transform 1.2s cubic-bezier(0.22, 1, 0.36, 1);
     backface-visibility: hidden;
     -webkit-backface-visibility: hidden;
     user-select: none;
     -webkit-user-drag: none;
-    will-change: transform;
-  }
-
-  .card.is-visible {
-    opacity: 1;
-  }
-
-  .card.is-visible img {
-    transform: translateZ(0) scale(1);
   }
 
   .card.portrait {
