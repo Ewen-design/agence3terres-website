@@ -1,9 +1,9 @@
 <script>
   export let main =
-    "Une histoire née de trois terres, entre intuition sensible, exigence créative et désir de laisser une empreinte durable";
+    "Une histoire née de trois terres, entre intuition, exigence créative et sens du détail";
 
   export let muted =
-    "pour raconter l'origine de la marque et la vision qui continue de la faire évoluer.";
+    "pour raconter l'origine de la marque.";
 </script>
 
 <section class="story-slider-intro">
@@ -87,37 +87,30 @@
       width: min(100%, 760px);
       margin: 0 auto;
       display: flex;
-      justify-content: center;
-      padding: 2.75rem 1.25rem 2.4rem;
+      justify-content: flex-start;
+      padding: 2.75rem var(--project-side-padding, 0.8rem) 2.4rem;
     }
 
     .story-slider-intro__card {
-      width: min(72vw, 24rem);
+      width: 100%;
       padding: 0;
     }
 
     .story-slider-intro__text {
+      max-width: 12ch;
       font-size: clamp(1.3rem, 6.8vw, 2.7rem);
       line-height: 1.04;
-      max-width: 18ch;
+      padding-inline: var(--project-text-inset, 0);
     }
   }
 
   @media (max-width: 640px) {
     .story-slider-intro__text-wrap {
-      padding: 2.4rem 1.1rem 2.15rem;
-    }
-
-    .story-slider-intro__card {
-      width: min(76vw, 21rem);
+      padding: 2.4rem var(--project-side-padding, 0.8rem) 2.15rem;
     }
   }
 
   @media (max-width: 420px) {
-    .story-slider-intro__card {
-      width: min(80vw, 18rem);
-    }
-
     .story-slider-intro__text {
       font-size: clamp(1.15rem, 6.4vw, 1.95rem);
       line-height: 1.16;

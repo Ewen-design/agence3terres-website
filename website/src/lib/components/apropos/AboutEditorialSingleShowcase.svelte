@@ -1,5 +1,6 @@
 <script>
   export let text = "";
+  export let mutedText = "";
   export let image = "";
   export let alt = "";
   export let mediaMinHeight = "32rem";
@@ -16,7 +17,12 @@
   </div>
 
   <div class="about-editorial-single-showcase__text-grid">
-    <p>{text}</p>
+    <p>
+      <span>{text}</span>
+      {#if mutedText}
+        <span class="about-editorial-single-showcase__muted"> {mutedText}</span>
+      {/if}
+    </p>
   </div>
 </section>
 
@@ -63,8 +69,12 @@
     max-width: 22ch;
     font-family: "Clash Display", sans-serif;
     font-weight: 300;
-    font-size: var(--project-lead-size, clamp(1.35rem, 2.7vw, 2.8rem));
-    line-height: 0.98;
+    font-size: clamp(1.3rem, 2.8vw, 2.8rem);
+    line-height: 1;
+  }
+
+  .about-editorial-single-showcase__muted {
+    color: rgb(157, 156, 156);
   }
 
   @media (max-width: 900px) {
@@ -91,8 +101,9 @@
     .about-editorial-single-showcase__text-grid p {
       max-width: 12ch;
       grid-column: auto;
-      font-size: clamp(1.7rem, 8.5vw, 2.55rem);
+      font-size: clamp(1.3rem, 6.8vw, 2.7rem);
       padding-inline: var(--project-text-inset, 0);
+      line-height: 1.04;
     }
   }
 </style>

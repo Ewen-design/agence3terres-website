@@ -691,14 +691,18 @@
 
   @media (max-width: 900px) {
     .after-grid {
-      width: min(94%, 760px);
+      width: min(100%, 760px);
       grid-template-columns: 1fr 0.82fr;
       gap: 0.8rem;
+      padding-inline: var(--project-side-padding, 0.8rem);
+      box-sizing: border-box;
     }
 
     .after-text h2 {
       font-size: clamp(1.3rem, 6.8vw, 2.7rem);
-      max-width: 11ch;
+      max-width: 12ch;
+      line-height: 1.04;
+      padding-inline: var(--project-text-inset, 0);
     }
   }
 
@@ -772,20 +776,23 @@
     }
 
     .after-grid {
-      width: min(94%, 520px);
+      width: min(100%, 520px);
       grid-template-columns: 1fr;
       gap: 1rem;
+      padding-inline: var(--project-side-padding, 0.8rem);
+      box-sizing: border-box;
     }
 
     .after-text {
-      width: 78%;
+      width: 100%;
       justify-self: start;
     }
 
     .after-text h2 {
+      max-width: 12ch;
       font-size: clamp(1.15rem, 6.4vw, 1.95rem);
       line-height: 1.04;
-      max-width: none;
+      padding-inline: var(--project-text-inset, 0);
     }
 
     .after-image {

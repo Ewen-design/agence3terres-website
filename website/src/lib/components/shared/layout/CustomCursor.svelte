@@ -137,7 +137,7 @@
         </svg>
       </div>
     {:else}
-      <span>Voir</span>
+      <span>VOIR</span>
     {/if}
   </div>
 {/if}
@@ -187,55 +187,17 @@
     justify-content: center;
     color: white;
     white-space: nowrap;
-    background: rgba(255, 255, 255, 0.04);
+    background: rgba(6, 6, 8, 0.72);
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
-    box-shadow:
-      0 10px 18px rgba(0, 0, 0, 0.16),
-      inset 0 0 0 1px rgba(255, 255, 255, 0.18);
-  }
-
-  .cursor-indicator.is-view::before,
-  .cursor-indicator.is-view::after {
-    content: "";
-    position: absolute;
-    inset: -1px;
-    border-radius: inherit;
-    pointer-events: none;
-    opacity: 0;
-  }
-
-  .cursor-indicator.is-view::before {
-    border: 1px solid transparent;
-    border-radius: inherit;
-    border-image-slice: 1;
-    border-image-source: var(--cursor-glow-core);
-  }
-
-  .cursor-indicator.is-view::after {
-    border: 1px solid transparent;
-    border-radius: inherit;
-    border-image-slice: 1;
-    border-image-source: var(--cursor-glow-soft);
-    filter: blur(2px);
-  }
-
-  .cursor-indicator.is-view.is-visible::before,
-  .cursor-indicator.is-view.is-visible::after {
-    opacity: 1;
-    animation:
-      cursorGlowDrift 1.8s cubic-bezier(.45,.05,.2,1) infinite alternate,
-      cursorGlowPulse 1.8s ease-in-out infinite;
-  }
-
-  .cursor-indicator.is-view.is-visible::after {
-    animation-direction: alternate-reverse, normal;
+    box-shadow: 0 14px 24px rgba(0, 0, 0, 0.28);
   }
 
   .cursor-indicator.is-view span {
     position: relative;
     z-index: 1;
     font-size: 0.76rem;
+    font-weight: 400;
     line-height: 1;
     letter-spacing: 0.01em;
   }
@@ -263,70 +225,9 @@
     height: 100%;
   }
 
-  .cursor-indicator.theme-services,
-  .cursor-indicator.theme-projets {
-    --cursor-glow-core:
-      radial-gradient(
-        68px circle at 50% 50%,
-        rgba(220, 240, 255, 1) 0%,
-        rgba(145, 205, 255, 0.98) 22%,
-        rgba(74, 140, 255, 0.62) 45%,
-        rgba(18, 45, 120, 0.14) 62%,
-        transparent 78%
-      );
-    --cursor-glow-soft:
-      radial-gradient(
-        78px circle at 50% 50%,
-        rgba(95, 165, 255, 0.42) 0%,
-        rgba(74, 140, 255, 0.18) 42%,
-        transparent 72%
-      );
-  }
-
-  .cursor-indicator.theme-contact {
-    --cursor-glow-core:
-      radial-gradient(
-        68px circle at 50% 50%,
-        rgba(235, 232, 255, 1) 0%,
-        rgba(210, 210, 230, 0.98) 22%,
-        rgba(130, 110, 220, 0.62) 45%,
-        rgba(35, 30, 95, 0.14) 62%,
-        transparent 78%
-      );
-    --cursor-glow-soft:
-      radial-gradient(
-        78px circle at 50% 50%,
-        rgba(150, 140, 230, 0.42) 0%,
-        rgba(130, 110, 220, 0.18) 42%,
-        transparent 72%
-      );
-  }
-
-  @keyframes cursorGlowDrift {
-    0% {
-      background-position: 8% 50%;
-    }
-    100% {
-      background-position: 92% 50%;
-    }
-  }
-
-  @keyframes cursorGlowPulse {
-    0%,
-    100% {
-      opacity: 0.58;
-    }
-    50% {
-      opacity: 1;
-    }
-  }
-
   @media (prefers-reduced-motion: reduce) {
-    .cursor-indicator,
-    .cursor-indicator::before,
-    .cursor-indicator::after {
+    .cursor-indicator {
       transition: none;
-      animation: none;
     }
   }
 </style>
