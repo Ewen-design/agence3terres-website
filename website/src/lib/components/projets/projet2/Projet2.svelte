@@ -18,6 +18,12 @@
   title="Hansatsu"
   image="/images/parfum_rouge.webp"
   finalText="Une page projet conçue pour installer un univers plus sensoriel, plus narratif et plus immersif dès l'arrivée."
+  afterImages={[
+    "/images/parfum2.webp",
+    "/images/parfum3.webp",
+    "/images/parfum_ordinateur.webp"
+  ]}
+  afterImageAlt="Visuels du projet Hansatsu"
 />
 
 <ProjectScrollScaleReveal

@@ -18,6 +18,12 @@
   title="Serein Design"
   image="/images/serein_design.webp"
   finalText="Une page projet pensée pour montrer le travail avec plus de clarté, de tenue et de précision visuelle."
+  afterImages={[
+    "/images/telephone2.webp",
+    "/images/telephone2_parfum.webp",
+    "/images/telephone_main.webp"
+  ]}
+  afterImageAlt="Visuels du projet Serein Design"
 />
 
 <ProjectScrollScaleReveal

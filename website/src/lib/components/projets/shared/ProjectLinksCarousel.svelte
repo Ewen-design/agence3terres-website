@@ -39,8 +39,6 @@
   let desktopCardEls = [];
   let desktopScrollRaf;
   let activeDesktopIndex = 0;
-  let desktopAutoAdvanceTimer = null;
-  let desktopAutoResumeTimer = null;
   let isAutoScrollingDesktop = false;
   let mobileRailEl;
   let mobileCardEls = [];
@@ -49,8 +47,6 @@
   let activeMobileIndex = 0;
   let prefersReduced = false;
   let removeMotionListener;
-  let mobileAutoAdvanceTimer = null;
-  let mobileAutoResumeTimer = null;
   let isAutoScrollingMobile = false;
 
   const clamp = (v, min = 0, max = 1) => Math.min(max, Math.max(min, v));
@@ -107,9 +103,6 @@
   }
 
   function handleDesktopRailScroll() {
-    if (!isAutoScrollingDesktop) {
-      pauseAndResumeDesktopAutoAdvance();
-    }
     if (desktopScrollRaf) cancelAnimationFrame(desktopScrollRaf);
     desktopScrollRaf = requestAnimationFrame(() => {
       updateDesktopActive();
@@ -136,9 +129,6 @@
   }
 
   function handleMobileRailScroll() {
-    if (!isAutoScrollingMobile) {
-      pauseAndResumeMobileAutoAdvance();
-    }
     if (mobileScrollRaf) cancelAnimationFrame(mobileScrollRaf);
     mobileScrollRaf = requestAnimationFrame(() => {
       updateMobileActive();
@@ -204,64 +194,10 @@
     mobileTweenRaf = requestAnimationFrame(frame);
   }
 
-  function clearMobileAutoTimers() {
-    clearInterval(mobileAutoAdvanceTimer);
-    clearTimeout(mobileAutoResumeTimer);
-    mobileAutoAdvanceTimer = null;
-    mobileAutoResumeTimer = null;
-  }
-
-  function clearDesktopAutoTimers() {
-    clearInterval(desktopAutoAdvanceTimer);
-    clearTimeout(desktopAutoResumeTimer);
-    desktopAutoAdvanceTimer = null;
-    desktopAutoResumeTimer = null;
-  }
-
-  function startDesktopAutoAdvance() {
-    clearDesktopAutoTimers();
-    if (isMobile || !desktopRailEl || prefersReduced || filteredProjects.length < 2) return;
-
-    desktopAutoAdvanceTimer = setInterval(() => {
-      const nextIndex = (activeDesktopIndex + 1) % filteredProjects.length;
-      scrollToDesktopCard(nextIndex, "smooth");
-    }, 5000);
-  }
-
-  function pauseAndResumeDesktopAutoAdvance() {
-    clearDesktopAutoTimers();
-    if (isMobile || prefersReduced || filteredProjects.length < 2) return;
-
-    desktopAutoResumeTimer = setTimeout(() => {
-      startDesktopAutoAdvance();
-    }, 7000);
-  }
-
-  function startMobileAutoAdvance() {
-    clearMobileAutoTimers();
-    if (!isMobile || !mobileRailEl || prefersReduced || filteredProjects.length < 2) return;
-
-    mobileAutoAdvanceTimer = setInterval(() => {
-      const nextIndex = (activeMobileIndex + 1) % filteredProjects.length;
-      scrollToMobileCard(nextIndex, "smooth");
-    }, 5000);
-  }
-
-  function pauseAndResumeMobileAutoAdvance() {
-    clearMobileAutoTimers();
-    if (!isMobile || prefersReduced || filteredProjects.length < 2) return;
-
-    mobileAutoResumeTimer = setTimeout(() => {
-      startMobileAutoAdvance();
-    }, 7000);
-  }
-
   function handleResize() {
     clearTimeout(resizeTimer);
     resizeTimer = setTimeout(() => {
       measure();
-      startDesktopAutoAdvance();
-      startMobileAutoAdvance();
     }, 80);
   }
 
@@ -299,8 +235,6 @@
 
     const onMotion = (event) => {
       prefersReduced = event.matches;
-      startDesktopAutoAdvance();
-      startMobileAutoAdvance();
     };
     if (mq.addEventListener) {
       mq.addEventListener("change", onMotion);
@@ -315,8 +249,6 @@
         measure();
         updateDesktopActive();
         updateMobileActive();
-        startDesktopAutoAdvance();
-        startMobileAutoAdvance();
       });
     });
 
@@ -327,8 +259,6 @@
 
     return () => {
       removeMotionListener?.();
-      clearDesktopAutoTimers();
-      clearMobileAutoTimers();
       clearTimeout(resizeTimer);
       window.removeEventListener("resize", handleResize);
       window.removeEventListener("orientationchange", handleResize);
@@ -340,8 +270,6 @@
   onDestroy(() => {
     if (!browser) return;
     removeMotionListener?.();
-    clearDesktopAutoTimers();
-    clearMobileAutoTimers();
     clearTimeout(resizeTimer);
     desktopRailEl?.removeEventListener("scroll", handleDesktopRailScroll);
     mobileRailEl?.removeEventListener("scroll", handleMobileRailScroll);
@@ -447,10 +375,7 @@
         class:is-hidden={activeMobileIndex === 0}
         type="button"
         aria-label="Projet précédent"
-        on:click={() => {
-          pauseAndResumeMobileAutoAdvance();
-          scrollToMobileCard(Math.max(activeMobileIndex - 1, 0), "smooth");
-        }}
+        on:click={() => scrollToMobileCard(Math.max(activeMobileIndex - 1, 0), "smooth")}
       >
         <span class="mobile-nav-chevron" aria-hidden="true"></span>
       </button>
@@ -460,10 +385,7 @@
         class:is-hidden={activeMobileIndex === filteredProjects.length - 1}
         type="button"
         aria-label="Projet suivant"
-        on:click={() => {
-          pauseAndResumeMobileAutoAdvance();
-          scrollToMobileCard(Math.min(activeMobileIndex + 1, filteredProjects.length - 1), "smooth");
-        }}
+        on:click={() => scrollToMobileCard(Math.min(activeMobileIndex + 1, filteredProjects.length - 1), "smooth")}
       >
         <span class="mobile-nav-chevron" aria-hidden="true"></span>
       </button>
@@ -698,7 +620,7 @@
     display: block;
     font-family: "Clash Display", sans-serif;
     font-size: clamp(2.2rem, 4.2vw, 4.2rem);
-    font-weight: 400;
+    font-weight: 200;
     line-height: 0.96;
     max-width: 12ch;
     color: rgba(255,255,255,.98);
@@ -722,6 +644,7 @@
   .desktop-card-rest {
     margin: 0;
     font-family: "Clash Display", sans-serif;
+    font-weight: 300;
     color: rgba(245,241,232,.82);
     text-shadow: 0 1px 10px rgba(0,0,0,.34);
     font-size: clamp(0.94rem, 1.1vw, 1.04rem);
