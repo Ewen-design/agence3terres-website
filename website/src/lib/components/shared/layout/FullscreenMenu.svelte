@@ -33,7 +33,7 @@
     { label: "Accueil", page: "home", image: "/images/photo.webp" },
     { label: "Services", page: "services", image: "/images/creation_logo_desktop2.webp" },
     { label: "Projets", page: "travail", image: "/images/parfum4.webp" },
-    { label: "A propos", page: "apropos", image: "/images/parfum3.webp" },
+    { label: "A propos", page: "apropos", image: "/images/creation_logo_desktop.webp" },
     { label: "Contact", page: "contact", image: "/images/photo2.webp" }
   ];
 

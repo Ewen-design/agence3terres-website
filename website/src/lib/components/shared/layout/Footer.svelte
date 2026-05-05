@@ -10,7 +10,7 @@
     "/": "/images/telephone3.webp",
     "/services": "/images/creation_logo_desktop2.webp",
     "/travail": "/images/parfum4.webp",
-    "/apropos": "/images/parfum3.webp",
+    "/apropos": "/images/creation_logo_desktop.webp",
     "/contact": "/images/photo2.webp",
     "/projet1": "/images/parfum4.webp",
     "/projet2": "/images/telephone2_parfum.webp"

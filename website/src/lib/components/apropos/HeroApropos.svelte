@@ -17,7 +17,7 @@
   let heroDarkLayerEl;
 
   let introStarted = false;
-  let introVisible = false;
+  let introVisible = true;
   let heroMediaVisible = false;
 
   let fallbackTimeout;
@@ -54,7 +54,7 @@
   const afterImages = [
     "images/telephone2.webp",
     "images/telephone2_parfum.webp",
-    "images/telephone_main.webp"
+    "images/telephone3.webp"
   ];
 
   let activeAfterImage = afterImages[0];
@@ -163,21 +163,6 @@
     if (heroDarkLayerEl && f.imageDark !== applied.imageDark) {
       heroDarkLayerEl.style.opacity = `${f.imageDark}`;
       applied.imageDark = f.imageDark;
-    }
-
-    if (afterTextEl) {
-      if (
-        f.textOpacity !== applied.textOpacity ||
-        f.textY !== applied.textY ||
-        f.textEdge !== applied.textEdge
-      ) {
-        afterTextEl.style.opacity = `${f.textOpacity}`;
-        afterTextEl.style.transform = `translate3d(0, ${f.textY}px, 0)`;
-        afterTextEl.style.setProperty("--text-reveal-edge", `${f.textEdge}%`);
-        applied.textOpacity = f.textOpacity;
-        applied.textY = f.textY;
-        applied.textEdge = f.textEdge;
-      }
     }
 
     if (afterImageEl) {
@@ -597,16 +582,8 @@
     gap: 0.45rem;
     color: #fff;
     z-index: 4;
-    opacity: 0;
-    transform: translate3d(0, 16px, 0);
-    transition:
-      opacity 1s cubic-bezier(0.22, 1, 0.36, 1) 0.16s,
-      transform 1s cubic-bezier(0.22, 1, 0.36, 1) 0.16s;
-  }
-
-  .hero-scroll-cue.intro-visible {
     opacity: 1;
-    transform: translate3d(0, 0, 0);
+    transform: none;
   }
 
   .hero-scroll-label {
@@ -647,28 +624,8 @@
     will-change: transform, opacity;
     width: 100%;
     min-width: 0;
-    opacity: 0.14;
-    transform: translate3d(0, 18px, 0);
-    -webkit-mask-image: linear-gradient(
-      to bottom,
-      rgba(0, 0, 0, 1) 0%,
-      rgba(0, 0, 0, 1) calc(var(--text-reveal-edge, 0%) - 12%),
-      rgba(0, 0, 0, 0.75) calc(var(--text-reveal-edge, 0%) + 2%),
-      rgba(0, 0, 0, 0.2) calc(var(--text-reveal-edge, 0%) + 14%),
-      rgba(0, 0, 0, 0) calc(var(--text-reveal-edge, 0%) + 28%)
-    );
-    mask-image: linear-gradient(
-      to bottom,
-      rgba(0, 0, 0, 1) 0%,
-      rgba(0, 0, 0, 1) calc(var(--text-reveal-edge, 0%) - 12%),
-      rgba(0, 0, 0, 0.75) calc(var(--text-reveal-edge, 0%) + 2%),
-      rgba(0, 0, 0, 0.2) calc(var(--text-reveal-edge, 0%) + 14%),
-      rgba(0, 0, 0, 0) calc(var(--text-reveal-edge, 0%) + 28%)
-    );
-    -webkit-mask-repeat: no-repeat;
-    mask-repeat: no-repeat;
-    -webkit-mask-size: 100% 140%;
-    mask-size: 100% 140%;
+    opacity: 1;
+    transform: none;
   }
 
   .after-text h2 {

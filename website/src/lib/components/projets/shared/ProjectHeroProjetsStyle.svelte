@@ -24,7 +24,7 @@
   let heroDarkLayerEl;
 
   let introStarted = false;
-  let introVisible = false;
+  let introVisible = true;
   let heroMediaVisible = false;
 
   let fallbackTimeout;
@@ -128,24 +128,6 @@
     if (heroDarkLayerEl && frame.imageDark !== applied.imageDark) {
       heroDarkLayerEl.style.opacity = `${frame.imageDark}`;
       applied.imageDark = frame.imageDark;
-    }
-
-    if (afterTextEl) {
-      if (frame.textOpacity !== applied.textOpacity || frame.textY !== applied.textY) {
-        afterTextEl.style.opacity = `${frame.textOpacity}`;
-        afterTextEl.style.transform = `translate3d(0, ${frame.textY}px, 0)`;
-        applied.textOpacity = frame.textOpacity;
-        applied.textY = frame.textY;
-      }
-    }
-
-    if (afterActionEl) {
-      if (frame.actionOpacity !== applied.actionOpacity || frame.actionY !== applied.actionY) {
-        afterActionEl.style.opacity = `${frame.actionOpacity}`;
-        afterActionEl.style.transform = `translate3d(0, ${frame.actionY}px, 0)`;
-        applied.actionOpacity = frame.actionOpacity;
-        applied.actionY = frame.actionY;
-      }
     }
 
     dirty = false;
@@ -472,16 +454,8 @@
     gap: 0.45rem;
     color: #fff;
     z-index: 4;
-    opacity: 0;
-    transform: translate3d(0, 16px, 0);
-    transition:
-      opacity 1s cubic-bezier(0.22, 1, 0.36, 1) 0.16s,
-      transform 1s cubic-bezier(0.22, 1, 0.36, 1) 0.16s;
-  }
-
-  .hero-scroll-cue.intro-visible {
     opacity: 1;
-    transform: translate3d(0, 0, 0);
+    transform: none;
   }
 
   .hero-scroll-label {
@@ -527,8 +501,8 @@
     gap: clamp(2rem, 3vw, 2.9rem);
     width: min(26rem, 100%);
     padding-inline: var(--project-text-inset, 0);
-    opacity: 0.16;
-    transform: translate3d(0, 22px, 0);
+    opacity: 1;
+    transform: none;
     will-change: transform, opacity;
   }
 
@@ -564,8 +538,8 @@
   .after-action {
     justify-self: end;
     padding-inline: var(--project-text-inset, 0);
-    opacity: 0.16;
-    transform: translate3d(0, 18px, 0);
+    opacity: 1;
+    transform: none;
     will-change: transform, opacity;
   }
 

@@ -6,14 +6,14 @@
       title: "Direction claire",
       kicker: "Cap",
       text: "Nous posons un cap lisible des la premiere intention, pour que chaque decision serve une vision plus juste.",
-      image: "/images/photo2.webp",
+      image: "/images/telephone2.webp",
       alt: "Portrait editorial agence 3 terres"
     },
     {
       title: "Exigence visuelle",
       kicker: "Regard",
       text: "Le detail, la matiere et le rythme de composition construisent une presence percutante sans surenchere.",
-      image: "/images/parfum3.webp",
+      image: "/images/creation_logo_desktop.webp",
       alt: "Composition visuelle premium"
     },
     {
@@ -27,7 +27,7 @@
       title: "Production soignee",
       kicker: "Execution",
       text: "Nous accordons autant de soin a la fabrication qu'a l'idee, pour obtenir une presence nette et durable.",
-      image: "/images/creation_logo_desktop2.webp",
+      image: "/images/appareil_photo.webp",
       alt: "Processus de creation graphique"
     },
     {
@@ -41,7 +41,7 @@
       title: "Presence durable",
       kicker: "Impact",
       text: "Nous cherchons des systemes de marque et des experiences qui restent desirables, lisibles et memorables.",
-      image: "/images/parfum4.webp",
+      image: "/images/telephone3.webp",
       alt: "Image de marque durable"
     }
   ];
