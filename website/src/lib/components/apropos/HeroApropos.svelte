@@ -128,8 +128,8 @@
     pendingFrame = {
       imageScale: q(lerp(1.03, 1.005, globalFade), 0.001),
       imageBrightness: q(lerp(1, 0.62, globalFade), 0.001),
-      imageOpacity: q(lerp(1, 0, globalFade), 0.001),
-      imageDark: q(lerp(0.08, 0.62, globalFade), 0.001),
+      imageOpacity: isMobile ? 1 : q(lerp(1, 0, globalFade), 0.001),
+      imageDark: isMobile ? 0 : q(lerp(0.08, 0.62, globalFade), 0.001),
       textOpacity: q(lerp(0.14, 1, localTextReveal), 0.001),
       textY: q(lerp(18, 0, localTextReveal), 0.1),
       textEdge: q(lerp(0, 118, localTextReveal), 0.1),
@@ -465,6 +465,11 @@
       </div>
     </div>
   </section>
+
+  <div class="hero-scroll-cue-mobile" aria-hidden="true">
+    <span class="hero-scroll-label">À propos</span>
+    <span class="hero-scroll-arrow">↓</span>
+  </div>
 </section>
 
 <style>
@@ -586,6 +591,10 @@
     transform: none;
   }
 
+  .hero-scroll-cue-mobile {
+    display: none;
+  }
+
   .hero-scroll-label {
     font-family: "Clash Display", sans-serif;
     font-size: clamp(5.8rem, 5vw, 18rem);
@@ -593,6 +602,7 @@
     line-height: 1;
     letter-spacing: 0.02em;
     text-align: left;
+
   }
 
   .hero-scroll-arrow {
@@ -602,6 +612,7 @@
     line-height: 1;
     font-weight: 300;
     color: #fff;
+    
   }
 
   .after-section {
@@ -708,17 +719,7 @@
 
   @media (max-width: 640px) {
     .hero-media::after {
-      bottom: -12svh;
-      height: 40svh;
-      background: linear-gradient(
-        to top,
-        rgba(0, 0, 0, 1) 0%,
-        rgba(0, 0, 0, 0.98) 18%,
-        rgba(0, 0, 0, 0.82) 38%,
-        rgba(0, 0, 0, 0.48) 60%,
-        rgba(0, 0, 0, 0.16) 80%,
-        rgba(0, 0, 0, 0) 100%
-      );
+      display: none;
     }
 
     .hero-media img,
@@ -728,38 +729,26 @@
     }
 
     .hero-dark-layer {
-      background:
-        linear-gradient(
-          to top,
-          rgba(0, 0, 0, 0.98) 0%,
-          rgba(0, 0, 0, 0.9) 26%,
-          rgba(0, 0, 0, 0.66) 46%,
-          rgba(0, 0, 0, 0.24) 62%,
-          rgba(0, 0, 0, 0) 74%
-        ),
-        radial-gradient(
-          circle at 50% 50%,
-          rgba(0, 0, 0, 0) 0%,
-          rgba(0, 0, 0, 0.03) 40%,
-          rgba(0, 0, 0, 0.12) 68%,
-          rgba(0, 0, 0, 0.42) 100%
-        );
-    }
-
-
-    .hero-join-clean::before {
-      content: "";
-      position: absolute;
-      inset: 110svh 0 0;
-      background: #000;
-      pointer-events: none;
-      z-index: 1;
+      background: none;
+      opacity: 0 !important;
     }
 
     .hero-scroll-cue {
+      display: none;
+    }
+
+    .hero-scroll-cue-mobile {
+      position: absolute;
       left: 1rem;
-      bottom: max(1rem, var(--safe-bottom-offset));
+      top: calc(100svh - max(4.8rem, calc(var(--safe-bottom-offset) + 4rem)));
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      justify-content: flex-end;
       gap: 0.42rem;
+      color: #fff;
+      z-index: 20;
+      pointer-events: none;
     }
 
     .hero-scroll-label {
@@ -772,7 +761,31 @@
     }
 
     .after-section {
-      padding: 0vh 0 28vh;
+      padding: 0 0 28vh;
+      background: #000;
+    }
+
+    .after-section::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: -68rem;
+      height: 68rem;
+      background: linear-gradient(
+        to bottom,
+        rgba(0, 0, 0, 0) 0%,
+        rgba(0, 0, 0, 0.01) 16%,
+        rgba(0, 0, 0, 0.03) 32%,
+        rgba(0, 0, 0, 0.08) 48%,
+        rgba(0, 0, 0, 0.18) 64%,
+        rgba(0, 0, 0, 0.38) 78%,
+        rgba(0, 0, 0, 0.68) 90%,
+        rgba(0, 0, 0, 0.92) 97%,
+        rgba(0, 0, 0, 1) 100%
+      );
+      pointer-events: none;
+      z-index: 0;
     }
 
     .after-grid {
@@ -781,6 +794,9 @@
       gap: 1rem;
       padding-inline: var(--project-side-padding, 0.8rem);
       box-sizing: border-box;
+      margin-top: -9.5rem;
+      position: relative;
+      z-index: 1;
     }
 
     .after-text {
