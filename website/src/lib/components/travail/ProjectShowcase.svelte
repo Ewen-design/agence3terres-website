@@ -404,7 +404,7 @@
           class="desktop-card"
           class:is-active={activeDesktopIndex === i}
           bind:this={desktopCardEls[i]}
-          data-cursor="button"
+          data-cursor="view"
           aria-label={project.button}
           type="button"
           on:mousemove={handleDesktopCardMove}
@@ -469,7 +469,7 @@
         class="mobile-card"
         class:is-active={activeMobileIndex === i}
         bind:this={mobileCardEls[i]}
-        data-cursor="button"
+        data-cursor="view"
         aria-label={project.button}
         type="button"
         on:mousemove={handleButtonMove}

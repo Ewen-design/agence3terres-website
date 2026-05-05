@@ -236,7 +236,7 @@
     <a
       class="focus-zone-slider__link-overlay"
       href={activeSlideHref}
-      data-cursor="button"
+      data-cursor="view"
       aria-label={`Ouvrir ${activeSlideTitle}`}
     >
       <span class="focus-zone-slider__sr-only">Ouvrir {activeSlideTitle}</span>

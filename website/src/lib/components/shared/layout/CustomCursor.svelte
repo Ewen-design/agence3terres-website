@@ -1,169 +1,82 @@
 <script>
-  import { onMount, onDestroy } from "svelte";
+  import { onDestroy, onMount } from "svelte";
   import { browser } from "$app/environment";
+  import { page } from "$app/stores";
 
   let cursor;
-
-  let targetX = 0;
-  let targetY = 0;
-
+  let isDesktop = false;
+  let isVisible = false;
+  let mode = "view";
   let x = 0;
   let y = 0;
-
-  let scale = 1;
-  let text = "";
-  let mode = "dot";
-  let isActive = false;
-
-  let previewImage = "";
-  let direction = "next";
-
+  let mediaQuery;
   let carouselDirection = "next";
 
-  let currentSliderEl = null;
-  let isLeaving = false;
-
-  let rafId;
-  let isDesktop = false;
-  let mediaQuery;
-
-  const LERP = 0.15;
-
-  function animate() {
-    x += (targetX - x) * LERP;
-    y += (targetY - y) * LERP;
-
-    updateTransform();
-    rafId = requestAnimationFrame(animate);
-  }
+  $: themeClass =
+    $page.url.pathname === "/services" ? "theme-services" :
+    ["/travail", "/projet1", "/projet2"].includes($page.url.pathname) ? "theme-projets" :
+    $page.url.pathname === "/apropos" ? "theme-apropos" :
+    $page.url.pathname === "/contact" ? "theme-contact" :
+    "";
 
   function updateTransform() {
     if (!cursor) return;
-    cursor.style.transform = `translate3d(${x}px, ${y}px, 0) scale(${scale})`;
+    cursor.style.transform = `translate3d(${x}px, ${y}px, 0)`;
   }
 
-  function move(e) {
-    targetX = e.clientX;
-    targetY = e.clientY;
-  }
+  function syncStateFromPoint(clientX, clientY) {
+    const hovered = document.elementFromPoint(clientX, clientY);
+    const carouselEl = hovered?.closest?.("[data-cursor='carousel']");
+    const viewEl = hovered?.closest?.("[data-cursor='view']");
 
-  function handleHover(e) {
-    const el = e.target.closest("[data-cursor]");
-
-    if (!el) {
-      if ((mode === "slider" || mode === "carousel" || mode === "down") && !isLeaving) {
-        isLeaving = true;
-
-        setTimeout(() => {
-          mode = "dot";
-          previewImage = "";
-          currentSliderEl = null;
-          text = "";
-          isLeaving = false;
-        }, 350);
-      } else if (mode !== "slider" && mode !== "carousel" && mode !== "down") {
-        scale = 1;
-        text = "";
-        mode = "dot";
-        previewImage = "";
-        currentSliderEl = null;
-      }
+    if (carouselEl) {
+      mode = "carousel";
+      isVisible = true;
       return;
     }
 
-    const type = el.dataset.cursor;
-
-    if (type === "view") {
-      text = "Voir plus";
-      mode = "button";
-      scale = 1;
-      currentSliderEl = null;
-    } else if (type === "close") {
-      text = "Fermer";
-      mode = "button";
-      scale = 1;
-      currentSliderEl = null;
-    } else if (type === "button") {
-      text = "Voir";
-      mode = "button";
-      scale = 1;
-      currentSliderEl = null;
-    } else if (type === "next" || type === "prev") {
-      mode = "slider";
-      previewImage = el.dataset.image;
-      direction = type;
-      scale = 1;
-      currentSliderEl = el;
-    } else if (type === "carousel") {
-      mode = "carousel";
-      scale = 1;
-      currentSliderEl = null;
-    } else if (type === "down") {
-      mode = "down";
-      scale = 1;
-      currentSliderEl = null;
+    if (viewEl) {
+      mode = "view";
+      isVisible = true;
+      return;
     }
+
+    isVisible = false;
   }
 
-  function down() {
-    isActive = true;
-
-    if (mode !== "slider" && mode !== "carousel") {
-      scale = 1.04;
+  function move(event) {
+    syncStateFromPoint(event.clientX, event.clientY);
+    if (mode === "carousel") {
+      x = event.clientX - 30;
+      y = event.clientY - 30;
+    } else {
+      x = event.clientX + 16;
+      y = event.clientY + 14;
     }
+    updateTransform();
   }
 
-  function up() {
-    isActive = false;
-    scale = 1;
+  function updateCarouselDirection(event) {
+    carouselDirection = event.detail;
   }
 
-  function refreshSliderPreview() {
-    if (!currentSliderEl) return;
-
-    requestAnimationFrame(() => {
-      previewImage = currentSliderEl.dataset.image;
-      direction = currentSliderEl.dataset.cursor;
-    });
-  }
-
-  function updateCarouselDirection(e) {
-    carouselDirection = e.detail;
+  function hide() {
+    isVisible = false;
   }
 
   function addListeners() {
     window.addEventListener("mousemove", move);
-    window.addEventListener("mouseover", handleHover);
-    window.addEventListener("mousedown", down);
-    window.addEventListener("mouseup", up);
-    window.addEventListener("slider-index-changed", refreshSliderPreview);
+    window.addEventListener("mouseleave", hide);
+    window.addEventListener("blur", hide);
     window.addEventListener("carousel-direction", updateCarouselDirection);
-
-    document.body.classList.add("hide-native-cursor");
-
-    cancelAnimationFrame(rafId);
-    rafId = requestAnimationFrame(animate);
   }
 
   function removeListeners() {
     window.removeEventListener("mousemove", move);
-    window.removeEventListener("mouseover", handleHover);
-    window.removeEventListener("mousedown", down);
-    window.removeEventListener("mouseup", up);
-    window.removeEventListener("slider-index-changed", refreshSliderPreview);
+    window.removeEventListener("mouseleave", hide);
+    window.removeEventListener("blur", hide);
     window.removeEventListener("carousel-direction", updateCarouselDirection);
-
-    document.body.classList.remove("hide-native-cursor");
-
-    cancelAnimationFrame(rafId);
-
-    scale = 1;
-    text = "";
-    mode = "dot";
-    previewImage = "";
-    currentSliderEl = null;
-    isActive = false;
-    isLeaving = false;
+    isVisible = false;
   }
 
   function updateCursorMode() {
@@ -172,20 +85,14 @@
     if (nextIsDesktop === isDesktop) return;
     isDesktop = nextIsDesktop;
 
-    if (isDesktop) {
-      addListeners();
-    } else {
-      removeListeners();
-    }
+    if (isDesktop) addListeners();
+    else removeListeners();
   }
 
   onMount(() => {
     if (!browser) return;
 
-    // Active seulement sur les vrais écrans desktop avec souris précise
-    // et désactive le custom cursor sous 769px
     mediaQuery = window.matchMedia("(hover: hover) and (pointer: fine) and (min-width: 769px)");
-
     updateCursorMode();
 
     const onMediaChange = () => updateCursorMode();
@@ -199,8 +106,8 @@
     return () => {
       if (mediaQuery?.removeEventListener) {
         mediaQuery.removeEventListener("change", onMediaChange);
-      } else if (mediaQuery?.removeListener) {
-        mediaQuery.removeListener(onMediaChange);
+      } else {
+        mediaQuery?.removeListener(onMediaChange);
       }
 
       removeListeners();
@@ -216,177 +123,210 @@
 {#if isDesktop}
   <div
     bind:this={cursor}
-    class="cursor"
-    class:button={mode === "button"}
-    class:slider={mode === "slider"}
-    class:carousel={mode === "carousel"}
-    class:down={mode === "down"}
-    class:active={isActive}
+    class={`cursor-indicator ${themeClass}`}
+    class:is-visible={isVisible}
+    class:is-carousel={mode === "carousel"}
+    class:is-view={mode === "view"}
+    aria-hidden="true"
   >
-    {#if mode === "slider"}
-      <div class="preview">
-        <img src={previewImage} alt="" />
-        <div class="arrow {direction}"></div>
-      </div>
-
-    {:else if mode === "carousel"}
-      <div class="arrow {carouselDirection}">
+    {#if mode === "carousel"}
+      <div class="cursor-arrow {carouselDirection}">
         <svg viewBox="0 0 60 20" fill="none">
           <path d="M0 10H50" stroke="white" stroke-width="1.5" />
           <path d="M40 2L50 10L40 18" stroke="white" stroke-width="1.5" />
         </svg>
       </div>
-
-    {:else if mode === "down"}
-      <div class="down-arrow">
-        <svg viewBox="0 0 28 28" fill="none">
-          <path d="M14 4V22" stroke="white" stroke-width="1.5" stroke-linecap="round" />
-          <path d="M8 16L14 22L20 16" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
-        </svg>
-      </div>
-
     {:else}
-      <span>{text}</span>
+      <span>Voir</span>
     {/if}
   </div>
 {/if}
 
 <style>
-:global(body.hide-native-cursor) {
-  cursor: none;
-}
+  .cursor-indicator {
+    --cursor-glow-core:
+      radial-gradient(
+        68px circle at 50% 50%,
+        rgba(255, 225, 140, 1) 0%,
+        rgba(212, 175, 55, 0.95) 22%,
+        rgba(212, 102, 55, 0.55) 45%,
+        rgba(212, 102, 55, 0.12) 62%,
+        transparent 78%
+      );
+    --cursor-glow-soft:
+      radial-gradient(
+        78px circle at 50% 50%,
+        rgba(212, 175, 55, 0.55) 0%,
+        rgba(212, 102, 55, 0.22) 42%,
+        transparent 72%
+      );
 
-.cursor {
-  position: fixed;
-  top: 0;
-  left: 0;
-  pointer-events: none;
-  z-index: 10000;
-
-  width: 26px;
-  height: 26px;
-  border-radius: 50%;
-
-  background: rgba(255, 255, 255, 0.15);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-
-  box-shadow:
-    0 8px 10px rgba(0, 0, 0, 0.16),
-    inset 0 0 0 1px rgba(255, 255, 255, 0.3);
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  color: white;
-  font-size: 0.75rem;
-  white-space: nowrap;
-
-  transition:
-    width 0.35s cubic-bezier(.22,1,.36,1),
-    height 0.35s cubic-bezier(.22,1,.36,1),
-    border-radius 0.35s cubic-bezier(.22,1,.36,1),
-    background 0.35s ease,
-    box-shadow 0.35s ease,
-    opacity 0.3s ease;
-}
-
-.cursor.button {
-  width: auto;
-  height: 42px;
-  padding: 0 18px;
-  border-radius: 3px;
-  backdrop-filter: blur(10px);
-  background: rgba(255,255,255,0.15);
-}
-
-.cursor.slider {
-  width: 140px;
-  height: 140px;
-  border-radius: 3px;
-  padding: 0;
-  overflow: hidden;
-  background: none;
-  backdrop-filter: none;
-  box-shadow: none;
-}
-
-.preview {
-  width: 100%;
-  height: 100%;
-  position: relative;
-}
-
-.preview img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  filter: brightness(0.8);
-}
-
-.cursor.carousel {
-  width: 60px;
-  height: 60px;
-  background: none;
-  backdrop-filter: none;
-  box-shadow: none;
-  border-radius: 0;
-}
-
-.cursor.down {
-  width: 64px;
-  height: 64px;
-  border-radius: 999px;
-  background: rgba(255,255,255,0.08);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  box-shadow:
-    0 10px 30px rgba(0,0,0,0.15),
-    inset 0 0 0 1px rgba(255,255,255,0.18);
-}
-
-.down-arrow {
-  width: 28px;
-  height: 28px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  animation: arrowFloat 1.8s ease-in-out infinite;
-}
-
-.down-arrow svg {
-  width: 100%;
-  height: 100%;
-}
-
-.arrow {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 60px;
-  height: 20px;
-  transform: translate(-50%, -50%);
-}
-
-.arrow svg {
-  width: 100%;
-  height: 100%;
-}
-
-.arrow.prev {
-  transform: translate(-50%, -50%) rotate(180deg);
-}
-
-@keyframes arrowFloat {
-  0% {
-    transform: translateY(-2px);
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 10000;
+    pointer-events: none;
+    opacity: 0;
+    transform: translate3d(0, 0, 0);
+    transition:
+      opacity 0.16s ease,
+      transform 0.08s linear;
   }
-  50% {
-    transform: translateY(3px);
+
+  .cursor-indicator.is-visible {
+    opacity: 1;
   }
-  100% {
-    transform: translateY(-2px);
+
+  .cursor-indicator.is-view {
+    min-width: 44px;
+    height: 42px;
+    padding: 0 16px;
+    border-radius: 2px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    white-space: nowrap;
+    background: rgba(255, 255, 255, 0.04);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    box-shadow:
+      0 10px 18px rgba(0, 0, 0, 0.16),
+      inset 0 0 0 1px rgba(255, 255, 255, 0.18);
   }
-}
+
+  .cursor-indicator.is-view::before,
+  .cursor-indicator.is-view::after {
+    content: "";
+    position: absolute;
+    inset: -1px;
+    border-radius: inherit;
+    pointer-events: none;
+    opacity: 0;
+  }
+
+  .cursor-indicator.is-view::before {
+    border: 1px solid transparent;
+    border-radius: inherit;
+    border-image-slice: 1;
+    border-image-source: var(--cursor-glow-core);
+  }
+
+  .cursor-indicator.is-view::after {
+    border: 1px solid transparent;
+    border-radius: inherit;
+    border-image-slice: 1;
+    border-image-source: var(--cursor-glow-soft);
+    filter: blur(2px);
+  }
+
+  .cursor-indicator.is-view.is-visible::before,
+  .cursor-indicator.is-view.is-visible::after {
+    opacity: 1;
+    animation:
+      cursorGlowDrift 1.8s cubic-bezier(.45,.05,.2,1) infinite alternate,
+      cursorGlowPulse 1.8s ease-in-out infinite;
+  }
+
+  .cursor-indicator.is-view.is-visible::after {
+    animation-direction: alternate-reverse, normal;
+  }
+
+  .cursor-indicator.is-view span {
+    position: relative;
+    z-index: 1;
+    font-size: 0.76rem;
+    line-height: 1;
+    letter-spacing: 0.01em;
+  }
+
+  .cursor-indicator.is-carousel {
+    width: 60px;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transform-origin: center center;
+  }
+
+  .cursor-arrow {
+    width: 60px;
+    height: 20px;
+  }
+
+  .cursor-arrow.prev {
+    transform: rotate(180deg);
+  }
+
+  .cursor-arrow svg {
+    width: 100%;
+    height: 100%;
+  }
+
+  .cursor-indicator.theme-services,
+  .cursor-indicator.theme-projets {
+    --cursor-glow-core:
+      radial-gradient(
+        68px circle at 50% 50%,
+        rgba(220, 240, 255, 1) 0%,
+        rgba(145, 205, 255, 0.98) 22%,
+        rgba(74, 140, 255, 0.62) 45%,
+        rgba(18, 45, 120, 0.14) 62%,
+        transparent 78%
+      );
+    --cursor-glow-soft:
+      radial-gradient(
+        78px circle at 50% 50%,
+        rgba(95, 165, 255, 0.42) 0%,
+        rgba(74, 140, 255, 0.18) 42%,
+        transparent 72%
+      );
+  }
+
+  .cursor-indicator.theme-contact {
+    --cursor-glow-core:
+      radial-gradient(
+        68px circle at 50% 50%,
+        rgba(235, 232, 255, 1) 0%,
+        rgba(210, 210, 230, 0.98) 22%,
+        rgba(130, 110, 220, 0.62) 45%,
+        rgba(35, 30, 95, 0.14) 62%,
+        transparent 78%
+      );
+    --cursor-glow-soft:
+      radial-gradient(
+        78px circle at 50% 50%,
+        rgba(150, 140, 230, 0.42) 0%,
+        rgba(130, 110, 220, 0.18) 42%,
+        transparent 72%
+      );
+  }
+
+  @keyframes cursorGlowDrift {
+    0% {
+      background-position: 8% 50%;
+    }
+    100% {
+      background-position: 92% 50%;
+    }
+  }
+
+  @keyframes cursorGlowPulse {
+    0%,
+    100% {
+      opacity: 0.58;
+    }
+    50% {
+      opacity: 1;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .cursor-indicator,
+    .cursor-indicator::before,
+    .cursor-indicator::after {
+      transition: none;
+      animation: none;
+    }
+  }
 </style>

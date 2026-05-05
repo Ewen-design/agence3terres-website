@@ -337,7 +337,7 @@
             class:is-active={activeDesktopIndex === index}
             bind:this={desktopCardEls[index]}
             href="/services"
-            data-cursor="button"
+            data-cursor="view"
             aria-label={`Voir le service ${item.title}`}
             draggable="false"
           >
@@ -404,7 +404,7 @@
             class:is-active={activeMobileIndex === index}
             bind:this={mobileCardEls[index]}
             href="/services"
-            data-cursor="button"
+            data-cursor="view"
             aria-label={`Voir le service ${item.title}`}
             draggable="false"
           >

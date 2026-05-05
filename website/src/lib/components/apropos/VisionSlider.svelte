@@ -297,8 +297,12 @@
     appearance: none;
     border: 0;
     background: transparent;
-    cursor: inherit;
+    cursor: default;
     pointer-events: auto;
+  }
+
+  .vision-section {
+    cursor: default;
   }
 
   .nav-zone:focus-visible {
