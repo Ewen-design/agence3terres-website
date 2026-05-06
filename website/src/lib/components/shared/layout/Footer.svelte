@@ -18,6 +18,19 @@
 
   $: pathname = $page.url.pathname.replace(/\/+$/, "") || "/";
   $: footerImage = footerImages[pathname] ?? footerImages["/"];
+  $: footerThemeClass =
+    pathname === "/services" ? "theme-services" :
+    ["/travail", "/projet1", "/projet2"].includes(pathname) ? "theme-projets" :
+    pathname === "/apropos" ? "theme-apropos" :
+    pathname === "/contact" ? "theme-contact" :
+    "theme-home";
+
+  function handleButtonMove(event) {
+    const btn = event.currentTarget;
+    const rect = btn.getBoundingClientRect();
+    btn.style.setProperty("--mx", `${event.clientX - rect.left}px`);
+    btn.style.setProperty("--my", `${event.clientY - rect.top}px`);
+  }
 
   onMount(() => {
     if (!browser || !footerEl) return;
@@ -40,47 +53,32 @@
   });
 </script>
 
-<footer class="footer section-full" class:is-visible={isVisible} bind:this={footerEl}>
+<footer class={`footer section-full ${footerThemeClass}`} class:is-visible={isVisible} bind:this={footerEl}>
   <div class="footer-bg" style={`background-image: url('${footerImage}')`}></div>
   <div class="footer-overlay"></div>
 
   <div class="footer-content">
-    <div class="bottom-block">
-      <img src="/images/logo_prisme.png" alt="Logo Agence 3 Terres" class="logo" />
-
-      <div class="contact-block">
-        <span class="contact-title">Contact</span>
-
-        <div class="icons">
-          <a href="/" class="icon-link" aria-label="Instagram">
-            <span class="icon-box">
-              <img src="/images/instagram.png" alt="Instagram" class="icon icon-instagram" />
-            </span>
-          </a>
-
-          <a href="/" class="icon-link" aria-label="Facebook">
-            <span class="icon-box">
-              <img src="/images/facebook.png" alt="Facebook" class="icon icon-facebook" />
-            </span>
-          </a>
-
-          <a href="/" class="icon-link" aria-label="X">
-            <span class="icon-box">
-              <img src="/images/X.png" alt="X" class="icon icon-x" />
-            </span>
-          </a>
-
-          <a href="/contact" class="icon-link" aria-label="Mail">
-            <span class="icon-box">
-              <img src="/images/mail.png" alt="Mail" class="icon icon-mail" />
+    <div class="footer-shell">
+      <div class="hero-block">
+        <div class="hero-copy">
+          <h2>Parlons de votre projet.</h2>
+          <a
+            href="/contact"
+            class="contact-button nav-btn"
+            data-sveltekit-preload-data="hover"
+            on:mousemove={handleButtonMove}
+          >
+            <span class="nav-btn-flip" data-text="Nous contacter">
+              <span class="nav-btn-text">Nous contacter</span>
             </span>
           </a>
         </div>
       </div>
 
-      <p class="legal">
-      Agence 3 Terres — Tous droits réservés — Mentions légales
-      </p>
+      <div class="footer-bar">
+        <p class="legal">© 2026 Agence 3 Terres</p>
+        <p class="legal legal-right">Mentions légales</p>
+      </div>
     </div>
   </div>
 </footer>
@@ -103,22 +101,23 @@
   .footer-bg {
     background-size: cover;
     background-repeat: no-repeat;
-    background-position: center bottom;
-    filter: brightness(0.58) contrast(1.02) saturate(0.94);
-    opacity: 0.22;
+    background-position: center center;
+    filter: brightness(0.56) contrast(1.02) saturate(0.92);
+    opacity: 0.24;
     transition: opacity 0.95s cubic-bezier(.22,.61,.36,1);
     will-change: opacity;
+    transform: scale(1.03);
   }
 
   .footer-overlay {
     background: linear-gradient(
       to bottom,
-      rgba(0, 0, 0, 0.58) 0%,
-      rgba(0, 0, 0, 0.22) 34%,
-      rgba(0, 0, 0, 0.22) 62%,
-      rgba(0, 0, 0, 0.56) 100%
+      rgba(2, 4, 6, 0.9) 0%,
+      rgba(4, 6, 9, 0.46) 34%,
+      rgba(4, 6, 9, 0.22) 58%,
+      rgba(2, 4, 6, 0.9) 100%
     );
-    opacity: 0.45;
+    opacity: 0.64;
     transition: opacity 0.95s cubic-bezier(.22,.61,.36,1);
     will-change: opacity;
   }
@@ -133,11 +132,10 @@
     padding: clamp(1.2rem, 2vw, 2rem);
   }
 
-  .bottom-block {
+  .footer-shell {
     display: flex;
     flex-direction: column;
-    align-items: center;
-    gap: 0.95rem;
+    gap: clamp(2rem, 5vw, 4rem);
     padding-bottom: max(clamp(1rem, 2vw, 1.8rem), var(--safe-bottom-offset));
     opacity: 0;
     transform: translate3d(0, 18px, 0);
@@ -147,79 +145,196 @@
     will-change: opacity, transform;
   }
 
-  .logo {
-    width: clamp(64px, 5.2vw, 86px);
-    height: auto;
-    display: block;
-    object-fit: contain;
+  .hero-block {
+    min-height: min(74vh, 860px);
+    display: flex;
+    align-items: end;
+    gap: clamp(1.4rem, 4vw, 4rem);
   }
 
-  .contact-block {
+  .hero-copy {
     display: flex;
     flex-direction: column;
-    align-items: center;
-    gap: 0.7rem;
+    align-items: flex-start;
+    gap: clamp(1.5rem, 3vw, 2.8rem);
+    max-width: min(44rem, 78vw);
+    padding-bottom: clamp(1rem, 2.4vw, 2.2rem);
+    width: 100%;
   }
 
-  .contact-title {
+  .hero-copy h2 {
+    margin: 0;
+    max-width: 10ch;
+    font-family: "Clash Display", sans-serif;
+    font-weight: 200;
+    font-size: clamp(2.8rem, 7.1vw, 6.2rem);
+    line-height: 0.96;
+    letter-spacing: -0.05em;
+    color: #fff;
+    text-wrap: balance;
+  }
+
+  .nav-btn {
     font-family: "Clash Display", sans-serif;
     font-weight: 400;
-    font-size: 0.9rem;
-    color: rgba(255, 255, 255, 0.8);
-  }
-
-  .icons {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.95rem;
-  }
-
-  .icon-link {
-    text-decoration: none;
-    opacity: 0.9;
-    transition:
-      transform 0.35s cubic-bezier(.22,.61,.36,1),
-      opacity 0.35s ease;
-  }
-
-  .icon-link:hover {
-    transform: translateY(-2px);
-    opacity: 1;
-  }
-
-  .icon-box {
-    width: 26px;
-    height: 26px;
+    position: relative;
     display: inline-flex;
     align-items: center;
     justify-content: center;
+    white-space: nowrap;
+    color: inherit;
+    cursor: pointer;
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    will-change: transform, opacity, backdrop-filter, -webkit-backdrop-filter;
+    transform: translateZ(0);
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    box-shadow: 0 6px 8px rgba(0, 0, 0, 0.04);
+    transition:
+      color 220ms ease,
+      transform 1.2s cubic-bezier(.22,.61,.36,1),
+      box-shadow 1.2s cubic-bezier(.22,.61,.36,1),
+      background 1.2s cubic-bezier(.22,.61,.36,1);
   }
 
-  .icon {
+  .nav-btn-flip {
+    position: relative;
     display: block;
-    object-fit: contain;
-    filter: brightness(0) invert(1);
+    overflow: hidden;
+    height: 1.2em;
+    line-height: 1.2em;
   }
 
-  .icon-instagram {
-    width: 22px;
-    height: 22px;
+  .nav-btn-text {
+    display: block;
+    transform: translateY(0%);
+    transition:
+      transform 0.45s cubic-bezier(.22,.61,.36,1),
+      opacity 0.28s ease;
   }
 
-  .icon-facebook {
-    width: 20px;
-    height: 20px;
+  .nav-btn-flip::after {
+    content: attr(data-text);
+    position: absolute;
+    left: 0;
+    top: 0;
+    line-height: 1.2em;
+    transform: translateY(100%);
+    transition:
+      transform 0.45s cubic-bezier(.22,.61,.36,1),
+      opacity 0.28s ease;
+    white-space: nowrap;
+    color: inherit;
   }
 
-  .icon-x {
-    width: 21px;
-    height: 21px;
+  .nav-btn:hover .nav-btn-text {
+    transform: translateY(-100%);
   }
 
-  .icon-mail {
-    width: 21px;
-    height: 21px;
+  .nav-btn:hover .nav-btn-flip::after {
+    transform: translateY(0%);
+  }
+
+  .nav-btn::before,
+  .nav-btn::after {
+    content: "";
+    position: absolute;
+    inset: -1px;
+    border-radius: inherit;
+    pointer-events: none;
+    opacity: 0;
+  }
+
+  .nav-btn::before {
+    border: 1px solid transparent;
+    border-radius: inherit;
+    border-image-slice: 1;
+    border-image-source: radial-gradient(
+      128px circle at var(--mx, 50%) var(--my, 50%),
+      var(--footer-glow-strong, rgba(255, 225, 140, 1)) 0%,
+      var(--footer-glow-mid, rgba(212, 175, 55, 0.95)) 26%,
+      var(--footer-glow-soft, rgba(212, 102, 55, 0.55)) 52%,
+      var(--footer-glow-fade, rgba(212, 102, 55, 0.12)) 70%,
+      transparent 86%
+    );
+    transition: opacity 0.25s ease;
+  }
+
+  .nav-btn::after {
+    border: 1px solid transparent;
+    border-radius: inherit;
+    border-image-slice: 1;
+    border-image-source: radial-gradient(
+      156px circle at var(--mx, 50%) var(--my, 50%),
+      var(--footer-glow-ambient, rgba(212, 175, 55, 0.55)) 0%,
+      var(--footer-glow-outer, rgba(212, 102, 55, 0.22)) 48%,
+      transparent 82%
+    );
+    filter: blur(3px);
+    transition: opacity 0.25s ease;
+  }
+
+  .nav-btn:hover::before,
+  .nav-btn:hover::after {
+    opacity: 1;
+  }
+
+  .contact-button {
+    min-width: clamp(180px, 20vw, 260px);
+    min-height: clamp(60px, 6.8vw, 78px);
+    padding: 0 2rem;
+    margin-top: clamp(0.35rem, 1vw, 0.8rem);
+    border: 0 solid rgba(255, 255, 255, 0.15);
+    border-radius: 2px;
+    background: rgba(255, 255, 255, 0.15);
+    color: #fff;
+    text-decoration: none;
+    font-size: clamp(1.08rem, 1.5vw, 1.26rem);
+  }
+
+  .contact-button:hover {
+    transform: translateY(-3px);
+    background: rgba(255, 255, 255, 0.15);
+  }
+
+  .theme-home,
+  .theme-apropos {
+    --footer-glow-strong: rgba(255, 225, 140, 1);
+    --footer-glow-mid: rgba(212, 175, 55, 0.95);
+    --footer-glow-soft: rgba(212, 102, 55, 0.55);
+    --footer-glow-fade: rgba(212, 102, 55, 0.12);
+    --footer-glow-ambient: rgba(212, 175, 55, 0.55);
+    --footer-glow-outer: rgba(212, 102, 55, 0.22);
+  }
+
+  .theme-services,
+  .theme-projets {
+    --footer-glow-strong: rgba(220, 240, 255, 1);
+    --footer-glow-mid: rgba(145, 205, 255, 0.98);
+    --footer-glow-soft: rgba(74, 140, 255, 0.62);
+    --footer-glow-fade: rgba(18, 45, 120, 0.14);
+    --footer-glow-ambient: rgba(95, 165, 255, 0.42);
+    --footer-glow-outer: rgba(74, 140, 255, 0.18);
+  }
+
+  .theme-contact {
+    --footer-glow-strong: rgba(235, 232, 255, 1);
+    --footer-glow-mid: rgba(210, 210, 230, 0.98);
+    --footer-glow-soft: rgba(130, 110, 220, 0.62);
+    --footer-glow-fade: rgba(35, 30, 95, 0.14);
+    --footer-glow-ambient: rgba(150, 140, 230, 0.42);
+    --footer-glow-outer: rgba(130, 110, 220, 0.18);
+  }
+
+  .footer-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding-top: 1.1rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.12);
   }
 
   .legal {
@@ -227,9 +342,12 @@
     font-family: "Clash Display", sans-serif;
     font-weight: 300;
     font-size: 0.76rem;
-    color: rgba(255, 255, 255, 0.42);
-    text-align: center;
+    color: rgba(255, 255, 255, 0.44);
     line-height: 1.4;
+  }
+
+  .legal-right {
+    text-align: right;
   }
 
   .footer.is-visible .footer-bg {
@@ -240,7 +358,7 @@
     opacity: 1;
   }
 
-  .footer.is-visible .bottom-block {
+  .footer.is-visible .footer-shell {
     opacity: 1;
     transform: translate3d(0, 0, 0);
   }
@@ -250,46 +368,75 @@
       filter: brightness(0.52) contrast(1.02) saturate(0.92);
     }
 
-    .icon-box {
-      width: 24px;
-      height: 24px;
+    .hero-block {
+      min-height: min(72vh, 720px);
+      align-items: end;
     }
 
-    .icon-instagram {
-      width: 20px;
-      height: 20px;
+    .hero-copy {
+      max-width: 100%;
+      gap: clamp(1.8rem, 5vw, 2.5rem);
     }
 
-    .icon-facebook {
-      width: 18px;
-      height: 18px;
+    .hero-copy h2 {
+      max-width: 9ch;
+      font-size: clamp(2.4rem, 11.5vw, 4rem);
     }
 
-    .icon-x,
-    .icon-mail {
-      width: 19px;
-      height: 19px;
+    .contact-button {
+      width: min(100%, 260px);
+      min-height: 64px;
+      margin-top: 0;
+      margin-left: 0;
+      align-self: flex-start;
+    }
+
+    .footer-bar {
+      flex-direction: row;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.75rem;
+      flex-wrap: nowrap;
     }
 
     .legal {
       font-size: 0.72rem;
-      max-width: 90%;
+      max-width: none;
+      white-space: nowrap;
+    }
+
+    .legal-right {
+      text-align: right;
     }
   }
 
   @media (prefers-reduced-motion: reduce) {
     .footer-bg,
     .footer-overlay,
-    .bottom-block,
-    .icon-link {
+    .footer-shell,
+    .contact-button,
+    .nav-btn,
+    .nav-btn-text,
+    .nav-btn-flip::after {
       transition: none;
     }
 
     .footer-bg,
     .footer-overlay,
-    .bottom-block {
+    .footer-shell {
       opacity: 1;
       transform: none;
+    }
+
+    .nav-btn:hover .nav-btn-text {
+      transform: translateY(0%);
+    }
+
+    .nav-btn:hover .nav-btn-flip::after,
+    .nav-btn::before,
+    .nav-btn::after {
+      opacity: 0;
+      transform: translateY(100%);
     }
   }
 </style>
