@@ -18,6 +18,7 @@ let prefersReducedMotion = false;
 let rafId = 0;
 let viewportDirty = false;
 let pendingNativeY = 0;
+let resizeRafId = 0;
 
 const IDLE_TIMEOUT_MS = 140;
 const STABLE_EPSILON = 0.1;
@@ -144,11 +145,26 @@ function handleScroll() {
 }
 
 function handleResize() {
-  readViewport();
-  pendingNativeY = getNativeScrollY();
-  viewportDirty = true;
-  lastActivityTime = getNow();
-  startLoop();
+  if (resizeRafId) cancelAnimationFrame(resizeRafId);
+
+  resizeRafId = requestAnimationFrame(() => {
+    resizeRafId = 0;
+
+    const prevVh = cachedVh;
+    const prevVw = cachedVw;
+
+    readViewport();
+    pendingNativeY = getNativeScrollY();
+
+    const viewportChanged = prevVh !== cachedVh || prevVw !== cachedVw;
+    const scrollChanged = Math.abs(pendingNativeY - currentY) > STABLE_EPSILON;
+
+    if (!viewportChanged && !scrollChanged) return;
+
+    viewportDirty = true;
+    lastActivityTime = getNow();
+    startLoop();
+  });
 }
 
 export function initScrollEngine() {
@@ -185,7 +201,9 @@ export function destroyScrollEngine() {
   initialized = false;
 
   if (rafId) cancelAnimationFrame(rafId);
+  if (resizeRafId) cancelAnimationFrame(resizeRafId);
   rafId = 0;
+  resizeRafId = 0;
 
   window.removeEventListener("scroll", handleScroll);
   window.removeEventListener("resize", handleResize);

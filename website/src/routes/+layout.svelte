@@ -81,8 +81,14 @@
     const hasFinePointer = window.matchMedia("(pointer: fine)").matches;
     const hasHover = window.matchMedia("(hover: hover)").matches;
     const wideEnough = window.innerWidth >= DESKTOP_WHEEL_MIN_WIDTH;
+    const ua = window.navigator.userAgent || "";
+    const vendor = window.navigator.vendor || "";
+    const isSafariDesktop =
+      /Safari/i.test(ua) &&
+      !/Chrome|CriOS|Edg|OPR|Firefox|FxiOS/i.test(ua) &&
+      /Apple/i.test(vendor);
 
-    return hasFinePointer && hasHover && wideEnough;
+    return hasFinePointer && hasHover && wideEnough && !isSafariDesktop;
   }
 
   function syncWheelDamping() {
@@ -495,7 +501,6 @@
 
   <div class="page-wrapper" bind:this={pageWrapper}>
     <slot />
-    <div class="ios-bottom-mask" aria-hidden="true"></div>
   </div>
 
   <div class="route-transition-layer" bind:this={transitionLayer} aria-hidden="true">
@@ -587,66 +592,54 @@
     transform: translate3d(0, calc(-100% - 140px), 0);
   }
 
-  .ios-bottom-mask {
-    display: none;
-  }
-
-  @media (hover: none) and (pointer: coarse) {
-    .ios-bottom-mask {
-      position: fixed;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      height: calc(env(safe-area-inset-bottom, 0px) + 10px);
-      background: #000;
-      pointer-events: none;
-      z-index: 999999;
-      display: block;
-    }
-  }
-
   .top-gradient {
     position: fixed;
-    top: 0;
+    top: calc(-1 * (var(--mobile-viewport-overscan-top, 0px) + var(--mobile-gradient-bleed-top, 0px)));
     left: 0;
     width: 100%;
-    height: 120px;
+    height: calc(176px + var(--mobile-viewport-overscan-top, 0px) + var(--mobile-gradient-bleed-top, 0px));
     pointer-events: none;
     background: linear-gradient(
       to bottom,
-      rgba(0, 0, 0, 0.12) 0%,
-      rgba(0, 0, 0, 0.06) 35%,
-      rgba(0, 0, 0, 0.02) 65%,
+      rgba(0, 0, 0, 0.14) 0%,
+      rgba(0, 0, 0, 0.095) 18%,
+      rgba(0, 0, 0, 0.055) 38%,
+      rgba(0, 0, 0, 0.022) 58%,
+      rgba(0, 0, 0, 0.006) 80%,
       rgba(0, 0, 0, 0) 100%
     );
-    z-index: 100;
+    z-index: 99999;
     transition: opacity 0.35s ease;
   }
 
   .bottom-gradient {
     position: fixed;
-    bottom: 0;
+    top: calc(100lvh - 220px);
+    bottom: auto;
     left: 0;
     width: 100%;
-    height: 200px;
+    height: calc(220px + var(--mobile-viewport-overscan-bottom, 0px) + var(--mobile-gradient-bleed-bottom, 0px));
     pointer-events: none;
     background:
       radial-gradient(
-        120% 95% at 50% 100%,
-        rgba(0, 0, 0, 0.16) 0%,
-        rgba(0, 0, 0, 0.10) 30%,
-        rgba(0, 0, 0, 0.05) 60%,
-        rgba(0, 0, 0, 0.015) 80%,
+        124% 100% at 50% 100%,
+        rgba(0, 0, 0, 0.42) 0%,
+        rgba(0, 0, 0, 0.26) 20%,
+        rgba(0, 0, 0, 0.11) 42%,
+        rgba(0, 0, 0, 0.03) 66%,
+        rgba(0, 0, 0, 0.008) 84%,
         rgba(0, 0, 0, 0) 100%
       ),
       linear-gradient(
         to top,
-        rgba(0, 0, 0, 0.12) 0%,
-        rgba(0, 0, 0, 0.06) 35%,
-        rgba(0, 0, 0, 0.02) 65%,
+        rgba(0, 0, 0, 0.34) 0%,
+        rgba(0, 0, 0, 0.2) 18%,
+        rgba(0, 0, 0, 0.09) 40%,
+        rgba(0, 0, 0, 0.025) 64%,
+        rgba(0, 0, 0, 0.006) 82%,
         rgba(0, 0, 0, 0) 100%
       );
-    z-index: 100;
+    z-index: 99999;
     transition: opacity 0.35s ease;
   }
 
@@ -669,11 +662,11 @@
     }
 
     .top-gradient {
-      height: 88px;
+      opacity: 0;
     }
 
     .bottom-gradient {
-      height: 132px;
+      opacity: 0;
     }
   }
 </style>

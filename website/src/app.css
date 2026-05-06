@@ -11,6 +11,8 @@
 :root {
   --viewport-height: 100svh;
   --safe-bottom-offset: calc(env(safe-area-inset-bottom, 0px) + 14px);
+  --mobile-viewport-overscan-top: 0px;
+  --mobile-viewport-overscan-bottom: 0px;
   --project-side-padding: clamp(0.8rem, 1.8vw, 1.25rem);
   --project-overline-size: clamp(1.08rem, 1.45vw, 1.5rem);
   --project-subtitle-size: clamp(1.3rem, 1.9vw, 2rem);
@@ -78,6 +80,146 @@ body {
 
 .section-full {
   min-height: 100svh;
+}
+
+@media (hover: none) and (pointer: coarse) {
+  :root {
+    --mobile-viewport-overscan-top: max(env(safe-area-inset-top, 0px), 24px);
+    --mobile-viewport-overscan-bottom: max(env(safe-area-inset-bottom, 0px), 96px);
+    --mobile-gradient-bleed-top: 280px;
+    --mobile-gradient-bleed-bottom: 360px;
+  }
+
+  html,
+  body {
+    background-color: #000;
+    background-image: linear-gradient(
+      to top,
+      rgba(0, 0, 0, 0.8) 0%,
+      rgba(0, 0, 0, 0.8) 12%,
+      rgba(0, 0, 0, 0.64) 28%,
+      rgba(0, 0, 0, 0.44) 46%,
+      rgba(0, 0, 0, 0.22) 72%,
+      rgba(0, 0, 0, 0) 100%
+    );
+    background-repeat: no-repeat;
+    background-position: center bottom;
+    background-size: 100% calc(max(25lvh, 240px) + var(--mobile-viewport-overscan-bottom) + 240px);
+  }
+
+  .hero-media {
+    overflow: visible !important;
+  }
+
+  .hero-media::before {
+    content: none !important;
+  }
+
+  .hero-dark-layer,
+  .focus-zone-slider__bg-gradient,
+  .story-slider__shade {
+    top: calc(-1 * var(--mobile-viewport-overscan-top)) !important;
+    bottom: calc(-1 * var(--mobile-viewport-overscan-bottom)) !important;
+    height: auto !important;
+  }
+
+  .hero-dark-layer {
+    top: calc(-1 * (var(--mobile-viewport-overscan-top) + var(--mobile-gradient-bleed-top))) !important;
+    bottom: calc(-1 * (var(--mobile-viewport-overscan-bottom) + var(--mobile-gradient-bleed-bottom))) !important;
+    background:
+      linear-gradient(
+        to bottom,
+        rgba(0, 0, 0, 0.96) 0%,
+        rgba(0, 0, 0, 0.82) 20%,
+        rgba(0, 0, 0, 0.48) 38%,
+        rgba(0, 0, 0, 0.14) 56%,
+        rgba(0, 0, 0, 0) 72%
+      ),
+      linear-gradient(
+        to top,
+        rgba(0, 0, 0, 0.98) 0%,
+        rgba(0, 0, 0, 0.92) 16%,
+        rgba(0, 0, 0, 0.72) 34%,
+        rgba(0, 0, 0, 0.34) 54%,
+        rgba(0, 0, 0, 0.08) 72%,
+        rgba(0, 0, 0, 0) 88%
+      ),
+      radial-gradient(
+        circle at 50% 50%,
+        rgba(0, 0, 0, 0) 0%,
+        rgba(0, 0, 0, 0.04) 44%,
+        rgba(0, 0, 0, 0.12) 72%,
+        rgba(0, 0, 0, 0.28) 100%
+      ) !important;
+    opacity: 1 !important;
+  }
+
+  .hero-media::after {
+    display: block !important;
+    bottom: calc(-1 * (var(--mobile-viewport-overscan-bottom) + var(--mobile-gradient-bleed-bottom))) !important;
+    height: calc(360px + var(--mobile-viewport-overscan-bottom) + var(--mobile-gradient-bleed-bottom)) !important;
+    background: linear-gradient(
+      to top,
+      rgba(0, 0, 0, 0.99) 0%,
+      rgba(0, 0, 0, 0.92) 18%,
+      rgba(0, 0, 0, 0.72) 38%,
+      rgba(0, 0, 0, 0.36) 58%,
+      rgba(0, 0, 0, 0.12) 76%,
+      rgba(0, 0, 0, 0) 100%
+    ) !important;
+  }
+
+  .focus-zone-slider__backgrounds,
+  .focus-zone-slider__images {
+    overflow: visible !important;
+  }
+
+  .focus-zone-slider__bg-gradient {
+    left: 0 !important;
+    right: 0 !important;
+    background:
+      linear-gradient(
+        to bottom,
+        rgba(0, 0, 0, 0.72) 0%,
+        rgba(0, 0, 0, 0.28) 26%,
+        rgba(0, 0, 0, 0) 58%
+      ),
+      linear-gradient(
+        to top,
+        rgba(0, 0, 0, 0.9) 0%,
+        rgba(0, 0, 0, 0.58) 24%,
+        rgba(0, 0, 0, 0.18) 52%,
+        rgba(0, 0, 0, 0) 100%
+      ),
+      linear-gradient(
+        90deg,
+        rgba(0, 0, 0, 0.56) 0%,
+        rgba(0, 0, 0, 0.32) 28%,
+        rgba(0, 0, 0, 0.12) 55%,
+        rgba(0, 0, 0, 0) 100%
+      ) !important;
+  }
+
+  .story-slider__images {
+    overflow: visible !important;
+  }
+
+  .story-slider__shade {
+    background:
+      linear-gradient(
+        to bottom,
+        rgba(5, 7, 10, 0.84) 0%,
+        rgba(5, 7, 10, 0.34) 24%,
+        rgba(5, 7, 10, 0.14) 48%,
+        rgba(5, 7, 10, 0.22) 100%
+      ),
+      rgba(5, 7, 10, 0.18) !important;
+  }
+
+  .story-slider__bottom-gradient {
+    bottom: calc(-1 * (var(--mobile-viewport-overscan-bottom) + var(--mobile-gradient-bleed-bottom))) !important;
+    height: calc(300px + var(--mobile-viewport-overscan-bottom) + var(--mobile-gradient-bleed-bottom)) !important;
+  }
 }
 
 @font-face {
