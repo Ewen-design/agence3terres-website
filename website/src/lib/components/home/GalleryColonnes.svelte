@@ -91,6 +91,7 @@
 
   let pending = null;
   let dirty = false;
+  let mobileRevealVisible = false;
 
   $: text = (isMobile ? mobileText : desktopText).split("");
 
@@ -110,8 +111,8 @@
   const MOBILE_TEXT_CENTER = 0.57;
   const MOBILE_TEXT_ENTER_RANGE = 0.42;
   const MOBILE_TEXT_LEAVE_RANGE = 0.84;
-  const MOBILE_GALLERY_CENTER = 0.82;
-  const MOBILE_GALLERY_RANGE = 0.34;
+  const MOBILE_REVEAL_ENTER_TOP = 0.36;
+  const MOBILE_REVEAL_EXIT_BOTTOM = 0.86;
 
   const DESKTOP_EXIT_START = 1.12;
   const DESKTOP_EXIT_END = 0.08;
@@ -177,34 +178,53 @@
     const textLeave = smoother01(leaveRaw);
     const textVisibility = textEnter * textLeave;
 
-    const galleryCenterY = vh * (isMobile ? MOBILE_GALLERY_CENTER : DESKTOP_GALLERY_CENTER);
-    const galleryRange = vh * (isMobile ? MOBILE_GALLERY_RANGE : DESKTOP_GALLERY_RANGE);
+    let galleryOpacity = textVisibility;
+    let textOpacity = textVisibility;
+    let galleryExitCut = 0;
+    let galleryExitFeather = isMobile ? 21 : 20;
 
-    const gEnterRaw = (galleryCenterY - topInViewport) / Math.max(galleryRange, 1);
-    const gLeaveRaw = (bottomInViewport - galleryCenterY) / Math.max(galleryRange, 1);
+    if (isMobile) {
+      const revealEnterY = vh * MOBILE_REVEAL_ENTER_TOP;
+      const revealExitY = vh * MOBILE_REVEAL_EXIT_BOTTOM;
+      const shouldReveal = topInViewport <= revealEnterY && bottomInViewport >= revealExitY;
 
-    const galleryEnter = smoother01(gEnterRaw);
-    const galleryLeave = smoother01(gLeaveRaw);
-    const galleryProgress = galleryEnter * galleryLeave;
+      mobileRevealVisible = shouldReveal;
+      galleryOpacity = shouldReveal ? 1 : 0;
+      textOpacity = textVisibility;
+    } else {
+      const galleryCenterY = vh * DESKTOP_GALLERY_CENTER;
+      const galleryRange = vh * DESKTOP_GALLERY_RANGE;
 
-    const exitStart = vh * (isMobile ? MOBILE_EXIT_START : DESKTOP_EXIT_START);
-    const exitEnd = vh * (isMobile ? MOBILE_EXIT_END : DESKTOP_EXIT_END);
+      const gEnterRaw = (galleryCenterY - topInViewport) / Math.max(galleryRange, 1);
+      const gLeaveRaw = (bottomInViewport - galleryCenterY) / Math.max(galleryRange, 1);
 
-    const rawExit = clamp(
-      (exitStart - bottomInViewport) / Math.max(exitStart - exitEnd, 1),
-      0,
-      1
-    );
+      const galleryEnter = smoother01(gEnterRaw);
+      const galleryLeave = smoother01(gLeaveRaw);
+      const galleryProgress = galleryEnter * galleryLeave;
 
-    const exitEaseA = Math.pow(rawExit, 1.85);
-    const exitEaseB = 1 - Math.pow(1 - rawExit, 2.8);
-    const blendedExit = mix(exitEaseA, exitEaseB, 0.34);
+      const exitStart = vh * DESKTOP_EXIT_START;
+      const exitEnd = vh * DESKTOP_EXIT_END;
+
+      const rawExit = clamp(
+        (exitStart - bottomInViewport) / Math.max(exitStart - exitEnd, 1),
+        0,
+        1
+      );
+
+      const exitEaseA = Math.pow(rawExit, 1.85);
+      const exitEaseB = 1 - Math.pow(1 - rawExit, 2.8);
+      const blendedExit = mix(exitEaseA, exitEaseB, 0.34);
+
+      galleryOpacity = galleryProgress;
+      galleryExitCut = q(blendedExit * 74, 0.1);
+      galleryExitFeather = q(20 + blendedExit * 20, 0.1);
+    }
 
     pending = {
-      textOpacity: q(textVisibility, 0.001),
-      galleryOpacity: q(galleryProgress, 0.001),
-      galleryExitCut: q(blendedExit * (isMobile ? 70 : 74), 0.1),
-      galleryExitFeather: q((isMobile ? 21 : 20) + blendedExit * (isMobile ? 18 : 20), 0.1)
+      textOpacity: q(textOpacity, 0.001),
+      galleryOpacity: q(galleryOpacity, 0.001),
+      galleryExitCut,
+      galleryExitFeather
     };
 
     dirty = true;
@@ -333,7 +353,7 @@
   </div>
 
   <div class="gallery-track">
-    <div class="gallery-shell" bind:this={galleryShellEl}>
+    <div class="gallery-shell" class:mobile-reveal-visible={mobileRevealVisible} bind:this={galleryShellEl}>
       <div class="gallery-grid">
         <div class="col col-left">
           {#each leftImages as image}
@@ -415,7 +435,7 @@
     opacity: 0;
     visibility: hidden;
     transform: translate3d(0, 34px, 0);
-    will-change: opacity;
+    will-change: opacity, transform;
     backface-visibility: hidden;
     -webkit-backface-visibility: hidden;
   }
@@ -450,7 +470,7 @@
     transform: translate3d(-50%, 0, 0);
     padding: 10vh 0;
     opacity: 0;
-    will-change: opacity;
+    will-change: opacity, transform;
     backface-visibility: hidden;
     -webkit-backface-visibility: hidden;
     contain: layout paint;
@@ -594,6 +614,13 @@
       margin-left: 50%;
       transform: translate3d(-50%, 0, 0);
       padding: 6vh 0 1vh;
+      transition: opacity 1800ms cubic-bezier(0.19, 1, 0.22, 1);
+      -webkit-mask-image: none;
+      mask-image: none;
+    }
+
+    .gallery-shell:not(.mobile-reveal-visible) {
+      transition: opacity 480ms cubic-bezier(0.4, 0, 0.2, 1);
     }
 
     .gallery-grid {
