@@ -523,6 +523,9 @@
   .page-wrapper {
     position: relative;
     width: 100%;
+    background: #000;
+    z-index: 2;
+    margin-bottom: var(--footer-reserve, 0px);
   }
 
   .route-transition-layer {

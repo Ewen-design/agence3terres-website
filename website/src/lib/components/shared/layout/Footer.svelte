@@ -4,7 +4,9 @@
   import { page } from "$app/stores";
 
   let footerEl;
-  let isVisible = false;
+  let footerReveal = 0;
+  let scrollRaf = 0;
+  let resizeObserver;
 
   const footerImages = {
     "/": "/images/telephone3.webp",
@@ -32,28 +34,63 @@
     btn.style.setProperty("--my", `${event.clientY - rect.top}px`);
   }
 
+  function clamp01(value) {
+    return Math.max(0, Math.min(1, value));
+  }
+
+  function updateFooterMetrics() {
+    if (!browser || !footerEl) return;
+
+    const footerHeight = footerEl.offsetHeight;
+    document.documentElement.style.setProperty("--footer-reserve", `${footerHeight}px`);
+
+    const viewportHeight = document.documentElement.clientHeight || window.innerHeight || 0;
+    const scrollTop = window.scrollY || window.pageYOffset || 0;
+    const docHeight = Math.max(
+      document.documentElement.scrollHeight,
+      document.body.scrollHeight
+    );
+    const revealStart = Math.max(docHeight - viewportHeight - footerHeight * 1.05, 0);
+    const revealDistance = Math.max(footerHeight * 0.82, 1);
+    const progress = (scrollTop - revealStart) / revealDistance;
+    footerReveal = clamp01(progress);
+  }
+
+  function scheduleFooterReveal() {
+    cancelAnimationFrame(scrollRaf);
+    scrollRaf = requestAnimationFrame(() => {
+      updateFooterMetrics();
+    });
+  }
+
   onMount(() => {
     if (!browser || !footerEl) return;
 
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        isVisible = entry.isIntersecting;
-      },
-      {
-        threshold: 0.18,
-        rootMargin: "0px 0px -8% 0px"
-      }
-    );
+    resizeObserver = new ResizeObserver(() => {
+      scheduleFooterReveal();
+    });
 
-    observer.observe(footerEl);
+    resizeObserver.observe(footerEl);
+
+    updateFooterMetrics();
+    window.addEventListener("scroll", scheduleFooterReveal, { passive: true });
+    window.addEventListener("resize", scheduleFooterReveal, { passive: true });
 
     return () => {
-      observer.disconnect();
+      cancelAnimationFrame(scrollRaf);
+      resizeObserver?.disconnect();
+      document.documentElement.style.removeProperty("--footer-reserve");
+      window.removeEventListener("scroll", scheduleFooterReveal);
+      window.removeEventListener("resize", scheduleFooterReveal);
     };
   });
 </script>
 
-<footer class={`footer section-full ${footerThemeClass}`} class:is-visible={isVisible} bind:this={footerEl}>
+<footer
+  class={`footer section-full ${footerThemeClass}`}
+  bind:this={footerEl}
+  style={`--footer-reveal:${footerReveal};`}
+>
   <div class="footer-bg" style={`background-image: url('${footerImage}')`}></div>
   <div class="footer-overlay"></div>
 
@@ -76,7 +113,7 @@
       </div>
 
       <div class="footer-bar">
-        <p class="legal">© 2026 Agence 3 Terres</p>
+        <p class="legal">2026 Agence 3 Terres</p>
         <p class="legal legal-right">Mentions légales</p>
       </div>
     </div>
@@ -85,10 +122,16 @@
 
 <style>
   .footer {
-    position: relative;
+    --footer-reveal: 0;
+    position: fixed;
+    inset: auto 0 0 0;
+    bottom: 0;
     overflow: hidden;
     background: #070707;
     isolation: isolate;
+    z-index: 0;
+    opacity: var(--footer-reveal);
+    transition: opacity 0.35s linear;
   }
 
   .footer-bg,
@@ -103,8 +146,10 @@
     background-repeat: no-repeat;
     background-position: center center;
     filter: brightness(0.56) contrast(1.02) saturate(0.92);
-    opacity: 0.24;
-    transition: opacity 0.95s cubic-bezier(.22,.61,.36,1);
+    opacity: calc(0.12 + (0.88 * var(--footer-reveal)));
+    transition:
+      opacity 0.95s cubic-bezier(.22,.61,.36,1),
+      transform 0.95s cubic-bezier(.22,.61,.36,1);
     will-change: opacity;
     transform: scale(1.03);
   }
@@ -117,7 +162,7 @@
       rgba(4, 6, 9, 0.22) 58%,
       rgba(2, 4, 6, 0.9) 100%
     );
-    opacity: 0.64;
+    opacity: calc(0.2 + (0.8 * var(--footer-reveal)));
     transition: opacity 0.95s cubic-bezier(.22,.61,.36,1);
     will-change: opacity;
   }
@@ -125,7 +170,7 @@
   .footer-content {
     position: relative;
     z-index: 2;
-    min-height: var(--viewport-height);
+    min-height: 100lvh;
     display: flex;
     flex-direction: column;
     justify-content: flex-end;
@@ -146,7 +191,7 @@
   }
 
   .hero-block {
-    min-height: min(74vh, 860px);
+    min-height: min(74lvh, 860px);
     display: flex;
     align-items: end;
     gap: clamp(1.4rem, 4vw, 4rem);
@@ -350,26 +395,36 @@
     text-align: right;
   }
 
-  .footer.is-visible .footer-bg {
-    opacity: 1;
+  .footer-bg {
+    transform: scale(1);
   }
 
-  .footer.is-visible .footer-overlay {
-    opacity: 1;
-  }
-
-  .footer.is-visible .footer-shell {
+  .footer-shell {
     opacity: 1;
     transform: translate3d(0, 0, 0);
   }
 
   @media (max-width: 768px) {
+    .footer {
+      inset: auto 0 auto 0;
+      top: 30lvh;
+      bottom: auto;
+      height: 70lvh;
+      min-height: 70lvh;
+    }
+
     .footer-bg {
       filter: brightness(0.52) contrast(1.02) saturate(0.92);
     }
 
+    .footer-content {
+      height: 70lvh;
+      min-height: 70lvh;
+      padding-bottom: max(clamp(2.1rem, 6.8vw, 2.7rem), env(safe-area-inset-bottom, 0px));
+    }
+
     .hero-block {
-      min-height: min(72vh, 720px);
+      min-height: calc(70lvh - clamp(5.5rem, 10vw, 7rem));
       align-items: end;
     }
 
