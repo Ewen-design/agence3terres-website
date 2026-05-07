@@ -4,8 +4,6 @@
   import {
     registerParallax,
     unregisterParallax,
-    registerWrite,
-    unregisterWrite,
     forceScrollEngineUpdate
   } from "$lib/scrollEngine.js";
 
@@ -72,11 +70,7 @@
     }
   ];
 
-  const mobileText = "Nous concevons\ndes identités et des sites\navec précision";
-  const desktopText = "Nous concevons des identités\n et des expériences digitales personnalisées\navec précision et exigence";
-
   let sectionEl;
-  let fixedTextEl;
   let galleryShellEl;
 
   let resizeObserver;
@@ -88,37 +82,22 @@
 
   let sectionTop = 0;
   let sectionHeight = 1;
-
-  let pending = null;
-  let dirty = false;
   let mobileRevealVisible = false;
 
-  $: text = (isMobile ? mobileText : desktopText).split("");
-
   let applied = {
-    textOpacity: -1,
     galleryOpacity: -1,
     galleryExitCut: -999,
     galleryExitFeather: -999
   };
 
-  const DESKTOP_TEXT_CENTER = 0.56;
-  const DESKTOP_TEXT_ENTER_RANGE = 0.5;
-  const DESKTOP_TEXT_LEAVE_RANGE = 1.18;
   const DESKTOP_GALLERY_CENTER = 0.58;
   const DESKTOP_GALLERY_RANGE = 0.72;
 
-  const MOBILE_TEXT_CENTER = 0.57;
-  const MOBILE_TEXT_ENTER_RANGE = 0.42;
-  const MOBILE_TEXT_LEAVE_RANGE = 0.84;
-  const MOBILE_REVEAL_ENTER_TOP = 0.36;
-  const MOBILE_REVEAL_EXIT_BOTTOM = 0.86;
+  const MOBILE_REVEAL_ENTER_TOP = 0.62;
+  const MOBILE_REVEAL_EXIT_BOTTOM = 0.74;
 
   const DESKTOP_EXIT_START = 1.12;
   const DESKTOP_EXIT_END = 0.08;
-  const MOBILE_EXIT_START = 0.92;
-  const MOBILE_EXIT_END = 0.2;
-
   function clamp(value, min, max) {
     return Math.max(min, Math.min(max, value));
   }
@@ -129,11 +108,6 @@
 
   function q(value, step) {
     return Math.round(value / step) * step;
-  }
-
-  function smooth01(t) {
-    const x = clamp(t, 0, 1);
-    return x * x * (3 - 2 * x);
   }
 
   function smoother01(t) {
@@ -167,22 +141,9 @@
     const topInViewport = sectionTop - y;
     const bottomInViewport = topInViewport + sectionHeight;
 
-    const textCenterY = vh * (isMobile ? MOBILE_TEXT_CENTER : DESKTOP_TEXT_CENTER);
-    const textEnterRange = vh * (isMobile ? MOBILE_TEXT_ENTER_RANGE : DESKTOP_TEXT_ENTER_RANGE);
-    const textLeaveRange = vh * (isMobile ? MOBILE_TEXT_LEAVE_RANGE : DESKTOP_TEXT_LEAVE_RANGE);
-
-    const enterRaw = (textCenterY - topInViewport) / Math.max(textEnterRange, 1);
-    const leaveRaw = (bottomInViewport - textCenterY) / Math.max(textLeaveRange, 1);
-
-    const textEnter = smoother01(enterRaw);
-    const textLeave = smoother01(leaveRaw);
-    const textVisibility = textEnter * textLeave;
-
-    let galleryOpacity = textVisibility;
-    let textOpacity = textVisibility;
+    let galleryOpacity = 1;
     let galleryExitCut = 0;
     let galleryExitFeather = isMobile ? 21 : 20;
-
     if (isMobile) {
       const revealEnterY = vh * MOBILE_REVEAL_ENTER_TOP;
       const revealExitY = vh * MOBILE_REVEAL_EXIT_BOTTOM;
@@ -190,7 +151,6 @@
 
       mobileRevealVisible = shouldReveal;
       galleryOpacity = shouldReveal ? 1 : 0;
-      textOpacity = textVisibility;
     } else {
       const galleryCenterY = vh * DESKTOP_GALLERY_CENTER;
       const galleryRange = vh * DESKTOP_GALLERY_RANGE;
@@ -220,27 +180,11 @@
       galleryExitFeather = q(20 + blendedExit * 20, 0.1);
     }
 
-    pending = {
-      textOpacity: q(textOpacity, 0.001),
+    const pending = {
       galleryOpacity: q(galleryOpacity, 0.001),
       galleryExitCut,
       galleryExitFeather
     };
-
-    dirty = true;
-  }
-
-  function applyPending() {
-    if (!dirty || !pending) return;
-
-    if (fixedTextEl) {
-      if (pending.textOpacity !== applied.textOpacity) {
-        fixedTextEl.style.opacity = `${pending.textOpacity}`;
-        applied.textOpacity = pending.textOpacity;
-      }
-
-      fixedTextEl.style.visibility = pending.textOpacity > 0.008 ? "visible" : "hidden";
-    }
 
     if (galleryShellEl) {
       if (pending.galleryOpacity !== applied.galleryOpacity) {
@@ -258,8 +202,6 @@
         applied.galleryExitFeather = pending.galleryExitFeather;
       }
     }
-
-    dirty = false;
   }
 
   function handleResize() {
@@ -279,12 +221,6 @@
       updateDeviceState();
       measure();
 
-      if (fixedTextEl) {
-        fixedTextEl.style.opacity = "0";
-        fixedTextEl.style.visibility = "hidden";
-        fixedTextEl.style.transform = "translate3d(0, 0, 0)";
-      }
-
       if (galleryShellEl) {
         galleryShellEl.style.opacity = "0";
         galleryShellEl.style.setProperty("--exit-cut", "0%");
@@ -295,7 +231,6 @@
     });
 
     registerParallax(computeFromScroll, { priority: 2 });
-    registerWrite(applyPending, { priority: 2 });
 
     resizeObserver = new ResizeObserver(handleResize);
     if (sectionEl) resizeObserver.observe(sectionEl);
@@ -327,7 +262,6 @@
     if (!browser) return;
 
     unregisterParallax(computeFromScroll);
-    unregisterWrite(applyPending);
 
     resizeObserver?.disconnect();
     intersectionObserver?.disconnect();
@@ -340,19 +274,18 @@
 </script>
 
 <section class="gallery-section" bind:this={sectionEl}>
-  <div class="fixed-text" bind:this={fixedTextEl}>
-    <h2 class="title">
-      {#each text as letter}
-        {#if letter === "\n"}
-          <br />
-        {:else}
-          <span class="letter">{letter === " " ? "\u00A0" : letter}</span>
-        {/if}
-      {/each}
-    </h2>
-  </div>
-
   <div class="gallery-track">
+    <div class="gallery-overlay-wrap" aria-hidden="true">
+      <div class="gallery-sticky-overlay">
+        <div class="gallery-sticky-cue">
+          <span class="gallery-scroll-label">Scroll pour découvrir</span>
+          <span class="gallery-scroll-arrow">↓</span>
+        </div>
+
+        <div class="gallery-bottom-shade"></div>
+      </div>
+    </div>
+
     <div class="gallery-shell" class:mobile-reveal-visible={mobileRevealVisible} bind:this={galleryShellEl}>
       <div class="gallery-grid">
         <div class="col col-left">
@@ -415,56 +348,94 @@
     --section-bg: #000;
     --section-text: #f5f1e8;
     --card-bg: #000;
+    --mobile-card-scale: 2.05;
+    --sticky-lead: clamp(20rem, 42vh, 30rem);
     position: relative;
+    z-index: 0;
+    isolation: isolate;
     width: 100%;
     background: var(--section-bg);
-    overflow: hidden;
+    overflow-x: clip;
+    overflow-y: visible;
     color: var(--section-text);
-  }
-
-  .fixed-text {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: var(--viewport-height);
-    display: grid;
-    place-items: center;
-    z-index: 999;
-    pointer-events: none;
-    opacity: 0;
-    visibility: hidden;
-    transform: translate3d(0, 34px, 0);
-    will-change: opacity, transform;
-    backface-visibility: hidden;
-    -webkit-backface-visibility: hidden;
-  }
-
-  .title {
-    margin: 0;
-    font-family: "Clash Display", sans-serif;
-    font-style: normal;
-     font-size: clamp(1.3rem, 2.8vw, 2.8rem);
-    font-weight: 300;
-    line-height: 0.95;
-    text-align: center;
-    color: var(--section-text);
-    text-wrap: balance;
-    text-shadow:
-      0 26px 56px rgba(0, 0, 0, 0.72),
-      0 12px 28px rgba(0, 0, 0, 0.6),
-      0 4px 10px rgba(0, 0, 0, 0.5);
-  }
-
-  .letter {
-    display: inline-block;
   }
 
   .gallery-track {
-    min-height: 220vh;
+    min-height: 182vh;
+    position: relative;
+    z-index: 0;
+  }
+
+  .gallery-overlay-wrap {
+    position: absolute;
+    top: calc(-1 * var(--sticky-lead));
+    right: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 1;
+    pointer-events: none;
+  }
+
+  .gallery-sticky-overlay {
+    position: sticky;
+    top: 0;
+    height: var(--viewport-height);
+    pointer-events: none;
+  }
+
+  .gallery-sticky-cue {
+    position: absolute;
+    left: clamp(1rem, 2vw, 1.8rem);
+    bottom: max(clamp(1rem, 2.2vw, 1.6rem), var(--safe-bottom-offset));
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: flex-end;
+    gap: 0.45rem;
+    color: #fff;
+  }
+
+  .gallery-scroll-label {
+    font-family: "Clash Display", sans-serif;
+    font-size: clamp(0.82rem, 0.95vw, 0.98rem);
+    font-weight: 300;
+    line-height: 1;
+    letter-spacing: 0.02em;
+    text-align: left;
+  }
+
+  .gallery-scroll-arrow {
+    display: block;
+    font-family: "Clash Display", sans-serif;
+    font-size: clamp(1.1rem, 1.1vw, 1.2rem);
+    line-height: 1;
+    font-weight: 300;
+    color: #fff;
+  }
+
+  .gallery-bottom-shade {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 1;
+    height: 38svh;
+    background: linear-gradient(
+      to bottom,
+      rgba(0, 0, 0, 0) 0%,
+      rgba(0, 0, 0, 0.1) 18%,
+      rgba(0, 0, 0, 0.28) 34%,
+      rgba(0, 0, 0, 0.6) 54%,
+      rgba(0, 0, 0, 0.84) 72%,
+      rgba(0, 0, 0, 0.96) 88%,
+      rgba(0, 0, 0, 1) 100%
+    );
   }
 
   .gallery-shell {
+    position: relative;
+    z-index: 0;
     width: 120vw;
     margin-left: 50%;
     transform: translate3d(-50%, 0, 0);
@@ -598,15 +569,15 @@
     .gallery-shell {
       width: 130vw;
     }
-
-    .title {
-      font-size: clamp(1.3rem, 6.8vw, 2.7rem);
-    }
   }
 
   @media (max-width: 640px) {
     .gallery-track {
-      min-height: 138vh;
+      min-height: 120vh;
+    }
+
+    .gallery-section {
+      --sticky-lead: clamp(30rem, 62vh, 40rem);
     }
 
     .gallery-shell {
@@ -641,39 +612,54 @@
       transform: none;
     }
 
-    .title {
-      font-size: clamp(1.15rem, 6.4vw, 1.95rem);
-      line-height: 0.92;
+    .gallery-sticky-cue {
+      left: 1rem;
+      bottom: max(0.95rem, var(--safe-bottom-offset));
+      gap: 0.42rem;
+    }
+
+    .gallery-scroll-label {
+      font-size: 0.78rem;
+      letter-spacing: 0.03em;
+    }
+
+    .gallery-scroll-arrow {
+      font-size: 1.05rem;
+    }
+
+    .gallery-bottom-shade {
+      bottom: -12svh;
+      height: 58svh;
     }
 
     .card.portrait {
-      height: calc(var(--h) * 1.84);
+      height: calc(var(--h) * var(--mobile-card-scale));
     }
 
     .card.landscape {
-      height: calc(var(--h) * 1.36);
+      height: calc(var(--h) * 0.8 * var(--mobile-card-scale));
     }
 
     .card.square {
-      height: calc(var(--h) * 1.42);
+      height: calc(var(--h) * 0.95 * var(--mobile-card-scale));
     }
 
     .col-center .card.portrait {
-      height: calc(var(--h) * 1.98);
+      height: calc(var(--h) * 1.08 * var(--mobile-card-scale));
     }
 
     .col-center .card.landscape {
-      height: calc(var(--h) * 1.42);
+      height: calc(var(--h) * 0.86 * var(--mobile-card-scale));
     }
 
     .col-center .card.square {
-      height: calc(var(--h) * 1.48);
+      height: calc(var(--h) * 1.02 * var(--mobile-card-scale));
     }
   }
 
   @media (max-width: 420px) {
     .gallery-track {
-      min-height: 142vh;
+      min-height: 124vh;
     }
 
     .gallery-shell {

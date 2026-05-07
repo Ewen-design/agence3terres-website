@@ -93,18 +93,7 @@ body {
   html,
   body {
     background-color: #000;
-    background-image: linear-gradient(
-      to top,
-      rgba(0, 0, 0, 0.8) 0%,
-      rgba(0, 0, 0, 0.8) 12%,
-      rgba(0, 0, 0, 0.64) 28%,
-      rgba(0, 0, 0, 0.44) 46%,
-      rgba(0, 0, 0, 0.22) 72%,
-      rgba(0, 0, 0, 0) 100%
-    );
-    background-repeat: no-repeat;
-    background-position: center bottom;
-    background-size: 100% calc(max(25lvh, 240px) + var(--mobile-viewport-overscan-bottom) + 240px);
+    background-image: none;
   }
 
   .hero-media {

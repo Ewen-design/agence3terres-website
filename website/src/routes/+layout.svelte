@@ -497,6 +497,8 @@
     <img src="/images/logo_prisme.png" alt="" loading="eager" />
   </div>
 
+  <div class="ios-bottom-mask" aria-hidden="true"></div>
+
   <Header />
 
   <div class="page-wrapper" bind:this={pageWrapper}>
@@ -515,14 +517,20 @@
   {#if !hideFooter}
     <Footer />
   {/if}
+
 </main>
 
 <style>
   main {
     position: relative;
+    isolation: isolate;
     width: 100%;
     overflow-x: clip;
     background: #000;
+  }
+
+  .ios-bottom-mask {
+    display: none;
   }
 
   .page-wrapper {
@@ -561,6 +569,20 @@
     display: block;
     width: clamp(1.8rem, 2.9vw, 2.7rem);
     height: auto;
+  }
+
+  @media (hover: none) and (pointer: coarse) {
+    .ios-bottom-mask {
+      position: fixed;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      display: block;
+      height: calc(env(safe-area-inset-bottom, 0px) + 6px);
+      background: #000;
+      pointer-events: none;
+      z-index: 999999;
+    }
   }
 
   .route-transition-blur {

@@ -487,6 +487,7 @@
     --services-btn-border: rgba(255,255,255,.15);
     --services-btn-bg: rgba(255,255,255,.10);
     position: relative;
+    z-index: 0;
     width: 100%;
     background: var(--section-bg);
     padding: 0 0 10rem 0;
@@ -497,6 +498,7 @@
   .gallery-intro-group,
   .gallery-content-group {
     position: relative;
+    z-index: 1;
   }
 
   .gallery-header {
@@ -513,6 +515,8 @@
   }
 
   .intro-card {
+    position: relative;
+    z-index: 2;
     width: min(560px,100%);
   }
 
@@ -939,6 +943,8 @@
   }
 
   @media (max-width: 640px) {
+    .gallery { padding: 1.75rem 0 8rem 0; }
+
     .gallery-header { padding: 2.4rem 1.1rem 2.15rem; }
     .intro-card { width: min(76vw,21rem); }
 

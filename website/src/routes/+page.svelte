@@ -7,17 +7,12 @@
   
     import GalleryColonnes from "$lib/components/home/GalleryColonnes.svelte";
     import Hero from "$lib/components/home/Hero.svelte";
-    import HomeScrollScaleReveal from "$lib/components/home/HomeScrollScaleReveal.svelte";
     import HomeNarrativeFocusSlider from "$lib/components/slider/HomeNarrativeFocusSlider.svelte";
     import IntroSlider from "$lib/components/home/IntroSlider.svelte";
     import FaqAccordion from "$lib/components/home/FaqAccordion.svelte";
 </script>
 
 <Hero />
-<HomeScrollScaleReveal
-  image="/images/telephone2.webp"
-  alt="Révélation visuelle en pleine largeur"
-/>
 <GalleryColonnes />
 <ParallaxGallery2 />
 
