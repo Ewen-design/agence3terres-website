@@ -44,9 +44,10 @@
   let mixSliderHeaderTone = null;
   let projectHeaderTone = null;
   const SCROLL_THRESHOLD = 10;
-  const LIGHT_TEXT_COLOR = "#353535";
+  const LIGHT_TEXT_COLOR = "#000";
   const SECTION_SELECTOR =
     "section.hero-wrapper, section.creative-section, section.services, section.dna-section, section.lifestyles-section";
+  $: pathname = $page.url.pathname.replace(/\/+$/, "") || "/";
 
   function refreshThemeSections() {
     if (!browser) return;
@@ -79,7 +80,25 @@
 
   function updateTextColor() {
     if (!headerEl) return;
-    if ($page.url.pathname === "/mentions-legales") {
+    const rect = headerEl.getBoundingClientRect();
+    const headerMid = rect.top + rect.height * 0.5;
+
+    if (browser && window.innerWidth > 768) {
+      const footerEl = document.querySelector(".footer");
+      if (footerEl) {
+        const footerReveal = parseFloat(
+          window.getComputedStyle(footerEl).getPropertyValue("--footer-reveal") || "0"
+        );
+        const isOverFooter = footerReveal >= 0.97;
+
+        if (isOverFooter) {
+          if (textColor !== "white") textColor = "white";
+          return;
+        }
+      }
+    }
+
+    if (pathname === "/mentions-legales") {
       if (textColor !== LIGHT_TEXT_COLOR) textColor = LIGHT_TEXT_COLOR;
       return;
     }
@@ -103,9 +122,6 @@
       if (textColor !== "white") textColor = "white";
       return;
     }
-
-    const rect = headerEl.getBoundingClientRect();
-    const headerMid = rect.top + rect.height * 0.5;
 
     let overLight = false;
 
@@ -271,10 +287,10 @@
   $: mobileTopLinksVisible = atTopOfPage && !menuOpen;
 
   $: themeClass =
-    $page.url.pathname === "/services" ? "theme-services" :
-    ["/travail", "/projet1", "/projet2"].includes($page.url.pathname) ? "theme-projets" :
-    $page.url.pathname === "/apropos" ? "theme-apropos" :
-    $page.url.pathname === "/contact" ? "theme-contact" :
+    pathname === "/services" ? "theme-services" :
+    ["/travail", "/projet1", "/projet2"].includes(pathname) ? "theme-projets" :
+    pathname === "/apropos" ? "theme-apropos" :
+    pathname === "/contact" ? "theme-contact" :
     "";
 
   let previousCompact = compact;
@@ -290,7 +306,7 @@
     previousCompact = compact;
   }
 
-  $: if (browser && $page.url.pathname) {
+  $: if (browser && pathname) {
     scheduleThemeSectionsRefresh();
   }
 
@@ -589,7 +605,7 @@
     color: inherit;
     border: 0px solid rgba(255, 255, 255, 0.15);
     cursor: pointer;
-    background: rgba(255, 255, 255, 0.15);
+    background: rgba(128, 128, 128, 0.24);
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
     will-change: transform, opacity, backdrop-filter, -webkit-backdrop-filter;
