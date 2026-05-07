@@ -79,6 +79,10 @@
 
   function updateTextColor() {
     if (!headerEl) return;
+    if ($page.url.pathname === "/mentions-legales") {
+      if (textColor !== LIGHT_TEXT_COLOR) textColor = LIGHT_TEXT_COLOR;
+      return;
+    }
     if (projectHeaderTone === "dark") {
       if (textColor !== LIGHT_TEXT_COLOR) textColor = LIGHT_TEXT_COLOR;
       return;

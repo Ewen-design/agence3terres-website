@@ -60,6 +60,10 @@
     "/contact": {
       title: "3 Terres"
     },
+    "/mentions-legales": {
+      title: "Mentions légales | Agence 3 Terres",
+      description: "Informations légales du site Agence 3 Terres."
+    },
     "/projet1": {
       title: "Projet 1 | Agence 3 Terres"
     },

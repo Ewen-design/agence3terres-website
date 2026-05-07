@@ -114,7 +114,13 @@
 
       <div class="footer-bar">
         <p class="legal">2026 Agence 3 Terres</p>
-        <p class="legal legal-right">Mentions légales</p>
+        <a
+          class="legal legal-link legal-right"
+          href="/mentions-legales"
+          data-sveltekit-preload-data="hover"
+        >
+          Mentions légales
+        </a>
       </div>
     </div>
   </div>
@@ -393,6 +399,14 @@
 
   .legal-right {
     text-align: right;
+  }
+
+  .legal-link {
+    transition: color 220ms ease, opacity 220ms ease;
+  }
+
+  .legal-link:hover {
+    color: rgba(255, 255, 255, 0.78);
   }
 
   .footer-bg {
