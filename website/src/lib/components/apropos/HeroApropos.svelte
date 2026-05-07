@@ -12,7 +12,6 @@
   let heroSection;
   let heroStage;
   let afterTextEl;
-  let afterImageEl;
   let heroMediaImgEl;
   let heroDarkLayerEl;
 
@@ -22,8 +21,6 @@
 
   let fallbackTimeout;
   let mediaIntroTimeout;
-  let afterImageRotationTimeout;
-  let afterImageFadeTimeout;
   let resizeObserver;
   let resizeTimer;
 
@@ -32,7 +29,6 @@
   let heroTop = 0;
   let heroHeight = 1;
   let afterTextTop = 0;
-  let afterImageTop = 0;
 
   let pendingFrame = null;
   let dirty = false;
@@ -41,32 +37,11 @@
     imageScale: -1,
     imageBrightness: -1,
     imageOpacity: -1,
-    imageDark: -1,
-    textOpacity: -1,
-    textY: -9999,
-    textEdge: -9999,
-    smallImageScale: -1,
-    smallImageY: -9999
+    imageDark: -1
   };
 
   const finalText =
     "Une agence indépendante qui aborde chaque projet avec exigence, sens du détail et vision d'ensemble durable.";
-  const afterImages = [
-    "images/telephone2.webp",
-    "images/telephone2_parfum.webp",
-    "images/telephone3.webp"
-  ];
-
-  let activeAfterImage = afterImages[0];
-  let incomingAfterImage = "";
-  let incomingAfterImageVisible = false;
-  let afterImageIndex = 0;
-  let afterImagesReady = false;
-  let isAfterImageTransitioning = false;
-
-  const IMAGE_ROTATION_INTERVAL = 2600;
-  const IMAGE_FADE_DURATION = 1150;
-  const IMAGE_RETRY_DELAY = 700;
 
   const words = finalText.split(" ");
 
@@ -105,7 +80,6 @@
     heroTop = getAbsoluteTop(heroSection);
     heroHeight = Math.max(heroSection?.offsetHeight || 1, 1);
     afterTextTop = getAbsoluteTop(afterTextEl);
-    afterImageTop = getAbsoluteTop(afterImageEl);
   }
 
   function getLocalRevealFromAbsolute(scrollY, absTop, startMul = 0.9, endMul = 0.2) {
@@ -116,25 +90,17 @@
   }
 
   function computeFrame(y) {
-    if (!afterTextEl || !afterImageEl) return;
+    if (!afterTextEl) return;
 
     const heroScrollable = Math.max(heroHeight - vh, 1);
     const imageFadeProgress = clamp((y - heroTop) / heroScrollable, 0, 1);
     const globalFade = imageFadeProgress * imageFadeProgress * (3 - 2 * imageFadeProgress);
 
-    const localTextReveal = getLocalRevealFromAbsolute(y, afterTextTop, 0.92, 0.16);
-    const localImageReveal = getLocalRevealFromAbsolute(y, afterImageTop, 0.98, 0.12);
-
     pendingFrame = {
       imageScale: q(lerp(1.03, 1.005, globalFade), 0.001),
       imageBrightness: q(lerp(1, 0.62, globalFade), 0.001),
       imageOpacity: isMobile ? 1 : q(lerp(1, 0, globalFade), 0.001),
-      imageDark: isMobile ? 0 : q(lerp(0.08, 0.62, globalFade), 0.001),
-      textOpacity: q(lerp(0.14, 1, localTextReveal), 0.001),
-      textY: q(lerp(18, 0, localTextReveal), 0.1),
-      textEdge: q(lerp(0, 118, localTextReveal), 0.1),
-      smallImageScale: q(lerp(0.885, 1.02, localImageReveal), 0.001),
-      smallImageY: q(lerp(22, 0, localImageReveal), 0.1)
+      imageDark: isMobile ? 0 : q(lerp(0.08, 0.62, globalFade), 0.001)
     };
 
     dirty = true;
@@ -164,18 +130,6 @@
       heroDarkLayerEl.style.opacity = `${f.imageDark}`;
       applied.imageDark = f.imageDark;
     }
-
-    if (afterImageEl) {
-      if (
-        f.smallImageScale !== applied.smallImageScale ||
-        f.smallImageY !== applied.smallImageY
-      ) {
-        afterImageEl.style.transform = `translate3d(0, ${f.smallImageY}px, 0) scale(${f.smallImageScale})`;
-        applied.smallImageScale = f.smallImageScale;
-        applied.smallImageY = f.smallImageY;
-      }
-    }
-
     dirty = false;
   }
 
@@ -209,108 +163,6 @@
   function shouldDelayIntroForSession() {
     if (typeof window === "undefined") return false;
     return !window.__homeHeroIntroPlayed;
-  }
-
-  function preloadImage(src) {
-    return new Promise((resolve) => {
-      const img = new Image();
-      let done = false;
-
-      const finish = () => {
-        if (done) return;
-        done = true;
-        resolve();
-      };
-
-      img.onload = finish;
-      img.onerror = finish;
-      img.src = src;
-
-      if (img.complete) {
-        finish();
-        return;
-      }
-
-      img.decode?.().then(finish).catch(() => {});
-    });
-  }
-
-  async function ensureAfterImagesReady() {
-    if (afterImagesReady || !browser) return;
-    await Promise.allSettled(afterImages.map(preloadImage));
-    afterImagesReady = true;
-  }
-
-  function clearAfterImageRotationTimers() {
-    clearTimeout(afterImageRotationTimeout);
-    clearTimeout(afterImageFadeTimeout);
-  }
-
-  function resetAfterImageRotationState() {
-    clearAfterImageRotationTimers();
-    isAfterImageTransitioning = false;
-    incomingAfterImage = "";
-    incomingAfterImageVisible = false;
-    afterImageIndex = 0;
-    activeAfterImage = afterImages[0];
-  }
-
-  function queueAfterImageRotation(delay = IMAGE_ROTATION_INTERVAL) {
-    clearTimeout(afterImageRotationTimeout);
-    afterImageRotationTimeout = setTimeout(runAfterImageRotation, delay);
-  }
-
-  function runAfterImageRotation() {
-    if (
-      !browser ||
-      document.hidden ||
-      isAfterImageTransitioning ||
-      afterImages.length < 2 ||
-      !afterImagesReady
-    ) {
-      queueAfterImageRotation(IMAGE_RETRY_DELAY);
-      return;
-    }
-
-    isAfterImageTransitioning = true;
-
-    const nextIndex = (afterImageIndex + 1) % afterImages.length;
-    incomingAfterImage = afterImages[nextIndex];
-    incomingAfterImageVisible = false;
-
-    requestAnimationFrame(() => {
-      requestAnimationFrame(() => {
-        incomingAfterImageVisible = true;
-      });
-    });
-
-    clearTimeout(afterImageFadeTimeout);
-    afterImageFadeTimeout = setTimeout(() => {
-      activeAfterImage = afterImages[nextIndex];
-      afterImageIndex = nextIndex;
-      incomingAfterImage = "";
-      incomingAfterImageVisible = false;
-      isAfterImageTransitioning = false;
-      queueAfterImageRotation();
-    }, IMAGE_FADE_DURATION);
-  }
-
-  async function startAfterImageRotation() {
-    resetAfterImageRotationState();
-    await ensureAfterImagesReady();
-    if (!browser || isMobile || afterImages.length < 2) return;
-    queueAfterImageRotation();
-  }
-
-  function handleDocumentVisibilityChange() {
-    if (!browser) return;
-    if (document.hidden) {
-      clearAfterImageRotationTimers();
-      return;
-    }
-    if (!isAfterImageTransitioning) {
-      queueAfterImageRotation(900);
-    }
   }
 
   function scheduleResizeUpdate() {
@@ -385,7 +237,6 @@
       if (heroSection) resizeObserver.observe(heroSection);
       if (heroStage) resizeObserver.observe(heroStage);
       if (afterTextEl) resizeObserver.observe(afterTextEl);
-      if (afterImageEl) resizeObserver.observe(afterImageEl);
     }
 
     if (shouldDelayIntro) {
@@ -395,9 +246,6 @@
     } else {
       startIntro(false);
     }
-
-    startAfterImageRotation();
-    document.addEventListener("visibilitychange", handleDocumentVisibilityChange);
 
     return () => {
       destroyed = true;
@@ -412,9 +260,7 @@
       }
       clearTimeout(fallbackTimeout);
       clearTimeout(mediaIntroTimeout);
-      clearAfterImageRotationTimers();
       clearTimeout(resizeTimer);
-      document.removeEventListener("visibilitychange", handleDocumentVisibilityChange);
       resizeObserver?.disconnect();
     };
   });
@@ -450,18 +296,6 @@
             <span class="word" class:muted-word={w >= grayStartsAtWord}>{word}</span>{#if w < words.length - 1}<span class="space">&nbsp;</span>{/if}
           {/each}
         </h2>
-      </div>
-
-      <div class="after-image" bind:this={afterImageEl}>
-        <img class="after-image-asset" src={activeAfterImage} alt="Visuel 3 Terres" />
-        {#if incomingAfterImage}
-          <img
-            class="after-image-asset after-image-incoming"
-            class:is-visible={incomingAfterImageVisible}
-            src={incomingAfterImage}
-            alt="Visuel 3 Terres"
-          />
-        {/if}
       </div>
     </div>
   </section>
@@ -625,10 +459,7 @@
   .after-grid {
     width: min(1400px, 92%);
     margin: 0 auto;
-    display: grid;
-    grid-template-columns: minmax(0, 1.08fr) minmax(320px, 0.78fr);
-    gap: clamp(1.4rem, 4vw, 4.5rem);
-    align-items: start;
+    display: block;
   }
 
   .after-text {
@@ -664,47 +495,9 @@
     display: inline;
   }
 
-  .after-image {
-    position: relative;
-    justify-self: end;
-    width: min(100%, 460px);
-    aspect-ratio: 1.45 / 1;
-    overflow: hidden;
-    background: #0b0b0b;
-    will-change: transform;
-    margin-top: clamp(4rem, 6vw, 7rem);
-    transform-origin: 50% 50%;
-    transform: translate3d(0, 22px, 0) scale(0.885);
-  }
-
-  .after-image img {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    display: block;
-  }
-
-  .after-image-asset {
-    opacity: 1;
-  }
-
-  .after-image-incoming {
-    opacity: 0;
-    transition: opacity 1.35s cubic-bezier(0.22, 1, 0.36, 1);
-    will-change: opacity;
-  }
-
-  .after-image-incoming.is-visible {
-    opacity: 1;
-  }
-
   @media (max-width: 900px) {
     .after-grid {
       width: min(100%, 760px);
-      grid-template-columns: 1fr 0.82fr;
-      gap: 0.8rem;
       padding-inline: var(--project-side-padding, 0.8rem);
       box-sizing: border-box;
     }
@@ -790,8 +583,6 @@
 
     .after-grid {
       width: min(100%, 520px);
-      grid-template-columns: 1fr;
-      gap: 1rem;
       padding-inline: var(--project-side-padding, 0.8rem);
       box-sizing: border-box;
       margin-top: -9.5rem;
@@ -810,16 +601,7 @@
       line-height: 1.04;
       padding-inline: var(--project-text-inset, 0);
     }
-
-    .after-image {
-      width: min(78%, 340px);
-      justify-self: end;
-      aspect-ratio: 1.6 / 1;
-      margin-top: 3.5rem;
-    }
-
-    .after-text,
-    .after-image {
+    .after-text {
       transition: none !important;
       animation: none !important;
       filter: none !important;
@@ -831,9 +613,7 @@
   @media (prefers-reduced-motion: reduce) {
     .hero-media img,
     .hero-scroll-cue,
-    .after-text,
-    .after-image,
-    .after-image-incoming {
+    .after-text {
       transition: none !important;
       animation: none !important;
       filter: none !important;

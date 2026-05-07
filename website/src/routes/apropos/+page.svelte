@@ -8,14 +8,16 @@
 </script>
 <HeroApropos />
 
+
+
+
+<AboutFocusSlider />
 <AboutEditorialSingleShowcase
   text="Une direction artistique pensee pour donner plus de presence, de coherence et d'intensite"
   mutedText="a chaque prise de parole."
-  image="/images/creation_logo_desktop.webp"
+  image="/images/telephone3.webp"
   alt="Direction artistique Agence 3 Terres"
   mediaMinHeight="38rem"
 />
 <AboutEditorialPrinciples />
-<AboutStoryIntro />
-<AboutFocusSlider />
-<VisionSlider />
+
