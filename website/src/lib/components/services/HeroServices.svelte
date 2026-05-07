@@ -22,8 +22,6 @@
 
   let fallbackTimeout;
   let mediaIntroTimeout;
-  let afterImageRotationTimeout;
-  let afterImageFadeTimeout;
   let resizeObserver;
   let resizeTimer;
 
@@ -51,22 +49,7 @@
 
   const finalText =
     "Nous structurons des services créatifs sur mesure, pensés pour donner aux marques une présence juste et durable.";
-  const afterImages = [
-    "images/telephone2.webp",
-    "images/telephone2_parfum.webp",
-    "images/telephone_main.webp"
-  ];
-
-  let activeAfterImage = afterImages[0];
-  let incomingAfterImage = "";
-  let incomingAfterImageVisible = false;
-  let afterImageIndex = 0;
-  let afterImagesReady = false;
-  let isAfterImageTransitioning = false;
-
-  const IMAGE_ROTATION_INTERVAL = 2600;
-  const IMAGE_FADE_DURATION = 1150;
-  const IMAGE_RETRY_DELAY = 700;
+  const activeAfterImage = "images/telephone2.webp";
 
   const words = finalText.split(" ");
 
@@ -211,108 +194,6 @@
     return !window.__homeHeroIntroPlayed;
   }
 
-  function preloadImage(src) {
-    return new Promise((resolve) => {
-      const img = new Image();
-      let done = false;
-
-      const finish = () => {
-        if (done) return;
-        done = true;
-        resolve();
-      };
-
-      img.onload = finish;
-      img.onerror = finish;
-      img.src = src;
-
-      if (img.complete) {
-        finish();
-        return;
-      }
-
-      img.decode?.().then(finish).catch(() => {});
-    });
-  }
-
-  async function ensureAfterImagesReady() {
-    if (afterImagesReady || !browser) return;
-    await Promise.allSettled(afterImages.map(preloadImage));
-    afterImagesReady = true;
-  }
-
-  function clearAfterImageRotationTimers() {
-    clearTimeout(afterImageRotationTimeout);
-    clearTimeout(afterImageFadeTimeout);
-  }
-
-  function resetAfterImageRotationState() {
-    clearAfterImageRotationTimers();
-    isAfterImageTransitioning = false;
-    incomingAfterImage = "";
-    incomingAfterImageVisible = false;
-    afterImageIndex = 0;
-    activeAfterImage = afterImages[0];
-  }
-
-  function queueAfterImageRotation(delay = IMAGE_ROTATION_INTERVAL) {
-    clearTimeout(afterImageRotationTimeout);
-    afterImageRotationTimeout = setTimeout(runAfterImageRotation, delay);
-  }
-
-  function runAfterImageRotation() {
-    if (
-      !browser ||
-      document.hidden ||
-      isAfterImageTransitioning ||
-      afterImages.length < 2 ||
-      !afterImagesReady
-    ) {
-      queueAfterImageRotation(IMAGE_RETRY_DELAY);
-      return;
-    }
-
-    isAfterImageTransitioning = true;
-
-    const nextIndex = (afterImageIndex + 1) % afterImages.length;
-    incomingAfterImage = afterImages[nextIndex];
-    incomingAfterImageVisible = false;
-
-    requestAnimationFrame(() => {
-      requestAnimationFrame(() => {
-        incomingAfterImageVisible = true;
-      });
-    });
-
-    clearTimeout(afterImageFadeTimeout);
-    afterImageFadeTimeout = setTimeout(() => {
-      activeAfterImage = afterImages[nextIndex];
-      afterImageIndex = nextIndex;
-      incomingAfterImage = "";
-      incomingAfterImageVisible = false;
-      isAfterImageTransitioning = false;
-      queueAfterImageRotation();
-    }, IMAGE_FADE_DURATION);
-  }
-
-  async function startAfterImageRotation() {
-    resetAfterImageRotationState();
-    await ensureAfterImagesReady();
-    if (!browser || isMobile || afterImages.length < 2) return;
-    queueAfterImageRotation();
-  }
-
-  function handleDocumentVisibilityChange() {
-    if (!browser) return;
-    if (document.hidden) {
-      clearAfterImageRotationTimers();
-      return;
-    }
-    if (!isAfterImageTransitioning) {
-      queueAfterImageRotation(900);
-    }
-  }
-
   function scheduleResizeUpdate() {
     clearTimeout(resizeTimer);
     resizeTimer = setTimeout(() => {
@@ -396,9 +277,6 @@
       startIntro(false);
     }
 
-    startAfterImageRotation();
-    document.addEventListener("visibilitychange", handleDocumentVisibilityChange);
-
     return () => {
       destroyed = true;
       unregisterParallax(handleParallax);
@@ -412,9 +290,7 @@
       }
       clearTimeout(fallbackTimeout);
       clearTimeout(mediaIntroTimeout);
-      clearAfterImageRotationTimers();
       clearTimeout(resizeTimer);
-      document.removeEventListener("visibilitychange", handleDocumentVisibilityChange);
       resizeObserver?.disconnect();
     };
   });
@@ -454,14 +330,6 @@
 
       <div class="after-image" bind:this={afterImageEl}>
         <img class="after-image-asset" src={activeAfterImage} alt="Visuel 3 Terres" />
-        {#if incomingAfterImage}
-          <img
-            class="after-image-asset after-image-incoming"
-            class:is-visible={incomingAfterImageVisible}
-            src={incomingAfterImage}
-            alt="Visuel 3 Terres"
-          />
-        {/if}
       </div>
     </div>
   </section>
@@ -688,16 +556,6 @@
     opacity: 1;
   }
 
-  .after-image-incoming {
-    opacity: 0;
-    transition: opacity 1.35s cubic-bezier(0.22, 1, 0.36, 1);
-    will-change: opacity;
-  }
-
-  .after-image-incoming.is-visible {
-    opacity: 1;
-  }
-
   @media (max-width: 900px) {
     .after-grid {
       width: min(100%, 760px);
@@ -830,8 +688,7 @@
     .hero-media img,
     .hero-scroll-cue,
     .after-text,
-    .after-image,
-    .after-image-incoming {
+    .after-image {
       transition: none !important;
       animation: none !important;
       filter: none !important;
