@@ -55,6 +55,8 @@
   let previewTop = 0;
   let mobileScrollFrame = 0;
   let mobileInitFrame = 0;
+  let prefersReduced = false;
+  let removeMotionListener;
 
   function updatePreviewPosition() {
     const row = rowEls[activeIndex];
@@ -99,7 +101,34 @@
     mobileScrollFrame = requestAnimationFrame(updateMobileActiveCard);
   }
 
+  function scrollToMobileCard(index, behavior = "smooth") {
+    const card = mobileCardEls[index];
+    if (!mobileTrackEl || !card) return;
+
+    const targetLeft = card.offsetLeft - (mobileTrackEl.clientWidth - card.offsetWidth) * 0.5;
+    activeIndex = index;
+    mobileTrackEl.scrollTo({
+      left: Math.max(0, targetLeft),
+      behavior
+    });
+  }
+
   onMount(() => {
+    const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
+    prefersReduced = mq.matches;
+
+    const onMotion = (event) => {
+      prefersReduced = event.matches;
+    };
+
+    if (mq.addEventListener) {
+      mq.addEventListener("change", onMotion);
+      removeMotionListener = () => mq.removeEventListener("change", onMotion);
+    } else {
+      mq.addListener(onMotion);
+      removeMotionListener = () => mq.removeListener(onMotion);
+    }
+
     const handleResize = () => {
       updatePreviewPosition();
       if (mobileInitFrame) cancelAnimationFrame(mobileInitFrame);
@@ -112,6 +141,7 @@
     });
 
     return () => {
+      removeMotionListener?.();
       window.removeEventListener("resize", handleResize);
       if (mobileScrollFrame) cancelAnimationFrame(mobileScrollFrame);
       if (mobileInitFrame) cancelAnimationFrame(mobileInitFrame);
@@ -192,6 +222,19 @@
           </div>
         </article>
       {/each}
+    </div>
+
+    <div class="principles-mobile-nav-shell" aria-hidden={activeIndex === items.length - 1}>
+      <button
+        class="principles-mobile-nav-btn principles-mobile-nav-next"
+        class:is-hidden={activeIndex === items.length - 1}
+        type="button"
+        aria-label="Principe suivant"
+        on:click={() =>
+          scrollToMobileCard(Math.min(activeIndex + 1, items.length - 1), prefersReduced ? "auto" : "smooth")}
+      >
+        <span class="principles-mobile-nav-chevron" aria-hidden="true"></span>
+      </button>
     </div>
   </div>
 </section>
@@ -389,6 +432,7 @@
       display: block;
       padding-left: 1rem;
       min-height: 75vh;
+      position: relative;
     }
 
     .principles-mobile-track {
@@ -406,6 +450,50 @@
 
     .principles-mobile-track::-webkit-scrollbar {
       display: none;
+    }
+
+    .principles-mobile-nav-shell {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+    }
+
+    .principles-mobile-nav-btn {
+      position: absolute;
+      top: 50%;
+      width: 2.65rem;
+      height: 2.65rem;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transform: translateY(-50%);
+      z-index: 10;
+      border: 0;
+      background: transparent;
+      padding: 0;
+      color: #fff;
+      cursor: pointer;
+      pointer-events: auto;
+      transition: opacity 0.25s ease;
+    }
+
+    .principles-mobile-nav-next {
+      right: 0.4rem;
+    }
+
+    .principles-mobile-nav-chevron {
+      display: block;
+      width: 1.18rem;
+      height: 1.18rem;
+      border-top: 1.4px solid currentColor;
+      border-right: 1.4px solid currentColor;
+      transform: rotate(45deg);
+      filter: drop-shadow(0 1px 8px rgba(0, 0, 0, 0.34));
+    }
+
+    .principles-mobile-nav-btn.is-hidden {
+      opacity: 0;
+      pointer-events: none;
     }
 
     .principle-mobile-card {
@@ -494,15 +582,16 @@
       content: "";
       position: absolute;
       inset: 0;
-      background: rgba(0, 0, 0, 0.42);
+      background: rgba(0, 0, 0, 0.34);
       pointer-events: none;
       z-index: 1;
-      transition: opacity 1.02s cubic-bezier(.22, 1, .36, 1);
+      will-change: opacity;
+      transition: opacity 0.82s cubic-bezier(.22, .61, .36, 1);
     }
 
     .principle-mobile-card.is-active .principle-mobile-media::after,
     .principle-mobile-card:active .principle-mobile-media::after {
-      opacity: 0;
+      opacity: 0.08;
     }
 
     .principle-mobile-media img {
@@ -511,17 +600,17 @@
       object-fit: cover;
       display: block;
       transform: translateZ(0) scale(1);
-      filter: brightness(0.68);
+      filter: brightness(0.78);
       will-change: transform, filter;
       transition:
-        transform 1.08s cubic-bezier(.22, 1, .36, 1),
-        filter 1.02s cubic-bezier(.22, 1, .36, 1);
+        transform 0.9s cubic-bezier(.22, .61, .36, 1),
+        filter 0.82s cubic-bezier(.22, .61, .36, 1);
     }
 
     .principle-mobile-card.is-active .principle-mobile-media img,
     .principle-mobile-card:active .principle-mobile-media img {
-      transform: translateZ(0) scale(1.075);
-      filter: brightness(1);
+      transform: translateZ(0) scale(1.04);
+      filter: brightness(0.96);
     }
   }
 

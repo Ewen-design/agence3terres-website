@@ -72,6 +72,7 @@
 
   let sectionEl;
   let galleryShellEl;
+  let galleryCueEl;
 
   let resizeObserver;
   let intersectionObserver;
@@ -85,6 +86,7 @@
   let mobileRevealVisible = false;
 
   let applied = {
+    cueOpacity: -1,
     galleryOpacity: -1,
     galleryExitCut: -999,
     galleryExitFeather: -999
@@ -95,6 +97,8 @@
 
   const MOBILE_REVEAL_ENTER_TOP = 0.62;
   const MOBILE_REVEAL_EXIT_BOTTOM = 0.74;
+  const CUE_ENTER_START = 0.88;
+  const CUE_ENTER_END = 0.62;
 
   const DESKTOP_EXIT_START = 1.12;
   const DESKTOP_EXIT_END = 0.08;
@@ -144,7 +148,13 @@
     let galleryOpacity = 1;
     let galleryExitCut = 0;
     let galleryExitFeather = isMobile ? 21 : 20;
+    let cueOpacity = 1;
     if (isMobile) {
+      const cueStartY = vh * CUE_ENTER_START;
+      const cueEndY = vh * CUE_ENTER_END;
+      const cueRaw = clamp((cueStartY - topInViewport) / Math.max(cueStartY - cueEndY, 1), 0, 1);
+      cueOpacity = smoother01(cueRaw);
+
       const revealEnterY = vh * MOBILE_REVEAL_ENTER_TOP;
       const revealExitY = vh * MOBILE_REVEAL_EXIT_BOTTOM;
       const shouldReveal = topInViewport <= revealEnterY && bottomInViewport >= revealExitY;
@@ -152,6 +162,11 @@
       mobileRevealVisible = shouldReveal;
       galleryOpacity = shouldReveal ? 1 : 0;
     } else {
+      const cueStartY = vh * 1.02;
+      const cueEndY = vh * 0.72;
+      const cueRaw = clamp((cueStartY - topInViewport) / Math.max(cueStartY - cueEndY, 1), 0, 1);
+      cueOpacity = smoother01(cueRaw);
+
       const galleryCenterY = vh * DESKTOP_GALLERY_CENTER;
       const galleryRange = vh * DESKTOP_GALLERY_RANGE;
 
@@ -181,10 +196,16 @@
     }
 
     const pending = {
+      cueOpacity: q(cueOpacity, 0.001),
       galleryOpacity: q(galleryOpacity, 0.001),
       galleryExitCut,
       galleryExitFeather
     };
+
+    if (galleryCueEl && pending.cueOpacity !== applied.cueOpacity) {
+      galleryCueEl.style.opacity = `${pending.cueOpacity}`;
+      applied.cueOpacity = pending.cueOpacity;
+    }
 
     if (galleryShellEl) {
       if (pending.galleryOpacity !== applied.galleryOpacity) {
@@ -225,6 +246,10 @@
         galleryShellEl.style.opacity = "0";
         galleryShellEl.style.setProperty("--exit-cut", "0%");
         galleryShellEl.style.setProperty("--exit-feather", isMobile ? "21%" : "20%");
+      }
+
+      if (galleryCueEl) {
+        galleryCueEl.style.opacity = "0";
       }
 
       forceScrollEngineUpdate();
@@ -277,7 +302,7 @@
   <div class="gallery-track">
     <div class="gallery-overlay-wrap" aria-hidden="true">
       <div class="gallery-sticky-overlay">
-        <div class="gallery-sticky-cue">
+        <div class="gallery-sticky-cue" bind:this={galleryCueEl}>
           <span class="gallery-scroll-label">Scroll pour découvrir</span>
           <span class="gallery-scroll-arrow">↓</span>
         </div>
@@ -349,7 +374,7 @@
     --section-text: #f5f1e8;
     --card-bg: #000;
     --mobile-card-scale: 2.05;
-    --sticky-lead: clamp(20rem, 42vh, 30rem);
+    --sticky-lead: 100vh;
     position: relative;
     z-index: 0;
     isolation: isolate;
@@ -574,10 +599,6 @@
   @media (max-width: 640px) {
     .gallery-track {
       min-height: 120vh;
-    }
-
-    .gallery-section {
-      --sticky-lead: clamp(30rem, 62vh, 40rem);
     }
 
     .gallery-shell {
