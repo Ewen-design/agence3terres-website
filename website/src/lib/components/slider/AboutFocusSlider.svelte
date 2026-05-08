@@ -5,19 +5,19 @@
     {
       number: "01",
       title: "Un reflet",
-      description: "L'essentiel prend forme sans bruit inutile.",
+      description: "Nous reflétons l'identité de nos clients avec précision afin de leur proposer les solutions les plus adaptées.",
       image: "/images/telephone2.webp"
     },
     {
       number: "02",
-      title: "Une creation",
-      description: "Chaque projet gagne en rythme, en tenue et en clarté.",
+      title: "Une création",
+      description: "Nous concevons des expériences de marque uniques, pensées pour durer et faire la différence.",
       image: "/images/creation_logo_desktop.webp"
     },
     {
       number: "03",
       title: "Une ambition",
-      description: "Nous visons plus haut avec precision et constance.",
+      description: "Nous imaginons des stratégies adaptées à chaque projet, afin de l'accompagner jusqu'au sommet de leurs ambitions.",
       image: "/images/appareil_photo.webp"
     }
   ];

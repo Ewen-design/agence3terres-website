@@ -504,7 +504,7 @@
 
     .after-text h2 {
       font-size: clamp(1.3rem, 6.8vw, 2.7rem);
-      max-width: 12ch;
+      max-width: 18ch;
       line-height: 1.04;
       padding-inline: var(--project-text-inset, 0);
     }
@@ -596,7 +596,7 @@
     }
 
     .after-text h2 {
-      max-width: 12ch;
+      max-width: 18ch;
       font-size: clamp(1.15rem, 6.4vw, 1.95rem);
       line-height: 1.04;
       padding-inline: var(--project-text-inset, 0);

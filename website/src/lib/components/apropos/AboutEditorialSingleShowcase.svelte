@@ -118,10 +118,11 @@
     grid-row: 2;
     justify-self: start;
     align-self: start;
-    max-width: 18ch;
+    max-width: 23ch;
     font-size: clamp(1.3rem, 2.8vw, 2.8rem);
     line-height: 1;
     padding-top: clamp(8rem, 14vh, 12rem);
+    margin-left: clamp(-8.75rem, -6.2vw, -4.4rem);
   }
 
   .about-editorial-single-showcase__accent {
@@ -165,12 +166,13 @@
     .about-editorial-single-showcase__text {
       grid-column: 1;
       grid-row: 2;
-      max-width: 12ch;
+      max-width: 15ch;
       justify-self: start;
       font-size: clamp(1.3rem, 6.8vw, 2.7rem);
       padding-inline: var(--project-text-inset, 0);
       line-height: 1.04;
       padding-top: 6rem;
+      margin-left: 0;
     }
 
     .about-editorial-single-showcase__accent {
@@ -217,13 +219,14 @@
     .about-editorial-single-showcase__text {
       grid-row: 2;
       align-self: start;
-      max-width: 11.5ch;
+      max-width: 14ch;
       font-size: clamp(1.2rem, 6.9vw, 2.15rem);
       line-height: 1.04;
       padding-inline: var(--project-text-inset, 0);
       padding-top: 0;
       padding-bottom: 0;
       margin-top: -2vh;
+      margin-left: 0;
       position: relative;
       z-index: 2;
     }
@@ -232,7 +235,7 @@
       grid-row: 3;
       width: min(72%, 300px);
       justify-self: end;
-      margin-top: -2.5rem;
+      margin-top: -4.5rem;
       margin-left: 0;
       margin-right: -0.8rem;
     }
