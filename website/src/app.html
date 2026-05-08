@@ -9,6 +9,19 @@
     %sveltekit.head%
 
     <style>
+      html.preloader-active,
+      body.preloader-active {
+        overflow: hidden;
+        overscroll-behavior: none;
+      }
+
+      body.preloader-active {
+        position: fixed;
+        inset: 0;
+        width: 100%;
+        touch-action: none;
+      }
+
       #site-intro-loader {
         --bg: #000000;
         --glow-white: rgba(255, 255, 255, 0.88);
@@ -17,7 +30,10 @@
         --glow-deep: rgba(25, 38, 78, 0.16);
 
         position: fixed;
-        inset: 0;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: var(--loader-stable-vh, 100lvh);
         z-index: 999999;
         display: flex;
         align-items: center;
@@ -27,6 +43,8 @@
         transition: opacity 0.65s cubic-bezier(0.22, 0.61, 0.36, 1);
         pointer-events: none;
         overflow: hidden;
+        transform: translateZ(0);
+        will-change: opacity;
       }
 
       #site-intro-loader.is-hidden {
@@ -232,6 +250,8 @@
       (function () {
         const loader = document.getElementById('site-intro-loader');
         if (!loader) return;
+        const root = document.documentElement;
+        const body = document.body;
 
         const sourceGroup = loader.querySelector('#source-paths');
         const introMark = loader.querySelector('#intro-mark');
@@ -248,10 +268,101 @@
 
         const revealDuration = 2100;
         const fadeDuration = 650;
+        const desktopScrollUnlockLead = 180;
+        const mobileScrollUnlockLead = 300;
         const minimumVisible = 1350;
+        const mobileViewportChangeThreshold = 120;
+        const rotateViewportChangeThreshold = 80;
 
         let minDone = false;
         let loadDone = document.readyState === 'complete';
+        let hideStarted = false;
+        let lockedScrollY = 0;
+        let stableViewportHeight = 0;
+        let stableViewportWidth = 0;
+
+        const isCoarsePointer = window.matchMedia?.('(hover: none) and (pointer: coarse)')?.matches ?? false;
+
+        const readViewport = () => {
+          const viewport = window.visualViewport;
+          return {
+            height: Math.round(viewport?.height || window.innerHeight || 0),
+            width: Math.round(viewport?.width || window.innerWidth || 0)
+          };
+        };
+
+        const applyStableViewport = () => {
+          const { height, width } = readViewport();
+          if (!height || !width) return;
+
+          stableViewportHeight = height;
+          stableViewportWidth = width;
+          root.style.setProperty('--loader-stable-vh', `${height}px`);
+        };
+
+        const syncStableViewport = () => {
+          const { height, width } = readViewport();
+          if (!height || !width) return;
+
+          if (!isCoarsePointer) {
+            applyStableViewport();
+            return;
+          }
+
+          const widthDelta = Math.abs(width - stableViewportWidth);
+          const heightDelta = Math.abs(height - stableViewportHeight);
+          const rotated = widthDelta >= rotateViewportChangeThreshold;
+          const significantHeightChange = heightDelta >= mobileViewportChangeThreshold;
+
+          if (!stableViewportHeight || rotated || significantHeightChange) {
+            applyStableViewport();
+          }
+        };
+
+        const preventScrollWhileLoading = (event) => {
+          event.preventDefault();
+        };
+
+        const preventKeyboardScrollWhileLoading = (event) => {
+          if (!body.classList.contains('preloader-active')) return;
+
+          const keys = ['ArrowUp', 'ArrowDown', 'PageUp', 'PageDown', 'Home', 'End', ' ', 'Spacebar'];
+          if (!keys.includes(event.key)) return;
+          event.preventDefault();
+        };
+
+        const lockScroll = () => {
+          lockedScrollY = window.scrollY || window.pageYOffset || 0;
+          root.classList.add('preloader-active');
+          body.classList.add('preloader-active');
+          body.style.top = `-${lockedScrollY}px`;
+        };
+
+        const unlockScroll = () => {
+          root.classList.remove('preloader-active');
+          body.classList.remove('preloader-active');
+          body.style.top = '';
+          window.scrollTo(0, lockedScrollY);
+        };
+
+        const cleanupViewportListeners = () => {
+          window.removeEventListener('resize', syncStableViewport);
+          window.removeEventListener('orientationchange', syncStableViewport);
+          window.visualViewport?.removeEventListener('resize', syncStableViewport);
+          window.removeEventListener('wheel', preventScrollWhileLoading, { capture: true });
+          window.removeEventListener('touchmove', preventScrollWhileLoading, { capture: true });
+          window.removeEventListener('keydown', preventKeyboardScrollWhileLoading, { capture: true });
+        };
+
+        applyStableViewport();
+        lockScroll();
+
+        window.addEventListener('resize', syncStableViewport, { passive: true });
+        window.addEventListener('orientationchange', syncStableViewport, { passive: true });
+        window.visualViewport?.addEventListener('resize', syncStableViewport, { passive: true });
+        window.addEventListener('wheel', preventScrollWhileLoading, { passive: false, capture: true });
+        window.addEventListener('touchmove', preventScrollWhileLoading, { passive: false, capture: true });
+        window.addEventListener('keydown', preventKeyboardScrollWhileLoading, { capture: true });
 
         const sourcePaths = Array.from(sourceGroup.querySelectorAll('path'));
 
@@ -435,9 +546,18 @@
         });
 
         const maybeHide = () => {
-          if (!minDone || !loadDone) return;
+          if (!minDone || !loadDone || hideStarted) return;
+          hideStarted = true;
           loader.classList.add('is-hidden');
-          setTimeout(() => loader.remove(), fadeDuration);
+          window.dispatchEvent(new CustomEvent('preloader:done'));
+          const scrollUnlockLead = isCoarsePointer ? mobileScrollUnlockLead : desktopScrollUnlockLead;
+          setTimeout(() => {
+            unlockScroll();
+          }, Math.max(0, fadeDuration - scrollUnlockLead));
+          setTimeout(() => {
+            cleanupViewportListeners();
+            loader.remove();
+          }, fadeDuration);
         };
 
         setTimeout(() => {
