@@ -90,9 +90,13 @@ export function installDesktopWheelDamping({
     if (isEditableElement(activeEl)) return;
     if (isNativeWheelZone(e.target)) return;
 
-    e.preventDefault();
-
     const maxScroll = getMaxScroll();
+    if (maxScroll <= 1) {
+      stopWheelDampingInternal();
+      return;
+    }
+
+    e.preventDefault();
 
     if (!wheelActive) {
       wheelCurrentY = window.scrollY || window.pageYOffset || 0;

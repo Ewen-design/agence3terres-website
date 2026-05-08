@@ -12,6 +12,20 @@ function normalizeUrl(target) {
   return target === "home" ? "/" : target.startsWith("/") ? target : `/${target}`;
 }
 
+function isDesktopSafari() {
+  if (!browser) return false;
+
+  const ua = window.navigator.userAgent || "";
+  const vendor = window.navigator.vendor || "";
+  const isSafari =
+    /Safari/i.test(ua) &&
+    !/Chrome|CriOS|Edg|OPR|Firefox|FxiOS/i.test(ua) &&
+    /Apple/i.test(vendor);
+  const isTouch = window.matchMedia?.("(pointer: coarse)")?.matches ?? false;
+
+  return isSafari && !isTouch;
+}
+
 function stopWheelDamping(durationMs = 0) {
   if (!browser) return;
 
@@ -24,6 +38,29 @@ function stopWheelDamping(durationMs = 0) {
       })
     );
   }
+}
+
+function blurActiveElement() {
+  if (!browser) return;
+
+  const activeEl = document.activeElement;
+  if (!(activeEl instanceof HTMLElement)) return;
+  activeEl.blur?.();
+}
+
+function clearGlobalScrollLocks() {
+  if (!browser) return;
+
+  document.documentElement.classList.remove("preloader-active");
+  document.body.classList.remove("preloader-active", "menu-open");
+
+  document.documentElement.style.overflow = "";
+  document.body.style.overflow = "";
+  document.body.style.position = "";
+  document.body.style.inset = "";
+  document.body.style.top = "";
+  document.body.style.width = "";
+  document.body.style.touchAction = "";
 }
 
 function resetScrollPosition() {
@@ -49,12 +86,17 @@ export async function navigate(target, options = {}) {
   const url = normalizeUrl(target);
   const currentPath = window.location.pathname.replace(/\/+$/, "") || "/";
   const targetPath = url.replace(/\/+$/, "") || "/";
+  const useNativeScrollReset =
+    isDesktopSafari() && currentPath === "/contact" && targetPath !== "/contact";
 
   if (targetPath === currentPath || _isTransitioning) return;
 
   _isTransitioning = true;
 
   try {
+    blurActiveElement();
+    clearGlobalScrollLocks();
+
     if (options.silent) {
       markNextNavigationSilent();
     }
@@ -62,14 +104,28 @@ export async function navigate(target, options = {}) {
     stopWheelDamping(900);
 
     await goto(url, {
-      noScroll: true,
-      keepFocus: true
+      noScroll: !useNativeScrollReset,
+      keepFocus: false
     });
 
-    resetScrollPosition();
-    requestAnimationFrame(() => {
+    clearGlobalScrollLocks();
+    if (!useNativeScrollReset) {
       resetScrollPosition();
-    });
+      requestAnimationFrame(() => {
+        clearGlobalScrollLocks();
+        stopWheelDamping();
+        resetScrollPosition();
+      });
+    } else {
+      requestAnimationFrame(() => {
+        clearGlobalScrollLocks();
+        stopWheelDamping();
+      });
+    }
+    setTimeout(() => {
+      clearGlobalScrollLocks();
+      stopWheelDamping();
+    }, 120);
 
     window.dispatchEvent(new CustomEvent("app:route-settled"));
   } catch (error) {
