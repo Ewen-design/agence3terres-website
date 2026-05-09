@@ -7,10 +7,14 @@
   let isDesktop = false;
   let isVisible = false;
   let mode = "view";
-  let x = 0;
-  let y = 0;
+  let currentX = 0;
+  let currentY = 0;
+  let targetX = 0;
+  let targetY = 0;
   let mediaQuery;
   let carouselDirection = "next";
+  let rafId = 0;
+  let isSafariDesktop = false;
 
   $: themeClass =
     $page.url.pathname === "/services" ? "theme-services" :
@@ -21,11 +25,35 @@
 
   function updateTransform() {
     if (!cursor) return;
-    cursor.style.transform = `translate3d(${x}px, ${y}px, 0)`;
+    cursor.style.transform = `translate3d(${currentX}px, ${currentY}px, 0)`;
   }
 
-  function syncStateFromPoint(clientX, clientY) {
-    const hovered = document.elementFromPoint(clientX, clientY);
+  function stopCursorLoop() {
+    if (rafId) cancelAnimationFrame(rafId);
+    rafId = 0;
+  }
+
+  function runCursorLoop() {
+    if (rafId || !isDesktop) return;
+
+    const loop = () => {
+      const lerp = isSafariDesktop ? 0.34 : 0.24;
+      currentX += (targetX - currentX) * lerp;
+      currentY += (targetY - currentY) * lerp;
+
+      if (Math.abs(targetX - currentX) < 0.1) currentX = targetX;
+      if (Math.abs(targetY - currentY) < 0.1) currentY = targetY;
+
+      updateTransform();
+
+      rafId = requestAnimationFrame(loop);
+    };
+
+    rafId = requestAnimationFrame(loop);
+  }
+
+  function syncStateFromTarget(target) {
+    const hovered = target instanceof Element ? target : null;
     const carouselEl = hovered?.closest?.("[data-cursor='carousel']");
     const viewEl = hovered?.closest?.("[data-cursor='view']");
 
@@ -45,15 +73,27 @@
   }
 
   function move(event) {
-    syncStateFromPoint(event.clientX, event.clientY);
     if (mode === "carousel") {
-      x = event.clientX - 30;
-      y = event.clientY - 30;
+      targetX = event.clientX - 30;
+      targetY = event.clientY - 30;
     } else {
-      x = event.clientX + 16;
-      y = event.clientY + 14;
+      targetX = event.clientX + 16;
+      targetY = event.clientY + 14;
     }
-    updateTransform();
+  }
+
+  function handlePointerOver(event) {
+    syncStateFromTarget(event.target);
+  }
+
+  function handlePointerOut(event) {
+    const nextTarget = event.relatedTarget;
+    if (nextTarget instanceof Element) {
+      syncStateFromTarget(nextTarget);
+      return;
+    }
+
+    isVisible = false;
   }
 
   function updateCarouselDirection(event) {
@@ -65,17 +105,23 @@
   }
 
   function addListeners() {
-    window.addEventListener("mousemove", move);
+    window.addEventListener("pointermove", move, { passive: true });
+    document.addEventListener("pointerover", handlePointerOver, { passive: true });
+    document.addEventListener("pointerout", handlePointerOut, { passive: true });
     window.addEventListener("mouseleave", hide);
     window.addEventListener("blur", hide);
     window.addEventListener("carousel-direction", updateCarouselDirection);
+    runCursorLoop();
   }
 
   function removeListeners() {
-    window.removeEventListener("mousemove", move);
+    window.removeEventListener("pointermove", move);
+    document.removeEventListener("pointerover", handlePointerOver);
+    document.removeEventListener("pointerout", handlePointerOut);
     window.removeEventListener("mouseleave", hide);
     window.removeEventListener("blur", hide);
     window.removeEventListener("carousel-direction", updateCarouselDirection);
+    stopCursorLoop();
     isVisible = false;
   }
 
@@ -91,6 +137,14 @@
 
   onMount(() => {
     if (!browser) return;
+
+    const ua = window.navigator.userAgent || "";
+    const vendor = window.navigator.vendor || "";
+    isSafariDesktop =
+      /Safari/i.test(ua) &&
+      !/Chrome|CriOS|Edg|OPR|Firefox|FxiOS/i.test(ua) &&
+      /Apple/i.test(vendor) &&
+      !(window.matchMedia?.("(pointer: coarse)")?.matches ?? false);
 
     mediaQuery = window.matchMedia("(hover: hover) and (pointer: fine) and (min-width: 769px)");
     updateCursorMode();
@@ -124,6 +178,7 @@
   <div
     bind:this={cursor}
     class={`cursor-indicator ${themeClass}`}
+    class:is-safari={isSafariDesktop}
     class:is-visible={isVisible}
     class:is-carousel={mode === "carousel"}
     class:is-view={mode === "view"}
@@ -144,23 +199,6 @@
 
 <style>
   .cursor-indicator {
-    --cursor-glow-core:
-      radial-gradient(
-        68px circle at 50% 50%,
-        rgba(255, 225, 140, 1) 0%,
-        rgba(212, 175, 55, 0.95) 22%,
-        rgba(212, 102, 55, 0.55) 45%,
-        rgba(212, 102, 55, 0.12) 62%,
-        transparent 78%
-      );
-    --cursor-glow-soft:
-      radial-gradient(
-        78px circle at 50% 50%,
-        rgba(212, 175, 55, 0.55) 0%,
-        rgba(212, 102, 55, 0.22) 42%,
-        transparent 72%
-      );
-
     position: fixed;
     top: 0;
     left: 0;
@@ -169,8 +207,9 @@
     opacity: 0;
     transform: translate3d(0, 0, 0);
     transition:
-      opacity 0.16s ease,
-      transform 0.08s linear;
+      opacity 0.16s ease;
+    will-change: transform, opacity;
+    contain: layout style paint;
   }
 
   .cursor-indicator.is-visible {
@@ -193,6 +232,13 @@
     box-shadow: 0 14px 24px rgba(0, 0, 0, 0.28);
   }
 
+  .cursor-indicator.is-safari.is-view {
+    background: rgba(12, 12, 14, 0.9);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    box-shadow: 0 8px 18px rgba(0, 0, 0, 0.2);
+  }
+
   .cursor-indicator.is-view span {
     position: relative;
     z-index: 1;
@@ -211,9 +257,18 @@
     transform-origin: center center;
   }
 
+  .cursor-indicator.is-safari.is-carousel {
+    width: 56px;
+    height: 56px;
+  }
+
   .cursor-arrow {
     width: 60px;
     height: 20px;
+  }
+
+  .cursor-indicator.is-safari .cursor-arrow {
+    width: 56px;
   }
 
   .cursor-arrow.prev {
