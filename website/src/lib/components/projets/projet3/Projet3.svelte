@@ -1,5 +1,5 @@
 <svelte:head>
-  <title>Projet 2 | Agence 3 Terres</title>
+  <title>Moovy | Agence 3 Terres</title>
 </svelte:head>
 
 <script>
@@ -68,24 +68,22 @@
 
 <div class={`project-theme-band ${introBandTheme}`}>
   <ProjectHeroProjetsStyle
-    title="Hansatsu"
-    image="/images/parfum_rouge.webp"
+    title="Moovy"
+    image="/images/telephone_main.webp"
     metaBlocks={[
       { label: "Date", value: "2025 - Present" },
-      { label: "Localisation", value: "Japon" },
+      { label: "Localisation", value: "Digital" },
       {
         label: "Services",
-        value: ["Site web", "Narration", "Direction artistique"]
+        value: ["UX Design", "UI Design", "Site web"]
       }
     ]}
     ctaLabel="Visiter le site"
   />
 
   <ProjectScrollScaleReveal
-    image="/images/parfum2.webp"
-    alt="Image immersive du projet 2"
-    startScale={0.84}
-    endScale={1.02}
+    image="/images/ordinateur.webp"
+    alt="Image immersive du projet Moovy"
     startBackground="#000"
     endBackground="#f7f5f1"
     snapBackground={true}
@@ -97,21 +95,21 @@
   <ProjectEditorialRole
     title="Notre rôle"
     images={[
-      { src: "/images/parfum4.webp", alt: "Composition visuelle large du projet 2" },
-      { src: "/images/parfum2.webp", alt: "Univers principal du projet 2" }
+      { src: "/images/ordinateur.webp", alt: "Composition visuelle large de Moovy" },
+      { src: "/images/telephone_main.webp", alt: "Univers principal de Moovy" }
     ]}
     items={[
       {
-        title: "Conception du site web",
-        text: "Nous avons structure le site pour retracer un fragment d'histoire japonaise avec une lecture plus claire et plus immersive."
+        title: "Architecture de parcours",
+        text: "Une structure plus directe pour naviguer entre large selection de films et recommandation guidee."
       },
       {
-        title: "Narration editoriale",
-        text: "Le rythme entre textes, images et respirations sert le recit sans l'alourdir."
+        title: "Recommendation film",
+        text: "Un questionnaire simple aide a faire ressortir rapidement le bon film selon l'envie du moment."
       },
       {
         title: "Experience mobile",
-        text: "Chaque ecran prolonge l'histoire avec precision, tout en gardant une lecture simple et stable."
+        text: "Le projet garde la meme fluidite sur mobile pour consulter, filtrer et choisir sans friction."
       }
     ]}
   />
@@ -120,21 +118,22 @@
 <div class="project-theme-band theme-light">
   <ProjectEditorialSplit
     title="Interface mobile"
-    text="Une lecture plus recueillie et plus nette. Le projet garde sa tenue jusque dans les vues les plus rapprochees."
-    image="/images/telephone_parfum.webp"
-    alt="Vue mobile projet 2"
+    text="Une presence plus simple et plus fluide. Le projet garde sa clarte jusque dans les vues les plus rapprochees."
+    image="/images/telephone2.webp"
+    alt="Vue mobile projet Moovy"
+    mediaMinHeight="52.5rem"
   />
 
   <ProjectEditorialStatement
-    eyebrow="Recit et rythme"
-    text="Le projet avance par contraste mesure, par respiration editoriale et par une image qui soutient le recit sans le couvrir."
+    eyebrow="Recommendation"
+    text="Le projet repose sur une lecture immediate, quelques choix bien cadres et une recommandation qui arrive sans surcharge."
   />
 
   <ProjectEditorialSplit
     title="Vue desktop"
-    text="Sur desktop, le site reste net et immersif. Les rapports d'echelle, les marges et la densite d'image portent l'ensemble."
-    image="/images/parfum_ordinateur.webp"
-    alt="Vue desktop projet 2"
+    text="Sur desktop, la plateforme ouvre davantage le catalogue tout en gardant un chemin tres lisible vers le bon film."
+    image="/images/ordinateur.webp"
+    alt="Vue desktop projet Moovy"
     reverse={true}
   />
 </div>
@@ -143,83 +142,82 @@
   on:slideractivechange={handleSliderActiveChange}
   slides={[
     {
-      label: "Site web",
-      title: "Installer",
-      text: "Une ambiance immediate. Une lecture plus recueillie.",
-      image: "/images/parfum2.webp"
+      label: "Catalogue",
+      title: "Ouvrir",
+      text: "Une selection large. Une lecture immediate.",
+      image: "/images/ordinateur.webp"
     },
     {
-      label: "Narration",
-      title: "Tenir",
-      text: "Un fil editorial plus clair. Un rythme plus juste.",
-      image: "/images/parfum3.webp"
+      label: "Recommendation",
+      title: "Qualifier",
+      text: "Quelques questions. Une orientation plus juste.",
+      image: "/images/telephone_main.webp"
     },
     {
-      label: "Direction artistique",
-      title: "Prolonger",
-      text: "L'histoire continue dans l'ecran sans perdre la lisibilite.",
-      image: "/images/parfum_ordinateur.webp"
+      label: "Interface",
+      title: "Aboutir",
+      text: "Un parcours rapide. Une decision sans surcharge.",
+      image: "/images/telephone2.webp"
     }
   ]}
 />
 
 <div class="project-theme-band theme-light">
   <ProjectEditorialMobileShowcase
-    text="L'experience mobile devait porter le recit avec la meme precision, la meme tenue et la meme sensation d'immersion."
-    leftImage="/images/parfum3.webp"
-    leftAlt="Interface projet 2 sur fond sombre"
-    rightImage="/images/telephone_parfum.webp"
-    rightAlt="Mise en situation mobile projet 2"
+    text="Le mobile devait permettre de passer d'une envie vague a un choix concret avec le moins de friction possible."
+    leftImage="/images/telephone_main.webp"
+    leftAlt="Interface mobile verticale Moovy"
+    rightImage="/images/telephone2.webp"
+    rightAlt="Mise en situation mobile Moovy"
+    mediaMinHeight="46.5rem"
   />
 </div>
 
 <div class={`project-theme-band ${outroBandTheme}`}>
   <ProjectEditorialHoverMosaic
-    text="Le premier visuel ouvre le recit, puis deux plans plus proches gardent une meme retenue avec un hover lent, sombre et immersif."
+    text="Un premier plan plus large pour ouvrir l'univers, puis deux vues resserrees qui gardent la meme clarte avec une interaction discrete au survol."
     feature={{
-      src: "/images/parfum4.webp",
-      alt: "Grand visuel projet 2",
-      titleLeft: "Visual",
-      titleRight: "Tension",
+      src: "/images/ordinateur.webp",
+      alt: "Grand visuel projet Moovy",
+      titleLeft: "Movie",
+      titleRight: "Flow",
       hoverImages: [
-        { src: "/images/parfum2.webp", alt: "Aperçu immersif projet 2" },
-        { src: "/images/parfum3.webp", alt: "Aperçu sensoriel projet 2" },
-        { src: "/images/parfum_ordinateur.webp", alt: "Aperçu desktop projet 2" }
+        { src: "/images/telephone_main.webp", alt: "Apercu mobile Moovy" },
+        { src: "/images/ordinateur.webp", alt: "Apercu catalogue Moovy" },
+        { src: "/images/telephone2.webp", alt: "Apercu questionnaire Moovy" }
       ]
     }}
     items={[
       {
-        src: "/images/parfum_ordinateur.webp",
-        alt: "Vue desktop projet 2",
-        titleLeft: "Desktop",
-        titleRight: "Scene",
+        src: "/images/telephone_main.webp",
+        alt: "Vue mobile projet Moovy",
+        titleLeft: "Mobile",
+        titleRight: "Choice",
         hoverImages: [
-          { src: "/images/parfum3.webp", alt: "Détail visuel projet 2" },
-          { src: "/images/telephone_parfum.webp", alt: "Vue mobile projet 2" },
-          { src: "/images/parfum4.webp", alt: "Univers projet 2" }
+          { src: "/images/telephone2.webp", alt: "Detail mobile Moovy" },
+          { src: "/images/ordinateur.webp", alt: "Vue desktop Moovy" },
+          { src: "/images/telephone_main.webp", alt: "Hero projet Moovy" }
         ]
       },
       {
-        src: "/images/parfum3.webp",
-        alt: "Composition visuelle projet 2",
-        titleLeft: "Visual",
-        titleRight: "Rhythm",
+        src: "/images/telephone2.webp",
+        alt: "Questionnaire projet Moovy",
+        titleLeft: "Smart",
+        titleRight: "Pick",
         hoverImages: [
-          { src: "/images/parfum2.webp", alt: "Aperçu immersif projet 2" },
-          { src: "/images/parfum_ordinateur.webp", alt: "Vue desktop projet 2" },
-          { src: "/images/telephone_parfum.webp", alt: "Interface mobile projet 2" }
+          { src: "/images/ordinateur.webp", alt: "Vue catalogue Moovy" },
+          { src: "/images/telephone_main.webp", alt: "Vue mobile Moovy" },
+          { src: "/images/telephone2.webp", alt: "Autre vue mobile Moovy" }
         ]
       }
     ]}
   />
 
   <ProjectScrollScaleReveal
-    image="/images/parfum2.webp"
-    alt="Transition de fin du projet 2"
+    image="/images/telephone_main.webp"
+    alt="Transition de fin du projet Moovy"
     reverse={true}
     sectionHeight={168}
-    startScale={0.84}
-    endScale={1.02}
     startBackground="#f7f5f1"
     endBackground="#000"
     snapBackground={true}
@@ -228,7 +226,5 @@
     on:themechange={handleOutroThemeChange}
   />
 
-  <ProjectLinksCarousel
-    currentPage="projet2"
-  />
+  <ProjectLinksCarousel currentPage="projet3" />
 </div>

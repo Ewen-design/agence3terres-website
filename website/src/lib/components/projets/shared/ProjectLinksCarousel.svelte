@@ -15,13 +15,29 @@
     {
       number: "02",
       title: "Hansatsu",
-      rest: "Un travail d'image et de narration concu pour installer une esthetique precise, immersive et raffinee autour du produit.",
+      rest: "Nous avons cree le site web du projet pour retracer un fragment d'histoire japonaise dans une mise en scene sobre, precise et immersive.",
       image: "/images/parfum_rouge.webp",
       page: "projet2",
       button: "Voir le projet"
     },
     {
       number: "03",
+      title: "Moovy",
+      rest: "Une plateforme de recommandation de films qui aide chacun a trouver rapidement le bon film selon ses gouts, ses envies et quelques questions simples.",
+      image: "/images/telephone_main.webp",
+      page: "projet3",
+      button: "Voir le projet"
+    },
+    {
+      number: "04",
+      title: "Ludovic",
+      rest: "Un site vitrine imagine pour presenter les oeuvres peintes par Ludovic avec plus d'air, de matiere et de clarte.",
+      image: "/images/carte-copie.jpg",
+      page: "projet4",
+      button: "Voir le projet"
+    },
+    {
+      number: "05",
       title: "Votre projet ?",
       rest: "Identite, direction artistique, site web ou experience digitale : construisons ensemble une presence forte, juste et memorable.",
       image: "/images/telephone2.webp",
@@ -228,6 +244,8 @@
     const pathname = window.location.pathname || "";
     if (pathname.includes("/projet1")) detectedCurrentPage = "projet1";
     else if (pathname.includes("/projet2")) detectedCurrentPage = "projet2";
+    else if (pathname.includes("/projet3")) detectedCurrentPage = "projet3";
+    else if (pathname.includes("/projet4")) detectedCurrentPage = "projet4";
     else if (pathname.includes("/contact")) detectedCurrentPage = "contact";
 
     const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -284,7 +302,7 @@
   style={`--project-count:${filteredProjects.length};`}
 >
   <div class="desktop-stack">
-    <div class="desktop-rail" bind:this={desktopRailEl}>
+    <div class="desktop-rail" bind:this={desktopRailEl} data-native-wheel="true">
       {#each filteredProjects as project, i}
         <button
           class="desktop-card"
@@ -345,7 +363,7 @@
   </div>
 
   <div class="mobile-stack">
-    <div class="mobile-rail" bind:this={mobileRailEl}>
+    <div class="mobile-rail" bind:this={mobileRailEl} data-native-wheel="true">
       {#each filteredProjects as project, i}
         <button
           class="mobile-card"
@@ -529,6 +547,7 @@
     scroll-padding-left: 6.5vw;
     scroll-padding-right: 6.5vw;
     -webkit-overflow-scrolling: touch;
+    touch-action: pan-y pinch-zoom;
     overscroll-behavior-x: contain;
     scrollbar-width: none;
   }
@@ -774,6 +793,7 @@
       scroll-padding-left: calc((100vw - clamp(292px,84vw,368px)) / 2);
       scroll-padding-right: calc((100vw - clamp(292px,84vw,368px)) / 2);
       -webkit-overflow-scrolling: touch;
+      touch-action: pan-y pinch-zoom;
       overscroll-behavior-x: contain;
       scrollbar-width: none;
     }

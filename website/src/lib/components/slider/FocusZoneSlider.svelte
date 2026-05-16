@@ -21,7 +21,6 @@
   let isHeaderToneActive = false;
   let hasEnteredHeaderToneZone = false;
   let visibilityObserver;
-
   const dispatch = createEventDispatcher();
 
   const clamp = (value, min = 0, max = 1) => Math.max(min, Math.min(max, value));
@@ -118,7 +117,6 @@
 
     const motionMedia = window.matchMedia?.("(prefers-reduced-motion: reduce)");
     prefersReducedMotion = motionMedia?.matches ?? false;
-
     visibilityObserver = new IntersectionObserver(
       ([entry]) => {
         isInView = !!entry?.isIntersecting;

@@ -21,13 +21,18 @@
     clearSilentNavigation,
     isSilentNavigationActive
   } from "$lib/routeTransitionState.js";
+  import {
+    clearGlobalScrollLocks,
+    clearUnexpectedGlobalScrollLocks
+  } from "$lib/scrollLocks.js";
 
   let isMobile = false;
   let isTouchDevice = false;
   let prefersReducedMotion = false;
-  let onLoad, onResize, onRouteSettled;
+  let onLoad, onResize, onRouteSettled, onPageShow, onVisibilityChange;
   let syncRaf1, syncRaf2, syncTimeout;
   let transitionRaf;
+  let scrollLockObserver;
 
   let pageWrapper;
   let transitionLayer;
@@ -37,7 +42,7 @@
 
   let wheelDamping = null;
 
-  const ENABLE_DESKTOP_WHEEL_DAMPING = true;
+  const ENABLE_DESKTOP_WHEEL_DAMPING = false;
   const DESKTOP_WHEEL_FACTOR = 0.86;
   const DESKTOP_WHEEL_LERP = 0.14;
   const DESKTOP_WHEEL_SNAP = 0.18;
@@ -65,10 +70,16 @@
       description: "Informations légales du site Agence 3 Terres."
     },
     "/projet1": {
-      title: "Projet 1 | Agence 3 Terres"
+      title: "Serein Design | Agence 3 Terres"
     },
     "/projet2": {
-      title: "Projet 2 | Agence 3 Terres"
+      title: "Hansatsu | Agence 3 Terres"
+    },
+    "/projet3": {
+      title: "Moovy | Agence 3 Terres"
+    },
+    "/projet4": {
+      title: "Ludovic | Agence 3 Terres"
     }
   };
 
@@ -138,7 +149,7 @@
   }
 
   $: pathname = $page.url.pathname.replace(/\/+$/, "") || "/";
-  $: hideFooter = ["/projet1", "/projet2", "/contact"].includes(pathname);
+  $: hideFooter = ["/projet1", "/projet2", "/projet3", "/projet4", "/contact"].includes(pathname);
   $: isTravailPage = $page.url.pathname === "/travail";
   $: currentMeta = PAGE_META[pathname] ?? PAGE_META["/"];
   $: canonicalUrl = `${SITE_URL}${pathname === "/" ? "" : pathname}`;
@@ -268,6 +279,18 @@
     transitionWipe.style.transform = "translate3d(0, calc(-100% - 140px), 0)";
   }
 
+  function settleGlobalScrollLocks() {
+    clearGlobalScrollLocks();
+    wheelDamping?.stop?.();
+  }
+
+  function enforceGlobalScrollLockIntegrity() {
+    if (clearUnexpectedGlobalScrollLocks()) {
+      wheelDamping?.stop?.();
+      forceScrollEngineUpdate();
+    }
+  }
+
   function animate(duration, render) {
     cancelAnimationFrame(transitionRaf);
 
@@ -347,6 +370,7 @@
   });
 
   afterNavigate(() => {
+    settleGlobalScrollLocks();
     syncScrollState();
 
     if (!pageWrapper || !transitionLayer || !transitionBlur || !transitionDarkness || !transitionWipe) {
@@ -384,6 +408,7 @@
     setWipeProgress(1);
 
     requestAnimationFrame(() => {
+      settleGlobalScrollLocks();
       animate(profile.exitDuration, (t) => {
         const pageEase = premiumWipeEase(t);
         const overlayFade = easeInOutSine(clamp01((t - 0.08) / 0.92));
@@ -402,10 +427,14 @@
 
         setWipeProgress(1 + exitPush * 0.045);
       }).then(() => {
+        settleGlobalScrollLocks();
         resetWrapperStyles();
         resetTransitionStyles();
       });
     });
+
+    setTimeout(() => settleGlobalScrollLocks(), 80);
+    setTimeout(() => settleGlobalScrollLocks(), 220);
   });
 
   onMount(() => {
@@ -432,11 +461,44 @@
         syncWheelDamping();
         syncScrollState();
       };
-      onRouteSettled = () => syncScrollState();
+      onRouteSettled = () => {
+        settleGlobalScrollLocks();
+        enforceGlobalScrollLockIntegrity();
+        syncScrollState();
+      };
+      onPageShow = () => {
+        settleGlobalScrollLocks();
+        enforceGlobalScrollLockIntegrity();
+        syncScrollState();
+      };
+      onVisibilityChange = () => {
+        if (document.visibilityState !== "visible") return;
+        settleGlobalScrollLocks();
+        enforceGlobalScrollLockIntegrity();
+        syncScrollState();
+      };
 
       window.addEventListener("load", onLoad);
       window.addEventListener("resize", onResize, { passive: true });
       window.addEventListener("app:route-settled", onRouteSettled);
+      window.addEventListener("pageshow", onPageShow);
+      document.addEventListener("visibilitychange", onVisibilityChange);
+
+      scrollLockObserver = new MutationObserver(() => {
+        enforceGlobalScrollLockIntegrity();
+      });
+
+      scrollLockObserver.observe(document.documentElement, {
+        attributes: true,
+        attributeFilter: ["class", "style"]
+      });
+
+      scrollLockObserver.observe(document.body, {
+        attributes: true,
+        attributeFilter: ["class", "style"],
+        childList: true,
+        subtree: false
+      });
 
       if (document.fonts?.ready) {
         document.fonts.ready.then(() => syncScrollState());
@@ -450,6 +512,8 @@
       }
 
       resetTransitionStyles();
+      settleGlobalScrollLocks();
+      enforceGlobalScrollLockIntegrity();
       await syncScrollState();
     };
 
@@ -466,9 +530,13 @@
       if (onLoad) window.removeEventListener("load", onLoad);
       if (onResize) window.removeEventListener("resize", onResize);
       if (onRouteSettled) window.removeEventListener("app:route-settled", onRouteSettled);
+      if (onPageShow) window.removeEventListener("pageshow", onPageShow);
+      if (onVisibilityChange) document.removeEventListener("visibilitychange", onVisibilityChange);
 
       wheelDamping?.destroy?.();
       wheelDamping = null;
+      scrollLockObserver?.disconnect?.();
+      scrollLockObserver = null;
 
       cleanupResizeObserver?.();
       destroyScrollEngine();

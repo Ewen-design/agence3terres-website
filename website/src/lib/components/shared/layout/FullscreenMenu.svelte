@@ -73,6 +73,10 @@
     }
   ];
 
+  const desktopProjectPreviewCards = projectPreviewCards.filter((card) =>
+    ["projet1", "projet2", "services"].includes(card.page)
+  );
+
   let visible = false;
   let expanded = false;
   let contentVisible = false;
@@ -386,7 +390,7 @@
       </nav>
 
       <aside class="project-previews" aria-label="Aperçus projets">
-        {#each projectPreviewCards.filter((card) => card.page !== "contact") as card}
+        {#each desktopProjectPreviewCards as card}
           <button
             class="project-card"
             class:large={card.large}
@@ -468,7 +472,7 @@
     </div>
 
     <div class="mobile-preview-rail ui-bottom" aria-label="Aperçus secondaires">
-      <div class="mobile-preview-scroll">
+    <div class="mobile-preview-scroll" data-native-wheel="true">
         {#each projectPreviewCards as card}
           <button
             class="mobile-preview-card"
@@ -971,6 +975,7 @@
     overflow-y: hidden;
     padding: 0 1rem;
     -webkit-overflow-scrolling: touch;
+    touch-action: pan-y pinch-zoom;
     scrollbar-width: none;
     overscroll-behavior-x: contain;
   }

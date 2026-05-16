@@ -330,7 +330,7 @@
 
   <div class="gallery-content-group">
     <div class="desktop-stack">
-      <div class="desktop-rail" bind:this={desktopRailEl}>
+      <div class="desktop-rail" bind:this={desktopRailEl} data-native-wheel="true">
         {#each items as item, index}
           <a
             class="desktop-card"
@@ -397,7 +397,7 @@
     </div>
 
     <div class="mobile-stack">
-      <div class="mobile-rail" bind:this={mobileRailEl}>
+      <div class="mobile-rail" bind:this={mobileRailEl} data-native-wheel="true">
         {#each items as item, index}
           <a
             class="mobile-card"
@@ -554,6 +554,7 @@
     scroll-padding-left: 9vw;
     scroll-padding-right: 9vw;
     -webkit-overflow-scrolling: touch;
+    touch-action: pan-y pinch-zoom;
     overscroll-behavior-x: contain;
     scrollbar-width: none;
   }
@@ -859,6 +860,7 @@
       scroll-padding-left: calc((100vw - clamp(258px,74vw,324px)) / 2);
       scroll-padding-right: calc((100vw - clamp(258px,74vw,324px)) / 2);
       -webkit-overflow-scrolling: touch;
+      touch-action: pan-y pinch-zoom;
       overscroll-behavior-x: contain;
       scrollbar-width: none;
     }

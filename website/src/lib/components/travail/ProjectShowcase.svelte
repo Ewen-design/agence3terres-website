@@ -24,8 +24,8 @@
       number: "02",
       title: "Hansatsu",
       category: "Narration visuelle",
-      lead: "Une presence plus sensorielle, plus singuliere.",
-      rest: "Un travail d'image et de narration concu pour installer une esthetique precise, immersive et raffinee autour du produit.",
+      lead: "Un site web concu pour retracer une part d'histoire japonaise.",
+      rest: "Une presence editoriale sobre et immersive, pensee pour faire circuler le regard entre recit, image et memoire.",
       image: "/images/parfum_rouge.webp",
       previewImages: [
         { src: "/images/parfum2.webp", alt: "Apercu immersif Hansatsu" },
@@ -34,10 +34,42 @@
       ],
       page: "projet2",
       button: "Voir le projet",
-      mobileInfo: ["Hansatsu", "Narration", "Image", "DA", "Contenu"]
+      mobileInfo: ["Hansatsu", "Site web", "Recit", "Japon", "Contenu"]
     },
     {
       number: "03",
+      title: "Moovy",
+      category: "Plateforme web",
+      lead: "Une recommandation de films plus simple, plus directe.",
+      rest: "Une plateforme pensee pour explorer un large catalogue et trouver rapidement le bon film selon ses gouts, son humeur et quelques questions.",
+      image: "/images/telephone_main.webp",
+      previewImages: [
+        { src: "/images/ordinateur.webp", alt: "Apercu desktop Moovy" },
+        { src: "/images/telephone_main.webp", alt: "Interface mobile Moovy" },
+        { src: "/images/telephone2.webp", alt: "Parcours de recommandation Moovy" }
+      ],
+      page: "projet3",
+      button: "Voir le projet",
+      mobileInfo: ["Moovy", "Films", "Reco", "UX", "Web app"]
+    },
+    {
+      number: "04",
+      title: "Ludovic",
+      category: "Site d'artiste",
+      lead: "Un site plus calme pour laisser respirer les oeuvres.",
+      rest: "Une presence web sobre et sensible, creee pour presenter les peintures de Ludovic avec plus de matiere, de rythme et de clarte.",
+      image: "/images/carte-copie.jpg",
+      previewImages: [
+        { src: "/images/carte-copie.jpg", alt: "Apercu oeuvre Ludovic" },
+        { src: "/images/livre.png", alt: "Detail editorial Ludovic" },
+        { src: "/images/photo.webp", alt: "Mise en page Ludovic" }
+      ],
+      page: "projet4",
+      button: "Voir le projet",
+      mobileInfo: ["Ludovic", "Art", "Peinture", "Vitrine", "Editorial"]
+    },
+    {
+      number: "05",
       title: "Votre projet ?",
       category: "Collaboration",
       lead: "Une vision a faire naitre, clarifier ou amplifier.",
@@ -398,7 +430,7 @@
   style={`--project-count:${filteredProjects.length};`}
 >
   <div class="desktop-stack">
-    <div class="desktop-rail" bind:this={desktopRailEl}>
+    <div class="desktop-rail" bind:this={desktopRailEl} data-native-wheel="true">
       {#each filteredProjects as project, i}
         <button
           class="desktop-card"
@@ -463,7 +495,7 @@
   </div>
 
   <div class="mobile-stack">
-    <div class="mobile-rail" bind:this={mobileRailEl}>
+    <div class="mobile-rail" bind:this={mobileRailEl} data-native-wheel="true">
     {#each filteredProjects as project, i}
       <button
         class="mobile-card"
@@ -656,6 +688,7 @@
     scroll-padding-left: 6.5vw;
     scroll-padding-right: 6.5vw;
     -webkit-overflow-scrolling: touch;
+    touch-action: pan-y pinch-zoom;
     overscroll-behavior-x: contain;
     scrollbar-width: none;
   }
@@ -923,6 +956,7 @@
       scroll-padding-left: calc((100vw - clamp(292px,84vw,368px)) / 2);
       scroll-padding-right: calc((100vw - clamp(292px,84vw,368px)) / 2);
       -webkit-overflow-scrolling: touch;
+      touch-action: pan-y pinch-zoom;
       overscroll-behavior-x: contain;
       scrollbar-width: none;
     }

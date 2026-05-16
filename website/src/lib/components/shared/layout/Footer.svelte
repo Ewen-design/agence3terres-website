@@ -15,14 +15,16 @@
     "/apropos": "/images/creation_logo_desktop.webp",
     "/contact": "/images/photo2.webp",
     "/projet1": "/images/parfum4.webp",
-    "/projet2": "/images/telephone2_parfum.webp"
+    "/projet2": "/images/telephone2_parfum.webp",
+    "/projet3": "/images/telephone_main.webp",
+    "/projet4": "/images/carte-copie.jpg"
   };
 
   $: pathname = $page.url.pathname.replace(/\/+$/, "") || "/";
   $: footerImage = footerImages[pathname] ?? footerImages["/"];
   $: footerThemeClass =
     pathname === "/services" ? "theme-services" :
-    ["/travail", "/projet1", "/projet2"].includes(pathname) ? "theme-projets" :
+    ["/travail", "/projet1", "/projet2", "/projet3", "/projet4"].includes(pathname) ? "theme-projets" :
     pathname === "/apropos" ? "theme-apropos" :
     pathname === "/contact" ? "theme-contact" :
     "theme-home";

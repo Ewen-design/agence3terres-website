@@ -73,41 +73,41 @@ export const projectPages = {
   projet2: {
     slug: "projet2",
     title: "Hansatsu",
-    category: "Narration visuelle",
+    category: "Site web narratif",
     year: "2025",
     hero: {
       image: "/images/parfum_rouge.webp",
       alt: "Hero Hansatsu",
-      summaryMain: "Une présence plus dense, plus sensorielle, plus marquante.",
-      summaryMuted: "Un langage visuel pensé pour faire ressentir avant d'expliquer.",
-      meta: ["Direction artistique", "Narration", "UI"]
+      summaryMain: "Un site web plus dense, plus editorial, plus immersif.",
+      summaryMuted: "Concu pour retracer un fragment d'histoire japonaise avec precision et retenue.",
+      meta: ["Site web", "Narration", "Direction artistique"]
     },
     intro: {
-      title: "Créer une tension.",
-      text: "Moins de démonstration. Plus de sensation. Une image qui tient immédiatement."
+      title: "Faire tenir le recit.",
+      text: "Mettre en forme un fragment d'histoire japonaise avec une lecture fluide, une image juste et un rythme plus tenu."
     },
     slider: {
       title: "Trois mouvements, une même intensité.",
       slides: [
         {
           number: "01",
-          label: "Direction artistique",
+          label: "Site web",
           title: "Installer",
-          text: "Une ambiance immédiate. Une image plus dense.",
+          text: "Une ambiance immediate. Une lecture plus recueillie.",
           image: "/images/parfum2.webp"
         },
         {
           number: "02",
-          label: "Identité",
+          label: "Narration",
           title: "Tenir",
-          text: "Un territoire plus singulier. Un rythme plus juste.",
+          text: "Un fil editorial plus clair. Un rythme plus juste.",
           image: "/images/parfum3.webp"
         },
         {
           number: "03",
-          label: "UI design",
+          label: "Direction artistique",
           title: "Prolonger",
-          text: "L'intensité continue dans l'écran sans perdre la lecture.",
+          text: "L'histoire continue dans l'ecran sans perdre la lisibilite.",
           image: "/images/parfum_ordinateur.webp"
         }
       ]
@@ -138,6 +138,148 @@ export const projectPages = {
         { src: "/images/parfum_ordinateur.webp", alt: "Vue desktop Hansatsu", layout: "wide" },
         { src: "/images/telephone_parfum.webp", alt: "Vue mobile Hansatsu", layout: "portrait" },
         { src: "/images/parfum_rouge.webp", alt: "Visuel hero Hansatsu", layout: "full" }
+      ]
+    }
+  },
+  projet3: {
+    slug: "projet3",
+    title: "Moovy",
+    category: "Plateforme web",
+    year: "2025",
+    hero: {
+      image: "/images/telephone_main.webp",
+      alt: "Hero Moovy",
+      summaryMain: "Une recherche de films plus claire, plus rapide, plus fluide.",
+      summaryMuted: "Un site pense pour explorer un large choix de films et trouver facilement le bon selon ses envies.",
+      meta: ["UX", "UI", "Site web"]
+    },
+    intro: {
+      title: "Guider sans friction.",
+      text: "Faire gagner du temps. Ouvrir le catalogue. Rendre la bonne recommandation plus simple a atteindre."
+    },
+    slider: {
+      title: "Trois gestes pour rendre le choix plus simple.",
+      slides: [
+        {
+          number: "01",
+          label: "Catalogue",
+          title: "Ouvrir",
+          text: "Une selection large. Une lecture immediate.",
+          image: "/images/ordinateur.webp"
+        },
+        {
+          number: "02",
+          label: "Recommendation",
+          title: "Qualifier",
+          text: "Quelques questions. Une orientation plus juste.",
+          image: "/images/telephone_main.webp"
+        },
+        {
+          number: "03",
+          label: "Interface",
+          title: "Aboutir",
+          text: "Un parcours rapide. Une decision sans surcharge.",
+          image: "/images/telephone2.webp"
+        }
+      ]
+    },
+    galleryPrimary: {
+      title: "Un outil qui reste desiré.",
+      text: "Le site combine une recherche simple, une recommandation guidee et une presence visuelle plus nette.",
+      images: [
+        { src: "/images/ordinateur.webp", alt: "Vue large Moovy", layout: "panorama" },
+        { src: "/images/telephone_main.webp", alt: "Vue mobile Moovy", layout: "square" },
+        { src: "/images/telephone2.webp", alt: "Questionnaire Moovy", layout: "square" }
+      ]
+    },
+    fullscreen: {
+      image: "/images/telephone_main.webp",
+      alt: "Vue immersive Moovy",
+      title: "Choisir plus vite.",
+      text: "Sans perdre la sensation d'exploration."
+    },
+    detail: {
+      title: "L'interface tient surtout par sa clarte.",
+      text: "Chaque ecran reste lisible, rapide et utile, qu'il s'agisse d'explorer ou de repondre a quelques questions."
+    },
+    gallerySecondary: {
+      title: "Puis le parcours se resserre.",
+      text: "Desktop, mobile et recommendation gardent la meme fluidite d'usage.",
+      images: [
+        { src: "/images/ordinateur.webp", alt: "Vue desktop Moovy", layout: "wide" },
+        { src: "/images/telephone2.webp", alt: "Vue mobile Moovy", layout: "portrait" },
+        { src: "/images/telephone_main.webp", alt: "Visuel hero Moovy", layout: "full" }
+      ]
+    }
+  },
+  projet4: {
+    slug: "projet4",
+    title: "Ludovic",
+    category: "Site d'artiste",
+    year: "2025",
+    hero: {
+      image: "/images/carte-copie.jpg",
+      alt: "Hero Ludovic",
+      summaryMain: "Un site plus calme, plus matiere, plus ouvert.",
+      summaryMuted: "Pense pour presenter les oeuvres peintes de Ludovic avec plus d'espace, de rythme et de sensibilite.",
+      meta: ["Site web", "Direction artistique", "Editorial"]
+    },
+    intro: {
+      title: "Laisser respirer les oeuvres.",
+      text: "Donner plus d'air aux peintures. Faire tenir le regard. Installer une lecture sobre et sensible."
+    },
+    slider: {
+      title: "Trois gestes pour mettre l'oeuvre au centre.",
+      slides: [
+        {
+          number: "01",
+          label: "Direction artistique",
+          title: "Epurer",
+          text: "Moins d'effets. Plus de respiration.",
+          image: "/images/carte-copie.jpg"
+        },
+        {
+          number: "02",
+          label: "Editorial",
+          title: "Cadencer",
+          text: "Un rythme plus juste entre image, texte et vide.",
+          image: "/images/livre.png"
+        },
+        {
+          number: "03",
+          label: "Site web",
+          title: "Presenter",
+          text: "Une vitrine claire pour laisser la peinture prendre la place.",
+          image: "/images/photo.webp"
+        }
+      ]
+    },
+    galleryPrimary: {
+      title: "Une presence plus contemplative.",
+      text: "Les formats, les marges et la matiere servent d'abord les oeuvres et leur lecture.",
+      images: [
+        { src: "/images/photo.webp", alt: "Vue large Ludovic", layout: "panorama" },
+        { src: "/images/carte-copie.jpg", alt: "Detail oeuvre Ludovic", layout: "square" },
+        { src: "/images/livre.png", alt: "Composition editoriale Ludovic", layout: "square" }
+      ]
+    },
+    fullscreen: {
+      image: "/images/photo.webp",
+      alt: "Vue immersive Ludovic",
+      title: "L'oeuvre reste devant.",
+      text: "Le site accompagne, sans prendre la place."
+    },
+    detail: {
+      title: "Tout tient dans le rythme.",
+      text: "Les espacements, les contrastes et la matiere guident la lecture pour mettre en valeur chaque peinture."
+    },
+    gallerySecondary: {
+      title: "Puis des vues plus proches.",
+      text: "Le projet garde la meme retenue sur les plans larges, les details et les surfaces plus compactes.",
+      images: [
+        { src: "/images/livre.png", alt: "Vue editoriale Ludovic", layout: "wide" },
+        { src: "/images/carte-copie.jpg", alt: "Vue verticale Ludovic", layout: "portrait" },
+        { src: "/images/photo.webp", alt: "Visuel hero Ludovic", layout: "full" }
       ]
     }
   }

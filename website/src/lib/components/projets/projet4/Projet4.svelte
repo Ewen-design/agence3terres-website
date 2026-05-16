@@ -1,5 +1,5 @@
 <svelte:head>
-  <title>Projet 2 | Agence 3 Terres</title>
+  <title>Ludovic | Agence 3 Terres</title>
 </svelte:head>
 
 <script>
@@ -68,24 +68,22 @@
 
 <div class={`project-theme-band ${introBandTheme}`}>
   <ProjectHeroProjetsStyle
-    title="Hansatsu"
-    image="/images/parfum_rouge.webp"
+    title="Ludovic"
+    image="/images/carte-copie.jpg"
     metaBlocks={[
       { label: "Date", value: "2025 - Present" },
-      { label: "Localisation", value: "Japon" },
+      { label: "Localisation", value: "France" },
       {
         label: "Services",
-        value: ["Site web", "Narration", "Direction artistique"]
+        value: ["Site web", "Direction visuelle", "Editorial"]
       }
     ]}
     ctaLabel="Visiter le site"
   />
 
   <ProjectScrollScaleReveal
-    image="/images/parfum2.webp"
-    alt="Image immersive du projet 2"
-    startScale={0.84}
-    endScale={1.02}
+    image="/images/photo.webp"
+    alt="Image immersive du projet Ludovic"
     startBackground="#000"
     endBackground="#f7f5f1"
     snapBackground={true}
@@ -97,21 +95,21 @@
   <ProjectEditorialRole
     title="Notre rôle"
     images={[
-      { src: "/images/parfum4.webp", alt: "Composition visuelle large du projet 2" },
-      { src: "/images/parfum2.webp", alt: "Univers principal du projet 2" }
+      { src: "/images/photo.webp", alt: "Composition visuelle large du projet Ludovic" },
+      { src: "/images/carte-copie.jpg", alt: "Univers principal du projet Ludovic" }
     ]}
     items={[
       {
-        title: "Conception du site web",
-        text: "Nous avons structure le site pour retracer un fragment d'histoire japonaise avec une lecture plus claire et plus immersive."
+        title: "Site vitrine artiste",
+        text: "Une structure sobre pour presenter les oeuvres peintes de Ludovic avec davantage d'espace et de tenue."
       },
       {
-        title: "Narration editoriale",
-        text: "Le rythme entre textes, images et respirations sert le recit sans l'alourdir."
+        title: "Direction editoriale",
+        text: "Le rythme entre images, titres et respirations laisse la peinture prendre naturellement le premier plan."
       },
       {
         title: "Experience mobile",
-        text: "Chaque ecran prolonge l'histoire avec precision, tout en gardant une lecture simple et stable."
+        text: "Chaque oeuvre garde sa presence sur mobile grace a une lecture plus aeree et plus directe."
       }
     ]}
   />
@@ -120,21 +118,22 @@
 <div class="project-theme-band theme-light">
   <ProjectEditorialSplit
     title="Interface mobile"
-    text="Une lecture plus recueillie et plus nette. Le projet garde sa tenue jusque dans les vues les plus rapprochees."
-    image="/images/telephone_parfum.webp"
-    alt="Vue mobile projet 2"
+    text="Une presence plus calme et plus sensible. Le projet garde son espace jusque dans les vues les plus rapprochees."
+    image="/images/carte-copie.jpg"
+    alt="Vue mobile projet Ludovic"
+    mediaMinHeight="52.5rem"
   />
 
   <ProjectEditorialStatement
-    eyebrow="Recit et rythme"
-    text="Le projet avance par contraste mesure, par respiration editoriale et par une image qui soutient le recit sans le couvrir."
+    eyebrow="Matiere et respiration"
+    text="Le projet avance surtout par contraste doux, par espaces justes et par une mise en page qui laisse les oeuvres respirer."
   />
 
   <ProjectEditorialSplit
     title="Vue desktop"
-    text="Sur desktop, le site reste net et immersif. Les rapports d'echelle, les marges et la densite d'image portent l'ensemble."
-    image="/images/parfum_ordinateur.webp"
-    alt="Vue desktop projet 2"
+    text="Sur desktop, la structure reste volontairement retenue pour donner plus de place aux peintures et a leur detail."
+    image="/images/livre.png"
+    alt="Vue desktop projet Ludovic"
     reverse={true}
   />
 </div>
@@ -143,83 +142,82 @@
   on:slideractivechange={handleSliderActiveChange}
   slides={[
     {
-      label: "Site web",
-      title: "Installer",
-      text: "Une ambiance immediate. Une lecture plus recueillie.",
-      image: "/images/parfum2.webp"
-    },
-    {
-      label: "Narration",
-      title: "Tenir",
-      text: "Un fil editorial plus clair. Un rythme plus juste.",
-      image: "/images/parfum3.webp"
-    },
-    {
       label: "Direction artistique",
-      title: "Prolonger",
-      text: "L'histoire continue dans l'ecran sans perdre la lisibilite.",
-      image: "/images/parfum_ordinateur.webp"
+      title: "Epurer",
+      text: "Moins d'effets. Plus de respiration.",
+      image: "/images/carte-copie.jpg"
+    },
+    {
+      label: "Editorial",
+      title: "Cadencer",
+      text: "Un rythme plus juste entre image, texte et vide.",
+      image: "/images/livre.png"
+    },
+    {
+      label: "Site web",
+      title: "Presenter",
+      text: "Une vitrine claire pour laisser la peinture prendre la place.",
+      image: "/images/photo.webp"
     }
   ]}
 />
 
 <div class="project-theme-band theme-light">
   <ProjectEditorialMobileShowcase
-    text="L'experience mobile devait porter le recit avec la meme precision, la meme tenue et la meme sensation d'immersion."
-    leftImage="/images/parfum3.webp"
-    leftAlt="Interface projet 2 sur fond sombre"
-    rightImage="/images/telephone_parfum.webp"
-    rightAlt="Mise en situation mobile projet 2"
+    text="Le mobile devait rester discret pour que la matiere des oeuvres et la lecture des series gardent toute leur presence."
+    leftImage="/images/photo.webp"
+    leftAlt="Interface mobile verticale Ludovic"
+    rightImage="/images/carte-copie.jpg"
+    rightAlt="Mise en situation mobile Ludovic"
+    mediaMinHeight="46.5rem"
   />
 </div>
 
 <div class={`project-theme-band ${outroBandTheme}`}>
   <ProjectEditorialHoverMosaic
-    text="Le premier visuel ouvre le recit, puis deux plans plus proches gardent une meme retenue avec un hover lent, sombre et immersif."
+    text="Un premier visuel plus ouvert, puis deux plans plus proches qui gardent le meme calme avec une interaction lente et discrete au survol."
     feature={{
-      src: "/images/parfum4.webp",
-      alt: "Grand visuel projet 2",
-      titleLeft: "Visual",
-      titleRight: "Tension",
+      src: "/images/photo.webp",
+      alt: "Grand visuel projet Ludovic",
+      titleLeft: "Art",
+      titleRight: "Space",
       hoverImages: [
-        { src: "/images/parfum2.webp", alt: "Aperçu immersif projet 2" },
-        { src: "/images/parfum3.webp", alt: "Aperçu sensoriel projet 2" },
-        { src: "/images/parfum_ordinateur.webp", alt: "Aperçu desktop projet 2" }
+        { src: "/images/carte-copie.jpg", alt: "Apercu oeuvre Ludovic" },
+        { src: "/images/livre.png", alt: "Apercu editorial Ludovic" },
+        { src: "/images/photo.webp", alt: "Apercu grand format Ludovic" }
       ]
     }}
     items={[
       {
-        src: "/images/parfum_ordinateur.webp",
-        alt: "Vue desktop projet 2",
-        titleLeft: "Desktop",
-        titleRight: "Scene",
+        src: "/images/carte-copie.jpg",
+        alt: "Vue oeuvre projet Ludovic",
+        titleLeft: "Paint",
+        titleRight: "Detail",
         hoverImages: [
-          { src: "/images/parfum3.webp", alt: "Détail visuel projet 2" },
-          { src: "/images/telephone_parfum.webp", alt: "Vue mobile projet 2" },
-          { src: "/images/parfum4.webp", alt: "Univers projet 2" }
+          { src: "/images/photo.webp", alt: "Detail oeuvre Ludovic" },
+          { src: "/images/livre.png", alt: "Vue editoriale Ludovic" },
+          { src: "/images/carte-copie.jpg", alt: "Hero projet Ludovic" }
         ]
       },
       {
-        src: "/images/parfum3.webp",
-        alt: "Composition visuelle projet 2",
-        titleLeft: "Visual",
-        titleRight: "Rhythm",
+        src: "/images/livre.png",
+        alt: "Vue desktop projet Ludovic",
+        titleLeft: "Studio",
+        titleRight: "Flow",
         hoverImages: [
-          { src: "/images/parfum2.webp", alt: "Aperçu immersif projet 2" },
-          { src: "/images/parfum_ordinateur.webp", alt: "Vue desktop projet 2" },
-          { src: "/images/telephone_parfum.webp", alt: "Interface mobile projet 2" }
+          { src: "/images/carte-copie.jpg", alt: "Détail oeuvre Ludovic" },
+          { src: "/images/photo.webp", alt: "Vue large Ludovic" },
+          { src: "/images/livre.png", alt: "Autre vue editoriale Ludovic" }
         ]
       }
     ]}
   />
 
   <ProjectScrollScaleReveal
-    image="/images/parfum2.webp"
-    alt="Transition de fin du projet 2"
+    image="/images/carte-copie.jpg"
+    alt="Transition de fin du projet Ludovic"
     reverse={true}
     sectionHeight={168}
-    startScale={0.84}
-    endScale={1.02}
     startBackground="#f7f5f1"
     endBackground="#000"
     snapBackground={true}
@@ -228,7 +226,5 @@
     on:themechange={handleOutroThemeChange}
   />
 
-  <ProjectLinksCarousel
-    currentPage="projet2"
-  />
+  <ProjectLinksCarousel currentPage="projet4" />
 </div>

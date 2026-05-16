@@ -192,7 +192,7 @@
   </div>
 
   <div class="principles-mobile" aria-label="Principes Agence 3 Terres">
-    <div class="principles-mobile-track" bind:this={mobileTrackEl} on:scroll={handleMobileTrackScroll}>
+    <div class="principles-mobile-track" bind:this={mobileTrackEl} on:scroll={handleMobileTrackScroll} data-native-wheel="true">
       {#each items as item, index}
         <article
           bind:this={mobileCardEls[index]}
@@ -445,6 +445,7 @@
       padding: 0 1rem 0.45rem 0;
       scrollbar-width: none;
       -webkit-overflow-scrolling: touch;
+      touch-action: pan-y pinch-zoom;
       overscroll-behavior-x: contain;
     }
 

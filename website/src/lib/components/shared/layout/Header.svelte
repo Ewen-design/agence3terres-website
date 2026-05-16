@@ -288,7 +288,7 @@
 
   $: themeClass =
     pathname === "/services" ? "theme-services" :
-    ["/travail", "/projet1", "/projet2"].includes(pathname) ? "theme-projets" :
+    ["/travail", "/projet1", "/projet2", "/projet3", "/projet4"].includes(pathname) ? "theme-projets" :
     pathname === "/apropos" ? "theme-apropos" :
     pathname === "/contact" ? "theme-contact" :
     "";
@@ -313,6 +313,10 @@
   function handleProjectHeaderTone(event) {
     projectHeaderTone = event.detail?.tone ?? null;
     updateTextColor();
+  }
+
+  function hasActivePreloader() {
+    return !!document.getElementById("site-intro-loader");
   }
 
   onMount(() => {
@@ -361,6 +365,10 @@
     window.addEventListener("project-header-tone", handleProjectHeaderTone);
 
     markHeaderReady();
+
+    if (!hasActivePreloader()) {
+      handlePreloaderDone();
+    }
 
     headerIntroFallback = setTimeout(async () => {
       await markHeaderReady();
@@ -613,7 +621,7 @@
     backface-visibility: hidden;
     -webkit-backface-visibility: hidden;
     border-radius: 2px;
-    box-shadow: 0 6px 8px rgba(0, 0, 0, 0.04);
+    box-shadow: 0 6px 8px rgba(0, 0, 0, 0);
     transition:
       color 220ms ease,
       transform 1.2s cubic-bezier(.22,.61,.36,1),

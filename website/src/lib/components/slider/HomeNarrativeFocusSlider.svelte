@@ -13,11 +13,25 @@
       number: "02",
       title: "Hansatsu",
       description:
-        "Une présence plus sensorielle, construite par l’image et la narration.",
+        "Le site web d'un projet qui retrace un fragment d'histoire japonaise avec sobriete et precision.",
       image: "/images/parfum_rouge.webp"
     },
     {
       number: "03",
+      title: "Moovy",
+      description:
+        "Une plateforme de recommandation de films qui aide a trouver rapidement le bon choix selon ses envies.",
+      image: "/images/telephone_main.webp"
+    },
+    {
+      number: "04",
+      title: "Ludovic",
+      description:
+        "Un site d'artiste pense pour presenter des oeuvres peintes avec calme, texture et clarte.",
+      image: "/images/carte-copie.jpg"
+    },
+    {
+      number: "05",
       title: "Votre\nprojet ?",
       description:
         "Une approche sur mesure pour révéler une singularité avec exigence et impact.",
@@ -25,7 +39,7 @@
     }
   ];
 
-  const slideLinks = ["/projet1", "/projet2", "/contact"];
+  const slideLinks = ["/projet1", "/projet2", "/projet3", "/projet4", "/contact"];
 </script>
 
 <FocusZoneSlider {slides} {slideLinks} zoneHeight="33svh" />
