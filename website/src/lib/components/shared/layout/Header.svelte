@@ -38,12 +38,15 @@
   let tourTimer;
   let tourRaf;
   let isTouringNow = false;
+  let downwardScrollProgress = 0;
 
   let themedSections = [];
   let refreshSectionsRaf = 0;
   let mixSliderHeaderTone = null;
   let projectHeaderTone = null;
   const SCROLL_THRESHOLD = 10;
+  const COMPACT_TRIGGER_Y = 80;
+  const COMPACT_DOWNWARD_DISTANCE = 360;
   const LIGHT_TEXT_COLOR = "#000";
   const SECTION_SELECTOR =
     "section.hero-wrapper, section.creative-section, section.services, section.dna-section, section.lifestyles-section";
@@ -69,8 +72,16 @@
     atTopOfPage = currentY <= 24;
 
     if (Math.abs(delta) >= SCROLL_THRESHOLD) {
-      if (delta > 0 && currentY > 80) scrollingDown = true;
-      else if (delta < 0) scrollingDown = false;
+      if (delta > 0) {
+        downwardScrollProgress += delta;
+
+        if (currentY > COMPACT_TRIGGER_Y && downwardScrollProgress >= COMPACT_DOWNWARD_DISTANCE) {
+          scrollingDown = true;
+        }
+      } else if (delta < 0) {
+        downwardScrollProgress = 0;
+        scrollingDown = false;
+      }
 
       lastScrollY = currentY;
     }
@@ -323,6 +334,7 @@
     let destroyed = false;
 
     lastScrollY = window.scrollY || 0;
+    downwardScrollProgress = 0;
     refreshThemeSections();
     linksTextReady = false;
 
