@@ -176,6 +176,11 @@
 <div class={`project-theme-band ${outroBandTheme}`}>
   <ProjectEditorialHoverMosaic
     text="Un premier visuel plus ouvert, puis deux plans plus proches qui gardent le meme calme avec une interaction lente et discrete au survol."
+    startBackground="#f7f5f1"
+    endBackground="#000"
+    themeBeforeSwitch="light"
+    themeAfterSwitch="dark"
+    on:themechange={handleOutroThemeChange}
     feature={{
       src: "/images/photo.webp",
       alt: "Grand visuel projet Ludovic",
@@ -211,19 +216,6 @@
         ]
       }
     ]}
-  />
-
-  <ProjectScrollScaleReveal
-    image="/images/carte-copie.jpg"
-    alt="Transition de fin du projet Ludovic"
-    reverse={true}
-    sectionHeight={168}
-    startBackground="#f7f5f1"
-    endBackground="#000"
-    snapBackground={true}
-    themeBeforeSwitch="light"
-    themeAfterSwitch="dark"
-    on:themechange={handleOutroThemeChange}
   />
 
   <ProjectLinksCarousel currentPage="projet4" />

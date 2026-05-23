@@ -176,6 +176,11 @@
 <div class={`project-theme-band ${outroBandTheme}`}>
   <ProjectEditorialHoverMosaic
     text="Le premier visuel ouvre le recit, puis deux plans plus proches gardent une meme retenue avec un hover lent, sombre et immersif."
+    startBackground="#f7f5f1"
+    endBackground="#000"
+    themeBeforeSwitch="light"
+    themeAfterSwitch="dark"
+    on:themechange={handleOutroThemeChange}
     feature={{
       src: "/images/parfum4.webp",
       alt: "Grand visuel projet 2",
@@ -211,21 +216,6 @@
         ]
       }
     ]}
-  />
-
-  <ProjectScrollScaleReveal
-    image="/images/parfum2.webp"
-    alt="Transition de fin du projet 2"
-    reverse={true}
-    sectionHeight={168}
-    startScale={0.84}
-    endScale={1.02}
-    startBackground="#f7f5f1"
-    endBackground="#000"
-    snapBackground={true}
-    themeBeforeSwitch="light"
-    themeAfterSwitch="dark"
-    on:themechange={handleOutroThemeChange}
   />
 
   <ProjectLinksCarousel

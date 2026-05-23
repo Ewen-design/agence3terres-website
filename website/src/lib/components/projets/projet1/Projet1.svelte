@@ -176,6 +176,11 @@
 <div class={`project-theme-band ${outroBandTheme}`}>
   <ProjectEditorialHoverMosaic
     text="Un grand plan d'ouverture, puis deux vues plus proches qui gardent le même calme visuel avec une interaction discrète au survol."
+    startBackground="#f7f5f1"
+    endBackground="#000"
+    themeBeforeSwitch="light"
+    themeAfterSwitch="dark"
+    on:themechange={handleOutroThemeChange}
     feature={{
       src: "/images/serein_design.webp",
       alt: "Grand visuel projet 1",
@@ -211,19 +216,6 @@
         ]
       }
     ]}
-  />
-
-  <ProjectScrollScaleReveal
-    image="/images/telephone2.webp"
-    alt="Transition de fin du projet 1"
-    reverse={true}
-    sectionHeight={168}
-    startBackground="#f7f5f1"
-    endBackground="#000"
-    snapBackground={true}
-    themeBeforeSwitch="light"
-    themeAfterSwitch="dark"
-    on:themechange={handleOutroThemeChange}
   />
 
   <ProjectLinksCarousel

@@ -1,6 +1,13 @@
 <script>
-  import { onMount } from "svelte";
+  import { createEventDispatcher, onMount } from "svelte";
   import { browser } from "$app/environment";
+  import {
+    forceScrollEngineUpdate,
+    registerParallax,
+    registerWrite,
+    unregisterParallax,
+    unregisterWrite
+  } from "$lib/scrollEngine.js";
 
   export let text = "";
   export let feature = {
@@ -11,10 +18,46 @@
     hoverImages: [],
   };
   export let items = [];
+  export let startBackground = "#f7f5f1";
+  export let endBackground = "#000";
+  export let themeBeforeSwitch = null;
+  export let themeAfterSwitch = null;
 
+  let sectionEl;
   let tileEls = [];
   let centeredIndex = -1;
   let resizeTimer;
+  let sectionTop = 0;
+  let sectionHeightPx = 1;
+  let currentTheme = null;
+  let pendingFrame = null;
+  let dirty = false;
+
+  const dispatch = createEventDispatcher();
+  const applied = {
+    progress: -1
+  };
+
+  const clamp = (value, min = 0, max = 1) => Math.max(min, Math.min(max, value));
+
+  function smoothstep(edge0, edge1, value) {
+    const t = clamp((value - edge0) / (edge1 - edge0));
+    return t * t * (3 - 2 * t);
+  }
+
+  function getScrollY() {
+    return window.scrollY || window.pageYOffset || 0;
+  }
+
+  function getAbsoluteTop(node) {
+    const rect = node?.getBoundingClientRect();
+    return rect ? rect.top + getScrollY() : 0;
+  }
+
+  function measureLayout() {
+    sectionTop = getAbsoluteTop(sectionEl);
+    sectionHeightPx = Math.max(sectionEl?.offsetHeight || 1, 1);
+  }
 
   function updateCenteredTile() {
     if (!browser || window.innerWidth > 900) {
@@ -44,28 +87,96 @@
 
   function handleResize() {
     clearTimeout(resizeTimer);
-    resizeTimer = setTimeout(updateCenteredTile, 80);
+    resizeTimer = setTimeout(() => {
+      measureLayout();
+      updateCenteredTile();
+      forceScrollEngineUpdate();
+    }, 80);
+  }
+
+  function handleParallax(y, ctx) {
+    if (!sectionEl) return;
+
+    const viewportH = ctx?.vh || window.innerHeight || 1;
+    const rawProgress = (y + viewportH - sectionTop) / (sectionHeightPx + viewportH);
+    const progress = clamp(rawProgress, 0, 1);
+    const backgroundProgress = smoothstep(0.38, 0.62, progress);
+
+    pendingFrame = {
+      progress: Math.round(backgroundProgress * 1000) / 1000
+    };
+
+    const nextTheme =
+      themeBeforeSwitch && themeAfterSwitch
+        ? backgroundProgress >= 0.5
+          ? themeAfterSwitch
+          : themeBeforeSwitch
+        : null;
+
+    if (nextTheme && nextTheme !== currentTheme) {
+      currentTheme = nextTheme;
+      dispatch("themechange", { theme: nextTheme, progress: backgroundProgress });
+    }
+
+    dirty = true;
+  }
+
+  function handleWrite() {
+    if (!dirty || !pendingFrame || !sectionEl) return;
+
+    if (pendingFrame.progress !== applied.progress) {
+      sectionEl.style.setProperty("--mosaic-bg-progress", `${pendingFrame.progress}`);
+      applied.progress = pendingFrame.progress;
+    }
+
+    dirty = false;
   }
 
   onMount(() => {
     if (!browser) return;
 
+    let resizeObserver;
+
+    measureLayout();
     updateCenteredTile();
+    registerParallax(handleParallax, { priority: 3 });
+    registerWrite(handleWrite, { priority: 3 });
 
     window.addEventListener("scroll", updateCenteredTile, { passive: true });
     window.addEventListener("resize", handleResize, { passive: true });
     window.addEventListener("orientationchange", handleResize, { passive: true });
 
+    if (typeof ResizeObserver !== "undefined") {
+      resizeObserver = new ResizeObserver(() => {
+        handleResize();
+      });
+
+      if (sectionEl) resizeObserver.observe(sectionEl);
+    }
+
+    requestAnimationFrame(() => {
+      measureLayout();
+      forceScrollEngineUpdate();
+    });
+
     return () => {
+      unregisterParallax(handleParallax);
+      unregisterWrite(handleWrite);
       window.removeEventListener("scroll", updateCenteredTile);
       window.removeEventListener("resize", handleResize);
       window.removeEventListener("orientationchange", handleResize);
       clearTimeout(resizeTimer);
+      resizeObserver?.disconnect();
     };
   });
 </script>
 
-<section class="project-editorial-hover-mosaic">
+<section
+  class="project-editorial-hover-mosaic"
+  bind:this={sectionEl}
+  style={`--project-surface-bg-start:${startBackground}; --project-surface-bg-end:${endBackground};`}
+>
+  <div class="project-editorial-hover-mosaic__bg-layer" aria-hidden="true"></div>
   <div class="project-editorial-hover-mosaic__grid">
     <article
       class="project-editorial-hover-mosaic__tile project-editorial-hover-mosaic__tile--feature"
@@ -161,17 +272,36 @@
 
 <style>
   .project-editorial-hover-mosaic {
+    --mosaic-bg-progress: 0;
+    position: relative;
     padding:
       clamp(4.5rem, 7vw, 7rem)
       max(0.45rem, calc(var(--project-side-padding, 1.25rem) * 0.55))
       clamp(5rem, 8vw, 8rem);
     background:
       radial-gradient(circle at top, rgba(255, 255, 255, 0.1), transparent 40%),
-      var(--project-surface-bg, #f7f5f1);
-    color: var(--project-surface-ink, #171412);
+      var(--project-surface-bg-start, var(--project-surface-bg, #f7f5f1));
+    color: color-mix(
+      in srgb,
+      var(--project-surface-ink, #171412) calc((1 - var(--mosaic-bg-progress)) * 100%),
+      #f5f1e8 calc(var(--mosaic-bg-progress) * 100%)
+    );
+    isolation: isolate;
+  }
+
+  .project-editorial-hover-mosaic__bg-layer {
+    position: absolute;
+    inset: 0;
+    background: var(--project-surface-bg-end, #000);
+    opacity: var(--mosaic-bg-progress);
+    pointer-events: none;
+    transition: opacity 520ms cubic-bezier(0.22, 1, 0.36, 1);
+    z-index: 0;
   }
 
   .project-editorial-hover-mosaic__intro {
+    position: relative;
+    z-index: 1;
     display: flex;
     justify-content: flex-start;
     margin: clamp(1.35rem, 2vw, 1.8rem) 0 0;
@@ -191,10 +321,13 @@
     font-size: var(--project-lead-size, clamp(1.35rem, 2.7vw, 2.8rem));
     line-height: 0.98;
     letter-spacing: -0.05em;
+    transition: color 520ms cubic-bezier(0.22, 1, 0.36, 1);
   }
 
   .project-editorial-hover-mosaic__grid {
     --mosaic-tile-height: min(98vh, 76rem);
+    position: relative;
+    z-index: 1;
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: clamp(0.45rem, 0.8vw, 0.7rem);

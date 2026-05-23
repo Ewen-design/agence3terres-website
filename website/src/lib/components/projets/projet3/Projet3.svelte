@@ -176,6 +176,11 @@
 <div class={`project-theme-band ${outroBandTheme}`}>
   <ProjectEditorialHoverMosaic
     text="Un premier plan plus large pour ouvrir l'univers, puis deux vues resserrees qui gardent la meme clarte avec une interaction discrete au survol."
+    startBackground="#f7f5f1"
+    endBackground="#000"
+    themeBeforeSwitch="light"
+    themeAfterSwitch="dark"
+    on:themechange={handleOutroThemeChange}
     feature={{
       src: "/images/ordinateur.webp",
       alt: "Grand visuel projet Moovy",
@@ -211,19 +216,6 @@
         ]
       }
     ]}
-  />
-
-  <ProjectScrollScaleReveal
-    image="/images/telephone_main.webp"
-    alt="Transition de fin du projet Moovy"
-    reverse={true}
-    sectionHeight={168}
-    startBackground="#f7f5f1"
-    endBackground="#000"
-    snapBackground={true}
-    themeBeforeSwitch="light"
-    themeAfterSwitch="dark"
-    on:themechange={handleOutroThemeChange}
   />
 
   <ProjectLinksCarousel currentPage="projet3" />
