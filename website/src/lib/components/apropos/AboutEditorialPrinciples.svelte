@@ -443,9 +443,13 @@
       min-height: 75vh;
       align-items: stretch;
       padding: 0 1rem 0.45rem 0;
+      scroll-snap-type: x mandatory;
+      scroll-snap-stop: always;
+      scroll-padding-left: 0;
+      scroll-padding-right: 1rem;
       scrollbar-width: none;
       -webkit-overflow-scrolling: touch;
-      touch-action: pan-y pinch-zoom;
+      touch-action: pan-x pan-y pinch-zoom;
       overscroll-behavior-x: contain;
     }
 
@@ -501,6 +505,8 @@
       flex: 0 0 82vw;
       min-width: 82vw;
       min-height: 75vh;
+      scroll-snap-align: start;
+      scroll-snap-stop: always;
       padding: 1rem 0.15rem 0.2rem 0;
       display: flex;
       flex-direction: column;

@@ -39,6 +39,7 @@
   let tourRaf;
   let isTouringNow = false;
   let downwardScrollProgress = 0;
+  const hoverFlipTimers = new WeakMap();
 
   let themedSections = [];
   let refreshSectionsRaf = 0;
@@ -153,6 +154,23 @@
     const rect = btn.getBoundingClientRect();
     btn.style.setProperty("--mx", `${e.clientX - rect.left}px`);
     btn.style.setProperty("--my", `${e.clientY - rect.top}px`);
+  }
+
+  function triggerHoverFlip(event) {
+    const btn = event.currentTarget;
+    if (!btn || btn.classList.contains("more")) return;
+
+    clearTimeout(hoverFlipTimers.get(btn));
+    btn.classList.remove("is-hover-flipping");
+    void btn.offsetWidth;
+    btn.classList.add("is-hover-flipping");
+
+    const timer = setTimeout(() => {
+      btn.classList.remove("is-hover-flipping");
+      hoverFlipTimers.delete(btn);
+    }, 460);
+
+    hoverFlipTimers.set(btn, timer);
   }
 
   function startTour() {
@@ -417,6 +435,10 @@
     clearTimeout(headerIntroFallback);
     clearTimeout(headerIntroCleanup);
     clearTimeout(blurWarmCleanup);
+    btnEls.filter(Boolean).forEach((btn) => {
+      clearTimeout(hoverFlipTimers.get(btn));
+      btn.classList.remove("is-hover-flipping");
+    });
 
     cancelAnimationFrame(tourRaf);
     cancelAnimationFrame(refreshSectionsRaf);
@@ -447,6 +469,8 @@
       aria-label="Retour à l'accueil"
       bind:this={btnEls[0]}
       on:mousemove={handleButtonMove}
+      on:pointerenter={triggerHoverFlip}
+      on:focus={triggerHoverFlip}
       on:click={handleLogoClick}
     >
       <span class="nav-btn-flip nav-btn-flip-logo">
@@ -483,6 +507,8 @@
           aria-current={$page.url.pathname === `/${link.page}` ? "page" : undefined}
           bind:this={btnEls[i + 1]}
           on:mousemove={handleButtonMove}
+          on:pointerenter={triggerHoverFlip}
+          on:focus={triggerHoverFlip}
           on:click={() => navigate(link.page)}
         >
           <span class="nav-btn-flip" data-text={link.label}>
@@ -704,11 +730,13 @@
     color: inherit;
   }
 
-  .nav-btn:hover .nav-btn-text {
+  .nav-btn:hover .nav-btn-text,
+  .nav-btn:global(.is-hover-flipping) .nav-btn-text {
     transform: translateY(-100%);
   }
 
-  .nav-btn:hover .nav-btn-flip::after {
+  .nav-btn:hover .nav-btn-flip::after,
+  .nav-btn:global(.is-hover-flipping) .nav-btn-flip::after {
     transform: translateY(0%);
   }
 
@@ -743,22 +771,26 @@
     opacity: 1;
   }
 
-  .links .nav-btn:hover .nav-btn-text {
+  .links .nav-btn:hover .nav-btn-text,
+  .links .nav-btn:global(.is-hover-flipping) .nav-btn-text {
     transform: translateY(-100%);
     opacity: 1;
   }
 
-  .links .nav-btn:hover .nav-btn-flip::after {
+  .links .nav-btn:hover .nav-btn-flip::after,
+  .links .nav-btn:global(.is-hover-flipping) .nav-btn-flip::after {
     transform: translateY(0%);
     opacity: 1;
   }
 
-  .logo:hover .nav-btn-text-logo-main {
+  .logo:hover .nav-btn-text-logo-main,
+  .logo:global(.is-hover-flipping) .nav-btn-text-logo-main {
     transform: translateY(-100%);
     opacity: 1;
   }
 
-  .logo:hover .nav-btn-text-logo-clone {
+  .logo:hover .nav-btn-text-logo-clone,
+  .logo:global(.is-hover-flipping) .nav-btn-text-logo-clone {
     transform: translateY(0%);
     opacity: 1;
   }

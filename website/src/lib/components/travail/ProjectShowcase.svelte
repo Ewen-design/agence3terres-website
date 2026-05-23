@@ -688,7 +688,7 @@
     scroll-padding-left: 6.5vw;
     scroll-padding-right: 6.5vw;
     -webkit-overflow-scrolling: touch;
-    touch-action: pan-y pinch-zoom;
+    touch-action: pan-x pan-y pinch-zoom;
     overscroll-behavior-x: contain;
     scrollbar-width: none;
   }
@@ -956,7 +956,7 @@
       scroll-padding-left: calc((100vw - clamp(292px,84vw,368px)) / 2);
       scroll-padding-right: calc((100vw - clamp(292px,84vw,368px)) / 2);
       -webkit-overflow-scrolling: touch;
-      touch-action: pan-y pinch-zoom;
+      touch-action: pan-x pan-y pinch-zoom;
       overscroll-behavior-x: contain;
       scrollbar-width: none;
     }
