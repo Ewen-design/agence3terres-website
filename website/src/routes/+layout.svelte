@@ -33,6 +33,7 @@
   let syncRaf1, syncRaf2, syncTimeout;
   let transitionRaf;
   let scrollLockObserver;
+  let removeTouchFlipListener;
 
   let pageWrapper;
   let transitionLayer;
@@ -123,6 +124,44 @@
       wheelDamping?.destroy?.();
       wheelDamping = null;
     }
+  }
+
+  function installTouchFlipAnimation() {
+    if (typeof window === "undefined") return () => {};
+
+    const coarsePointerQuery = window.matchMedia("(hover: none) and (pointer: coarse)");
+    const timers = new WeakMap();
+    const interactiveSelector = [
+      ".nav-btn",
+      ".services-btn",
+      ".premium-contact-cta__button",
+      ".hero-cta"
+    ].join(", ");
+
+    const triggerFlip = (event) => {
+      if (!coarsePointerQuery.matches) return;
+
+      const target = event.target instanceof Element ? event.target.closest(interactiveSelector) : null;
+      if (!target) return;
+
+      clearTimeout(timers.get(target));
+      target.classList.remove("touch-flip-active");
+      void target.offsetWidth;
+      target.classList.add("touch-flip-active");
+
+      const timer = window.setTimeout(() => {
+        target.classList.remove("touch-flip-active");
+        timers.delete(target);
+      }, 460);
+
+      timers.set(target, timer);
+    };
+
+    window.addEventListener("pointerdown", triggerFlip, { passive: true });
+
+    return () => {
+      window.removeEventListener("pointerdown", triggerFlip);
+    };
   }
 
   function runSync() {
@@ -448,6 +487,7 @@
       checkMobile();
       initScrollEngine();
       updateScrollEngineViewport();
+      removeTouchFlipListener = installTouchFlipAnimation();
 
       window.lenis = null;
 
@@ -532,6 +572,7 @@
       if (onRouteSettled) window.removeEventListener("app:route-settled", onRouteSettled);
       if (onPageShow) window.removeEventListener("pageshow", onPageShow);
       if (onVisibilityChange) document.removeEventListener("visibilitychange", onVisibilityChange);
+      removeTouchFlipListener?.();
 
       wheelDamping?.destroy?.();
       wheelDamping = null;

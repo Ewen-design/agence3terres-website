@@ -209,6 +209,70 @@ body {
     bottom: calc(-1 * (var(--mobile-viewport-overscan-bottom) + var(--mobile-gradient-bleed-bottom))) !important;
     height: calc(300px + var(--mobile-viewport-overscan-bottom) + var(--mobile-gradient-bleed-bottom)) !important;
   }
+
+  a,
+  button,
+  [role="button"],
+  input,
+  textarea,
+  select {
+    -webkit-tap-highlight-color: transparent;
+    -webkit-touch-callout: none;
+  }
+
+  button:active,
+  a:active,
+  [role="button"]:active {
+    transform: none;
+    filter: none;
+  }
+
+  .nav-btn:hover .nav-btn-text,
+  .services-btn:hover .services-btn-text,
+  .premium-contact-cta__button:hover .premium-contact-cta__button-text,
+  .hero-cta:hover .hero-cta__text {
+    transform: translateY(0%) !important;
+  }
+
+  .nav-btn:hover .nav-btn-flip::after,
+  .services-btn:hover .services-btn-flip::after,
+  .premium-contact-cta__button:hover .premium-contact-cta__button-flip::after,
+  .hero-cta:hover .hero-cta__flip::after {
+    transform: translateY(100%) !important;
+  }
+
+  .nav-btn:hover::before,
+  .nav-btn:hover::after,
+  .services-btn:hover::before,
+  .services-btn:hover::after,
+  .premium-contact-cta__button:hover::before,
+  .premium-contact-cta__button:hover::after,
+  .hero-cta:hover::before,
+  .hero-cta:hover::after {
+    opacity: 0 !important;
+  }
+
+  .nav-btn:active .nav-btn-text,
+  .services-btn:active .services-btn-text,
+  .premium-contact-cta__button:active .premium-contact-cta__button-text,
+  .nav-btn.touch-flip-active .nav-btn-text,
+  .services-btn.touch-flip-active .services-btn-text,
+  .premium-contact-cta__button.touch-flip-active .premium-contact-cta__button-text,
+  .hero-cta.touch-flip-active .hero-cta__text,
+  .hero-cta:active .hero-cta__text {
+    transform: translateY(-100%) !important;
+  }
+
+  .nav-btn:active .nav-btn-flip::after,
+  .services-btn:active .services-btn-flip::after,
+  .premium-contact-cta__button:active .premium-contact-cta__button-flip::after,
+  .nav-btn.touch-flip-active .nav-btn-flip::after,
+  .services-btn.touch-flip-active .services-btn-flip::after,
+  .premium-contact-cta__button.touch-flip-active .premium-contact-cta__button-flip::after,
+  .hero-cta.touch-flip-active .hero-cta__flip::after,
+  .hero-cta:active .hero-cta__flip::after {
+    transform: translateY(0%) !important;
+  }
 }
 
 @font-face {

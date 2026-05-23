@@ -497,7 +497,6 @@
 <style>
   :global(body.menu-open) {
     overflow: hidden;
-    touch-action: none;
   }
 
   .fs-menu {
@@ -975,7 +974,7 @@
     overflow-y: hidden;
     padding: 0 1rem;
     -webkit-overflow-scrolling: touch;
-    touch-action: pan-y pinch-zoom;
+    touch-action: pan-x pan-y pinch-zoom;
     scrollbar-width: none;
     overscroll-behavior-x: contain;
   }
