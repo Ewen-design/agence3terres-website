@@ -469,6 +469,7 @@
       aria-label="Retour à l'accueil"
       bind:this={btnEls[0]}
       on:mousemove={handleButtonMove}
+      on:pointerdown={triggerHoverFlip}
       on:pointerenter={triggerHoverFlip}
       on:focus={triggerHoverFlip}
       on:click={handleLogoClick}

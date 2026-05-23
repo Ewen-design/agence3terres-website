@@ -56,6 +56,22 @@
       large: false
     },
     {
+      page: "projet3",
+      title: projectPages.projet3.title,
+      image: projectPages.projet3.hero.image,
+      alt: projectPages.projet3.hero.alt,
+      text: projectPages.projet3.hero.summaryMain,
+      large: false
+    },
+    {
+      page: "projet4",
+      title: projectPages.projet4.title,
+      image: projectPages.projet4.hero.image,
+      alt: projectPages.projet4.hero.alt,
+      text: projectPages.projet4.hero.summaryMain,
+      large: false
+    },
+    {
       page: "services",
       title: "Conception de site web",
       image: "/images/creation_logo_desktop2.webp",

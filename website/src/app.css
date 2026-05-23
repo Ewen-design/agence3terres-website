@@ -252,10 +252,10 @@ body {
     opacity: 0 !important;
   }
 
-  .nav-btn:active .nav-btn-text,
+  .nav-btn:not(.logo):active .nav-btn-text,
   .services-btn:active .services-btn-text,
   .premium-contact-cta__button:active .premium-contact-cta__button-text,
-  .nav-btn.touch-flip-active .nav-btn-text,
+  .nav-btn:not(.logo).touch-flip-active .nav-btn-text,
   .services-btn.touch-flip-active .services-btn-text,
   .premium-contact-cta__button.touch-flip-active .premium-contact-cta__button-text,
   .hero-cta.touch-flip-active .hero-cta__text,
@@ -272,6 +272,18 @@ body {
   .hero-cta.touch-flip-active .hero-cta__flip::after,
   .hero-cta:active .hero-cta__flip::after {
     transform: translateY(0%) !important;
+  }
+
+  .logo:active .nav-btn-text-logo-main,
+  .logo.touch-flip-active .nav-btn-text-logo-main {
+    transform: translateY(-100%) !important;
+    opacity: 1 !important;
+  }
+
+  .logo:active .nav-btn-text-logo-clone,
+  .logo.touch-flip-active .nav-btn-text-logo-clone {
+    transform: translateY(0%) !important;
+    opacity: 1 !important;
   }
 }
 
