@@ -1,7 +1,3 @@
-<svelte:head>
-  <title>Projet 2 | Agence 3 Terres</title>
-</svelte:head>
-
 <script>
   import { onDestroy, onMount } from "svelte";
   import { browser } from "$app/environment";

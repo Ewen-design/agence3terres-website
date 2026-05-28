@@ -49,7 +49,7 @@
 
   const finalText =
     "Une sélection de projets où stratégie, direction artistique et exécution dialoguent avec précision jusque dans le détail.";
-  const activeAfterImage = "images/telephone2.webp";
+  const activeAfterImage = "/images/telephone2.webp";
 
   const words = finalText.split(" ");
 
@@ -303,7 +303,7 @@
         <img
           bind:this={heroMediaImgEl}
           class:media-visible={heroMediaVisible}
-          src="images/telephone3.webp"
+          src="/images/telephone3.webp"
           alt=""
         />
         <div class="hero-dark-layer" bind:this={heroDarkLayerEl}></div>

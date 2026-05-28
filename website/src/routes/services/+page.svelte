@@ -5,7 +5,7 @@
   import PremiumContactTransitionCta from "$lib/components/shared/cta/PremiumContactTransitionCta.svelte";
 </script>
 
+<h1 class="seo-page-title">Services - Sites web, identité visuelle et direction artistique</h1>
 <HeroServices />
 
 <ServicesFocusSlider />
-

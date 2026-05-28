@@ -6,6 +6,8 @@
   import AboutEditorialPrinciples from "$lib/components/apropos/AboutEditorialPrinciples.svelte";
   import AboutEditorialSingleShowcase from "$lib/components/apropos/AboutEditorialSingleShowcase.svelte";
 </script>
+
+<h1 class="seo-page-title">À propos - Vision et approche Agence 3 Terres</h1>
 <HeroApropos />
 
 
@@ -20,4 +22,3 @@
   mediaMinHeight="38rem"
 />
 <AboutEditorialPrinciples />
-

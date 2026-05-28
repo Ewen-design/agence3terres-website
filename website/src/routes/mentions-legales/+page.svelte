@@ -47,14 +47,6 @@
   ];
 </script>
 
-<svelte:head>
-  <title>Mentions légales | Agence 3 Terres</title>
-  <meta
-    name="description"
-    content="Mentions légales et informations juridiques du site Agence 3 Terres."
-  />
-</svelte:head>
-
 <section class="creative-section legal-page">
   <div class="legal-shell">
     <div class="legal-hero">

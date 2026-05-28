@@ -12,6 +12,7 @@
     import FaqAccordion from "$lib/components/home/FaqAccordion.svelte";
 </script>
 
+<h1 class="seo-page-title">Agence 3 Terres - Sites web, identité et direction artistique</h1>
 <Hero />
 <GalleryColonnes />
 <ParallaxGallery2 />

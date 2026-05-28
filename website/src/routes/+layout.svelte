@@ -49,38 +49,66 @@
   const DESKTOP_WHEEL_SNAP = 0.18;
   const DESKTOP_WHEEL_MIN_WIDTH = 1100;
   const SITE_URL = "https://agence3terres.com";
-  const SHARE_IMAGE_PATH = "/images/telephone2.webp";
+  const SHARE_IMAGE_PATH = "/images/ordinateur.webp";
   const PAGE_META = {
     "/": {
-      title: "3 Terres"
+      title: "Agence 3 Terres | Sites web, identité et direction artistique",
+      description:
+        "Agence 3 Terres crée des sites web, identités visuelles et expériences digitales exigeantes pour des marques qui veulent gagner en présence.",
+      imageAlt: "Création digitale par Agence 3 Terres"
     },
     "/services": {
-      title: "3 Terres"
+      title: "Services | Agence 3 Terres",
+      description:
+        "Sites web, identité visuelle, direction artistique et expérience digitale: Agence 3 Terres structure des présences de marque nettes et premium.",
+      imageAlt: "Services digitaux et direction artistique Agence 3 Terres"
     },
     "/travail": {
-      title: "3 Terres"
+      title: "Travail et projets | Agence 3 Terres",
+      description:
+        "Découvrez les projets d'Agence 3 Terres: sites web, interfaces, identités et directions artistiques conçus avec précision.",
+      imageAlt: "Projets et réalisations Agence 3 Terres"
     },
     "/apropos": {
-      title: "3 Terres"
+      title: "À propos | Agence 3 Terres",
+      description:
+        "Agence 3 Terres accompagne les marques avec une approche stratégique, sensible et précise du design digital.",
+      imageAlt: "Approche et vision Agence 3 Terres"
     },
     "/contact": {
-      title: "3 Terres"
+      title: "Contact | Agence 3 Terres",
+      description:
+        "Échangeons sur votre projet digital, votre identité visuelle ou votre prochaine expérience de marque avec Agence 3 Terres.",
+      imageAlt: "Contact Agence 3 Terres"
     },
     "/mentions-legales": {
       title: "Mentions légales | Agence 3 Terres",
-      description: "Informations légales du site Agence 3 Terres."
+      description: "Mentions légales et informations juridiques du site Agence 3 Terres.",
+      imageAlt: "Agence 3 Terres"
     },
     "/projet1": {
-      title: "Serein Design | Agence 3 Terres"
+      title: "Serein Design | Projet Agence 3 Terres",
+      description:
+        "Identité produit, direction artistique et interface: découvrez le projet Serein Design par Agence 3 Terres.",
+      imageAlt: "Projet Serein Design par Agence 3 Terres"
     },
     "/projet2": {
-      title: "Hansatsu | Agence 3 Terres"
+      title: "Hansatsu | Projet Agence 3 Terres",
+      description:
+        "Site web narratif et direction artistique: découvrez le projet Hansatsu par Agence 3 Terres.",
+      imageAlt: "Projet Hansatsu par Agence 3 Terres"
     },
     "/projet3": {
-      title: "Moovy | Agence 3 Terres"
+      title: "Moovy | Projet Agence 3 Terres",
+      description:
+        "Plateforme web, UX et UI: découvrez le projet Moovy conçu par Agence 3 Terres.",
+      imageAlt: "Projet Moovy par Agence 3 Terres"
     },
     "/projet4": {
-      title: "Ludovic | Agence 3 Terres"
+      title: "Ludovic | Projet Agence 3 Terres",
+      description:
+        "Site d'artiste, direction artistique et approche éditoriale: découvrez le projet Ludovic par Agence 3 Terres.",
+      imageAlt: "Projet Ludovic par Agence 3 Terres"
     }
   };
 
@@ -189,12 +217,13 @@
 
   $: pathname = $page.url.pathname.replace(/\/+$/, "") || "/";
   $: hideFooter = ["/projet1", "/projet2", "/projet3", "/projet4", "/contact"].includes(pathname);
-  $: isTravailPage = $page.url.pathname === "/travail";
+  $: isTravailPage = pathname === "/travail";
   $: currentMeta = PAGE_META[pathname] ?? PAGE_META["/"];
-  $: canonicalUrl = `${SITE_URL}${pathname === "/" ? "" : pathname}`;
+  $: canonicalUrl = `${SITE_URL}${pathname === "/" ? "" : `${pathname}/`}`;
   $: shareImageUrl = `${SITE_URL}${SHARE_IMAGE_PATH}`;
   $: seoTitle = currentMeta.title;
-  $: seoDescription = currentMeta.description ?? null;
+  $: seoDescription = currentMeta.description ?? PAGE_META["/"].description;
+  $: seoImageAlt = currentMeta.imageAlt ?? PAGE_META["/"].imageAlt;
 
   function clamp01(v) {
     return Math.max(0, Math.min(1, v));
@@ -587,18 +616,31 @@
 </script>
 
 <svelte:head>
+  <title>{seoTitle}</title>
+  <meta name="description" content={seoDescription} />
+  <meta name="robots" content="index, follow" />
+
   <link rel="canonical" href={canonicalUrl} />
+  <link rel="sitemap" type="application/xml" href="/sitemap.xml" />
 
   <meta property="og:title" content={seoTitle} />
-  {#if seoDescription}
-    <meta property="og:description" content={seoDescription} />
-  {/if}
+  <meta property="og:description" content={seoDescription} />
   <meta property="og:image" content={shareImageUrl} />
+  <meta property="og:image:secure_url" content={shareImageUrl} />
+  <meta property="og:image:type" content="image/webp" />
+  <meta property="og:image:width" content="1800" />
+  <meta property="og:image:height" content="1000" />
+  <meta property="og:image:alt" content={seoImageAlt} />
   <meta property="og:url" content={canonicalUrl} />
   <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="Agence 3 Terres" />
+  <meta property="og:locale" content="fr_FR" />
 
   <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content={seoTitle} />
+  <meta name="twitter:description" content={seoDescription} />
   <meta name="twitter:image" content={shareImageUrl} />
+  <meta name="twitter:image:alt" content={seoImageAlt} />
 </svelte:head>
 
 <main class:travail-soft-gradients={isTravailPage} class:contact-page={pathname === "/contact"}>
