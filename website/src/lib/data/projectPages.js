@@ -282,5 +282,76 @@ export const projectPages = {
         { src: "/images/photo.webp", alt: "Visuel hero Ludovic", layout: "full" }
       ]
     }
+  },
+  projet5: {
+    slug: "projet5",
+    title: "JustX",
+    category: "Marque de sport",
+    year: "2026",
+    hero: {
+      image: "/images/logo_justx.webp",
+      alt: "Logo JustX",
+      summaryMain: "Une marque de sport plus directe, plus personnelle, plus complète.",
+      summaryMuted: "Pensée autour de programmes personnalisés de musculation et nutrition, prolongés par une gamme textile.",
+      meta: ["Identité", "Sport", "Coaching", "Textile"]
+    },
+    intro: {
+      title: "Faire avancer chaque profil.",
+      text: "Réunir entraînement, nutrition et vêtements dans une identité claire, directe et immédiatement reconnaissable."
+    },
+    slider: {
+      title: "Trois axes pour construire la marque.",
+      slides: [
+        {
+          number: "01",
+          label: "Musculation",
+          title: "Personnaliser",
+          text: "Des programmes adaptés à chaque objectif.",
+          image: "/images/logo_justx.webp"
+        },
+        {
+          number: "02",
+          label: "Nutrition",
+          title: "Accompagner",
+          text: "Une approche cohérente pour soutenir la progression.",
+          image: "/images/logo_justx.webp"
+        },
+        {
+          number: "03",
+          label: "Textile",
+          title: "Prolonger",
+          text: "Une gamme de vêtements qui donne corps à l'univers JustX.",
+          image: "/images/logo_justx.webp"
+        }
+      ]
+    },
+    galleryPrimary: {
+      title: "Une identité immédiatement lisible.",
+      text: "Le symbole JustX porte une énergie nette, sportive et reconnaissable sur chaque point de contact.",
+      images: [
+        { src: "/images/logo_justx.webp", alt: "Logo JustX en grand format", layout: "panorama" },
+        { src: "/images/logo_justx.webp", alt: "Détail du logo JustX", layout: "square" },
+        { src: "/images/logo_justx.webp", alt: "Univers visuel JustX", layout: "square" }
+      ]
+    },
+    fullscreen: {
+      image: "/images/logo_justx.webp",
+      alt: "Vue immersive du logo JustX",
+      title: "Une énergie directe.",
+      text: "Un signe fort pour réunir l'ensemble de l'offre."
+    },
+    detail: {
+      title: "Tout part de la progression.",
+      text: "L'identité articule un accompagnement personnalisé et une présence sportive cohérente, du programme à la tenue."
+    },
+    gallerySecondary: {
+      title: "Un univers fait pour se déployer.",
+      text: "Le symbole garde sa force sur les programmes, les contenus nutrition et la gamme de vêtements.",
+      images: [
+        { src: "/images/logo_justx.webp", alt: "Identité JustX", layout: "wide" },
+        { src: "/images/logo_justx.webp", alt: "Symbole JustX", layout: "portrait" },
+        { src: "/images/logo_justx.webp", alt: "Logo JustX", layout: "full" }
+      ]
+    }
   }
 };

@@ -38,6 +38,14 @@
     },
     {
       number: "05",
+      title: "JustX",
+      rest: "Une marque de sport qui réunit programmes personnalisés de musculation, nutrition et gamme de vêtements dans un univers direct et affirmé.",
+      image: "/images/logo_justx.webp",
+      page: "projet5",
+      button: "Voir le projet"
+    },
+    {
+      number: "06",
       title: "Votre projet ?",
       rest: "Identite, direction artistique, site web ou experience digitale : construisons ensemble une presence forte, juste et memorable.",
       image: "/images/telephone2.webp",
@@ -246,6 +254,7 @@
     else if (pathname.includes("/projet2")) detectedCurrentPage = "projet2";
     else if (pathname.includes("/projet3")) detectedCurrentPage = "projet3";
     else if (pathname.includes("/projet4")) detectedCurrentPage = "projet4";
+    else if (pathname.includes("/projet5")) detectedCurrentPage = "projet5";
     else if (pathname.includes("/contact")) detectedCurrentPage = "contact";
 
     const mq = window.matchMedia("(prefers-reduced-motion: reduce)");

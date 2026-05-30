@@ -70,6 +70,22 @@
     },
     {
       number: "05",
+      title: "JustX",
+      category: "Marque de sport",
+      lead: "Un univers sportif plus direct, plus fort et plus personnel.",
+      rest: "Une marque pensée autour de programmes personnalisés de musculation et nutrition, prolongée par une gamme de vêtements.",
+      image: "/images/logo_justx.webp",
+      previewImages: [
+        { src: "/images/logo_justx.webp", alt: "Logo JustX" },
+        { src: "/images/logo_justx.webp", alt: "Identité visuelle JustX" },
+        { src: "/images/logo_justx.webp", alt: "Univers sportif JustX" }
+      ],
+      page: "projet5",
+      button: "Voir le projet",
+      mobileInfo: ["JustX", "Sport", "Nutrition", "Coaching", "Textile"]
+    },
+    {
+      number: "06",
       title: "Votre projet ?",
       category: "Collaboration",
       lead: "Une vision a faire naitre, clarifier ou amplifier.",

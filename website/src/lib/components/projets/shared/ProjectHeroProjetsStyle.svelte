@@ -26,9 +26,11 @@
   let introStarted = false;
   let introVisible = true;
   let heroMediaVisible = false;
+  let titleVisible = false;
 
   let fallbackTimeout;
   let mediaIntroTimeout;
+  let titleIntroTimeout;
   let resizeObserver;
   let resizeTimer;
 
@@ -164,6 +166,10 @@
         clearTimeout(mediaIntroTimeout);
         mediaIntroTimeout = setTimeout(() => {
           heroMediaVisible = true;
+          clearTimeout(titleIntroTimeout);
+          titleIntroTimeout = setTimeout(() => {
+            titleVisible = true;
+          }, 360);
         }, withDelay ? 120 : 0);
       });
     });
@@ -270,6 +276,7 @@
       }
       clearTimeout(fallbackTimeout);
       clearTimeout(mediaIntroTimeout);
+      clearTimeout(titleIntroTimeout);
       clearTimeout(resizeTimer);
       resizeObserver?.disconnect();
     };
@@ -291,7 +298,7 @@
     </div>
 
     <div class="hero-stage-content">
-      <div class="hero-scroll-cue" class:intro-visible={introVisible}>
+      <div class="hero-scroll-cue" class:intro-visible={introVisible} class:title-visible={titleVisible}>
         <h1 class="hero-scroll-label">{title}</h1>
         <span class="hero-scroll-arrow" aria-hidden="true">↓</span>
       </div>
@@ -341,7 +348,7 @@
     </div>
   </section>
 
-  <div class="hero-scroll-cue-mobile" aria-hidden="true">
+  <div class="hero-scroll-cue-mobile" class:title-visible={titleVisible} aria-hidden="true">
     <h1 class="hero-scroll-label">{title}</h1>
     <span class="hero-scroll-arrow">↓</span>
   </div>
@@ -480,6 +487,16 @@
     color: #fff;
     max-width: 10ch;
     text-wrap: balance;
+    opacity: 0;
+    transform: translate3d(0, 14px, 0);
+    transition:
+      opacity 720ms cubic-bezier(0.22, 1, 0.36, 1),
+      transform 720ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .title-visible .hero-scroll-label {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
   }
 
   .hero-scroll-arrow {

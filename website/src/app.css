@@ -240,14 +240,14 @@ body {
     filter: none;
   }
 
-  .nav-btn:hover .nav-btn-text,
+  .nav-btn:not(.header-nav-btn):hover .nav-btn-text,
   .services-btn:hover .services-btn-text,
   .premium-contact-cta__button:hover .premium-contact-cta__button-text,
   .hero-cta:hover .hero-cta__text {
     transform: translateY(0%) !important;
   }
 
-  .nav-btn:hover .nav-btn-flip::after,
+  .nav-btn:not(.header-nav-btn):hover .nav-btn-flip::after,
   .services-btn:hover .services-btn-flip::after,
   .premium-contact-cta__button:hover .premium-contact-cta__button-flip::after,
   .hero-cta:hover .hero-cta__flip::after {
@@ -265,38 +265,46 @@ body {
     opacity: 0 !important;
   }
 
-  .nav-btn:not(.logo):active .nav-btn-text,
-  .services-btn:active .services-btn-text,
-  .premium-contact-cta__button:active .premium-contact-cta__button-text,
-  .nav-btn:not(.logo).touch-flip-active .nav-btn-text,
+  .nav-btn::before,
+  .nav-btn::after,
+  .services-btn::before,
+  .services-btn::after,
+  .premium-contact-cta__button::before,
+  .premium-contact-cta__button::after,
+  .hero-cta::before,
+  .hero-cta::after,
+  .social-link::before,
+  .social-link::after {
+    display: none !important;
+  }
+
+  .nav-btn:not(.logo):not(.header-nav-btn).touch-flip-active .nav-btn-text,
   .services-btn.touch-flip-active .services-btn-text,
   .premium-contact-cta__button.touch-flip-active .premium-contact-cta__button-text,
-  .hero-cta.touch-flip-active .hero-cta__text,
-  .hero-cta:active .hero-cta__text {
+  .hero-cta.touch-flip-active .hero-cta__text {
     transform: translateY(-100%) !important;
   }
 
-  .nav-btn:active .nav-btn-flip::after,
-  .services-btn:active .services-btn-flip::after,
-  .premium-contact-cta__button:active .premium-contact-cta__button-flip::after,
-  .nav-btn.touch-flip-active .nav-btn-flip::after,
+  .nav-btn:not(.header-nav-btn).touch-flip-active .nav-btn-flip::after,
   .services-btn.touch-flip-active .services-btn-flip::after,
   .premium-contact-cta__button.touch-flip-active .premium-contact-cta__button-flip::after,
-  .hero-cta.touch-flip-active .hero-cta__flip::after,
-  .hero-cta:active .hero-cta__flip::after {
+  .hero-cta.touch-flip-active .hero-cta__flip::after {
     transform: translateY(0%) !important;
   }
 
-  .logo:active .nav-btn-text-logo-main,
-  .logo.touch-flip-active .nav-btn-text-logo-main {
+  .logo:not(.header-nav-btn).touch-flip-active .nav-btn-text-logo-main {
     transform: translateY(-100%) !important;
     opacity: 1 !important;
   }
 
-  .logo:active .nav-btn-text-logo-clone,
-  .logo.touch-flip-active .nav-btn-text-logo-clone {
+  .logo:not(.header-nav-btn).touch-flip-active .nav-btn-text-logo-clone {
     transform: translateY(0%) !important;
     opacity: 1 !important;
+  }
+
+  .hero-scroll-label {
+    transition-duration: 880ms !important;
+    transition-timing-function: cubic-bezier(0.22, 1, 0.36, 1) !important;
   }
 }
 

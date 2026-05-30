@@ -18,9 +18,11 @@
   let introStarted = false;
   let introVisible = true;
   let heroMediaVisible = false;
+  let titleVisible = false;
 
   let fallbackTimeout;
   let mediaIntroTimeout;
+  let titleIntroTimeout;
   let resizeObserver;
   let resizeTimer;
 
@@ -155,6 +157,10 @@
         clearTimeout(mediaIntroTimeout);
         mediaIntroTimeout = setTimeout(() => {
           heroMediaVisible = true;
+          clearTimeout(titleIntroTimeout);
+          titleIntroTimeout = setTimeout(() => {
+            titleVisible = true;
+          }, 360);
         }, withDelay ? 120 : 0);
       });
     });
@@ -260,6 +266,7 @@
       }
       clearTimeout(fallbackTimeout);
       clearTimeout(mediaIntroTimeout);
+      clearTimeout(titleIntroTimeout);
       clearTimeout(resizeTimer);
       resizeObserver?.disconnect();
     };
@@ -281,7 +288,7 @@
     </div>
 
     <div class="hero-stage-content">
-      <div class="hero-scroll-cue" class:intro-visible={introVisible} aria-hidden="true">
+      <div class="hero-scroll-cue" class:intro-visible={introVisible} class:title-visible={titleVisible} aria-hidden="true">
         <span class="hero-scroll-label">À propos</span>
         <span class="hero-scroll-arrow">↓</span>
       </div>
@@ -300,7 +307,7 @@
     </div>
   </section>
 
-  <div class="hero-scroll-cue-mobile" aria-hidden="true">
+  <div class="hero-scroll-cue-mobile" class:title-visible={titleVisible} aria-hidden="true">
     <span class="hero-scroll-label">À propos</span>
     <span class="hero-scroll-arrow">↓</span>
   </div>
@@ -436,6 +443,16 @@
     line-height: 1;
     letter-spacing: 0.02em;
     text-align: left;
+    opacity: 0;
+    transform: translate3d(0, 14px, 0);
+    transition:
+      opacity 720ms cubic-bezier(0.22, 1, 0.36, 1),
+      transform 720ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .title-visible .hero-scroll-label {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
 
   }
 
@@ -613,6 +630,7 @@
   @media (prefers-reduced-motion: reduce) {
     .hero-media img,
     .hero-scroll-cue,
+    .hero-scroll-label,
     .after-text {
       transition: none !important;
       animation: none !important;

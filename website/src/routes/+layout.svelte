@@ -109,6 +109,12 @@
       description:
         "Site d'artiste, direction artistique et approche éditoriale: découvrez le projet Ludovic par Agence 3 Terres.",
       imageAlt: "Projet Ludovic par Agence 3 Terres"
+    },
+    "/projet5": {
+      title: "JustX | Projet Agence 3 Terres",
+      description:
+        "Marque de sport, programmes personnalisés et gamme textile: découvrez le projet JustX par Agence 3 Terres.",
+      imageAlt: "Projet JustX par Agence 3 Terres"
     }
   };
 
@@ -172,15 +178,15 @@
       const target = event.target instanceof Element ? event.target.closest(interactiveSelector) : null;
       if (!target) return;
 
-      clearTimeout(timers.get(target));
-      target.classList.remove("touch-flip-active");
-      void target.offsetWidth;
+      if (target.classList.contains("touch-flip-active")) return;
+
       target.classList.add("touch-flip-active");
+      const duration = target.classList.contains("header-nav-btn") ? 760 : 520;
 
       const timer = window.setTimeout(() => {
         target.classList.remove("touch-flip-active");
         timers.delete(target);
-      }, 460);
+      }, duration);
 
       timers.set(target, timer);
     };
@@ -216,7 +222,7 @@
   }
 
   $: pathname = $page.url.pathname.replace(/\/+$/, "") || "/";
-  $: hideFooter = ["/projet1", "/projet2", "/projet3", "/projet4", "/contact"].includes(pathname);
+  $: hideFooter = ["/projet1", "/projet2", "/projet3", "/projet4", "/projet5", "/contact"].includes(pathname);
   $: isTravailPage = pathname === "/travail";
   $: currentMeta = PAGE_META[pathname] ?? PAGE_META["/"];
   $: canonicalUrl = `${SITE_URL}${pathname === "/" ? "" : `${pathname}/`}`;
@@ -273,14 +279,14 @@
 
     if (isMobile) {
       return {
-        enterDuration: 460,
-        exitDuration: 400,
-        blurMax: 1.2,
-        blurBase: 0.06,
-        darknessMax: 0.2,
-        pageFade: 0.04,
-        pageBlurOut: 1.35,
-        pageBlurIn: 1.25
+        enterDuration: 620,
+        exitDuration: 680,
+        blurMax: 0,
+        blurBase: 0,
+        darknessMax: 0.08,
+        pageFade: 0.02,
+        pageBlurOut: 0,
+        pageBlurIn: 0
       };
     }
 
@@ -314,11 +320,11 @@
     const startY = -vh - overscanTop;
     const endY = overscanBottom;
     const baseY = startY + (endY - startY) * p;
-    const arcLift = Math.sin(p * Math.PI) * vh * (isMobile ? 0.024 : 0.042);
+    const arcLift = isMobile ? 0 : Math.sin(p * Math.PI) * vh * 0.042;
     const y = baseY - arcLift;
 
     const drift = isMobile
-      ? Math.sin((p - 0.04) * Math.PI) * vw * 0.008
+      ? 0
       : Math.sin((p - 0.03) * Math.PI) * vw * 0.02 +
         Math.sin((p - 0.12) * Math.PI * 2) * vw * 0.0024;
 
@@ -410,25 +416,29 @@
       transitionDarkness.style.opacity = "0";
       transitionWipe.style.opacity = "1";
 
-      pageWrapper.style.willChange = "opacity, filter";
+      pageWrapper.style.willChange = isMobile ? "opacity" : "opacity, filter";
 
       setWipeProgress(0);
 
       await animate(profile.enterDuration, (t) => {
-        const wipe = premiumWipeEase(t);
+        const wipe = isMobile ? easeInOutSine(t) : premiumWipeEase(t);
         const blurLead = premiumWipeEase(clamp01(t + 0.08));
         const darknessFollow = premiumWipeEase(clamp01((wipe - 0.015) / 0.985));
         const pageFade = easeOutCubic(clamp01((t - 0.16) / 0.84));
         const pageBlur = premiumWipeEase(clamp01((t - 0.02) / 0.9));
 
-        transitionBlur.style.backdropFilter = `blur(${blurLead * profile.blurMax}px)`;
-        transitionBlur.style.webkitBackdropFilter = `blur(${blurLead * profile.blurMax}px)`;
-        transitionBlur.style.opacity = `${profile.blurBase + blurLead * Math.max(0, profile.darknessMax * 0.55)}`;
+        if (profile.blurMax > 0) {
+          transitionBlur.style.backdropFilter = `blur(${blurLead * profile.blurMax}px)`;
+          transitionBlur.style.webkitBackdropFilter = `blur(${blurLead * profile.blurMax}px)`;
+          transitionBlur.style.opacity = `${profile.blurBase + blurLead * Math.max(0, profile.darknessMax * 0.55)}`;
+        }
 
         transitionDarkness.style.opacity = `${darknessFollow * profile.darknessMax}`;
 
         pageWrapper.style.opacity = `${1 - pageFade * profile.pageFade}`;
-        pageWrapper.style.filter = `blur(${pageBlur * profile.pageBlurOut}px) brightness(${1 - pageBlur * 0.16})`;
+        if (profile.pageBlurOut > 0) {
+          pageWrapper.style.filter = `blur(${pageBlur * profile.pageBlurOut}px) brightness(${1 - pageBlur * 0.16})`;
+        }
 
         setWipeProgress(wipe);
       });
@@ -469,26 +479,36 @@
     transitionDarkness.style.opacity = `${profile.darknessMax}`;
     transitionWipe.style.opacity = "1";
 
-    pageWrapper.style.willChange = "opacity, filter";
+    pageWrapper.style.willChange = isMobile ? "opacity" : "opacity, filter";
     pageWrapper.style.opacity = "0";
-    pageWrapper.style.filter = `blur(${profile.pageBlurIn}px) brightness(0.84)`;
+    if (profile.pageBlurIn > 0) {
+      pageWrapper.style.filter = `blur(${profile.pageBlurIn}px) brightness(0.84)`;
+    }
 
     setWipeProgress(1);
 
     requestAnimationFrame(() => {
       settleGlobalScrollLocks();
       animate(profile.exitDuration, (t) => {
-        const pageEase = premiumWipeEase(t);
-        const overlayFade = easeInOutSine(clamp01((t - 0.08) / 0.92));
+        const pageEase = isMobile
+          ? easeInOutSine(clamp01(t / 0.9))
+          : premiumWipeEase(t);
+        const overlayFade = isMobile
+          ? easeInOutSine(clamp01((t - 0.12) / 0.88))
+          : easeInOutSine(clamp01((t - 0.08) / 0.92));
         const exitPush = premiumWipeEase(clamp01(t / 0.82));
         const pageBlurRelease = easeInOutSine(t);
 
         pageWrapper.style.opacity = `${pageEase}`;
-        pageWrapper.style.filter = `blur(${(1 - pageBlurRelease) * profile.pageBlurIn}px) brightness(${0.84 + pageBlurRelease * 0.16})`;
+        if (profile.pageBlurIn > 0) {
+          pageWrapper.style.filter = `blur(${(1 - pageBlurRelease) * profile.pageBlurIn}px) brightness(${0.84 + pageBlurRelease * 0.16})`;
+        }
 
-        transitionBlur.style.opacity = `${(1 - overlayFade) * Math.max(profile.blurBase, profile.darknessMax * 0.66)}`;
-        transitionBlur.style.backdropFilter = `blur(${(1 - overlayFade) * profile.blurMax}px)`;
-        transitionBlur.style.webkitBackdropFilter = `blur(${(1 - overlayFade) * profile.blurMax}px)`;
+        if (profile.blurMax > 0) {
+          transitionBlur.style.opacity = `${(1 - overlayFade) * Math.max(profile.blurBase, profile.darknessMax * 0.66)}`;
+          transitionBlur.style.backdropFilter = `blur(${(1 - overlayFade) * profile.blurMax}px)`;
+          transitionBlur.style.webkitBackdropFilter = `blur(${(1 - overlayFade) * profile.blurMax}px)`;
+        }
 
         transitionDarkness.style.opacity = `${(1 - overlayFade) * profile.darknessMax}`;
         transitionWipe.style.opacity = `${1 - overlayFade}`;
@@ -767,6 +787,8 @@
     opacity: 0;
     will-change: transform, opacity;
     transform: translate3d(0, calc(-100% - 140px), 0);
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
   }
 
   .top-gradient {
@@ -836,6 +858,12 @@
     .route-transition-blur {
       backdrop-filter: blur(0px);
       -webkit-backdrop-filter: blur(0px);
+    }
+
+    .route-transition-wipe {
+      left: -4vw;
+      width: 108vw;
+      contain: paint;
     }
 
     .top-gradient {

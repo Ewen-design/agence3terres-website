@@ -72,6 +72,14 @@
       large: false
     },
     {
+      page: "projet5",
+      title: projectPages.projet5.title,
+      image: projectPages.projet5.hero.image,
+      alt: projectPages.projet5.hero.alt,
+      text: projectPages.projet5.hero.summaryMain,
+      large: false
+    },
+    {
       page: "services",
       title: "Conception de site web",
       image: "/images/creation_logo_desktop2.webp",
@@ -523,7 +531,7 @@
     height: 100lvh;
     min-height: 100vh;
     min-height: 100lvh;
-    z-index: 9999;
+    z-index: 500000;
     opacity: 0;
     visibility: hidden;
     pointer-events: none;
@@ -1298,7 +1306,51 @@
       --menu-footer-duration: 380ms;
       --menu-media-duration: 460ms;
       --menu-scrim-duration: 460ms;
-      --menu-blur-strength: 8px;
+      --menu-blur-strength: 0px;
+    }
+
+    .menu-blur {
+      display: none;
+    }
+
+    .menu-panel {
+      clip-path: none;
+      -webkit-clip-path: none;
+      transform: scale3d(1, 0, 1);
+      transform-origin: center top;
+      will-change: transform;
+      transition: transform var(--menu-panel-duration) var(--menu-ease);
+    }
+
+    .fs-menu.expanded .menu-panel {
+      clip-path: none;
+      -webkit-clip-path: none;
+      transform: scale3d(1, 1, 1);
+    }
+
+    .fs-menu.is-closing .menu-panel {
+      clip-path: none;
+      -webkit-clip-path: none;
+      transform: scale3d(1, 0, 1);
+    }
+
+    .ui-content,
+    .mobile-topbar,
+    .menu-media-shell,
+    .mobile-preview-rail {
+      filter: none;
+    }
+
+    .ui-content {
+      transition:
+        opacity var(--menu-content-duration) var(--menu-ease),
+        transform var(--menu-content-duration) var(--menu-ease);
+    }
+
+    .fs-menu.is-closing .ui-content,
+    .fs-menu.is-closing .bottom-strip,
+    .fs-menu.is-closing .mobile-preview-rail {
+      filter: none;
     }
 
     .menu-top-logo {
@@ -1332,7 +1384,6 @@
       transform: translate3d(0, 26px, 0);
       transition:
         opacity var(--menu-content-duration) var(--menu-ease),
-        filter var(--menu-content-duration) var(--menu-ease),
         transform var(--menu-content-duration) var(--menu-ease);
     }
 
@@ -1342,9 +1393,9 @@
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      background: var(--menu-card-surface);
-      backdrop-filter: blur(10px);
-      -webkit-backdrop-filter: blur(10px);
+      background: rgba(24, 24, 24, 0.96);
+      backdrop-filter: none;
+      -webkit-backdrop-filter: none;
       padding: 0;
       cursor: pointer;
       transition:
@@ -1468,7 +1519,6 @@
       transform: translate3d(0, 26px, 0);
       transition:
         opacity var(--menu-content-duration) var(--menu-ease),
-        filter var(--menu-content-duration) var(--menu-ease),
         transform var(--menu-content-duration) var(--menu-ease);
     }
 
@@ -1523,13 +1573,15 @@
       transform: translate3d(0, 26px, 0);
       transition:
         opacity var(--menu-footer-duration) var(--menu-ease),
-        filter var(--menu-footer-duration) var(--menu-ease),
         transform var(--menu-footer-duration) var(--menu-ease);
     }
 
     .social-link {
       width: 2.7rem;
       height: 2.7rem;
+      background: rgba(24, 24, 24, 0.96);
+      backdrop-filter: none;
+      -webkit-backdrop-filter: none;
     }
 
     .icon-instagram {
@@ -1545,6 +1597,12 @@
     .icon-x {
       width: 1rem;
       height: 1rem;
+    }
+
+    .mobile-topbar,
+    .menu-media-shell,
+    .mobile-preview-rail {
+      filter: none;
     }
   }
 

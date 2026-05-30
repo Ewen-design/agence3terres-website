@@ -1,5 +1,5 @@
 <script>
-  import { onDestroy } from "svelte";
+  import { onDestroy, onMount } from "svelte";
 
   let name = "";
   let email = "";
@@ -36,6 +36,11 @@
   let switchTimer;
   let revealTimer;
   let copyTimer;
+  let introBlockTimer;
+  let introContentTimer;
+  let introImageVisible = false;
+  let introBlockVisible = false;
+  let introContentVisible = false;
 
   function handleSubmit(event) {
     event.preventDefault();
@@ -85,14 +90,37 @@
     }
   }
 
+  onMount(() => {
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        introImageVisible = true;
+      });
+    });
+
+    introBlockTimer = setTimeout(() => {
+      introBlockVisible = true;
+    }, 440);
+
+    introContentTimer = setTimeout(() => {
+      introContentVisible = true;
+    }, 1340);
+  });
+
   onDestroy(() => {
     clearTimeout(switchTimer);
     clearTimeout(revealTimer);
     clearTimeout(copyTimer);
+    clearTimeout(introBlockTimer);
+    clearTimeout(introContentTimer);
   });
 </script>
 
-<section class="contact">
+<section
+  class="contact"
+  class:intro-image-visible={introImageVisible}
+  class:intro-block-visible={introBlockVisible}
+  class:intro-content-visible={introContentVisible}
+>
   <div class="background">
     <img src="/images/telephone2.webp" alt="" />
     <div class="overlay"></div>
@@ -316,6 +344,14 @@
     width: var(--contact-panel-width);
     background: #050505;
     z-index: 1;
+    transform: scale3d(0, 1, 1);
+    transform-origin: left center;
+    transition: transform 860ms cubic-bezier(0.22, 1, 0.36, 1);
+    will-change: transform;
+  }
+
+  .contact.intro-block-visible::before {
+    transform: scale3d(1, 1, 1);
   }
 
   .contact-legal {
@@ -326,6 +362,17 @@
     position: absolute;
     inset: 0;
     z-index: 0;
+    opacity: 0;
+    transform: scale(1.025);
+    transition:
+      opacity 720ms cubic-bezier(0.22, 1, 0.36, 1),
+      transform 980ms cubic-bezier(0.22, 1, 0.36, 1);
+    will-change: opacity, transform;
+  }
+
+  .intro-image-visible .background {
+    opacity: 1;
+    transform: scale(1);
   }
 
   .background img {
@@ -358,6 +405,16 @@
       minmax(20rem, 34rem);
     justify-content: start;
     column-gap: var(--contact-panel-gap);
+    opacity: 0;
+    transform: translate3d(0, 14px, 0);
+    transition:
+      opacity 620ms cubic-bezier(0.22, 1, 0.36, 1),
+      transform 620ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .intro-content-visible .container {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
   }
 
   .right {
@@ -858,6 +915,14 @@
       inset: 80svh 0 0;
       width: auto;
       background: #050505;
+      transform: scale3d(1, 0, 1);
+      transform-origin: center bottom;
+      backface-visibility: hidden;
+      -webkit-backface-visibility: hidden;
+    }
+
+    .contact.intro-block-visible::before {
+      transform: scale3d(1, 1, 1);
     }
 
     .background {
@@ -1068,6 +1133,12 @@
       color: rgba(255, 255, 255, 0.42);
       text-align: center;
       line-height: 1.4;
+      opacity: 0;
+      transition: opacity 620ms cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    .intro-content-visible .contact-legal {
+      opacity: 1;
     }
   }
 
@@ -1082,8 +1153,20 @@
     .nav-btn::before,
     .nav-btn::after,
     .social-link,
-    label {
+    label,
+    .background,
+    .container,
+    .contact::before,
+    .contact-legal {
       transition: none;
+    }
+
+    .background,
+    .container,
+    .contact::before,
+    .contact-legal {
+      opacity: 1;
+      transform: none;
     }
 
     .panel-in,

@@ -32,6 +32,13 @@
     },
     {
       number: "05",
+      title: "JustX",
+      description:
+        "Une marque de sport portée par des programmes personnalisés de musculation, nutrition et une gamme textile.",
+      image: "/images/logo_justx.webp"
+    },
+    {
+      number: "06",
       title: "Votre\nprojet ?",
       description:
         "Une approche sur mesure pour révéler une singularité avec exigence et impact.",
@@ -39,7 +46,7 @@
     }
   ];
 
-  const slideLinks = ["/projet1", "/projet2", "/projet3", "/projet4", "/contact"];
+  const slideLinks = ["/projet1", "/projet2", "/projet3", "/projet4", "/projet5", "/contact"];
 </script>
 
 <FocusZoneSlider {slides} {slideLinks} zoneHeight="33svh" />

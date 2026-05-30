@@ -32,6 +32,7 @@
   let blurWarm = false;
   let headerIntroFallback;
   let headerIntroCleanup;
+  let headerIntroDelay;
   let blurWarmCleanup;
 
   let btnEls = [];
@@ -159,10 +160,9 @@
   function triggerHoverFlip(event) {
     const btn = event.currentTarget;
     if (!btn || btn.classList.contains("more")) return;
+    if (browser && window.matchMedia("(hover: none) and (pointer: coarse)").matches) return;
+    if (btn.classList.contains("is-hover-flipping")) return;
 
-    clearTimeout(hoverFlipTimers.get(btn));
-    btn.classList.remove("is-hover-flipping");
-    void btn.offsetWidth;
     btn.classList.add("is-hover-flipping");
 
     const timer = setTimeout(() => {
@@ -300,16 +300,22 @@
     if (headerIntroStarted) return;
     headerIntroStarted = true;
 
-    requestAnimationFrame(() => {
-      requestAnimationFrame(() => {
-        headerIntroVisible = true;
+    const revealDelay =
+      browser && window.matchMedia("(hover: none) and (pointer: coarse)").matches ? 120 : 0;
 
-        clearTimeout(headerIntroCleanup);
-        headerIntroCleanup = setTimeout(() => {
-          headerIntroDone = true;
-        }, 1100);
+    clearTimeout(headerIntroDelay);
+    headerIntroDelay = setTimeout(() => {
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          headerIntroVisible = true;
+
+          clearTimeout(headerIntroCleanup);
+          headerIntroCleanup = setTimeout(() => {
+            headerIntroDone = true;
+          }, 1100);
+        });
       });
-    });
+    }, revealDelay);
   }
 
   $: compact = scrollingDown && !menuOpen;
@@ -317,7 +323,7 @@
 
   $: themeClass =
     pathname === "/services" ? "theme-services" :
-    ["/travail", "/projet1", "/projet2", "/projet3", "/projet4"].includes(pathname) ? "theme-projets" :
+    ["/travail", "/projet1", "/projet2", "/projet3", "/projet4", "/projet5"].includes(pathname) ? "theme-projets" :
     pathname === "/apropos" ? "theme-apropos" :
     pathname === "/contact" ? "theme-contact" :
     "";
@@ -413,7 +419,9 @@
 
     window.addEventListener("resize", scheduleThemeSectionsRefresh, { passive: true });
 
-    scheduleTour();
+    if (window.matchMedia("(hover: hover) and (pointer: fine)").matches) {
+      scheduleTour();
+    }
 
     return () => {
       destroyed = true;
@@ -434,6 +442,7 @@
     clearTimeout(flipResetTimer);
     clearTimeout(headerIntroFallback);
     clearTimeout(headerIntroCleanup);
+    clearTimeout(headerIntroDelay);
     clearTimeout(blurWarmCleanup);
     btnEls.filter(Boolean).forEach((btn) => {
       clearTimeout(hoverFlipTimers.get(btn));
@@ -463,7 +472,7 @@
 >
   <nav class="nav-inner" aria-label="Navigation principale">
     <button
-      class="nav-btn logo"
+      class="nav-btn header-nav-btn logo"
       data-cursor="button"
       type="button"
       aria-label="Retour à l'accueil"
@@ -502,7 +511,7 @@
         { label: "Contact", page: "contact" }
       ] as link, i}
         <button
-          class="nav-btn fade"
+          class="nav-btn header-nav-btn fade"
           data-cursor="button"
           type="button"
           aria-current={$page.url.pathname === `/${link.page}` ? "page" : undefined}
@@ -522,7 +531,7 @@
     <div
       bind:this={menuButtonEl}
       use:registerBurger
-      class="nav-btn more"
+      class="nav-btn header-nav-btn more"
       data-cursor="button"
       role="button"
       tabindex="0"
@@ -547,7 +556,7 @@
     top: 1rem;
     left: 50%;
     transform: translateX(-50%);
-    z-index: 1000;
+    z-index: 400000;
   }
 
   .header-blur-prewarm {
@@ -1002,6 +1011,15 @@
   .more:hover span:nth-child(3) { transform: translateX(-6px) scale(1.6); }
 
   @media (max-width: 768px) {
+    .header-blur-prewarm {
+      display: flex;
+      top: 0.85rem;
+      left: 50%;
+      z-index: 399999;
+      opacity: 0.001;
+      transform: translate3d(-50%, 0, 0);
+    }
+
     .nav-btn-logo-prism {
       display: block;
     }
@@ -1024,12 +1042,106 @@
       transform: translateX(-50%);
     }
 
+    .nav-wrapper {
+      transition:
+        color 180ms ease,
+        opacity 420ms cubic-bezier(.22, 1, .36, 1);
+    }
+
+    .nav-wrapper.intro-animating {
+      animation-duration: 620ms;
+    }
+
     .nav-inner {
       width: 100%;
       flex-wrap: wrap;
       justify-content: center;
       row-gap: 0.55rem;
       overflow: visible;
+    }
+
+    .nav-btn {
+      background: rgba(128, 128, 128, 0.24);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      box-shadow: none;
+      will-change: transform, opacity;
+      transform: translate3d(0, 0, 0);
+      transition:
+        color 180ms ease,
+        background 320ms cubic-bezier(.22, 1, .36, 1);
+    }
+
+    .nav-btn-text,
+    .nav-btn-flip::after {
+      backface-visibility: hidden;
+      -webkit-backface-visibility: hidden;
+    }
+
+    @media (hover: none) and (pointer: coarse) {
+      .header-nav-btn .nav-btn-text,
+      .header-nav-btn .nav-btn-flip::after {
+        transition: none;
+        will-change: transform;
+      }
+
+      .header-nav-btn .nav-btn-text {
+        transform: translate3d(0, 0%, 0);
+      }
+
+      .header-nav-btn .nav-btn-flip::after,
+      .header-nav-btn .nav-btn-text-logo-clone {
+        transform: translate3d(0, 100%, 0);
+      }
+
+      .header-nav-btn:hover .nav-btn-text,
+      .links .header-nav-btn:hover .nav-btn-text,
+      .header-nav-btn.logo:hover .nav-btn-text-logo-main {
+        opacity: 1;
+        transform: translate3d(0, 0%, 0);
+      }
+
+      .header-nav-btn:hover .nav-btn-flip::after,
+      .links .header-nav-btn:hover .nav-btn-flip::after,
+      .header-nav-btn.logo:hover .nav-btn-text-logo-clone {
+        opacity: 1;
+        transform: translate3d(0, 100%, 0);
+      }
+    }
+
+    .header-nav-btn.touch-flip-active .nav-btn-text:not(.nav-btn-text-logo-clone) {
+      animation: headerMobileTextFlipMain 680ms cubic-bezier(.22, .9, .3, 1) both;
+      will-change: transform;
+    }
+
+    .header-nav-btn.touch-flip-active .nav-btn-flip::after,
+    .header-nav-btn.touch-flip-active .nav-btn-text-logo-clone {
+      animation: headerMobileTextFlipClone 680ms cubic-bezier(.22, .9, .3, 1) both;
+      will-change: transform;
+    }
+
+    @keyframes headerMobileTextFlipMain {
+      0%,
+      100% {
+        transform: translate3d(0, 0%, 0);
+      }
+
+      42%,
+      62% {
+        transform: translate3d(0, -100%, 0);
+      }
+    }
+
+    @keyframes headerMobileTextFlipClone {
+      0%,
+      100% {
+        transform: translate3d(0, 100%, 0);
+      }
+
+      42%,
+      62% {
+        transform: translate3d(0, 0%, 0);
+      }
     }
 
     .links {
@@ -1046,8 +1158,8 @@
       transform-origin: top center;
       transform: translate3d(0, -10px, 0) scaleY(0.82);
       transition:
-        transform 0.58s cubic-bezier(.2,.85,.25,1),
-        opacity 0.58s cubic-bezier(.2,.85,.25,1);
+        transform 520ms cubic-bezier(.22, 1, .36, 1),
+        opacity 420ms cubic-bezier(.22, 1, .36, 1);
       opacity: 0;
       pointer-events: none;
     }
@@ -1056,6 +1168,10 @@
       flex: 0 0 auto;
       padding: 0 1.16rem;
       font-size: 0.84rem;
+      transform: none;
+      filter: none;
+      transition: none;
+      transition-delay: 0s !important;
     }
 
     .compact .nav-inner {
@@ -1075,6 +1191,12 @@
       pointer-events: none;
     }
 
+    .compact .links button {
+      opacity: 1;
+      transform: none;
+      filter: none;
+    }
+
     .nav-wrapper.mobile-top-links-visible:not(.menu-open) .links {
       width: max-content;
       max-width: calc(100vw - 0.8rem);
@@ -1083,6 +1205,35 @@
       transform: translate3d(0, 0, 0) scaleY(1);
       pointer-events: auto;
       overflow: visible;
+    }
+
+    .more span {
+      transition:
+        transform 320ms cubic-bezier(.22, 1, .36, 1),
+        opacity 220ms ease;
+    }
+
+    .more:hover span:nth-child(1),
+    .more:hover span:nth-child(3) {
+      transform: none;
+    }
+
+    .more:hover span:nth-child(2) {
+      opacity: 1;
+      transform: none;
+    }
+
+    .more:active span:nth-child(1) {
+      transform: translateX(4px) scale(1.3);
+    }
+
+    .more:active span:nth-child(2) {
+      opacity: 0;
+      transform: scale(0);
+    }
+
+    .more:active span:nth-child(3) {
+      transform: translateX(-4px) scale(1.3);
     }
   }
 
