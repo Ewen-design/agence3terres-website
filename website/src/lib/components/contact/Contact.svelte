@@ -38,9 +38,11 @@
   let copyTimer;
   let introBlockTimer;
   let introContentTimer;
+  let introFallbackTimer;
   let introImageVisible = false;
   let introBlockVisible = false;
   let introContentVisible = false;
+  let introStarted = false;
 
   function handleSubmit(event) {
     event.preventDefault();
@@ -90,7 +92,10 @@
     }
   }
 
-  onMount(() => {
+  function startIntro() {
+    if (introStarted) return;
+    introStarted = true;
+
     requestAnimationFrame(() => {
       requestAnimationFrame(() => {
         introImageVisible = true;
@@ -104,6 +109,26 @@
     introContentTimer = setTimeout(() => {
       introContentVisible = true;
     }, 1340);
+  }
+
+  onMount(() => {
+    const handlePreloaderDone = () => {
+      clearTimeout(introFallbackTimer);
+      startIntro();
+    };
+
+    const hasActivePreloader = !!document.getElementById("site-intro-loader");
+
+    if (hasActivePreloader) {
+      window.addEventListener("preloader:done", handlePreloaderDone, { once: true });
+      introFallbackTimer = setTimeout(startIntro, 8000);
+    } else {
+      startIntro();
+    }
+
+    return () => {
+      window.removeEventListener("preloader:done", handlePreloaderDone);
+    };
   });
 
   onDestroy(() => {
@@ -112,6 +137,7 @@
     clearTimeout(copyTimer);
     clearTimeout(introBlockTimer);
     clearTimeout(introContentTimer);
+    clearTimeout(introFallbackTimer);
   });
 </script>
 

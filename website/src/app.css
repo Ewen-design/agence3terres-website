@@ -65,6 +65,28 @@ img {
   height: auto;
 }
 
+.hero-scroll-arrow {
+  opacity: 0;
+  transform: translate3d(0, 12px, 0);
+  transition:
+    opacity 760ms cubic-bezier(0.22, 1, 0.36, 1),
+    transform 760ms cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: opacity, transform;
+}
+
+.title-visible .hero-scroll-arrow {
+  opacity: 1;
+  transform: translate3d(0, 0, 0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-scroll-arrow {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+}
+
 .seo-page-title {
   position: absolute;
   width: 1px;

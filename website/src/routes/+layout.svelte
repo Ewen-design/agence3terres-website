@@ -7,6 +7,7 @@
   import Header from "$lib/components/shared/layout/Header.svelte";
   import Footer from "$lib/components/shared/layout/Footer.svelte";
   import CustomCursor from "$lib/components/shared/layout/CustomCursor.svelte";
+  import SiteIntroLoader from "$lib/components/shared/layout/SiteIntroLoader.svelte";
 
   import {
     initScrollEngine,
@@ -675,6 +676,7 @@
   <div class="ios-bottom-mask" aria-hidden="true"></div>
 
   <Header />
+  <SiteIntroLoader />
 
   <div class="page-wrapper" bind:this={pageWrapper}>
     <slot />

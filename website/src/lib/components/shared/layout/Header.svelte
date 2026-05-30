@@ -299,6 +299,7 @@
   function startHeaderIntro() {
     if (headerIntroStarted) return;
     headerIntroStarted = true;
+    clearTimeout(headerIntroFallback);
 
     const revealDelay =
       browser && window.matchMedia("(hover: none) and (pointer: coarse)").matches ? 120 : 0;
@@ -312,6 +313,8 @@
           clearTimeout(headerIntroCleanup);
           headerIntroCleanup = setTimeout(() => {
             headerIntroDone = true;
+            blurWarm = false;
+            window.dispatchEvent(new CustomEvent("header:intro-done"));
           }, 1100);
         });
       });
@@ -384,7 +387,7 @@
       });
     };
 
-    const handlePreloaderDone = async () => {
+    const handleHeaderReveal = async () => {
       await markHeaderReady();
       if (destroyed) return;
       startHeaderIntro();
@@ -397,25 +400,25 @@
       });
     });
 
-    window.addEventListener("preloader:done", handlePreloaderDone);
+    window.addEventListener("preloader:header-reveal", handleHeaderReveal);
     window.addEventListener("project-header-tone", handleProjectHeaderTone);
 
     markHeaderReady();
 
     if (!hasActivePreloader()) {
-      handlePreloaderDone();
+      handleHeaderReveal();
     }
 
     headerIntroFallback = setTimeout(async () => {
       await markHeaderReady();
       if (destroyed) return;
       startHeaderIntro();
-    }, 1800);
+    }, hasActivePreloader() ? 8000 : 1800);
 
     blurWarmCleanup = setTimeout(() => {
       if (destroyed) return;
       blurWarm = false;
-    }, 2600);
+    }, 10000);
 
     window.addEventListener("resize", scheduleThemeSectionsRefresh, { passive: true });
 
@@ -426,7 +429,7 @@
     return () => {
       destroyed = true;
       unregisterRead(processScrollState);
-      window.removeEventListener("preloader:done", handlePreloaderDone);
+      window.removeEventListener("preloader:header-reveal", handleHeaderReveal);
       window.removeEventListener("project-header-tone", handleProjectHeaderTone);
       window.removeEventListener("resize", scheduleThemeSectionsRefresh);
     };
@@ -626,11 +629,11 @@
   @keyframes headerIntroReveal {
     from {
       opacity: 0;
-      transform: translateX(-50%) translate3d(0, -10px, 0) scale(0.985);
+      transform: translateX(-50%) translate3d(0, -8px, 0);
     }
     to {
       opacity: 1;
-      transform: translateX(-50%) translate3d(0, 0, 0) scale(1);
+      transform: translateX(-50%) translate3d(0, 0, 0);
     }
   }
 
@@ -1045,11 +1048,11 @@
     .nav-wrapper {
       transition:
         color 180ms ease,
-        opacity 420ms cubic-bezier(.22, 1, .36, 1);
+        opacity 720ms cubic-bezier(.22, 1, .36, 1);
     }
 
     .nav-wrapper.intro-animating {
-      animation-duration: 620ms;
+      animation-duration: 880ms;
     }
 
     .nav-inner {

@@ -278,7 +278,7 @@
     if (shouldDelayIntro) {
       fallbackTimeout = setTimeout(() => {
         startIntro(true);
-      }, 1800);
+      }, document.getElementById("site-intro-loader") ? 8000 : 1800);
     } else {
       startIntro(false);
     }
@@ -306,10 +306,9 @@
 <section class="hero-join-clean" bind:this={heroSection}>
   <section class="hero-stage">
     <div class="hero-media-sticky" aria-hidden="true">
-      <div class="hero-media" bind:this={heroStage}>
+      <div class="hero-media" class:media-visible={heroMediaVisible} bind:this={heroStage}>
         <img
           bind:this={heroMediaImgEl}
-          class:media-visible={heroMediaVisible}
           src="/images/telephone3.webp"
           alt=""
         />
@@ -376,6 +375,16 @@
     inset: 0;
     height: var(--viewport-height);
     background: #000;
+    opacity: 0;
+    transition: opacity 1080ms cubic-bezier(0.22, 1, 0.36, 1);
+    will-change: opacity;
+    transform: translateZ(0);
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+  }
+
+  .hero-media.media-visible {
+    opacity: 1;
   }
 
   .hero-media::after {
@@ -411,10 +420,6 @@
       transform 1.2s cubic-bezier(0.22, 1, 0.36, 1);
     backface-visibility: hidden;
     -webkit-backface-visibility: hidden;
-  }
-
-  .hero-media img.media-visible {
-    transform: scale(1);
   }
 
   .hero-dark-layer {
