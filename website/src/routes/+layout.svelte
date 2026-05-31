@@ -32,15 +32,11 @@
   let prefersReducedMotion = false;
   let onLoad, onResize, onRouteSettled, onPageShow, onVisibilityChange;
   let syncRaf1, syncRaf2, syncTimeout;
-  let transitionRaf;
+  let cancelTransitionAnimation;
   let scrollLockObserver;
   let removeTouchFlipListener;
 
-  let pageWrapper;
   let transitionLayer;
-  let transitionBlur;
-  let transitionDarkness;
-  let transitionWipe;
 
   let wheelDamping = null;
 
@@ -232,126 +228,26 @@
   $: seoDescription = currentMeta.description ?? PAGE_META["/"].description;
   $: seoImageAlt = currentMeta.imageAlt ?? PAGE_META["/"].imageAlt;
 
-  function clamp01(v) {
-    return Math.max(0, Math.min(1, v));
-  }
-
-  function easeOutCubic(t) {
-    return 1 - Math.pow(1 - t, 3);
-  }
-
-  function easeInOutSine(t) {
-    const x = clamp01(t);
-    return -(Math.cos(Math.PI * x) - 1) / 2;
-  }
-
-  function easeInOutQuint(t) {
-    const x = clamp01(t);
-    return x < 0.5 ? 16 * x * x * x * x * x : 1 - Math.pow(-2 * x + 2, 5) / 2;
-  }
-
-  function tanhEase(t, strength = 2.6) {
-    const x = clamp01(t);
-    const a = Math.tanh(strength * (2 * x - 1));
-    const b = Math.tanh(strength);
-    return (a / b + 1) * 0.5;
-  }
-
-  function premiumWipeEase(t) {
-    const x = clamp01(t);
-    return easeInOutSine(x) * 0.4 + easeInOutQuint(x) * 0.6;
-  }
-
-  function getTransitionTheme(path = "/") {
-    return { mask: "#000000" };
-  }
-
   function getTransitionProfile() {
     if (prefersReducedMotion) {
       return {
         enterDuration: 0,
-        exitDuration: 0,
-        blurMax: 0,
-        blurBase: 0,
-        darknessMax: 0,
-        pageFade: 0
-      };
-    }
-
-    if (isMobile) {
-      return {
-        enterDuration: 620,
-        exitDuration: 680,
-        blurMax: 0,
-        blurBase: 0,
-        darknessMax: 0.08,
-        pageFade: 0.02,
-        pageBlurOut: 0,
-        pageBlurIn: 0
+        exitDuration: 0
       };
     }
 
     return {
-      enterDuration: 920,
-      exitDuration: 800,
-      blurMax: 7,
-      blurBase: 0.04,
-      darknessMax: 0.38,
-      pageFade: 0.08,
-      pageBlurOut: 5.5,
-      pageBlurIn: 4.8
+      enterDuration: isMobile ? 220 : 260,
+      exitDuration: isMobile ? 300 : 340
     };
   }
 
-  function applyTransitionTheme(path) {
-    if (!transitionLayer) return;
-    const theme = getTransitionTheme(path);
-    transitionLayer.style.setProperty("--wipe-color", theme.mask);
-  }
-
-  function setWipeProgress(progress) {
-    if (!transitionWipe) return;
-
-    const p = clamp01(progress);
-    const vh = window.innerHeight || 0;
-    const vw = window.innerWidth || 0;
-
-    const overscanTop = 140;
-    const overscanBottom = 140;
-    const startY = -vh - overscanTop;
-    const endY = overscanBottom;
-    const baseY = startY + (endY - startY) * p;
-    const arcLift = isMobile ? 0 : Math.sin(p * Math.PI) * vh * 0.042;
-    const y = baseY - arcLift;
-
-    const drift = isMobile
-      ? 0
-      : Math.sin((p - 0.03) * Math.PI) * vw * 0.02 +
-        Math.sin((p - 0.12) * Math.PI * 2) * vw * 0.0024;
-
-    transitionWipe.style.transform = `translate3d(${drift}px, ${y}px, 0)`;
-  }
-
-  function resetWrapperStyles() {
-    if (!pageWrapper) return;
-    pageWrapper.style.opacity = "";
-    pageWrapper.style.filter = "";
-    pageWrapper.style.willChange = "";
-  }
-
   function resetTransitionStyles() {
-    if (!transitionLayer || !transitionBlur || !transitionDarkness || !transitionWipe) return;
-
+    cancelTransitionAnimation?.();
+    if (!transitionLayer) return;
     transitionLayer.style.opacity = "0";
-
-    transitionBlur.style.opacity = "0";
-    transitionBlur.style.backdropFilter = "blur(0px)";
-    transitionBlur.style.webkitBackdropFilter = "blur(0px)";
-
-    transitionDarkness.style.opacity = "0";
-
-    transitionWipe.style.opacity = "0";
-    transitionWipe.style.transform = "translate3d(0, calc(-100% - 140px), 0)";
+    transitionLayer.style.visibility = "hidden";
+    transitionLayer.style.willChange = "";
   }
 
   function settleGlobalScrollLocks() {
@@ -366,99 +262,84 @@
     }
   }
 
-  function animate(duration, render) {
-    cancelAnimationFrame(transitionRaf);
+  function fadeTransitionLayer(targetOpacity, duration) {
+    cancelTransitionAnimation?.();
+    if (!transitionLayer) return Promise.resolve(false);
+
+    if (duration <= 0) {
+      transitionLayer.style.opacity = `${targetOpacity}`;
+      return Promise.resolve(true);
+    }
+
+    const startOpacity = Number.parseFloat(getComputedStyle(transitionLayer).opacity) || 0;
+    const animation = transitionLayer.animate(
+      [{ opacity: startOpacity }, { opacity: targetOpacity }],
+      {
+        duration,
+        easing: "cubic-bezier(0.45, 0, 0.55, 1)",
+        fill: "forwards"
+      }
+    );
 
     return new Promise((resolve) => {
-      const start = performance.now();
+      let settled = false;
 
-      function frame(now) {
-        const t = clamp01((now - start) / duration);
-        render(t);
-
-        if (t < 1) {
-          transitionRaf = requestAnimationFrame(frame);
-        } else {
-          resolve();
+      const finish = (completed) => {
+        if (settled) return;
+        settled = true;
+        if (completed) {
+          transitionLayer.style.opacity = `${targetOpacity}`;
         }
-      }
+        if (cancelTransitionAnimation === cancel) {
+          cancelTransitionAnimation = null;
+        }
+        animation.cancel();
+        resolve(completed);
+      };
 
-      transitionRaf = requestAnimationFrame(frame);
+      const cancel = () => {
+        const currentOpacity = Number.parseFloat(getComputedStyle(transitionLayer).opacity) || 0;
+        animation.cancel();
+        transitionLayer.style.opacity = `${currentOpacity}`;
+      };
+
+      cancelTransitionAnimation = cancel;
+      animation.onfinish = () => finish(true);
+      animation.oncancel = () => finish(false);
     });
   }
 
-  onNavigate(({ to }) => {
-    return new Promise(async (resolve) => {
-      if (!pageWrapper || !transitionLayer || !transitionBlur || !transitionDarkness || !transitionWipe) {
-        resolve();
-        return;
-      }
+  onNavigate(async () => {
+    if (!transitionLayer) return;
 
-      if (activatePendingSilentNavigation()) {
-        resetWrapperStyles();
-        resetTransitionStyles();
-        resolve();
-        return;
-      }
+    if (activatePendingSilentNavigation()) {
+      resetTransitionStyles();
+      return;
+    }
 
-      const profile = getTransitionProfile();
+    const profile = getTransitionProfile();
 
-      if (profile.enterDuration === 0) {
-        resetWrapperStyles();
-        resetTransitionStyles();
-        resolve();
-        return;
-      }
+    if (profile.enterDuration === 0) {
+      resetTransitionStyles();
+      return;
+    }
 
-      applyTransitionTheme(to?.url?.pathname || pathname);
+    transitionLayer.style.visibility = "visible";
+    transitionLayer.style.willChange = "opacity";
 
-      transitionLayer.style.opacity = "1";
-      transitionBlur.style.opacity = "1";
-      transitionDarkness.style.opacity = "0";
-      transitionWipe.style.opacity = "1";
-
-      pageWrapper.style.willChange = isMobile ? "opacity" : "opacity, filter";
-
-      setWipeProgress(0);
-
-      await animate(profile.enterDuration, (t) => {
-        const wipe = isMobile ? easeInOutSine(t) : premiumWipeEase(t);
-        const blurLead = premiumWipeEase(clamp01(t + 0.08));
-        const darknessFollow = premiumWipeEase(clamp01((wipe - 0.015) / 0.985));
-        const pageFade = easeOutCubic(clamp01((t - 0.16) / 0.84));
-        const pageBlur = premiumWipeEase(clamp01((t - 0.02) / 0.9));
-
-        if (profile.blurMax > 0) {
-          transitionBlur.style.backdropFilter = `blur(${blurLead * profile.blurMax}px)`;
-          transitionBlur.style.webkitBackdropFilter = `blur(${blurLead * profile.blurMax}px)`;
-          transitionBlur.style.opacity = `${profile.blurBase + blurLead * Math.max(0, profile.darknessMax * 0.55)}`;
-        }
-
-        transitionDarkness.style.opacity = `${darknessFollow * profile.darknessMax}`;
-
-        pageWrapper.style.opacity = `${1 - pageFade * profile.pageFade}`;
-        if (profile.pageBlurOut > 0) {
-          pageWrapper.style.filter = `blur(${pageBlur * profile.pageBlurOut}px) brightness(${1 - pageBlur * 0.16})`;
-        }
-
-        setWipeProgress(wipe);
-      });
-
-      resolve();
-    });
+    await fadeTransitionLayer(1, profile.enterDuration);
   });
 
   afterNavigate(() => {
     settleGlobalScrollLocks();
     syncScrollState();
 
-    if (!pageWrapper || !transitionLayer || !transitionBlur || !transitionDarkness || !transitionWipe) {
+    if (!transitionLayer) {
       return;
     }
 
     if (isSilentNavigationActive()) {
       clearSilentNavigation();
-      resetWrapperStyles();
       resetTransitionStyles();
       return;
     }
@@ -466,58 +347,19 @@
     const profile = getTransitionProfile();
 
     if (profile.exitDuration === 0) {
-      resetWrapperStyles();
       resetTransitionStyles();
       return;
     }
 
-    applyTransitionTheme(pathname);
-
+    transitionLayer.style.visibility = "visible";
     transitionLayer.style.opacity = "1";
-    transitionBlur.style.opacity = "1";
-    transitionBlur.style.backdropFilter = `blur(${profile.blurMax}px)`;
-    transitionBlur.style.webkitBackdropFilter = `blur(${profile.blurMax}px)`;
-    transitionDarkness.style.opacity = `${profile.darknessMax}`;
-    transitionWipe.style.opacity = "1";
-
-    pageWrapper.style.willChange = isMobile ? "opacity" : "opacity, filter";
-    pageWrapper.style.opacity = "0";
-    if (profile.pageBlurIn > 0) {
-      pageWrapper.style.filter = `blur(${profile.pageBlurIn}px) brightness(0.84)`;
-    }
-
-    setWipeProgress(1);
+    transitionLayer.style.willChange = "opacity";
 
     requestAnimationFrame(() => {
       settleGlobalScrollLocks();
-      animate(profile.exitDuration, (t) => {
-        const pageEase = isMobile
-          ? easeInOutSine(clamp01(t / 0.9))
-          : premiumWipeEase(t);
-        const overlayFade = isMobile
-          ? easeInOutSine(clamp01((t - 0.12) / 0.88))
-          : easeInOutSine(clamp01((t - 0.08) / 0.92));
-        const exitPush = premiumWipeEase(clamp01(t / 0.82));
-        const pageBlurRelease = easeInOutSine(t);
-
-        pageWrapper.style.opacity = `${pageEase}`;
-        if (profile.pageBlurIn > 0) {
-          pageWrapper.style.filter = `blur(${(1 - pageBlurRelease) * profile.pageBlurIn}px) brightness(${0.84 + pageBlurRelease * 0.16})`;
-        }
-
-        if (profile.blurMax > 0) {
-          transitionBlur.style.opacity = `${(1 - overlayFade) * Math.max(profile.blurBase, profile.darknessMax * 0.66)}`;
-          transitionBlur.style.backdropFilter = `blur(${(1 - overlayFade) * profile.blurMax}px)`;
-          transitionBlur.style.webkitBackdropFilter = `blur(${(1 - overlayFade) * profile.blurMax}px)`;
-        }
-
-        transitionDarkness.style.opacity = `${(1 - overlayFade) * profile.darknessMax}`;
-        transitionWipe.style.opacity = `${1 - overlayFade}`;
-
-        setWipeProgress(1 + exitPush * 0.045);
-      }).then(() => {
+      fadeTransitionLayer(0, profile.exitDuration).then((completed) => {
+        if (!completed) return;
         settleGlobalScrollLocks();
-        resetWrapperStyles();
         resetTransitionStyles();
       });
     });
@@ -614,7 +456,7 @@
 
       cancelAnimationFrame(syncRaf1);
       cancelAnimationFrame(syncRaf2);
-      cancelAnimationFrame(transitionRaf);
+      cancelTransitionAnimation?.();
       clearTimeout(syncTimeout);
 
       if (onLoad) window.removeEventListener("load", onLoad);
@@ -678,15 +520,11 @@
   <Header />
   <SiteIntroLoader />
 
-  <div class="page-wrapper" bind:this={pageWrapper}>
+  <div class="page-wrapper">
     <slot />
   </div>
 
-  <div class="route-transition-layer" bind:this={transitionLayer} aria-hidden="true">
-    <div class="route-transition-blur" bind:this={transitionBlur}></div>
-    <div class="route-transition-darkness" bind:this={transitionDarkness}></div>
-    <div class="route-transition-wipe" bind:this={transitionWipe}></div>
-  </div>
+  <div class="route-transition-layer" bind:this={transitionLayer} aria-hidden="true"></div>
 
   <div class="top-gradient"></div>
   <div class="bottom-gradient"></div>
@@ -719,14 +557,14 @@
   }
 
   .route-transition-layer {
-    --wipe-color: #000;
     position: fixed;
     inset: 0;
     pointer-events: none;
     z-index: 300000;
     opacity: 0;
+    visibility: hidden;
     overflow: hidden;
-    will-change: opacity;
+    background: #000;
   }
 
   .site-prism-mark {
@@ -760,37 +598,6 @@
       pointer-events: none;
       z-index: 999999;
     }
-  }
-
-  .route-transition-blur {
-    position: absolute;
-    inset: 0;
-    opacity: 0;
-    backdrop-filter: blur(0px);
-    -webkit-backdrop-filter: blur(0px);
-    will-change: opacity, backdrop-filter;
-  }
-
-  .route-transition-darkness {
-    position: absolute;
-    inset: 0;
-    opacity: 0;
-    background: rgba(0, 0, 0, 0.72);
-    will-change: opacity;
-  }
-
-  .route-transition-wipe {
-    position: absolute;
-    left: -10vw;
-    top: -140px;
-    width: 120vw;
-    height: calc(var(--viewport-height) + 280px);
-    background: var(--wipe-color);
-    opacity: 0;
-    will-change: transform, opacity;
-    transform: translate3d(0, calc(-100% - 140px), 0);
-    backface-visibility: hidden;
-    -webkit-backface-visibility: hidden;
   }
 
   .top-gradient {
@@ -855,17 +662,6 @@
   @media (max-width: 900px) {
     .site-prism-mark {
       display: none;
-    }
-
-    .route-transition-blur {
-      backdrop-filter: blur(0px);
-      -webkit-backdrop-filter: blur(0px);
-    }
-
-    .route-transition-wipe {
-      left: -4vw;
-      width: 108vw;
-      contain: paint;
     }
 
     .top-gradient {
