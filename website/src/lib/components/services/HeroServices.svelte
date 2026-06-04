@@ -309,7 +309,7 @@
       <div class="hero-media" class:media-visible={heroMediaVisible} bind:this={heroStage}>
         <img
           bind:this={heroMediaImgEl}
-          src="/images/telephone3.webp"
+          src="/images/moovy.webp"
           alt=""
         />
         <div class="hero-dark-layer" bind:this={heroDarkLayerEl}></div>
