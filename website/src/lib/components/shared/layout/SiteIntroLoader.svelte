@@ -15,10 +15,12 @@
   let raf1;
   let raf2;
   let handleHeaderIntroDone;
+  let contentRevealDispatched = false;
 
-  const LOGO_FADE_DURATION = 720;
-  const LOGO_HOLD_DURATION = 2000;
-  const BACKGROUND_FADE_DURATION = 980;
+  const LOGO_FADE_DURATION = 420;
+  const LOGO_HOLD_DURATION = 760;
+  const BACKGROUND_FADE_DURATION = 560;
+  let backgroundFadeDuration = BACKGROUND_FADE_DURATION;
 
   function dispatch(name) {
     window.dispatchEvent(new CustomEvent(name));
@@ -50,7 +52,16 @@
       removeTimer = window.setTimeout(() => {
         visible = false;
       }, 40);
-    }, BACKGROUND_FADE_DURATION);
+    }, backgroundFadeDuration);
+  }
+
+  function finishIntro() {
+    if (!contentRevealDispatched) {
+      contentRevealDispatched = true;
+      dispatch("preloader:content-reveal");
+    }
+
+    requestAnimationFrame(hideBackground);
   }
 
   onMount(() => {
@@ -59,18 +70,19 @@
     lockViewport();
 
     handleHeaderIntroDone = () => {
-      hideBackground();
+      finishIntro();
     };
 
     window.addEventListener("header:intro-done", handleHeaderIntroDone, { once: true });
 
     if (reduceMotion) {
+      backgroundFadeDuration = 160;
       logoVisible = true;
       headerRevealTimer = window.setTimeout(() => {
         logoVisible = false;
         dispatch("preloader:header-reveal");
-      }, 360);
-      headerFallbackTimer = window.setTimeout(hideBackground, 960);
+      }, 220);
+      headerFallbackTimer = window.setTimeout(finishIntro, 1100);
       return;
     }
 
@@ -83,7 +95,7 @@
 
           headerRevealTimer = window.setTimeout(() => {
             dispatch("preloader:header-reveal");
-            headerFallbackTimer = window.setTimeout(hideBackground, 1800);
+            headerFallbackTimer = window.setTimeout(finishIntro, 1400);
           }, LOGO_FADE_DURATION);
         }, LOGO_FADE_DURATION + LOGO_HOLD_DURATION);
       });
@@ -145,7 +157,7 @@
     background: #000;
     opacity: 0;
     pointer-events: auto;
-    transition: opacity 980ms cubic-bezier(0.22, 1, 0.36, 1);
+    transition: opacity 560ms cubic-bezier(0.22, 1, 0.36, 1);
     will-change: opacity;
     transform: translateZ(0);
     backface-visibility: hidden;
@@ -162,7 +174,7 @@
     height: auto;
     fill: #f6f4ef;
     opacity: 0;
-    transition: opacity 720ms cubic-bezier(0.22, 1, 0.36, 1);
+    transition: opacity 420ms cubic-bezier(0.22, 1, 0.36, 1);
     will-change: opacity;
     transform: translateZ(0);
     backface-visibility: hidden;

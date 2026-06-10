@@ -135,6 +135,11 @@ body {
     overflow: visible !important;
   }
 
+  .hero-media img {
+    transition-property: opacity !important;
+    will-change: transform, opacity;
+  }
+
   .hero-media::before {
     content: none !important;
   }

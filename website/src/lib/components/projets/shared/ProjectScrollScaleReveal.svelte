@@ -98,9 +98,9 @@
 
     pendingFrame = {
       progress: q(switchProgress, 0.001),
-      scale: q(imageScale, 0.001),
-      width: q(frameWidth, 0.1),
-      radius: q(frameRadius, 0.01)
+      scale: q(imageScale, 0.0001),
+      width: q(frameWidth, 0.02),
+      radius: q(frameRadius, 0.002)
     };
 
     const nextTheme =
@@ -149,7 +149,7 @@
   }
 
   function handleParallax(y, ctx) {
-    computeFrame(y, ctx);
+    computeFrame(ctx?.motionY ?? y, ctx);
   }
 
   function handleWrite() {

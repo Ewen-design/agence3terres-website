@@ -1,6 +1,7 @@
 let initialized = false;
 
 let currentY = 0;
+let motionY = 0;
 let lastY = 0;
 let delta = 0;
 let direction = 0;
@@ -22,6 +23,7 @@ let resizeRafId = 0;
 
 const IDLE_TIMEOUT_MS = 140;
 const STABLE_EPSILON = 0.1;
+const MOBILE_MOTION_SMOOTHING_MS = 165;
 
 const parallaxCallbacks = [];
 const readCallbacks = [];
@@ -65,6 +67,7 @@ function sortByPriority(list) {
 function makeContext(y, now) {
   return {
     y,
+    motionY,
     vh: cachedVh,
     vw: cachedVw,
     delta,
@@ -89,7 +92,7 @@ function runRegistry(list, y, ctx) {
 function emitFrame(now) {
   const maxScroll = getMaxScroll();
   const nextY = clamp(pendingNativeY, 0, maxScroll);
-  const dt = Math.max(16, now - (lastFrameTime || now - 16));
+  const dt = Math.min(34, Math.max(16, now - (lastFrameTime || now - 16)));
 
   delta = nextY - lastY;
   direction = delta === 0 ? 0 : delta > 0 ? 1 : -1;
@@ -99,6 +102,17 @@ function emitFrame(now) {
   smoothVelocity += (velocity - smoothVelocity) * smoothing;
 
   currentY = nextY;
+
+  if ((isMobile || isTouch) && !prefersReducedMotion) {
+    const motionAlpha = 1 - Math.exp(-dt / MOBILE_MOTION_SMOOTHING_MS);
+    motionY += (currentY - motionY) * motionAlpha;
+
+    if (Math.abs(currentY - motionY) <= STABLE_EPSILON) {
+      motionY = currentY;
+    }
+  } else {
+    motionY = currentY;
+  }
 
   const ctx = makeContext(currentY, now);
 
@@ -120,8 +134,9 @@ function emitFrame(now) {
   viewportDirty = false;
 
   const keepAlive = now - lastActivityTime < IDLE_TIMEOUT_MS;
+  const motionSettling = Math.abs(currentY - motionY) > STABLE_EPSILON;
 
-  if (keepAlive) {
+  if (keepAlive || motionSettling) {
     rafId = requestAnimationFrame(loop);
   } else {
     rafId = 0;
@@ -175,6 +190,7 @@ export function initScrollEngine() {
   readViewport();
 
   currentY = getNativeScrollY();
+  motionY = currentY;
   pendingNativeY = currentY;
   lastY = currentY;
   delta = 0;
@@ -235,6 +251,7 @@ export function updateScrollEngineViewport() {
 export function getScrollEngineState() {
   return {
     y: currentY,
+    motionY,
     delta,
     direction,
     velocity,

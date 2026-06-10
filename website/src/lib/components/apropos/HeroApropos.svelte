@@ -99,8 +99,8 @@
     const globalFade = imageFadeProgress * imageFadeProgress * (3 - 2 * imageFadeProgress);
 
     pendingFrame = {
-      imageScale: q(lerp(1.03, 1.005, globalFade), 0.001),
-      imageBrightness: q(lerp(1, 0.62, globalFade), 0.001),
+      imageScale: q(lerp(1.03, 1.005, globalFade), 0.0001),
+      imageBrightness: isMobile ? 1 : q(lerp(1, 0.62, globalFade), 0.001),
       imageOpacity: isMobile ? 1 : q(lerp(1, 0, globalFade), 0.001),
       imageDark: isMobile ? 0 : q(lerp(0.08, 0.62, globalFade), 0.001)
     };
@@ -135,8 +135,8 @@
     dirty = false;
   }
 
-  function handleParallax(y) {
-    computeFrame(y);
+  function handleParallax(y, ctx) {
+    computeFrame(ctx?.motionY ?? y);
   }
 
   function handleWrite() {
@@ -185,11 +185,9 @@
     let destroyed = false;
     const shouldDelayIntro = shouldDelayIntroForSession();
 
-    const handlePreloaderDone = () => {
+    const handlePreloaderReveal = () => {
       clearTimeout(fallbackTimeout);
-      fallbackTimeout = setTimeout(() => {
-        startIntro(true);
-      }, 140);
+      startIntro(false);
     };
 
     const handleWindowLoad = () => {
@@ -232,7 +230,8 @@
     window.addEventListener("load", handleWindowLoad);
     window.addEventListener("pageshow", handlePageShow);
     if (shouldDelayIntro) {
-      window.addEventListener("preloader:done", handlePreloaderDone);
+      window.addEventListener("preloader:content-reveal", handlePreloaderReveal);
+      window.addEventListener("preloader:done", handlePreloaderReveal);
     }
 
     if (typeof ResizeObserver !== "undefined") {
@@ -262,7 +261,8 @@
       window.removeEventListener("load", handleWindowLoad);
       window.removeEventListener("pageshow", handlePageShow);
       if (shouldDelayIntro) {
-        window.removeEventListener("preloader:done", handlePreloaderDone);
+        window.removeEventListener("preloader:content-reveal", handlePreloaderReveal);
+        window.removeEventListener("preloader:done", handlePreloaderReveal);
       }
       clearTimeout(fallbackTimeout);
       clearTimeout(mediaIntroTimeout);
@@ -342,7 +342,7 @@
     height: var(--viewport-height);
     background: #000;
     opacity: 0;
-    transition: opacity 1080ms cubic-bezier(0.22, 1, 0.36, 1);
+    transition: opacity 760ms cubic-bezier(0.22, 1, 0.36, 1);
     will-change: opacity;
     transform: translateZ(0);
     backface-visibility: hidden;

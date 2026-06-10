@@ -49,6 +49,8 @@
   const SCROLL_THRESHOLD = 10;
   const COMPACT_TRIGGER_Y = 80;
   const COMPACT_DOWNWARD_DISTANCE = 360;
+  const TOP_LINKS_SHOW_Y = 14;
+  const TOP_LINKS_HIDE_Y = 54;
   const LIGHT_TEXT_COLOR = "#000";
   const SECTION_SELECTOR =
     "section.hero-wrapper, section.creative-section, section.services, section.dna-section, section.lifestyles-section";
@@ -71,7 +73,11 @@
   function processScrollState(state) {
     const currentY = state?.y ?? state?.currentY ?? window.scrollY ?? 0;
     const delta = currentY - lastScrollY;
-    atTopOfPage = currentY <= 24;
+    if (atTopOfPage) {
+      if (currentY > TOP_LINKS_HIDE_Y) atTopOfPage = false;
+    } else if (currentY <= TOP_LINKS_SHOW_Y) {
+      atTopOfPage = true;
+    }
 
     if (Math.abs(delta) >= SCROLL_THRESHOLD) {
       if (delta > 0) {
@@ -302,20 +308,21 @@
     clearTimeout(headerIntroFallback);
 
     const revealDelay =
-      browser && window.matchMedia("(hover: none) and (pointer: coarse)").matches ? 120 : 0;
+      browser && window.matchMedia("(hover: none) and (pointer: coarse)").matches ? 40 : 0;
 
     clearTimeout(headerIntroDelay);
     headerIntroDelay = setTimeout(() => {
       requestAnimationFrame(() => {
         requestAnimationFrame(() => {
           headerIntroVisible = true;
+          window.dispatchEvent(new CustomEvent("header:intro-visible"));
 
           clearTimeout(headerIntroCleanup);
           headerIntroCleanup = setTimeout(() => {
             headerIntroDone = true;
             blurWarm = false;
             window.dispatchEvent(new CustomEvent("header:intro-done"));
-          }, 1100);
+          }, 720);
         });
       });
     }, revealDelay);
@@ -623,7 +630,7 @@
   }
 
   .nav-wrapper.intro-animating {
-    animation: headerIntroReveal 1s cubic-bezier(.22,1,.36,1) both;
+    animation: headerIntroReveal 680ms cubic-bezier(.22,1,.36,1) both;
   }
 
   @keyframes headerIntroReveal {
@@ -1052,14 +1059,14 @@
     }
 
     .nav-wrapper.intro-animating {
-      animation-duration: 880ms;
+      animation-duration: 620ms;
     }
 
     .nav-inner {
+      position: relative;
       width: 100%;
-      flex-wrap: wrap;
+      flex-wrap: nowrap;
       justify-content: center;
-      row-gap: 0.55rem;
       overflow: visible;
     }
 
@@ -1148,66 +1155,123 @@
     }
 
     .links {
-      order: 3;
+      position: absolute;
+      top: calc(100% + 0.55rem);
+      left: 50%;
       display: flex;
       width: max-content;
-      max-width: calc(100vw - 0.8rem);
+      max-width: 0;
       justify-content: center;
       gap: 0.42rem;
       padding: 0;
       margin: 0;
-      max-height: 4rem;
-      clip-path: inset(0 0 0 0);
-      transform-origin: top center;
-      transform: translate3d(0, -10px, 0) scaleY(0.82);
+      max-height: 0;
+      transform-origin: center center;
+      clip-path: inset(0 50% 0 50%);
       transition:
-        transform 520ms cubic-bezier(.22, 1, .36, 1),
-        opacity 420ms cubic-bezier(.22, 1, .36, 1);
-      opacity: 0;
+        max-width 920ms cubic-bezier(.4, 0, .2, 1),
+        max-height 920ms cubic-bezier(.4, 0, .2, 1),
+        clip-path 920ms cubic-bezier(.4, 0, .2, 1),
+        visibility 0s linear 920ms;
+      opacity: 1;
+      overflow: hidden;
+      visibility: hidden;
       pointer-events: none;
+      will-change: max-width, max-height, clip-path;
+      transform: translate3d(-50%, 0, 0);
     }
 
     .links button {
       flex: 0 0 auto;
       padding: 0 1.16rem;
       font-size: 0.84rem;
-      transform: none;
+      opacity: 0;
+      transform: translateZ(0) scaleX(0.84) scaleY(0.96);
       filter: none;
-      transition: none;
-      transition-delay: 0s !important;
+      transition:
+        transform 900ms cubic-bezier(.4, 0, .2, 1),
+        opacity 650ms cubic-bezier(.4, 0, .2, 1);
+      will-change: transform, opacity;
+    }
+
+    .links button:nth-child(1) { transition-delay: 0ms, 0ms; }
+    .links button:nth-child(2) { transition-delay: 45ms, 45ms; }
+    .links button:nth-child(3) { transition-delay: 45ms, 45ms; }
+    .links button:nth-child(4) { transition-delay: 0ms, 0ms; }
+
+    .links:not(.text-ready) .nav-btn-text,
+    .links.flip-in .nav-btn-text,
+    .links.text-ready:not(.flip-in) .nav-btn-text {
+      transform: translate3d(0, 0, 0);
+      opacity: 1;
+    }
+
+    .links:not(.text-ready) .nav-btn-flip::after,
+    .links.flip-in .nav-btn-flip::after,
+    .links.text-ready:not(.flip-in) .nav-btn-flip::after {
+      transform: translate3d(0, 100%, 0);
+      opacity: 1;
     }
 
     .compact .nav-inner {
       justify-content: center;
-      gap: 0.5rem;
-      row-gap: 0;
+      gap: 0.6rem;
     }
 
     .compact .links {
       width: max-content;
-      max-width: calc(100vw - 0.8rem);
-      max-height: 4rem;
-      opacity: 0;
+      max-width: 0;
+      max-height: 0;
       margin-top: 0;
-      clip-path: inset(0 0 0 0);
-      transform: translate3d(0, -10px, 0) scaleY(0.82);
+      clip-path: inset(0 50% 0 50%);
+      visibility: hidden;
       pointer-events: none;
     }
 
     .compact .links button {
-      opacity: 1;
-      transform: none;
       filter: none;
     }
 
     .nav-wrapper.mobile-top-links-visible:not(.menu-open) .links {
       width: max-content;
       max-width: calc(100vw - 0.8rem);
+      max-height: 40px;
       opacity: 1;
       margin-top: 0;
-      transform: translate3d(0, 0, 0) scaleY(1);
+      clip-path: inset(0 0 0 0);
+      visibility: visible;
+      transition:
+        max-width 680ms cubic-bezier(.2, .85, .25, 1),
+        max-height 680ms cubic-bezier(.2, .85, .25, 1),
+        clip-path 680ms cubic-bezier(.2, .85, .25, 1),
+        visibility 0s linear 0s;
       pointer-events: auto;
       overflow: visible;
+    }
+
+    .nav-wrapper.mobile-top-links-visible:not(.menu-open) .links button {
+      opacity: 1;
+      transform: translateZ(0) scaleX(1) scaleY(1);
+      transition-duration: 580ms, 120ms;
+      transition-timing-function:
+        cubic-bezier(.2, .85, .25, 1),
+        linear;
+    }
+
+    .nav-wrapper.mobile-top-links-visible:not(.menu-open) .links button:nth-child(1) {
+      transition-delay: 45ms, 45ms;
+    }
+
+    .nav-wrapper.mobile-top-links-visible:not(.menu-open) .links button:nth-child(2) {
+      transition-delay: 0ms, 0ms;
+    }
+
+    .nav-wrapper.mobile-top-links-visible:not(.menu-open) .links button:nth-child(3) {
+      transition-delay: 0ms, 0ms;
+    }
+
+    .nav-wrapper.mobile-top-links-visible:not(.menu-open) .links button:nth-child(4) {
+      transition-delay: 45ms, 45ms;
     }
 
     .more span {
