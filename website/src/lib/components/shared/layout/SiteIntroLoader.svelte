@@ -5,13 +5,11 @@
   let compassVisible = false;
   let compassClearing = false;
   let logoVisible = false;
-  let logoArriving = false;
   let backgroundVisible = true;
   let backgroundHiding = false;
   let hidden = false;
 
   let logoInTimer;
-  let logoSettleTimer;
   let compassOutTimer;
   let logoOutTimer;
   let headerRevealTimer;
@@ -24,8 +22,7 @@
   let contentRevealDispatched = false;
 
   const LOGO_IN_DELAY = 620;
-  const LOGO_IN_DURATION = 820;
-  const COMPASS_CLEAR_DELAY = 1420;
+  const COMPASS_CLEAR_DELAY = 1720;
   const COMPASS_CLEAR_DURATION = 520;
   const LOGO_HOLD_DURATION = 460;
   const LOGO_FADE_DURATION = 420;
@@ -107,12 +104,7 @@
         compassVisible = true;
 
         logoInTimer = window.setTimeout(() => {
-          logoArriving = true;
           logoVisible = true;
-
-          logoSettleTimer = window.setTimeout(() => {
-            logoArriving = false;
-          }, LOGO_IN_DURATION);
         }, LOGO_IN_DELAY);
 
         compassOutTimer = window.setTimeout(() => {
@@ -137,7 +129,6 @@
     cancelAnimationFrame(raf1);
     cancelAnimationFrame(raf2);
     clearTimeout(logoInTimer);
-    clearTimeout(logoSettleTimer);
     clearTimeout(compassOutTimer);
     clearTimeout(logoOutTimer);
     clearTimeout(headerRevealTimer);
@@ -171,10 +162,10 @@
         class:is-visible={compassVisible}
         class:is-clearing={compassClearing}
       >
-        <circle class="compass-ring compass-ring--outer" cx="120" cy="120" r="98" />
-        <circle class="compass-ring compass-ring--edge" cx="120" cy="120" r="92" />
-        <circle class="compass-ring compass-ring--middle" cx="120" cy="120" r="78" />
-        <circle class="compass-ring compass-ring--inner" cx="120" cy="120" r="65" />
+        <circle class="compass-ring compass-ring--outer" cx="120" cy="120" r="98" style="--ring-length:615.76" />
+        <circle class="compass-ring compass-ring--edge" cx="120" cy="120" r="92" style="--ring-length:578.06" />
+        <circle class="compass-ring compass-ring--middle" cx="120" cy="120" r="78" style="--ring-length:490.09" />
+        <circle class="compass-ring compass-ring--inner" cx="120" cy="120" r="65" style="--ring-length:408.41" />
 
         <g class="compass-ticks">
           {#each Array(48) as _, i}
@@ -199,21 +190,20 @@
         </g>
 
         <g class="compass-rose">
-          <path d="M120 44L124 75L120 69L116 75Z" />
-          <path d="M196 120L165 124L171 120L165 116Z" />
-          <path d="M120 196L116 165L120 171L124 165Z" />
-          <path d="M44 120L75 116L69 120L75 124Z" />
+          <path d="M120 44L123.5 70L120 65L116.5 70Z" />
+          <path d="M196 120L170 123.5L175 120L170 116.5Z" />
+          <path d="M120 196L116.5 170L120 175L123.5 170Z" />
+          <path d="M44 120L70 116.5L65 120L70 123.5Z" />
         </g>
 
         <g class="compass-logo-seat">
-          <circle class="compass-logo-seat__plate" cx="120" cy="120" r="38" />
-          <circle class="compass-logo-seat__ring" cx="120" cy="120" r="35" />
-          <circle class="compass-logo-seat__ring compass-logo-seat__ring--inner" cx="120" cy="120" r="29" />
-          <path d="M120 75V84M156 120H165M120 156V165M75 120H84" />
-          <circle cx="120" cy="82" r="1.4" />
-          <circle cx="158" cy="120" r="1.4" />
-          <circle cx="120" cy="158" r="1.4" />
-          <circle cx="82" cy="120" r="1.4" />
+          <circle class="compass-logo-seat__plate" cx="120" cy="120" r="45" />
+          <circle class="compass-logo-seat__ring" cx="120" cy="120" r="46.5" />
+          <path d="M120 68V73M167 120H172M120 167V172M68 120H73" />
+          <circle cx="120" cy="67" r="1.2" />
+          <circle cx="173" cy="120" r="1.2" />
+          <circle cx="120" cy="173" r="1.2" />
+          <circle cx="67" cy="120" r="1.2" />
         </g>
 
         <g class="compass-cardinals">
@@ -227,17 +217,16 @@
         <circle class="compass-index-dot" cx="202" cy="120" r="1.7" />
         <circle class="compass-index-dot" cx="120" cy="202" r="1.7" />
         <circle class="compass-index-dot" cx="38" cy="120" r="1.7" />
-        <line class="compass-sweep" x1="120" y1="120" x2="120" y2="28" />
+        <line class="compass-sweep" x1="120" y1="69" x2="120" y2="28" />
       </g>
 
       <svg
         class="site-intro-loader__logo"
         class:is-visible={logoVisible}
-        class:is-arriving={logoArriving}
-        x="74"
-        y="74"
-        width="92"
-        height="92"
+        x="82"
+        y="81"
+        width="76"
+        height="76"
         viewBox="0 0 969 969"
       >
         <path d="M175.33,886.39L514.99,37c-34.84,220.59-70.34,441.09-105.93,661.57l-3.59,4.41-230.16,183.41Z" />
@@ -315,33 +304,38 @@
 
   .compass-ring {
     stroke-linecap: round;
-    stroke-dasharray: 640;
-    stroke-dashoffset: 640;
-    transition: stroke-dashoffset 980ms cubic-bezier(0.65, 0, 0.35, 1);
+    stroke-dasharray: var(--ring-length) var(--ring-length);
+    stroke-dashoffset: var(--ring-length);
+    transition: stroke-dashoffset 520ms cubic-bezier(0.65, 0, 0.35, 1);
+    vector-effect: none;
   }
 
   .compass-ring--outer {
     stroke-width: 0.75;
     opacity: 0.72;
-    transition-delay: 40ms;
+    transition-duration: 460ms;
+    transition-delay: 20ms;
   }
 
   .compass-ring--edge {
     stroke-width: 0.35;
     opacity: 0.36;
-    transition-delay: 130ms;
+    transition-duration: 480ms;
+    transition-delay: 50ms;
   }
 
   .compass-ring--middle {
     stroke-width: 0.45;
     opacity: 0.26;
-    transition-delay: 210ms;
+    transition-duration: 500ms;
+    transition-delay: 75ms;
   }
 
   .compass-ring--inner {
     stroke-width: 0.35;
     opacity: 0.18;
-    transition-delay: 280ms;
+    transition-duration: 500ms;
+    transition-delay: 100ms;
   }
 
   .compass-art.is-visible .compass-ring {
@@ -356,9 +350,9 @@
     opacity: 0.42;
     transform-origin: 120px 120px;
     transition:
-      stroke-dashoffset 340ms cubic-bezier(0.22, 1, 0.36, 1),
-      opacity 340ms ease;
-    transition-delay: calc(140ms + var(--tick-index) * 10ms);
+      stroke-dashoffset 220ms cubic-bezier(0.22, 1, 0.36, 1),
+      opacity 220ms ease;
+    transition-delay: calc(70ms + var(--tick-index) * 6ms);
   }
 
   .compass-tick--medium {
@@ -379,46 +373,44 @@
   .compass-rose path {
     stroke-dasharray: 180;
     stroke-dashoffset: 180;
-    transition: stroke-dashoffset 820ms cubic-bezier(0.65, 0, 0.35, 1);
+    transition: stroke-dashoffset 440ms cubic-bezier(0.65, 0, 0.35, 1);
   }
 
   .compass-axes path {
     stroke-width: 0.45;
     opacity: 0.28;
-    transition-delay: 320ms;
+    transition-delay: 100ms;
   }
 
   .compass-axes .compass-axis--fine {
     stroke-width: 0.3;
     opacity: 0.15;
-    transition-delay: 430ms;
+    transition-delay: 130ms;
   }
 
   .compass-rose path {
     stroke-width: 0.55;
-    opacity: 0.28;
-    transition-delay: 390ms;
+    opacity: 0.3;
+    transition-delay: 140ms;
   }
 
   .compass-logo-seat {
     opacity: 0;
-    transition: opacity 480ms ease 520ms;
+    transition: opacity 380ms ease 180ms;
   }
 
   .compass-logo-seat__plate {
     fill: #000;
-    opacity: 0.96;
   }
 
   .compass-logo-seat__ring {
     stroke-width: 0.5;
+    stroke-dasharray: 292.17 292.17;
+    stroke-dashoffset: 292.17;
+    stroke-linecap: round;
     opacity: 0.42;
-  }
-
-  .compass-logo-seat__ring--inner {
-    stroke-width: 0.3;
-    stroke-dasharray: 2 3;
-    opacity: 0.24;
+    transition: stroke-dashoffset 380ms cubic-bezier(0.65, 0, 0.35, 1) 180ms;
+    vector-effect: none;
   }
 
   .compass-logo-seat path {
@@ -439,6 +431,10 @@
 
   .compass-art.is-visible .compass-logo-seat {
     opacity: 1;
+  }
+
+  .compass-art.is-visible .compass-logo-seat__ring {
+    stroke-dashoffset: 0;
   }
 
   .compass-cardinal {
@@ -491,21 +487,14 @@
     display: block;
     fill: currentColor;
     opacity: 0;
-    transition: opacity 420ms cubic-bezier(0.22, 1, 0.36, 1);
+    transition: opacity 520ms cubic-bezier(0.22, 1, 0.36, 1);
     will-change: opacity;
-    transform-origin: center;
-    transform-box: fill-box;
-    transform: translateZ(0);
     backface-visibility: hidden;
     -webkit-backface-visibility: hidden;
   }
 
   .site-intro-loader__logo.is-visible {
     opacity: 1;
-  }
-
-  .site-intro-loader__logo.is-arriving {
-    animation: compassNeedleIn 820ms cubic-bezier(0.16, 1, 0.3, 1) both;
   }
 
   @keyframes compassSweep {
@@ -525,24 +514,9 @@
     }
   }
 
-  @keyframes compassNeedleIn {
-    0% {
-      opacity: 0;
-      transform: translate3d(0, 12px, 0) rotate(-68deg) scale(0.42);
-    }
-    58% {
-      opacity: 1;
-      transform: translate3d(0, -1.5px, 0) rotate(3deg) scale(1.035);
-    }
-    100% {
-      opacity: 1;
-      transform: translate3d(0, 0, 0) rotate(0deg) scale(1);
-    }
-  }
-
   @media (max-width: 768px) {
     .site-intro-loader__mark {
-      width: clamp(14rem, 62vw, 15.5rem);
+      width: clamp(15rem, 68vw, 17rem);
     }
   }
 
