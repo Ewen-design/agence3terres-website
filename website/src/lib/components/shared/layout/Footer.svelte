@@ -18,14 +18,15 @@
     "/projet2": "/images/telephone2_parfum.webp",
     "/projet3": "/images/telephone_main.webp",
     "/projet4": "/images/carte-copie.jpg",
-    "/projet5": "/images/logo_justx.webp"
+    "/projet5": "/images/logo_justx.webp",
+    "/projet6": "/images/imageterres.jpg"
   };
 
   $: pathname = $page.url.pathname.replace(/\/+$/, "") || "/";
   $: footerImage = footerImages[pathname] ?? footerImages["/"];
   $: footerThemeClass =
     pathname === "/services" ? "theme-services" :
-    ["/travail", "/projet1", "/projet2", "/projet3", "/projet4", "/projet5"].includes(pathname) ? "theme-projets" :
+    ["/travail", "/projet1", "/projet2", "/projet3", "/projet4", "/projet5", "/projet6"].includes(pathname) ? "theme-projets" :
     pathname === "/apropos" ? "theme-apropos" :
     pathname === "/contact" ? "theme-contact" :
     "theme-home";

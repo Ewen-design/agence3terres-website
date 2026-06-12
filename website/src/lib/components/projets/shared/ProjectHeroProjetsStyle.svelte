@@ -11,6 +11,7 @@
 
   export let title = "";
   export let image = "";
+  export let mobileImage = "";
   export let metaBlocks = [];
   export let ctaLabel = "Visit Website";
   export let ctaHref = "";
@@ -287,11 +288,16 @@
   <section class="hero-stage">
     <div class="hero-media-sticky" aria-hidden="true">
       <div class="hero-media" class:media-visible={heroMediaVisible} bind:this={heroStage}>
-        <img
-          bind:this={heroMediaImgEl}
-          src={image}
-          alt=""
-        />
+        <picture>
+          {#if mobileImage}
+            <source media="(max-width: 640px)" srcset={mobileImage} />
+          {/if}
+          <img
+            bind:this={heroMediaImgEl}
+            src={image}
+            alt=""
+          />
+        </picture>
         <div class="hero-dark-layer" bind:this={heroDarkLayerEl}></div>
       </div>
     </div>
@@ -357,7 +363,7 @@
   .hero-join-clean {
     position: relative;
     width: 100%;
-    background: var(--project-surface-bg, #000);
+    background: transparent;
     color: #f4efe6;
     overflow: clip;
   }

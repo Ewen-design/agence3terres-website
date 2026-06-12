@@ -147,7 +147,7 @@ export const projectPages = {
     category: "Plateforme web",
     year: "2025",
     hero: {
-      image: "/images/telephone_main.webp",
+      image: "/images/moovy.webp",
       alt: "Hero Moovy",
       summaryMain: "Une recherche de films plus claire, plus rapide, plus fluide.",
       summaryMuted: "Un site pense pour explorer un large choix de films et trouver facilement le bon selon ses envies.",
@@ -162,24 +162,24 @@ export const projectPages = {
       slides: [
         {
           number: "01",
-          label: "Catalogue",
-          title: "Ouvrir",
-          text: "Une selection large. Une lecture immediate.",
-          image: "/images/ordinateur.webp"
+          label: "Identité",
+          title: "Charte graphique",
+          text: "Un langage visuel clair pour installer l'univers de Moovy.",
+          image: "/images/moovy.webp"
         },
         {
           number: "02",
-          label: "Recommendation",
-          title: "Qualifier",
-          text: "Quelques questions. Une orientation plus juste.",
-          image: "/images/telephone_main.webp"
+          label: "Logo",
+          title: "Création de logo",
+          text: "Un signe simple et reconnaissable, pensé pour tous les formats.",
+          image: "/images/moovy_mobile.webp"
         },
         {
           number: "03",
-          label: "Interface",
-          title: "Aboutir",
-          text: "Un parcours rapide. Une decision sans surcharge.",
-          image: "/images/telephone2.webp"
+          label: "Digital",
+          title: "Site web",
+          text: "Une expérience fluide pour explorer et choisir sans surcharge.",
+          image: "/images/moovy.webp"
         }
       ]
     },
@@ -187,13 +187,13 @@ export const projectPages = {
       title: "Un outil qui reste desiré.",
       text: "Le site combine une recherche simple, une recommandation guidee et une presence visuelle plus nette.",
       images: [
-        { src: "/images/ordinateur.webp", alt: "Vue large Moovy", layout: "panorama" },
-        { src: "/images/telephone_main.webp", alt: "Vue mobile Moovy", layout: "square" },
-        { src: "/images/telephone2.webp", alt: "Questionnaire Moovy", layout: "square" }
+        { src: "/images/moovy.webp", alt: "Vue large Moovy", layout: "panorama" },
+        { src: "/images/moovy_mobile.webp", alt: "Vue mobile Moovy", layout: "square" },
+        { src: "/images/moovy.webp", alt: "Questionnaire Moovy", layout: "square" }
       ]
     },
     fullscreen: {
-      image: "/images/telephone_main.webp",
+      image: "/images/moovy_mobile.webp",
       alt: "Vue immersive Moovy",
       title: "Choisir plus vite.",
       text: "Sans perdre la sensation d'exploration."
@@ -206,9 +206,9 @@ export const projectPages = {
       title: "Puis le parcours se resserre.",
       text: "Desktop, mobile et recommendation gardent la meme fluidite d'usage.",
       images: [
-        { src: "/images/ordinateur.webp", alt: "Vue desktop Moovy", layout: "wide" },
-        { src: "/images/telephone2.webp", alt: "Vue mobile Moovy", layout: "portrait" },
-        { src: "/images/telephone_main.webp", alt: "Visuel hero Moovy", layout: "full" }
+        { src: "/images/moovy.webp", alt: "Vue desktop Moovy", layout: "wide" },
+        { src: "/images/moovy_mobile.webp", alt: "Vue mobile Moovy", layout: "portrait" },
+        { src: "/images/moovy.webp", alt: "Visuel hero Moovy", layout: "full" }
       ]
     }
   },
@@ -351,6 +351,77 @@ export const projectPages = {
         { src: "/images/logo_justx.webp", alt: "Identité JustX", layout: "wide" },
         { src: "/images/logo_justx.webp", alt: "Symbole JustX", layout: "portrait" },
         { src: "/images/logo_justx.webp", alt: "Logo JustX", layout: "full" }
+      ]
+    }
+  },
+  projet6: {
+    slug: "projet6",
+    title: "Mission X",
+    category: "Jeu de stratégie",
+    year: "2026",
+    hero: {
+      image: "/images/imageterres.jpg",
+      alt: "Univers du jeu Mission X",
+      summaryMain: "Un jeu de stratégie et d'exploration construit autour de décisions qui transforment le monde.",
+      summaryMuted: "Une expérience narrative où chaque mission demande d'observer, choisir et progresser.",
+      meta: ["Game design", "Direction artistique", "Expérience interactive"]
+    },
+    intro: {
+      title: "Entrer dans la mission.",
+      text: "Créer un univers immédiatement lisible, une tension constante et des choix qui donnent du poids à chaque progression."
+    },
+    slider: {
+      title: "Trois dimensions pour tenir l'expérience.",
+      slides: [
+        {
+          number: "01",
+          label: "Univers",
+          title: "Explorer",
+          text: "Un monde entre reliefs sauvages et territoires urbains.",
+          image: "/images/imageterres.jpg"
+        },
+        {
+          number: "02",
+          label: "Stratégie",
+          title: "Décider",
+          text: "Chaque mouvement modifie la suite de la mission.",
+          image: "/images/missionx_strategy.png"
+        },
+        {
+          number: "03",
+          label: "Progression",
+          title: "Atteindre",
+          text: "Des objectifs clairs, une tension continue et plusieurs chemins.",
+          image: "/images/aigleciel.jpg"
+        }
+      ]
+    },
+    galleryPrimary: {
+      title: "Un monde à lire avant d'agir.",
+      text: "Les paysages installent l'échelle, les contrastes guident l'attention et chaque scène prépare une décision.",
+      images: [
+        { src: "/images/imageterres.jpg", alt: "Monde hybride de Mission X", layout: "panorama" },
+        { src: "/images/montagne.webp", alt: "Sommet de Mission X", layout: "square" },
+        { src: "/images/aigleciel.jpg", alt: "Ciel de Mission X", layout: "square" }
+      ]
+    },
+    fullscreen: {
+      image: "/images/missionx_strategy.png",
+      alt: "Échiquier stratégique de Mission X",
+      title: "Chaque choix compte.",
+      text: "La mission avance avec vous."
+    },
+    detail: {
+      title: "La stratégie reste visible.",
+      text: "L'interface, la narration et la direction artistique convergent pour rendre les enjeux clairs sans casser l'immersion."
+    },
+    gallerySecondary: {
+      title: "Une identité conçue comme un signal.",
+      text: "Le X, les paysages et les contrastes sombres donnent au jeu une présence simple, tendue et mémorable.",
+      images: [
+        { src: "/images/aigleciel.jpg", alt: "Horizon de Mission X", layout: "wide" },
+        { src: "/images/montagne.webp", alt: "Relief vertical de Mission X", layout: "portrait" },
+        { src: "/images/imageterres.jpg", alt: "Univers principal de Mission X", layout: "full" }
       ]
     }
   }

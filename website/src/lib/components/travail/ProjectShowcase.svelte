@@ -86,6 +86,22 @@
     },
     {
       number: "06",
+      title: "Mission X",
+      category: "Jeu de stratégie",
+      lead: "Un monde à explorer, des décisions à assumer.",
+      rest: "Un jeu narratif où stratégie, progression et exploration se rencontrent dans un univers cinématographique.",
+      image: "/images/imageterres.jpg",
+      previewImages: [
+        { src: "/images/imageterres.jpg", alt: "Univers de Mission X" },
+        { src: "/images/missionx_strategy.png", alt: "Stratégie de Mission X" },
+        { src: "/images/montagne.webp", alt: "Exploration dans Mission X" }
+      ],
+      page: "projet6",
+      button: "Voir le projet",
+      mobileInfo: ["Mission X", "Jeu", "Stratégie", "Narration", "Exploration"]
+    },
+    {
+      number: "07",
       title: "Votre projet ?",
       category: "Collaboration",
       lead: "Une vision a faire naitre, clarifier ou amplifier.",

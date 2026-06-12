@@ -1,7 +1,6 @@
 <script>
   import { onMount, onDestroy } from "svelte";
   import { browser } from "$app/environment";
-  import { registerParallax, unregisterParallax } from "$lib/scrollEngine.js";
 
   // ── Data ───────────────────────────────────────────────────────────────────
   const quotes = [
@@ -92,21 +91,15 @@
   let sectionEl;
   let bgEl;
 
-  // ── Parallax engine ────────────────────────────────────────────────────────
-  let currentScrollY = 0;
+  // ── Background visibility ──────────────────────────────────────────────────
   let rafId = null;
   let sectionVisible = false;
 
-  let curOffset = 0;
   let curOpacity = 0;
 
   const clamp = (v, lo, hi) => Math.min(Math.max(v, lo), hi);
   const lerp = (a, b, t) => a + (b - a) * t;
   const round3 = (v) => Math.round(v * 1000) / 1000;
-
-  function updateParallax(scrollY) {
-    currentScrollY = scrollY;
-  }
 
   function tick() {
     if (!sectionVisible || !sectionEl || !bgEl) { rafId = null; return; }
@@ -128,14 +121,10 @@
     else tgtOpacity = 1;
     tgtOpacity = clamp(tgtOpacity, 0, 1);
 
-    const tgtOffset = rect.top * -4 * 0.08;
-
     const factor = isMobile ? 0.10 : 0.14;
     curOpacity = lerp(curOpacity, tgtOpacity, factor);
-    curOffset = lerp(curOffset, tgtOffset, factor);
 
     bgEl.style.opacity = round3(curOpacity).toString();
-    bgEl.style.transform = `translate3d(0,${round3(curOffset)}px,0)`;
 
     rafId = requestAnimationFrame(tick);
   }
@@ -160,7 +149,6 @@
   onMount(() => {
     checkMobile();
 
-    registerParallax(updateParallax);
     sectionEl.addEventListener("click", handleSectionClick);
     removeSectionClickListener = () => sectionEl?.removeEventListener("click", handleSectionClick);
 
@@ -181,7 +169,6 @@
   onDestroy(() => {
     if (!browser) return;
     stopLoop();
-    unregisterParallax(updateParallax);
     removeSectionClickListener?.();
     resizeObserver?.disconnect();
     intersectionObserver?.disconnect();
@@ -271,8 +258,7 @@
     background-size: cover;
     background-position: right center;
     opacity: 0;
-    will-change: transform, opacity;
-    transform: translate3d(0,0,0);
+    will-change: opacity;
     z-index: 1;
   }
 

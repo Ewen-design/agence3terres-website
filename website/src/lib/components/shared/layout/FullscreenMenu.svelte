@@ -80,6 +80,14 @@
       large: false
     },
     {
+      page: "projet6",
+      title: projectPages.projet6.title,
+      image: projectPages.projet6.hero.image,
+      alt: projectPages.projet6.hero.alt,
+      text: projectPages.projet6.hero.summaryMain,
+      large: false
+    },
+    {
       page: "services",
       title: "Conception de site web",
       image: "/images/creation_logo_desktop2.webp",

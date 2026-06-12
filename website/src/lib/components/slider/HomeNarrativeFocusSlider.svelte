@@ -39,6 +39,13 @@
     },
     {
       number: "06",
+      title: "Mission X",
+      description:
+        "Un jeu de stratégie et d'exploration où chaque décision transforme la suite de la mission.",
+      image: "/images/imageterres.jpg"
+    },
+    {
+      number: "07",
       title: "Votre\nprojet ?",
       description:
         "Une approche sur mesure pour révéler une singularité avec exigence et impact.",
@@ -46,7 +53,7 @@
     }
   ];
 
-  const slideLinks = ["/projet1", "/projet2", "/projet3", "/projet4", "/projet5", "/contact"];
+  const slideLinks = ["/projet1", "/projet2", "/projet3", "/projet4", "/projet5", "/projet6", "/contact"];
 </script>
 
 <FocusZoneSlider {slides} {slideLinks} zoneHeight="33svh" />

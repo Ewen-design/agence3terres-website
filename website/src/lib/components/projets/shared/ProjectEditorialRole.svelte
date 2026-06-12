@@ -33,7 +33,7 @@
 
 <style>
   .editorial-role {
-    background: var(--project-surface-bg, #f7f5f1);
+    background: transparent;
     color: var(--project-surface-ink, #121212);
     padding: 1.25rem var(--project-side-padding, 1.25rem) 6.5rem;
   }

@@ -35,6 +35,8 @@
   let cancelTransitionAnimation;
   let scrollLockObserver;
   let removeTouchFlipListener;
+  let projectTheme = null;
+  let removeProjectThemeListener;
 
   let transitionLayer;
 
@@ -112,6 +114,12 @@
       description:
         "Marque de sport, programmes personnalisés et gamme textile: découvrez le projet JustX par Agence 3 Terres.",
       imageAlt: "Projet JustX par Agence 3 Terres"
+    },
+    "/projet6": {
+      title: "Mission X | Projet Agence 3 Terres",
+      description:
+        "Jeu de stratégie, game design et direction artistique: découvrez le projet Mission X par Agence 3 Terres.",
+      imageAlt: "Projet Mission X par Agence 3 Terres"
     }
   };
 
@@ -219,8 +227,9 @@
   }
 
   $: pathname = $page.url.pathname.replace(/\/+$/, "") || "/";
-  $: hideFooter = ["/projet1", "/projet2", "/projet3", "/projet4", "/projet5", "/contact"].includes(pathname);
+  $: hideFooter = ["/projet1", "/projet2", "/projet3", "/projet4", "/projet5", "/projet6", "/contact"].includes(pathname);
   $: isTravailPage = pathname === "/travail";
+  $: isProjectLightTheme = projectTheme === "light";
   $: currentMeta = PAGE_META[pathname] ?? PAGE_META["/"];
   $: canonicalUrl = `${SITE_URL}${pathname === "/" ? "" : `${pathname}/`}`;
   $: shareImageUrl = `${SITE_URL}${SHARE_IMAGE_PATH}`;
@@ -372,6 +381,15 @@
     let destroyed = false;
     let cleanupResizeObserver;
 
+    const handleProjectThemeChange = (event) => {
+      projectTheme = event.detail?.theme ?? null;
+    };
+
+    window.addEventListener("project-theme-change", handleProjectThemeChange);
+    removeProjectThemeListener = () => {
+      window.removeEventListener("project-theme-change", handleProjectThemeChange);
+    };
+
     const init = async () => {
       await import("gsap");
       if (destroyed) return;
@@ -465,6 +483,8 @@
       if (onPageShow) window.removeEventListener("pageshow", onPageShow);
       if (onVisibilityChange) document.removeEventListener("visibilitychange", onVisibilityChange);
       removeTouchFlipListener?.();
+      removeProjectThemeListener?.();
+      projectTheme = null;
 
       wheelDamping?.destroy?.();
       wheelDamping = null;
@@ -506,7 +526,11 @@
   <meta name="twitter:image:alt" content={seoImageAlt} />
 </svelte:head>
 
-<main class:travail-soft-gradients={isTravailPage} class:contact-page={pathname === "/contact"}>
+<main
+  class:travail-soft-gradients={isTravailPage}
+  class:contact-page={pathname === "/contact"}
+  class:project-light-theme={isProjectLightTheme}
+>
   {#if !isMobile}
     <CustomCursor />
   {/if}
@@ -526,8 +550,8 @@
 
   <div class="route-transition-layer" bind:this={transitionLayer} aria-hidden="true"></div>
 
-  <div class="top-gradient"></div>
-  <div class="bottom-gradient"></div>
+  <div class="top-gradient" aria-hidden="true"></div>
+  <div class="bottom-gradient" aria-hidden="true"></div>
 
   {#if !hideFooter}
     <Footer />
@@ -617,7 +641,8 @@
       rgba(0, 0, 0, 0) 100%
     );
     z-index: 99999;
-    transition: opacity 0.35s ease;
+    opacity: 1;
+    transition: opacity var(--project-theme-transition, 0.35s ease);
   }
 
   .bottom-gradient {
@@ -648,7 +673,13 @@
         rgba(0, 0, 0, 0) 100%
       );
     z-index: 99999;
-    transition: opacity 0.35s ease;
+    opacity: 1;
+    transition: opacity var(--project-theme-transition, 0.35s ease);
+  }
+
+  main.project-light-theme .top-gradient,
+  main.project-light-theme .bottom-gradient {
+    opacity: 0;
   }
 
   main.travail-soft-gradients .top-gradient {

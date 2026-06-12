@@ -10,11 +10,9 @@
   }
 
   $: projectSlides = slides.map((slide, index) => {
-    const heading = [slide.label, slide.title].filter(Boolean).join("\n");
-
     return {
       number: slide.number || toNumber(index),
-      title: heading || slide.title || "",
+      title: slide.title || "",
       description: slide.text || slide.description || "",
       image: slide.image,
       mobileImage: slide.mobileImage || slide.image

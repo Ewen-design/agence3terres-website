@@ -333,7 +333,7 @@
 
   $: themeClass =
     pathname === "/services" ? "theme-services" :
-    ["/travail", "/projet1", "/projet2", "/projet3", "/projet4", "/projet5"].includes(pathname) ? "theme-projets" :
+    ["/travail", "/projet1", "/projet2", "/projet3", "/projet4", "/projet5", "/projet6"].includes(pathname) ? "theme-projets" :
     pathname === "/apropos" ? "theme-apropos" :
     pathname === "/contact" ? "theme-contact" :
     "";
@@ -607,7 +607,7 @@
     isolation: isolate;
     overflow: visible;
     transition:
-      color 220ms ease,
+      color var(--project-theme-transition, 220ms ease),
       opacity 0.9s ease,
       transform 0.9s cubic-bezier(.22,.61,.36,1);
   }

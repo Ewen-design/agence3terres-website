@@ -24,7 +24,8 @@
       number: "03",
       title: "Moovy",
       rest: "Une plateforme de recommandation de films qui aide chacun a trouver rapidement le bon film selon ses gouts, ses envies et quelques questions simples.",
-      image: "/images/telephone_main.webp",
+      image: "/images/moovy.webp",
+      mobileImage: "/images/moovy_mobile.webp",
       page: "projet3",
       button: "Voir le projet"
     },
@@ -46,6 +47,15 @@
     },
     {
       number: "06",
+      title: "Mission X",
+      rest: "Un jeu de stratégie et d'exploration où chaque décision transforme le terrain, la progression et la suite de la mission.",
+      image: "/images/imageterres.jpg",
+      mobileImage: "/images/montagne.webp",
+      page: "projet6",
+      button: "Voir le projet"
+    },
+    {
+      number: "07",
       title: "Votre projet ?",
       rest: "Identite, direction artistique, site web ou experience digitale : construisons ensemble une presence forte, juste et memorable.",
       image: "/images/telephone2.webp",
@@ -255,6 +265,7 @@
     else if (pathname.includes("/projet3")) detectedCurrentPage = "projet3";
     else if (pathname.includes("/projet4")) detectedCurrentPage = "projet4";
     else if (pathname.includes("/projet5")) detectedCurrentPage = "projet5";
+    else if (pathname.includes("/projet6")) detectedCurrentPage = "projet6";
     else if (pathname.includes("/contact")) detectedCurrentPage = "contact";
 
     const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -389,7 +400,7 @@
           </div>
 
         <div class="mobile-image">
-          <img src={project.image} alt={project.title} />
+          <img src={project.mobileImage || project.image} alt={project.title} />
           <div class="mobile-card-plus" aria-hidden="true">+</div>
         </div>
       </button>
