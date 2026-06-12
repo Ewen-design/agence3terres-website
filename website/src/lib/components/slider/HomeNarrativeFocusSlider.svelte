@@ -4,45 +4,45 @@
   const slides = [
     {
       number: "01",
-      title: "Serein\nDesign",
-      description:
-        "Un univers premium, calme et fonctionnel, porté par une identité claire et sensible.",
-      image: "/images/telephone3.webp"
-    },
-    {
-      number: "02",
-      title: "Hansatsu",
-      description:
-        "Le site web d'un projet qui retrace un fragment d'histoire japonaise avec sobriete et precision.",
-      image: "/images/parfum_rouge.webp"
-    },
-    {
-      number: "03",
       title: "Moovy",
       description:
         "Une plateforme de recommandation de films qui aide a trouver rapidement le bon choix selon ses envies.",
-      image: "/images/telephone_main.webp"
+      image: "/images/moovy.webp"
     },
     {
-      number: "04",
-      title: "Ludovic",
-      description:
-        "Un site d'artiste pense pour presenter des oeuvres peintes avec calme, texture et clarte.",
-      image: "/images/carte-copie.jpg"
-    },
-    {
-      number: "05",
+      number: "02",
       title: "JustX",
       description:
         "Une marque de sport portée par des programmes personnalisés de musculation, nutrition et une gamme textile.",
       image: "/images/logo_justx.webp"
     },
     {
-      number: "06",
+      number: "03",
+      title: "JustX\nFitness",
+      description:
+        "L'application JustX pour planifier ses séances, suivre l'effort et mesurer sa progression.",
+      image: "/images/telephone3.webp"
+    },
+    {
+      number: "04",
       title: "Mission X",
       description:
         "Un jeu de stratégie et d'exploration où chaque décision transforme la suite de la mission.",
       image: "/images/imageterres.jpg"
+    },
+    {
+      number: "05",
+      title: "Ludovic",
+      description:
+        "Un site d'artiste pense pour presenter des oeuvres peintes avec calme, texture et clarte.",
+      image: "/images/carte-copie.jpg"
+    },
+    {
+      number: "06",
+      title: "Serein\nDesign",
+      description:
+        "Un univers premium, calme et fonctionnel, porté par une identité claire et sensible.",
+      image: "/images/telephone3.webp"
     },
     {
       number: "07",
@@ -53,7 +53,7 @@
     }
   ];
 
-  const slideLinks = ["/projet1", "/projet2", "/projet3", "/projet4", "/projet5", "/projet6", "/contact"];
+  const slideLinks = ["/projet3", "/projet5", "/projet7", "/projet6", "/projet4", "/projet1", "/contact"];
 </script>
 
 <FocusZoneSlider {slides} {slideLinks} zoneHeight="33svh" />

@@ -39,28 +39,36 @@
 
   const projectPreviewCards = [
     {
-      page: "projet1",
-      title: projectPages.projet1.title,
-      meta: "Projet sélectionné",
-      image: projectPages.projet1.hero.image,
-      alt: projectPages.projet1.hero.alt,
-      text: "Une identité et une présence visuelle pensées avec justesse, rythme et précision.",
-      large: true
-    },
-    {
-      page: "projet2",
-      title: projectPages.projet2.title,
-      image: projectPages.projet2.hero.image,
-      alt: projectPages.projet2.hero.alt,
-      text: projectPages.projet2.hero.summaryMain,
-      large: false
-    },
-    {
       page: "projet3",
       title: projectPages.projet3.title,
+      meta: "Projet sélectionné",
       image: projectPages.projet3.hero.image,
       alt: projectPages.projet3.hero.alt,
       text: projectPages.projet3.hero.summaryMain,
+      large: true
+    },
+    {
+      page: "projet5",
+      title: projectPages.projet5.title,
+      image: projectPages.projet5.hero.image,
+      alt: projectPages.projet5.hero.alt,
+      text: projectPages.projet5.hero.summaryMain,
+      large: false
+    },
+    {
+      page: "projet7",
+      title: projectPages.projet7.title,
+      image: projectPages.projet7.hero.image,
+      alt: projectPages.projet7.hero.alt,
+      text: projectPages.projet7.hero.summaryMain,
+      large: false
+    },
+    {
+      page: "projet6",
+      title: projectPages.projet6.title,
+      image: projectPages.projet6.hero.image,
+      alt: projectPages.projet6.hero.alt,
+      text: projectPages.projet6.hero.summaryMain,
       large: false
     },
     {
@@ -72,19 +80,11 @@
       large: false
     },
     {
-      page: "projet5",
-      title: projectPages.projet5.title,
-      image: projectPages.projet5.hero.image,
-      alt: projectPages.projet5.hero.alt,
-      text: projectPages.projet5.hero.summaryMain,
-      large: false
-    },
-    {
-      page: "projet6",
-      title: projectPages.projet6.title,
-      image: projectPages.projet6.hero.image,
-      alt: projectPages.projet6.hero.alt,
-      text: projectPages.projet6.hero.summaryMain,
+      page: "projet1",
+      title: projectPages.projet1.title,
+      image: projectPages.projet1.hero.image,
+      alt: projectPages.projet1.hero.alt,
+      text: projectPages.projet1.hero.summaryMain,
       large: false
     },
     {
@@ -106,7 +106,7 @@
   ];
 
   const desktopProjectPreviewCards = projectPreviewCards.filter((card) =>
-    ["projet1", "projet2", "services"].includes(card.page)
+    ["projet3", "projet5", "services"].includes(card.page)
   );
 
   let visible = false;

@@ -21,19 +21,7 @@
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://agence3terres.com/projet1/</loc>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://agence3terres.com/projet2/</loc>
-    <priority>0.7</priority>
-  </url>
-  <url>
     <loc>https://agence3terres.com/projet3/</loc>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://agence3terres.com/projet4/</loc>
     <priority>0.7</priority>
   </url>
   <url>
@@ -41,7 +29,19 @@
     <priority>0.7</priority>
   </url>
   <url>
+    <loc>https://agence3terres.com/projet7/</loc>
+    <priority>0.7</priority>
+  </url>
+  <url>
     <loc>https://agence3terres.com/projet6/</loc>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://agence3terres.com/projet4/</loc>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://agence3terres.com/projet1/</loc>
     <priority>0.7</priority>
   </url>
   <url>

@@ -6,70 +6,22 @@
   const baseProjects = [
     {
       number: "01",
-      title: "Serein Design",
-      category: "Identite produit",
-      lead: "Un univers objet premium, calme et fonctionnel.",
-      rest: "Une direction pensée pour traduire une elegance sobre, technologique et durable a travers une identite visuelle claire et sensible.",
-      image: "/images/telephone3.webp",
-      previewImages: [
-        { src: "/images/telephone2.webp", alt: "Apercu mobile Serein Design" },
-        { src: "/images/telephone_main.webp", alt: "Detail interface Serein Design" },
-        { src: "/images/telephone2_parfum.webp", alt: "Composition visuelle Serein Design" }
-      ],
-      page: "projet1",
-      button: "Voir le projet",
-      mobileInfo: ["Serein Design", "Identite", "Direction", "Branding", "UI design"]
-    },
-    {
-      number: "02",
-      title: "Hansatsu",
-      category: "Narration visuelle",
-      lead: "Un site web concu pour retracer une part d'histoire japonaise.",
-      rest: "Une presence editoriale sobre et immersive, pensee pour faire circuler le regard entre recit, image et memoire.",
-      image: "/images/parfum_rouge.webp",
-      previewImages: [
-        { src: "/images/parfum2.webp", alt: "Apercu immersif Hansatsu" },
-        { src: "/images/parfum3.webp", alt: "Detail Hansatsu" },
-        { src: "/images/telephone_parfum.webp", alt: "Interface mobile Hansatsu" }
-      ],
-      page: "projet2",
-      button: "Voir le projet",
-      mobileInfo: ["Hansatsu", "Site web", "Recit", "Japon", "Contenu"]
-    },
-    {
-      number: "03",
       title: "Moovy",
       category: "Plateforme web",
       lead: "Une recommandation de films plus simple, plus directe.",
       rest: "Une plateforme pensee pour explorer un large catalogue et trouver rapidement le bon film selon ses gouts, son humeur et quelques questions.",
-      image: "/images/telephone_main.webp",
+      image: "/images/moovy.webp",
       previewImages: [
-        { src: "/images/ordinateur.webp", alt: "Apercu desktop Moovy" },
-        { src: "/images/telephone_main.webp", alt: "Interface mobile Moovy" },
-        { src: "/images/telephone2.webp", alt: "Parcours de recommandation Moovy" }
+        { src: "/images/moovy.webp", alt: "Apercu desktop Moovy" },
+        { src: "/images/moovy_mobile.webp", alt: "Interface mobile Moovy" },
+        { src: "/images/moovy.webp", alt: "Parcours de recommandation Moovy" }
       ],
       page: "projet3",
       button: "Voir le projet",
       mobileInfo: ["Moovy", "Films", "Reco", "UX", "Web app"]
     },
     {
-      number: "04",
-      title: "Ludovic",
-      category: "Site d'artiste",
-      lead: "Un site plus calme pour laisser respirer les oeuvres.",
-      rest: "Une presence web sobre et sensible, creee pour presenter les peintures de Ludovic avec plus de matiere, de rythme et de clarte.",
-      image: "/images/carte-copie.jpg",
-      previewImages: [
-        { src: "/images/carte-copie.jpg", alt: "Apercu oeuvre Ludovic" },
-        { src: "/images/livre.png", alt: "Detail editorial Ludovic" },
-        { src: "/images/photo.webp", alt: "Mise en page Ludovic" }
-      ],
-      page: "projet4",
-      button: "Voir le projet",
-      mobileInfo: ["Ludovic", "Art", "Peinture", "Vitrine", "Editorial"]
-    },
-    {
-      number: "05",
+      number: "02",
       title: "JustX",
       category: "Marque de sport",
       lead: "Un univers sportif plus direct, plus fort et plus personnel.",
@@ -85,7 +37,23 @@
       mobileInfo: ["JustX", "Sport", "Nutrition", "Coaching", "Textile"]
     },
     {
-      number: "06",
+      number: "03",
+      title: "JustX Fitness",
+      category: "Application fitness",
+      lead: "L'accompagnement JustX dans une application mobile.",
+      rest: "Programmes, suivi de l'effort et progression sont réunis dans une expérience directe, lisible et personnelle.",
+      image: "/images/telephone3.webp",
+      previewImages: [
+        { src: "/images/telephone3.webp", alt: "Application JustX Fitness" },
+        { src: "/images/telephone2.webp", alt: "Suivi mobile JustX Fitness" },
+        { src: "/images/logo_justx.webp", alt: "Identité JustX Fitness" }
+      ],
+      page: "projet7",
+      button: "Voir le projet",
+      mobileInfo: ["JustX Fitness", "Application", "Training", "Suivi", "UX/UI"]
+    },
+    {
+      number: "04",
       title: "Mission X",
       category: "Jeu de stratégie",
       lead: "Un monde à explorer, des décisions à assumer.",
@@ -99,6 +67,38 @@
       page: "projet6",
       button: "Voir le projet",
       mobileInfo: ["Mission X", "Jeu", "Stratégie", "Narration", "Exploration"]
+    },
+    {
+      number: "05",
+      title: "Ludovic",
+      category: "Site d'artiste",
+      lead: "Un site plus calme pour laisser respirer les oeuvres.",
+      rest: "Une presence web sobre et sensible, creee pour presenter les peintures de Ludovic avec plus de matiere, de rythme et de clarte.",
+      image: "/images/carte-copie.jpg",
+      previewImages: [
+        { src: "/images/carte-copie.jpg", alt: "Apercu oeuvre Ludovic" },
+        { src: "/images/livre.png", alt: "Detail editorial Ludovic" },
+        { src: "/images/photo.webp", alt: "Mise en page Ludovic" }
+      ],
+      page: "projet4",
+      button: "Voir le projet",
+      mobileInfo: ["Ludovic", "Art", "Peinture", "Vitrine", "Editorial"]
+    },
+    {
+      number: "06",
+      title: "Serein Design",
+      category: "Identite produit",
+      lead: "Un univers objet premium, calme et fonctionnel.",
+      rest: "Une direction pensée pour traduire une elegance sobre, technologique et durable a travers une identite visuelle claire et sensible.",
+      image: "/images/telephone3.webp",
+      previewImages: [
+        { src: "/images/telephone2.webp", alt: "Apercu mobile Serein Design" },
+        { src: "/images/telephone_main.webp", alt: "Detail interface Serein Design" },
+        { src: "/images/telephone2_parfum.webp", alt: "Composition visuelle Serein Design" }
+      ],
+      page: "projet1",
+      button: "Voir le projet",
+      mobileInfo: ["Serein Design", "Identite", "Direction", "Branding", "UI design"]
     },
     {
       number: "07",

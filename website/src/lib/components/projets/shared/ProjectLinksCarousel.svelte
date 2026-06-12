@@ -6,22 +6,6 @@
   const baseProjects = [
     {
       number: "01",
-      title: "Serein Design",
-      rest: "Une direction pensée pour traduire une elegance sobre, technologique et durable a travers une identite visuelle claire et sensible.",
-      image: "/images/telephone3.webp",
-      page: "projet1",
-      button: "Voir le projet"
-    },
-    {
-      number: "02",
-      title: "Hansatsu",
-      rest: "Nous avons cree le site web du projet pour retracer un fragment d'histoire japonaise dans une mise en scene sobre, precise et immersive.",
-      image: "/images/parfum_rouge.webp",
-      page: "projet2",
-      button: "Voir le projet"
-    },
-    {
-      number: "03",
       title: "Moovy",
       rest: "Une plateforme de recommandation de films qui aide chacun a trouver rapidement le bon film selon ses gouts, ses envies et quelques questions simples.",
       image: "/images/moovy.webp",
@@ -30,15 +14,7 @@
       button: "Voir le projet"
     },
     {
-      number: "04",
-      title: "Ludovic",
-      rest: "Un site vitrine imagine pour presenter les oeuvres peintes par Ludovic avec plus d'air, de matiere et de clarte.",
-      image: "/images/carte-copie.jpg",
-      page: "projet4",
-      button: "Voir le projet"
-    },
-    {
-      number: "05",
+      number: "02",
       title: "JustX",
       rest: "Une marque de sport qui réunit programmes personnalisés de musculation, nutrition et gamme de vêtements dans un univers direct et affirmé.",
       image: "/images/logo_justx.webp",
@@ -46,12 +22,37 @@
       button: "Voir le projet"
     },
     {
-      number: "06",
+      number: "03",
+      title: "JustX Fitness",
+      rest: "L'application JustX réunit programmes, suivi de l'effort et progression dans une expérience mobile directe et personnelle.",
+      image: "/images/telephone3.webp",
+      mobileImage: "/images/telephone2.webp",
+      page: "projet7",
+      button: "Voir le projet"
+    },
+    {
+      number: "04",
       title: "Mission X",
       rest: "Un jeu de stratégie et d'exploration où chaque décision transforme le terrain, la progression et la suite de la mission.",
       image: "/images/imageterres.jpg",
       mobileImage: "/images/montagne.webp",
       page: "projet6",
+      button: "Voir le projet"
+    },
+    {
+      number: "05",
+      title: "Ludovic",
+      rest: "Un site vitrine imagine pour presenter les oeuvres peintes par Ludovic avec plus d'air, de matiere et de clarte.",
+      image: "/images/carte-copie.jpg",
+      page: "projet4",
+      button: "Voir le projet"
+    },
+    {
+      number: "06",
+      title: "Serein Design",
+      rest: "Une direction pensée pour traduire une elegance sobre, technologique et durable a travers une identite visuelle claire et sensible.",
+      image: "/images/telephone3.webp",
+      page: "projet1",
       button: "Voir le projet"
     },
     {
@@ -261,11 +262,11 @@
 
     const pathname = window.location.pathname || "";
     if (pathname.includes("/projet1")) detectedCurrentPage = "projet1";
-    else if (pathname.includes("/projet2")) detectedCurrentPage = "projet2";
     else if (pathname.includes("/projet3")) detectedCurrentPage = "projet3";
     else if (pathname.includes("/projet4")) detectedCurrentPage = "projet4";
     else if (pathname.includes("/projet5")) detectedCurrentPage = "projet5";
     else if (pathname.includes("/projet6")) detectedCurrentPage = "projet6";
+    else if (pathname.includes("/projet7")) detectedCurrentPage = "projet7";
     else if (pathname.includes("/contact")) detectedCurrentPage = "contact";
 
     const mq = window.matchMedia("(prefers-reduced-motion: reduce)");

@@ -31,6 +31,8 @@
       }
     ]}
     ctaLabel="Visiter le site"
+    ctaHref="https://moovy.agence3terres.fr"
+    ctaExternal={true}
   />
 
   <ProjectThemeTrigger theme="light" offset={132} />

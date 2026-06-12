@@ -335,7 +335,7 @@
             class="hero-cta"
             href={ctaHref}
             target={ctaExternal ? "_blank" : undefined}
-            rel={ctaExternal ? "noreferrer" : undefined}
+            rel={ctaExternal ? "noopener noreferrer" : undefined}
             on:mousemove={handleButtonMove}
           >
             <span class="hero-cta__flip" data-text={ctaLabel}>

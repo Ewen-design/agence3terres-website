@@ -91,12 +91,6 @@
         "Identité produit, direction artistique et interface: découvrez le projet Serein Design par Agence 3 Terres.",
       imageAlt: "Projet Serein Design par Agence 3 Terres"
     },
-    "/projet2": {
-      title: "Hansatsu | Projet Agence 3 Terres",
-      description:
-        "Site web narratif et direction artistique: découvrez le projet Hansatsu par Agence 3 Terres.",
-      imageAlt: "Projet Hansatsu par Agence 3 Terres"
-    },
     "/projet3": {
       title: "Moovy | Projet Agence 3 Terres",
       description:
@@ -120,6 +114,12 @@
       description:
         "Jeu de stratégie, game design et direction artistique: découvrez le projet Mission X par Agence 3 Terres.",
       imageAlt: "Projet Mission X par Agence 3 Terres"
+    },
+    "/projet7": {
+      title: "JustX Fitness | Projet Agence 3 Terres",
+      description:
+        "Application fitness, product design et UX/UI: découvrez JustX Fitness par Agence 3 Terres.",
+      imageAlt: "Application JustX Fitness par Agence 3 Terres"
     }
   };
 
@@ -227,7 +227,7 @@
   }
 
   $: pathname = $page.url.pathname.replace(/\/+$/, "") || "/";
-  $: hideFooter = ["/projet1", "/projet2", "/projet3", "/projet4", "/projet5", "/projet6", "/contact"].includes(pathname);
+  $: hideFooter = ["/projet1", "/projet3", "/projet4", "/projet5", "/projet6", "/projet7", "/contact"].includes(pathname);
   $: isTravailPage = pathname === "/travail";
   $: isProjectLightTheme = projectTheme === "light";
   $: currentMeta = PAGE_META[pathname] ?? PAGE_META["/"];

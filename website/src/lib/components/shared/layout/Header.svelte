@@ -333,7 +333,7 @@
 
   $: themeClass =
     pathname === "/services" ? "theme-services" :
-    ["/travail", "/projet1", "/projet2", "/projet3", "/projet4", "/projet5", "/projet6"].includes(pathname) ? "theme-projets" :
+    ["/travail", "/projet1", "/projet3", "/projet4", "/projet5", "/projet6", "/projet7"].includes(pathname) ? "theme-projets" :
     pathname === "/apropos" ? "theme-apropos" :
     pathname === "/contact" ? "theme-contact" :
     "";

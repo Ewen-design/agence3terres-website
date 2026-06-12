@@ -424,5 +424,73 @@ export const projectPages = {
         { src: "/images/imageterres.jpg", alt: "Univers principal de Mission X", layout: "full" }
       ]
     }
+  },
+  projet7: {
+    slug: "projet7",
+    title: "JustX Fitness",
+    category: "Application fitness",
+    year: "2026",
+    hero: {
+      image: "/images/telephone3.webp",
+      alt: "Application JustX Fitness",
+      summaryMain: "Une application mobile pour planifier les séances, suivre l'effort et mesurer la progression.",
+      summaryMuted: "L'accompagnement JustX prolongé dans une expérience quotidienne claire, directe et personnelle.",
+      meta: ["Product design", "UX/UI", "Design system"]
+    },
+    intro: {
+      title: "Transformer l'objectif en action.",
+      text: "Rassembler les programmes, le suivi et la progression dans une application simple à utiliser avant, pendant et après chaque séance."
+    },
+    slider: {
+      title: "Trois temps pour accompagner l'entraînement.",
+      slides: [
+        {
+          number: "01",
+          title: "Planifier",
+          text: "Des objectifs clairs et un programme toujours accessible.",
+          image: "/images/telephone3.webp"
+        },
+        {
+          number: "02",
+          title: "S'entraîner",
+          text: "Chaque exercice guide l'effort sans détour.",
+          image: "/images/telephone2.webp"
+        },
+        {
+          number: "03",
+          title: "Progresser",
+          text: "Les résultats essentiels restent visibles au bon moment.",
+          image: "/images/logo_justx.webp"
+        }
+      ]
+    },
+    galleryPrimary: {
+      title: "Une interface centrée sur l'effort.",
+      text: "Chaque écran donne la priorité à l'action, au rythme et aux informations vraiment utiles pendant l'entraînement.",
+      images: [
+        { src: "/images/telephone3.webp", alt: "Expérience JustX Fitness", layout: "panorama" },
+        { src: "/images/telephone2.webp", alt: "Suivi mobile JustX Fitness", layout: "square" },
+        { src: "/images/logo_justx.webp", alt: "Identité JustX Fitness", layout: "square" }
+      ]
+    },
+    fullscreen: {
+      image: "/images/telephone3.webp",
+      alt: "Vue immersive JustX Fitness",
+      title: "Le bon rythme.",
+      text: "Avant, pendant et après la séance."
+    },
+    detail: {
+      title: "La progression reste lisible.",
+      text: "Programmes, historique et objectifs partagent une même logique pour faciliter les décisions au quotidien."
+    },
+    gallerySecondary: {
+      title: "L'identité JustX devient un produit.",
+      text: "L'énergie de la marque se prolonge dans une application structurée, cohérente et immédiatement reconnaissable.",
+      images: [
+        { src: "/images/telephone3.webp", alt: "Application JustX Fitness", layout: "wide" },
+        { src: "/images/telephone2.webp", alt: "Interface verticale JustX Fitness", layout: "portrait" },
+        { src: "/images/logo_justx.webp", alt: "Logo JustX Fitness", layout: "full" }
+      ]
+    }
   }
 };
