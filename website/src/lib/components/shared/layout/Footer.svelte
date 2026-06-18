@@ -18,7 +18,7 @@
     "/projet3": "/images/telephone_main.webp",
     "/projet4": "/images/carte-copie.jpg",
     "/projet5": "/images/logo_justx.webp",
-    "/projet6": "/images/imageterres.jpg",
+    "/projet6": "/images/missionx-hero-agency.svg",
     "/projet7": "/images/telephone3.webp"
   };
 

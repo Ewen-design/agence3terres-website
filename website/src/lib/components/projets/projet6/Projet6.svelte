@@ -20,14 +20,14 @@
 <ProjectThemePage headerToneOverride={sliderActive ? "light" : null}>
   <ProjectHeroProjetsStyle
     title="Mission X"
-    image="/images/imageterres.jpg"
-    mobileImage="/images/montagne.webp"
+    image="/images/missionx-hero-agency.svg"
+    mobileImage="/images/missionx-hero-agency.svg"
     metaBlocks={[
       { label: "Date", value: "2026" },
-      { label: "Secteur", value: "Jeu vidéo" },
+      { label: "Secteur", value: "Jeu social mobile" },
       {
         label: "Services",
-        value: ["Game design", "Direction artistique", "Expérience interactive"]
+        value: ["Game design", "Direction artistique", "Interface mobile"]
       }
     ]}
     ctaLabel="Découvrir la mission"
@@ -37,23 +37,23 @@
 
   <div class="project-theme-band">
     <ProjectEditorialRole
-      title="Notre rôle"
+      title="Créer une tension lisible"
       images={[
-        { src: "/images/missionx_strategy.png", alt: "Échiquier stratégique de Mission X" },
-        { src: "/images/montagne.webp", alt: "Relief vertical de Mission X" }
+        { src: "/images/missionx-voleur-universe.svg", alt: "Univers du voleur dans Mission X" },
+        { src: "/images/missionx-detective-universe.svg", alt: "Univers du détective dans Mission X" }
       ]}
       items={[
         {
-          title: "Game design",
-          text: "Une boucle de jeu construite autour de l'observation, de la décision et des conséquences."
+          title: "Règles",
+          text: "Une partie se comprend vite : chaque joueur reçoit une mission, les détectives avancent et les voleurs tentent de voler une action sans être démasqués."
         },
         {
-          title: "Univers narratif",
-          text: "Un territoire hybride où la nature, la ville et les missions forment un récit en mouvement."
+          title: "Expérience",
+          text: "Le téléphone circule comme un dossier confidentiel. Chaque écran devait rester clair, spectaculaire et immédiatement jouable."
         },
         {
-          title: "Direction artistique",
-          text: "Des contrastes nets, une lumière cinématographique et un langage visuel immédiatement identifiable."
+          title: "Identité",
+          text: "Nous avons construit un langage rouge/bleu simple, opposant infiltration et enquête sans surcharger l'interface."
         }
       ]}
     />
@@ -62,22 +62,25 @@
   <div class="project-theme-band">
     <ProjectEditorialSplit
       title="Un monde à explorer"
-      text="Mission X fait dialoguer reliefs sauvages et architecture urbaine pour créer un terrain de jeu vaste, lisible et imprévisible."
-      image="/images/imageterres.jpg"
-      alt="Paysage hybride du jeu Mission X"
-      mediaMinHeight="52.5rem"
+      text="Avant de lancer la partie, l'application installe les rôles, le nombre de joueurs et le principe central : chacun garde une information privée."
+      image="/images/missionx3.webp"
+      alt="Écran de création de partie Mission X"
+      mediaAspectRatio="2250 / 2811"
+      mediaFit="contain"
     />
 
     <ProjectEditorialStatement
-      eyebrow="Stratégie narrative"
-      text="Chaque décision ouvre une route, ferme une possibilité et transforme la manière d'aborder la mission suivante."
+      eyebrow="Système de jeu"
+      text="Une mission réussie peut faire gagner les détectives. Un vol réussi peut tout renverser. Une accusation peut sauver la partie ou éliminer un allié."
     />
 
     <ProjectEditorialSplit
       title="Une progression tendue"
-      text="Le joueur avance avec des objectifs clairs, mais conserve plusieurs façons de lire le terrain, de prendre position et d'atteindre sa cible."
-      image="/images/aigleciel.jpg"
-      alt="Horizon et aigle dans l'univers Mission X"
+      text="Les états clés de la partie devaient être très lisibles : victoire, élimination, nouvelle manche, retour au plateau. La tension vient de la clarté."
+      image="/images/missionx1.webp"
+      alt="Écrans de victoire et d'élimination Mission X"
+      mediaAspectRatio="2250 / 2811"
+      mediaFit="contain"
       reverse={true}
     />
   </div>
@@ -87,34 +90,41 @@
     slides={[
       {
         label: "Univers",
-        title: "Explorer",
-        text: "Lire le relief. Repérer les chemins. Comprendre le monde.",
-        image: "/images/imageterres.jpg",
-        mobileImage: "/images/montagne.webp"
+        title: "Briefing",
+        text: "Comprendre vite les camps, les objectifs et le rythme de la partie.",
+        image: "/images/missionx-hero-agency.svg",
+        mobileImage: "/images/missionx3.webp"
       },
       {
-        label: "Stratégie",
-        title: "Décider",
-        text: "Chaque mouvement engage la suite de la mission.",
-        image: "/images/missionx_strategy.png"
+        label: "Interface",
+        title: "Composer",
+        text: "Une galerie d'écrans pensée comme une direction artistique complète.",
+        image: "/images/missionx4.webp"
+      },
+      {
+        label: "Règles",
+        title: "Jouer",
+        text: "Le joueur sait toujours quoi faire, même quand son rôle reste secret.",
+        image: "/images/missionx2.webp",
+        mobileImage: "/images/missionx2.webp"
       },
       {
         label: "Progression",
-        title: "Atteindre",
-        text: "Avancer, s'adapter et ouvrir une nouvelle trajectoire.",
-        image: "/images/aigleciel.jpg",
-        mobileImage: "/images/montagne.webp"
+        title: "Basculer",
+        text: "Victoire, accusation ou élimination : chaque état donne du poids à l'action.",
+        image: "/images/missionx1.webp",
+        mobileImage: "/images/missionx1.webp"
       }
     ]}
   />
 
   <div class="project-theme-band">
     <ProjectEditorialMobileShowcase
-      text="Le X agit comme un signal : une cible, un point de bascule et la promesse d'une mission à accomplir."
-      leftImage="/images/X.png"
-      leftAlt="Monogramme X de Mission X"
-      rightImage="/images/missionx_strategy.png"
-      rightAlt="Univers stratégique de Mission X"
+      text="Deux camps, une même interface, une tension sociale qui se joue dans le réel."
+      leftImage="/images/missionx-voleur-universe.svg"
+      leftAlt="Voleur dans l'univers Mission X"
+      rightImage="/images/missionx-detective-universe.svg"
+      rightAlt="Détective dans l'univers Mission X"
       mediaMinHeight="46.5rem"
     />
   </div>
@@ -123,11 +133,11 @@
 
   <div class="project-theme-band">
     <ProjectEditorialMosaic
-      text="Un univers construit sur la tension entre échelle, silence et décision."
-      feature={{ src: "/images/imageterres.jpg", alt: "Grand paysage de Mission X" }}
+      text="Une interface conçue pour faire comprendre les règles sans ralentir le jeu."
+      feature={{ src: "/images/missionx4.webp", alt: "Panorama des écrans Mission X" }}
       items={[
-        { src: "/images/montagne.webp", alt: "Sommet de Mission X" },
-        { src: "/images/aigleciel.jpg", alt: "Ciel de Mission X" }
+        { src: "/images/missionx2.webp", alt: "Règles et tour de jeu Mission X" },
+        { src: "/images/missionx1.webp", alt: "Résultats et progression Mission X" }
       ]}
     />
 

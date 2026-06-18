@@ -33,9 +33,9 @@
     {
       number: "04",
       title: "Mission X",
-      rest: "Un jeu de stratégie et d'exploration où chaque décision transforme le terrain, la progression et la suite de la mission.",
-      image: "/images/imageterres.jpg",
-      mobileImage: "/images/montagne.webp",
+      rest: "Un jeu social mobile où chaque mission secrète peut faire basculer la partie entre détectives et voleurs.",
+      image: "/images/missionx-hero-agency.svg",
+      mobileImage: "/images/missionx3.webp",
       page: "projet6",
       button: "Voir le projet"
     },

@@ -360,68 +360,75 @@ export const projectPages = {
     category: "Jeu de stratégie",
     year: "2026",
     hero: {
-      image: "/images/imageterres.jpg",
-      alt: "Univers du jeu Mission X",
-      summaryMain: "Un jeu de stratégie et d'exploration construit autour de décisions qui transforment le monde.",
-      summaryMuted: "Une expérience narrative où chaque mission demande d'observer, choisir et progresser.",
-      meta: ["Game design", "Direction artistique", "Expérience interactive"]
+      image: "/images/missionx-hero-agency.svg",
+      alt: "Univers voleur et détective du jeu Mission X",
+      summaryMain: "Un jeu social mobile où détectives et voleurs s'affrontent autour de missions secrètes.",
+      summaryMuted: "Une expérience conçue pour expliquer vite les règles, installer la tension et rendre chaque action lisible.",
+      meta: ["Game design", "Direction artistique", "Interface mobile"]
     },
     intro: {
       title: "Entrer dans la mission.",
-      text: "Créer un univers immédiatement lisible, une tension constante et des choix qui donnent du poids à chaque progression."
+      text: "Créer une interface claire, rythmée et mémorable pour un jeu de bluff, de missions privées et d'accusations."
     },
     slider: {
-      title: "Trois dimensions pour tenir l'expérience.",
+      title: "Quatre temps pour tenir l'expérience.",
       slides: [
         {
           number: "01",
-          label: "Univers",
-          title: "Explorer",
-          text: "Un monde entre reliefs sauvages et territoires urbains.",
-          image: "/images/imageterres.jpg"
+          label: "Briefing",
+          title: "Comprendre",
+          text: "Les rôles et les objectifs doivent être compris avant même que la tension commence.",
+          image: "/images/missionx-hero-agency.svg"
         },
         {
           number: "02",
-          label: "Stratégie",
-          title: "Décider",
-          text: "Chaque mouvement modifie la suite de la mission.",
-          image: "/images/missionx_strategy.png"
+          label: "Interface",
+          title: "Composer",
+          text: "Une galerie d'écrans cohérente, pensée pour le jeu autour du même téléphone.",
+          image: "/images/missionx4.webp"
         },
         {
           number: "03",
+          label: "Règles",
+          title: "Jouer",
+          text: "Détectives, voleurs, dénonciations et vols restent lisibles en quelques secondes.",
+          image: "/images/missionx2.webp"
+        },
+        {
+          number: "04",
           label: "Progression",
-          title: "Atteindre",
-          text: "Des objectifs clairs, une tension continue et plusieurs chemins.",
-          image: "/images/aigleciel.jpg"
+          title: "Basculer",
+          text: "Chaque état de fin ou de manche donne du poids à l'action précédente.",
+          image: "/images/missionx1.webp"
         }
       ]
     },
     galleryPrimary: {
-      title: "Un monde à lire avant d'agir.",
-      text: "Les paysages installent l'échelle, les contrastes guident l'attention et chaque scène prépare une décision.",
+      title: "Une partie à comprendre avant d'agir.",
+      text: "Les premiers écrans cadrent le nombre de joueurs, les rôles et la confidentialité qui fait tenir le jeu.",
       images: [
-        { src: "/images/imageterres.jpg", alt: "Monde hybride de Mission X", layout: "panorama" },
-        { src: "/images/montagne.webp", alt: "Sommet de Mission X", layout: "square" },
-        { src: "/images/aigleciel.jpg", alt: "Ciel de Mission X", layout: "square" }
+        { src: "/images/missionx4.webp", alt: "Panorama des écrans Mission X", layout: "panorama" },
+        { src: "/images/missionx3.webp", alt: "Création de partie Mission X", layout: "portrait" },
+        { src: "/images/missionx2.webp", alt: "Règles de Mission X", layout: "portrait" }
       ]
     },
     fullscreen: {
-      image: "/images/missionx_strategy.png",
-      alt: "Échiquier stratégique de Mission X",
-      title: "Chaque choix compte.",
-      text: "La mission avance avec vous."
+      image: "/images/missionx4.webp",
+      alt: "Système d'écrans Mission X",
+      title: "Chaque écran sert la tension.",
+      text: "La mission reste claire, même quand les rôles sont secrets."
     },
     detail: {
-      title: "La stratégie reste visible.",
-      text: "L'interface, la narration et la direction artistique convergent pour rendre les enjeux clairs sans casser l'immersion."
+      title: "Le bluff reste jouable.",
+      text: "L'interface, la narration et la direction artistique convergent pour rendre les règles claires sans casser l'immersion."
     },
     gallerySecondary: {
-      title: "Une identité conçue comme un signal.",
-      text: "Le X, les paysages et les contrastes sombres donnent au jeu une présence simple, tendue et mémorable.",
+      title: "Une identité conçue comme un duel.",
+      text: "Rouge pour l'infiltration, bleu pour l'enquête : le système visuel rend les camps immédiatement lisibles.",
       images: [
-        { src: "/images/aigleciel.jpg", alt: "Horizon de Mission X", layout: "wide" },
-        { src: "/images/montagne.webp", alt: "Relief vertical de Mission X", layout: "portrait" },
-        { src: "/images/imageterres.jpg", alt: "Univers principal de Mission X", layout: "full" }
+        { src: "/images/missionx-hero-agency.svg", alt: "Univers Mission X", layout: "wide" },
+        { src: "/images/missionx-voleur-universe.svg", alt: "Univers voleur Mission X", layout: "portrait" },
+        { src: "/images/missionx-detective-universe.svg", alt: "Univers détective Mission X", layout: "full" }
       ]
     }
   },

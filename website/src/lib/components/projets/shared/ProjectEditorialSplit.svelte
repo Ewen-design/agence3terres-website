@@ -5,6 +5,8 @@
   export let alt = "";
   export let reverse = false;
   export let mediaMinHeight = "38rem";
+  export let mediaAspectRatio = "";
+  export let mediaFit = "cover";
 </script>
 
 <section class="editorial-split" class:editorial-split--reverse={reverse}>
@@ -13,7 +15,11 @@
     <p>{text}</p>
   </div>
 
-  <figure class="editorial-split__media" style={`--editorial-split-media-min-height:${mediaMinHeight};`}>
+  <figure
+    class="editorial-split__media"
+    class:editorial-split__media--ratio={!!mediaAspectRatio}
+    style={`--editorial-split-media-min-height:${mediaMinHeight}; --editorial-split-media-fit:${mediaFit}; ${mediaAspectRatio ? `--editorial-split-media-aspect-ratio:${mediaAspectRatio};` : ""}`}
+  >
     <img src={image} alt={alt} loading="lazy" />
   </figure>
 </section>
@@ -70,10 +76,15 @@
     background: var(--project-surface-bg-soft, #ded8cf);
   }
 
+  .editorial-split__media--ratio {
+    height: auto;
+    aspect-ratio: var(--editorial-split-media-aspect-ratio, 1);
+  }
+
   .editorial-split__media img {
     width: 100%;
     height: 100%;
-    object-fit: cover;
+    object-fit: var(--editorial-split-media-fit, cover);
     display: block;
   }
 

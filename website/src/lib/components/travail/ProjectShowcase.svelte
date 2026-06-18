@@ -55,18 +55,18 @@
     {
       number: "04",
       title: "Mission X",
-      category: "Jeu de stratégie",
-      lead: "Un monde à explorer, des décisions à assumer.",
-      rest: "Un jeu narratif où stratégie, progression et exploration se rencontrent dans un univers cinématographique.",
-      image: "/images/imageterres.jpg",
+      category: "Jeu social mobile",
+      lead: "Des missions secrètes, un téléphone, deux camps.",
+      rest: "Un jeu de bluff où détectives et voleurs s'affrontent à travers des missions privées, des accusations et des bascules de camp.",
+      image: "/images/missionx-hero-agency.svg",
       previewImages: [
-        { src: "/images/imageterres.jpg", alt: "Univers de Mission X" },
-        { src: "/images/missionx_strategy.png", alt: "Stratégie de Mission X" },
-        { src: "/images/montagne.webp", alt: "Exploration dans Mission X" }
+        { src: "/images/missionx-hero-agency.svg", alt: "Univers de Mission X" },
+        { src: "/images/missionx4.webp", alt: "Panorama des écrans Mission X" },
+        { src: "/images/missionx3.webp", alt: "Création de partie Mission X" }
       ],
       page: "projet6",
       button: "Voir le projet",
-      mobileInfo: ["Mission X", "Jeu", "Stratégie", "Narration", "Exploration"]
+      mobileInfo: ["Mission X", "Jeu", "Bluff", "Mobile", "UX/UI"]
     },
     {
       number: "05",

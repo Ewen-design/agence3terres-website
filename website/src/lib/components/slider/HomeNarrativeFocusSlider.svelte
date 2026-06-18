@@ -27,8 +27,8 @@
       number: "04",
       title: "Mission X",
       description:
-        "Un jeu de stratégie et d'exploration où chaque décision transforme la suite de la mission.",
-      image: "/images/imageterres.jpg"
+        "Un jeu social mobile où détectives et voleurs s'affrontent à travers des missions secrètes.",
+      image: "/images/missionx-hero-agency.svg"
     },
     {
       number: "05",
