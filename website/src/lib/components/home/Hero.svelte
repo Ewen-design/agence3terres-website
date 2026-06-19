@@ -281,7 +281,7 @@
       <div class="hero-media" class:media-visible={heroMediaVisible} bind:this={heroStage}>
         <img
           bind:this={heroMediaImgEl}
-          src="/images/telephone3.webp"
+          src="/images/contact.webp"
           alt=""
         />
         <div class="hero-dark-layer" bind:this={heroDarkLayerEl}></div>
@@ -501,6 +501,7 @@
     font-weight: 300;
     font-size: clamp(1.3rem, 2.8vw, 2.8rem);
     line-height: 1;
+    letter-spacing: var(--site-display-letter-spacing-soft);
     color: #fff;
   }
 

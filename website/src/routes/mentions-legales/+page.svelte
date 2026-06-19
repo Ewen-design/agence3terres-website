@@ -95,7 +95,7 @@
     font-size: clamp(3rem, 8vw, 6.25rem);
     line-height: 0.94;
     font-weight: 200;
-    letter-spacing: -0.05em;
+    letter-spacing: var(--site-display-letter-spacing);
     color: #111111;
     text-wrap: balance;
   }

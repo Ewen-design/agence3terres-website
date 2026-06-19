@@ -446,7 +446,7 @@
     font-size: clamp(5.8rem, 5vw, 18rem);
     font-weight: 200;
     line-height: 1;
-    letter-spacing: 0.02em;
+    letter-spacing: var(--site-display-letter-spacing);
     text-align: left;
     opacity: 0;
     transform: translate3d(0, 14px, 0);
@@ -500,6 +500,7 @@
     font-weight: 300;
     font-size: clamp(1.3rem, 2.8vw, 2.8rem);
     line-height: 1;
+    letter-spacing: var(--site-display-letter-spacing-soft);
     color: #fff;
   }
 
@@ -568,7 +569,7 @@
 
     .hero-scroll-label {
       font-size: 3rem;
-      letter-spacing: 0.03em;
+      letter-spacing: var(--site-display-letter-spacing);
     }
 
     .hero-scroll-arrow {

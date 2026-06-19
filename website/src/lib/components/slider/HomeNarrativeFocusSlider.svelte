@@ -28,7 +28,7 @@
       title: "Mission X",
       description:
         "Un jeu social mobile où détectives et voleurs s'affrontent à travers des missions secrètes.",
-      image: "/images/missionx-hero-agency.svg"
+      image: "/images/missionx-hero-agency.jpg"
     },
     {
       number: "05",

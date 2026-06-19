@@ -20,8 +20,8 @@
 <ProjectThemePage headerToneOverride={sliderActive ? "light" : null}>
   <ProjectHeroProjetsStyle
     title="Mission X"
-    image="/images/missionx-hero-agency.svg"
-    mobileImage="/images/missionx-hero-agency.svg"
+    image="/images/missionx-hero-agency.jpg"
+    mobileImage="/images/missionx-hero-agency.jpg"
     metaBlocks={[
       { label: "Date", value: "2026" },
       { label: "Secteur", value: "Jeu social mobile" },
@@ -39,8 +39,8 @@
     <ProjectEditorialRole
       title="Créer une tension lisible"
       images={[
-        { src: "/images/missionx-voleur-universe.svg", alt: "Univers du voleur dans Mission X" },
-        { src: "/images/missionx-detective-universe.svg", alt: "Univers du détective dans Mission X" }
+        { src: "/images/missionx-voleur-universe.jpg", alt: "Univers du voleur dans Mission X" },
+        { src: "/images/missionx-detective-universe.jpg", alt: "Univers du détective dans Mission X" }
       ]}
       items={[
         {
@@ -92,7 +92,7 @@
         label: "Univers",
         title: "Briefing",
         text: "Comprendre vite les camps, les objectifs et le rythme de la partie.",
-        image: "/images/missionx-hero-agency.svg",
+        image: "/images/missionx-hero-agency.jpg",
         mobileImage: "/images/missionx3.webp"
       },
       {
@@ -121,9 +121,9 @@
   <div class="project-theme-band">
     <ProjectEditorialMobileShowcase
       text="Deux camps, une même interface, une tension sociale qui se joue dans le réel."
-      leftImage="/images/missionx-voleur-universe.svg"
+      leftImage="/images/missionx-voleur-universe.jpg"
       leftAlt="Voleur dans l'univers Mission X"
-      rightImage="/images/missionx-detective-universe.svg"
+      rightImage="/images/missionx-detective-universe.jpg"
       rightAlt="Détective dans l'univers Mission X"
       mediaMinHeight="46.5rem"
     />

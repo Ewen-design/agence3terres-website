@@ -58,9 +58,9 @@
       category: "Jeu social mobile",
       lead: "Des missions secrètes, un téléphone, deux camps.",
       rest: "Un jeu de bluff où détectives et voleurs s'affrontent à travers des missions privées, des accusations et des bascules de camp.",
-      image: "/images/missionx-hero-agency.svg",
+      image: "/images/missionx-hero-agency.jpg",
       previewImages: [
-        { src: "/images/missionx-hero-agency.svg", alt: "Univers de Mission X" },
+        { src: "/images/missionx-hero-agency.jpg", alt: "Univers de Mission X" },
         { src: "/images/missionx4.webp", alt: "Panorama des écrans Mission X" },
         { src: "/images/missionx3.webp", alt: "Création de partie Mission X" }
       ],
@@ -671,10 +671,10 @@
     border-image-slice: 1;
     border-image-source: radial-gradient(
       68px circle at var(--mx, 50%) var(--my, 50%),
-      rgba(220, 240, 255, 1) 0%,
-      rgba(145, 205, 255, 0.98) 22%,
-      rgba(74, 140, 255, 0.62) 45%,
-      rgba(18, 45, 120, 0.14) 62%,
+      var(--site-glow-strong) 0%,
+      var(--site-glow-mid) 22%,
+      var(--site-glow-soft) 45%,
+      var(--site-glow-fade) 62%,
       transparent 78%
     );
     transition: opacity 0.25s ease;
@@ -686,8 +686,8 @@
     border-image-slice: 1;
     border-image-source: radial-gradient(
       78px circle at var(--mx, 50%) var(--my, 50%),
-      rgba(95, 165, 255, 0.42) 0%,
-      rgba(74, 140, 255, 0.18) 42%,
+      var(--site-glow-ambient) 0%,
+      var(--site-glow-outer) 42%,
       transparent 72%
     );
     filter: blur(2px);

@@ -7,6 +7,7 @@
   export let itemHeightDesktop = "38vh";
   export let itemHeightMobile = "42svh";
   export let slideLinks = [];
+  export let variant = "default";
 
   let sliderEl;
   let itemEls = [];
@@ -158,6 +159,7 @@
 
 <section
   class="focus-zone-slider"
+  class:focus-zone-slider--project={variant === "project"}
   bind:this={sliderEl}
   style={`--focus-zone-height:${zoneHeight}; --slide-count:${slides.length}; --item-height-desktop:${itemHeightDesktop}; --item-height-mobile:${itemHeightMobile};`}
 >
@@ -319,14 +321,42 @@
   .focus-zone-slider__bg-gradient {
     position: absolute;
     inset: 0;
-    background: linear-gradient(
-      90deg,
-      rgba(0, 0, 0, 0.56) 0%,
-      rgba(0, 0, 0, 0.32) 28%,
-      rgba(0, 0, 0, 0.12) 55%,
-      rgba(0, 0, 0, 0) 100%
-    );
+    background:
+      linear-gradient(
+        90deg,
+        rgba(0, 0, 0, 0.72) 0%,
+        rgba(0, 0, 0, 0.46) 28%,
+        rgba(0, 0, 0, 0.16) 60%,
+        rgba(0, 0, 0, 0) 100%
+      ),
+      radial-gradient(
+        95% 70% at 18% 50%,
+        rgba(0, 0, 0, 0.34) 0%,
+        rgba(0, 0, 0, 0.22) 42%,
+        rgba(0, 0, 0, 0.07) 72%,
+        rgba(0, 0, 0, 0) 100%
+      );
     pointer-events: none;
+  }
+
+  .focus-zone-slider--project .focus-zone-slider__bg-gradient {
+    background:
+      linear-gradient(
+        90deg,
+        rgba(0, 0, 0, 1) 0%,
+        rgba(0, 0, 0, 0.98) 12%,
+        rgba(0, 0, 0, 0.86) 28%,
+        rgba(0, 0, 0, 0.58) 48%,
+        rgba(0, 0, 0, 0.18) 72%,
+        rgba(0, 0, 0, 0) 100%
+      ),
+      radial-gradient(
+        95% 70% at 12% 50%,
+        rgba(0, 0, 0, 0.82) 0%,
+        rgba(0, 0, 0, 0.56) 42%,
+        rgba(0, 0, 0, 0.16) 72%,
+        rgba(0, 0, 0, 0) 100%
+      );
   }
 
   .focus-zone-slider__frame {
@@ -348,7 +378,7 @@
     right: var(--right-gutter);
     top: 50%;
     transform: translateY(-50%);
-    font-family: "Clash Display", sans-serif;
+    font-family: var(--site-font);
     font-size: clamp(1.9rem, 3vw, 2.8rem);
     font-weight: 300;
     line-height: 1;
@@ -407,7 +437,7 @@
 
   .focus-zone-slider__item h2 {
     margin: 0;
-    font-family: "Clash Display", sans-serif;
+    font-family: var(--site-font);
     font-size: clamp(3.8rem, 7.2vw, 6.4rem);
     font-weight: 300;
     line-height: 0.92;
@@ -437,7 +467,7 @@
 
   .focus-zone-slider__copy-line > span {
     display: block;
-    font-family: "Clash Display", sans-serif;
+    font-family: var(--site-font);
     font-size: clamp(0.96rem, 1.22vw, 1.16rem);
     font-weight: 300;
     line-height: 1.42;

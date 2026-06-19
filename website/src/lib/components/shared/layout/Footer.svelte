@@ -18,7 +18,7 @@
     "/projet3": "/images/telephone_main.webp",
     "/projet4": "/images/carte-copie.jpg",
     "/projet5": "/images/logo_justx.webp",
-    "/projet6": "/images/missionx-hero-agency.svg",
+    "/projet6": "/images/missionx-hero-agency.jpg",
     "/projet7": "/images/telephone3.webp"
   };
 
@@ -308,10 +308,10 @@
     border-image-slice: 1;
     border-image-source: radial-gradient(
       128px circle at var(--mx, 50%) var(--my, 50%),
-      var(--footer-glow-strong, rgba(255, 225, 140, 1)) 0%,
-      var(--footer-glow-mid, rgba(212, 175, 55, 0.95)) 26%,
-      var(--footer-glow-soft, rgba(212, 102, 55, 0.55)) 52%,
-      var(--footer-glow-fade, rgba(212, 102, 55, 0.12)) 70%,
+      var(--footer-glow-strong, var(--site-glow-strong)) 0%,
+      var(--footer-glow-mid, var(--site-glow-mid)) 26%,
+      var(--footer-glow-soft, var(--site-glow-soft)) 52%,
+      var(--footer-glow-fade, var(--site-glow-fade)) 70%,
       transparent 86%
     );
     transition: opacity 0.25s ease;
@@ -323,8 +323,8 @@
     border-image-slice: 1;
     border-image-source: radial-gradient(
       156px circle at var(--mx, 50%) var(--my, 50%),
-      var(--footer-glow-ambient, rgba(212, 175, 55, 0.55)) 0%,
-      var(--footer-glow-outer, rgba(212, 102, 55, 0.22)) 48%,
+      var(--footer-glow-ambient, var(--site-glow-ambient)) 0%,
+      var(--footer-glow-outer, var(--site-glow-outer)) 48%,
       transparent 82%
     );
     filter: blur(3px);
@@ -355,32 +355,16 @@
   }
 
   .theme-home,
-  .theme-apropos {
-    --footer-glow-strong: rgba(255, 225, 140, 1);
-    --footer-glow-mid: rgba(212, 175, 55, 0.95);
-    --footer-glow-soft: rgba(212, 102, 55, 0.55);
-    --footer-glow-fade: rgba(212, 102, 55, 0.12);
-    --footer-glow-ambient: rgba(212, 175, 55, 0.55);
-    --footer-glow-outer: rgba(212, 102, 55, 0.22);
-  }
-
+  .theme-apropos,
   .theme-services,
-  .theme-projets {
-    --footer-glow-strong: rgba(220, 240, 255, 1);
-    --footer-glow-mid: rgba(145, 205, 255, 0.98);
-    --footer-glow-soft: rgba(74, 140, 255, 0.62);
-    --footer-glow-fade: rgba(18, 45, 120, 0.14);
-    --footer-glow-ambient: rgba(95, 165, 255, 0.42);
-    --footer-glow-outer: rgba(74, 140, 255, 0.18);
-  }
-
+  .theme-projets,
   .theme-contact {
-    --footer-glow-strong: rgba(235, 232, 255, 1);
-    --footer-glow-mid: rgba(210, 210, 230, 0.98);
-    --footer-glow-soft: rgba(130, 110, 220, 0.62);
-    --footer-glow-fade: rgba(35, 30, 95, 0.14);
-    --footer-glow-ambient: rgba(150, 140, 230, 0.42);
-    --footer-glow-outer: rgba(130, 110, 220, 0.18);
+    --footer-glow-strong: var(--site-glow-strong);
+    --footer-glow-mid: var(--site-glow-mid);
+    --footer-glow-soft: var(--site-glow-soft);
+    --footer-glow-fade: var(--site-glow-fade);
+    --footer-glow-ambient: var(--site-glow-ambient);
+    --footer-glow-outer: var(--site-glow-outer);
   }
 
   .footer-bar {

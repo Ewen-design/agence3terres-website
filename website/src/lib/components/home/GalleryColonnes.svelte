@@ -15,13 +15,13 @@
       height: 38
     },
     {
-      src: "images/parfum_ordinateur.webp",
+      src: "images/moovy.webp",
       alt: "",
       ratio: "landscape",
       height: 23
     },
     {
-      src: "images/telephone_parfum.webp",
+      src: "images/missionx2.webp",
       alt: "",
       ratio: "portrait",
       height: 34
@@ -30,19 +30,19 @@
 
   const centerImages = [
     {
-      src: "images/telephone_parfum.webp",
+      src: "images/moovy.webp",
       alt: "",
       ratio: "landscape",
       height: 28
     },
     {
-      src: "images/telephone2.webp",
+      src: "images/moovy_mobile.webp",
       alt: "",
       ratio: "portrait",
       height: 42
     },
     {
-      src: "images/appareil_photo.webp",
+      src: "images/missionx1.webp",
       alt: "",
       ratio: "portrait",
       height: 36

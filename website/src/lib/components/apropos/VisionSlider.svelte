@@ -369,8 +369,8 @@
     background:
       radial-gradient(
         220px circle at var(--mx) var(--my),
-        rgba(212,175,55,0.95),
-        rgba(212,102,55,0.5) 40%,
+        var(--site-glow-mid),
+        var(--site-glow-soft) 40%,
         transparent 75%
       );
     -webkit-mask:
@@ -381,7 +381,7 @@
     opacity: 0;
     transition: opacity 0.25s ease;
     pointer-events: none;
-    filter: drop-shadow(0 0 12px rgba(212,175,55,0.5));
+    filter: drop-shadow(0 0 12px var(--site-glow-ambient));
   }
 
   .card:hover::before {

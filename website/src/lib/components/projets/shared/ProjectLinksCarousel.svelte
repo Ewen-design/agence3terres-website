@@ -34,7 +34,7 @@
       number: "04",
       title: "Mission X",
       rest: "Un jeu social mobile où chaque mission secrète peut faire basculer la partie entre détectives et voleurs.",
-      image: "/images/missionx-hero-agency.svg",
+      image: "/images/missionx-hero-agency.jpg",
       mobileImage: "/images/missionx3.webp",
       page: "projet6",
       button: "Voir le projet"
@@ -519,10 +519,10 @@
     border-image-slice: 1;
     border-image-source: radial-gradient(
       68px circle at var(--mx, 50%) var(--my, 50%),
-      rgba(220, 240, 255, 1) 0%,
-      rgba(145, 205, 255, 0.98) 22%,
-      rgba(74, 140, 255, 0.62) 45%,
-      rgba(18, 45, 120, 0.14) 62%,
+      var(--site-glow-strong) 0%,
+      var(--site-glow-mid) 22%,
+      var(--site-glow-soft) 45%,
+      var(--site-glow-fade) 62%,
       transparent 78%
     );
     transition: opacity 0.25s ease;
@@ -534,8 +534,8 @@
     border-image-slice: 1;
     border-image-source: radial-gradient(
       78px circle at var(--mx, 50%) var(--my, 50%),
-      rgba(95, 165, 255, 0.42) 0%,
-      rgba(74, 140, 255, 0.18) 42%,
+      var(--site-glow-ambient) 0%,
+      var(--site-glow-outer) 42%,
       transparent 72%
     );
     filter: blur(2px);

@@ -360,7 +360,7 @@ export const projectPages = {
     category: "Jeu de stratégie",
     year: "2026",
     hero: {
-      image: "/images/missionx-hero-agency.svg",
+      image: "/images/missionx-hero-agency.jpg",
       alt: "Univers voleur et détective du jeu Mission X",
       summaryMain: "Un jeu social mobile où détectives et voleurs s'affrontent autour de missions secrètes.",
       summaryMuted: "Une expérience conçue pour expliquer vite les règles, installer la tension et rendre chaque action lisible.",
@@ -378,7 +378,7 @@ export const projectPages = {
           label: "Briefing",
           title: "Comprendre",
           text: "Les rôles et les objectifs doivent être compris avant même que la tension commence.",
-          image: "/images/missionx-hero-agency.svg"
+          image: "/images/missionx-hero-agency.jpg"
         },
         {
           number: "02",
@@ -426,9 +426,9 @@ export const projectPages = {
       title: "Une identité conçue comme un duel.",
       text: "Rouge pour l'infiltration, bleu pour l'enquête : le système visuel rend les camps immédiatement lisibles.",
       images: [
-        { src: "/images/missionx-hero-agency.svg", alt: "Univers Mission X", layout: "wide" },
-        { src: "/images/missionx-voleur-universe.svg", alt: "Univers voleur Mission X", layout: "portrait" },
-        { src: "/images/missionx-detective-universe.svg", alt: "Univers détective Mission X", layout: "full" }
+        { src: "/images/missionx-hero-agency.jpg", alt: "Univers Mission X", layout: "wide" },
+        { src: "/images/missionx-voleur-universe.jpg", alt: "Univers voleur Mission X", layout: "portrait" },
+        { src: "/images/missionx-detective-universe.jpg", alt: "Univers détective Mission X", layout: "full" }
       ]
     }
   },

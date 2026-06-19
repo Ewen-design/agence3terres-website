@@ -148,7 +148,7 @@
   class:intro-content-visible={introContentVisible}
 >
   <div class="background">
-    <img src="/images/telephone2.webp" alt="" />
+    <img src="/images/contact.webp" alt="" />
     <div class="overlay"></div>
   </div>
 
@@ -410,13 +410,8 @@
   .overlay {
     position: absolute;
     inset: 0;
-    background:
-      linear-gradient(
-        to right,
-        rgba(0, 0, 0, 0.16) 0%,
-        rgba(0, 0, 0, 0.12) 36%,
-        rgba(0, 0, 0, 0.62) 100%
-      );
+    background: none;
+    pointer-events: none;
   }
 
   .container {
@@ -469,7 +464,7 @@
     font-size: clamp(2.8rem, 4.8vw, 4.6rem);
     line-height: 0.95;
     font-weight: 200;
-    letter-spacing: -0.03em;
+    letter-spacing: var(--site-display-letter-spacing);
   }
 
   .hero p {
@@ -688,10 +683,10 @@
     border-image-slice: 1;
     border-image-source: radial-gradient(
       68px circle at var(--mx, 50%) var(--my, 50%),
-      rgba(235, 232, 255, 1) 0%,
-      rgba(210, 210, 230, 0.98) 22%,
-      rgba(130, 110, 220, 0.62) 45%,
-      rgba(35, 30, 95, 0.14) 62%,
+      var(--site-glow-strong) 0%,
+      var(--site-glow-mid) 22%,
+      var(--site-glow-soft) 45%,
+      var(--site-glow-fade) 62%,
       transparent 78%
     );
     transition: opacity 0.25s ease;
@@ -703,8 +698,8 @@
     border-image-slice: 1;
     border-image-source: radial-gradient(
       78px circle at var(--mx, 50%) var(--my, 50%),
-      rgba(150, 140, 230, 0.42) 0%,
-      rgba(130, 110, 220, 0.18) 42%,
+      var(--site-glow-ambient) 0%,
+      var(--site-glow-outer) 42%,
       transparent 72%
     );
     filter: blur(2px);
@@ -846,10 +841,10 @@
     border-image-slice: 1;
     border-image-source: radial-gradient(
       68px circle at var(--mx, 50%) var(--my, 50%),
-      rgba(235, 232, 255, 1) 0%,
-      rgba(210, 210, 230, 0.98) 22%,
-      rgba(130, 110, 220, 0.62) 45%,
-      rgba(35, 30, 95, 0.14) 62%,
+      var(--site-glow-strong) 0%,
+      var(--site-glow-mid) 22%,
+      var(--site-glow-soft) 45%,
+      var(--site-glow-fade) 62%,
       transparent 78%
     );
     transition: opacity 0.25s ease;
@@ -861,8 +856,8 @@
     border-image-slice: 1;
     border-image-source: radial-gradient(
       78px circle at var(--mx, 50%) var(--my, 50%),
-      rgba(150, 140, 230, 0.42) 0%,
-      rgba(130, 110, 220, 0.18) 42%,
+      var(--site-glow-ambient) 0%,
+      var(--site-glow-outer) 42%,
       transparent 72%
     );
     filter: blur(2px);
@@ -958,13 +953,7 @@
     }
 
     .overlay {
-      background:
-        linear-gradient(
-          to bottom,
-          rgba(0, 0, 0, 0.1) 0%,
-          rgba(0, 0, 0, 0.18) 48%,
-          rgba(0, 0, 0, 0.56) 100%
-        );
+      background: none;
     }
 
     .container {

@@ -539,10 +539,10 @@
     border-image-slice: 1;
     border-image-source: radial-gradient(
       68px circle at var(--mx, 50%) var(--my, 50%),
-      rgba(255, 225, 140, 1) 0%,
-      rgba(212, 175, 55, 0.95) 22%,
-      rgba(212, 102, 55, 0.55) 45%,
-      rgba(212, 102, 55, 0.12) 62%,
+      var(--site-glow-strong) 0%,
+      var(--site-glow-mid) 22%,
+      var(--site-glow-soft) 45%,
+      var(--site-glow-fade) 62%,
       transparent 78%
     );
     transition: opacity 0.25s ease;
@@ -554,8 +554,8 @@
     border-image-slice: 1;
     border-image-source: radial-gradient(
       78px circle at var(--mx, 50%) var(--my, 50%),
-      rgba(212, 175, 55, 0.55) 0%,
-      rgba(212, 102, 55, 0.22) 42%,
+      var(--site-glow-ambient) 0%,
+      var(--site-glow-outer) 42%,
       transparent 72%
     );
     filter: blur(2px);

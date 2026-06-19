@@ -20,7 +20,7 @@
 <style>
   .story-slider-intro {
     --section-bg: #000;
-    --intro-text: rgba(17, 17, 17, 0.66);
+    --intro-text: var(--lead-blue-pale);
 
     position: relative;
     z-index: 3;

@@ -22,6 +22,7 @@
 
 <FocusZoneSlider
   slides={projectSlides}
+  variant="project"
   zoneHeight="33svh"
   itemHeightDesktop="53vh"
   itemHeightMobile="48svh"
