@@ -19,12 +19,6 @@
   let menuButtonEl;
   let menuOrigin = { x: 0, y: 0, width: 44, height: 40 };
 
-  let linksOpening = false;
-  let linksTextReady = true;
-  let linksTextFlipIn = false;
-  let openAnimTimer;
-  let flipResetTimer;
-
   let headerIntroStarted = false;
   let headerIntroVisible = false;
   let headerIntroDone = false;
@@ -35,12 +29,10 @@
   let headerIntroDelay;
   let blurWarmCleanup;
 
-  let btnEls = [];
   let tourTimer;
   let tourRaf;
   let isTouringNow = false;
   let downwardScrollProgress = 0;
-  const hoverFlipTimers = new WeakMap();
 
   let themedSections = [];
   let refreshSectionsRaf = 0;
@@ -82,7 +74,6 @@
     if (Math.abs(delta) >= SCROLL_THRESHOLD) {
       if (delta > 0) {
         downwardScrollProgress += delta;
-
         if (currentY > COMPACT_TRIGGER_Y && downwardScrollProgress >= COMPACT_DOWNWARD_DISTANCE) {
           scrollingDown = true;
         }
@@ -90,7 +81,6 @@
         downwardScrollProgress = 0;
         scrollingDown = false;
       }
-
       lastScrollY = currentY;
     }
 
@@ -108,9 +98,7 @@
         const footerReveal = parseFloat(
           window.getComputedStyle(footerEl).getPropertyValue("--footer-reveal") || "0"
         );
-        const isOverFooter = footerReveal >= 0.97;
-
-        if (isOverFooter) {
+        if (footerReveal >= 0.97) {
           if (textColor !== "white") textColor = "white";
           return;
         }
@@ -143,7 +131,6 @@
     }
 
     let overLight = false;
-
     for (let i = 0; i < themedSections.length; i++) {
       const sectionRect = themedSections[i].getBoundingClientRect();
       if (headerMid >= sectionRect.top && headerMid <= sectionRect.bottom) {
@@ -163,33 +150,12 @@
     btn.style.setProperty("--my", `${e.clientY - rect.top}px`);
   }
 
-  function triggerHoverFlip(event) {
-    const btn = event.currentTarget;
-    if (!btn || btn.classList.contains("more")) return;
-    if (browser && window.matchMedia("(hover: none) and (pointer: coarse)").matches) return;
-    if (btn.classList.contains("is-hover-flipping")) return;
-
-    btn.classList.add("is-hover-flipping");
-
-    const timer = setTimeout(() => {
-      btn.classList.remove("is-hover-flipping");
-      hoverFlipTimers.delete(btn);
-    }, 460);
-
-    hoverFlipTimers.set(btn, timer);
-  }
-
   function startTour() {
-    if (isTouringNow) return;
+    if (isTouringNow || !menuButtonEl) return;
 
-    const linkBtns = btnEls.filter(Boolean);
-    if (!linkBtns.length) return;
-
-    const btn = linkBtns[Math.floor(Math.random() * linkBtns.length)];
+    const btn = menuButtonEl;
     const rect = btn.getBoundingClientRect();
-    const h = rect.height;
-
-    btn.style.setProperty("--my", `${h / 2}px`);
+    btn.style.setProperty("--my", `${rect.height / 2}px`);
 
     const duration = 900;
     const start = performance.now();
@@ -199,37 +165,22 @@
     isTouringNow = true;
     btn.classList.add("auto-glow");
 
-    const isBurger = btn.classList.contains("more");
-    if (isBurger) {
-      const spans = btn.querySelectorAll("span");
-      if (spans[0]) spans[0].style.transform = "translateX(6px) scale(1.6)";
-      if (spans[1]) {
-        spans[1].style.opacity = "0";
-        spans[1].style.transform = "scale(0)";
-      }
-      if (spans[2]) spans[2].style.transform = "translateX(-6px) scale(1.6)";
-    }
+    const dots = btn.querySelectorAll(".dot");
+    if (dots[0]) dots[0].style.transform = "translateX(6px) scale(1.6)";
+    if (dots[1]) { dots[1].style.opacity = "0"; dots[1].style.transform = "scale(0)"; }
+    if (dots[2]) dots[2].style.transform = "translateX(-6px) scale(1.6)";
 
     function animFrame(now) {
       const t = Math.min((now - start) / duration, 1);
       const ease = t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
-      const mx = fromX + (toX - fromX) * ease;
-      btn.style.setProperty("--mx", `${mx}px`);
+      btn.style.setProperty("--mx", `${fromX + (toX - fromX) * ease}px`);
 
       if (t < 1) {
         tourRaf = requestAnimationFrame(animFrame);
       } else {
         btn.classList.remove("auto-glow");
         btn.classList.add("auto-glow-out");
-
-        if (isBurger) {
-          const spans = btn.querySelectorAll("span");
-          spans.forEach((s) => {
-            s.style.transform = "";
-            s.style.opacity = "";
-          });
-        }
-
+        dots.forEach((s) => { s.style.transform = ""; s.style.opacity = ""; });
         setTimeout(() => {
           btn.classList.remove("auto-glow-out");
           isTouringNow = false;
@@ -243,17 +194,11 @@
 
   function scheduleTour() {
     clearTimeout(tourTimer);
-    const delay = 3000 + Math.random() * 3000;
-    tourTimer = setTimeout(startTour, delay);
+    tourTimer = setTimeout(startTour, 3000 + Math.random() * 3000);
   }
 
-  function registerBurger(node) {
-    btnEls[5] = node;
-    return {
-      destroy() {
-        btnEls[5] = null;
-      }
-    };
+  function handleLogoClick() {
+    navigate("home");
   }
 
   function openMenu() {
@@ -266,40 +211,7 @@
         height: rect.height
       };
     }
-
     menuOpen = true;
-  }
-
-  function handleLogoClick() {
-    menuOpen = false;
-    navigate("home");
-  }
-
-  function runLinksOpenSequence() {
-    clearTimeout(openAnimTimer);
-    clearTimeout(flipResetTimer);
-
-    linksOpening = true;
-    linksTextReady = false;
-    linksTextFlipIn = false;
-
-    openAnimTimer = setTimeout(() => {
-      linksTextReady = true;
-      linksTextFlipIn = true;
-
-      flipResetTimer = setTimeout(() => {
-        linksOpening = false;
-        linksTextFlipIn = false;
-      }, 420);
-    }, 250);
-  }
-
-  function resetLinksSequence() {
-    clearTimeout(openAnimTimer);
-    clearTimeout(flipResetTimer);
-    linksOpening = false;
-    linksTextReady = false;
-    linksTextFlipIn = false;
   }
 
   function startHeaderIntro() {
@@ -329,7 +241,6 @@
   }
 
   $: compact = scrollingDown && !menuOpen;
-  $: mobileTopLinksVisible = atTopOfPage && !menuOpen;
 
   $: themeClass =
     pathname === "/services" ? "theme-services" :
@@ -337,19 +248,6 @@
     pathname === "/apropos" ? "theme-apropos" :
     pathname === "/contact" ? "theme-contact" :
     "";
-
-  let previousCompact = compact;
-  $: if (browser) {
-    if (previousCompact && !compact && !menuOpen) {
-      runLinksOpenSequence();
-    } else if (compact || menuOpen) {
-      resetLinksSequence();
-    } else if (!compact && !menuOpen && previousCompact === compact) {
-      linksTextReady = true;
-    }
-
-    previousCompact = compact;
-  }
 
   $: if (browser && pathname) {
     scheduleThemeSectionsRefresh();
@@ -370,25 +268,19 @@
     lastScrollY = window.scrollY || 0;
     downwardScrollProgress = 0;
     refreshThemeSections();
-    linksTextReady = false;
 
     registerRead(processScrollState);
     forceScrollEngineUpdate();
 
     const markHeaderReady = async () => {
       if (document.fonts?.ready) {
-        try {
-          await document.fonts.ready;
-        } catch {}
+        try { await document.fonts.ready; } catch {}
       }
-
       if (destroyed) return;
-
       requestAnimationFrame(() => {
         requestAnimationFrame(() => {
           if (destroyed) return;
           headerReady = true;
-          linksTextReady = !compact;
           forceScrollEngineUpdate();
         });
       });
@@ -444,21 +336,12 @@
 
   onDestroy(() => {
     if (!browser) return;
-
     unregisterRead(processScrollState);
-
     clearTimeout(tourTimer);
-    clearTimeout(openAnimTimer);
-    clearTimeout(flipResetTimer);
     clearTimeout(headerIntroFallback);
     clearTimeout(headerIntroCleanup);
     clearTimeout(headerIntroDelay);
     clearTimeout(blurWarmCleanup);
-    btnEls.filter(Boolean).forEach((btn) => {
-      clearTimeout(hoverFlipTimers.get(btn));
-      btn.classList.remove("is-hover-flipping");
-    });
-
     cancelAnimationFrame(tourRaf);
     cancelAnimationFrame(refreshSectionsRaf);
   });
@@ -468,94 +351,42 @@
   <div class="header-blur-prewarm" aria-hidden="true">
     <span></span>
     <span></span>
-    <span></span>
-    <span></span>
-    <span></span>
-    <span></span>
   </div>
 {/if}
 
 <header
-  class="nav-wrapper {compact ? 'compact' : ''} {mobileTopLinksVisible ? 'mobile-top-links-visible' : 'mobile-top-links-hidden'} {menuOpen ? 'menu-open' : ''} {themeClass} {headerReady ? 'is-ready' : 'is-loading'} {headerIntroVisible ? 'intro-visible' : 'intro-hidden'} {headerIntroVisible && !headerIntroDone ? 'intro-animating' : ''}"
+  class="nav-wrapper {compact ? 'compact' : ''} {menuOpen ? 'menu-open' : ''} {themeClass} {headerReady ? 'is-ready' : 'is-loading'} {headerIntroVisible ? 'intro-visible' : 'intro-hidden'} {headerIntroVisible && !headerIntroDone ? 'intro-animating' : ''}"
   style="color:{textColor}"
   bind:this={headerEl}
 >
-  <nav class="nav-inner" aria-label="Navigation principale">
-    <button
-      class="nav-btn header-nav-btn logo"
-      data-cursor="button"
-      type="button"
-      aria-label="Retour à l'accueil"
-      bind:this={btnEls[0]}
-      on:mousemove={handleButtonMove}
-      on:pointerdown={triggerHoverFlip}
-      on:pointerenter={triggerHoverFlip}
-      on:focus={triggerHoverFlip}
-      on:click={handleLogoClick}
-    >
-      <span class="nav-btn-flip nav-btn-flip-logo">
-        <span class="nav-btn-text nav-btn-text-logo nav-btn-text-logo-main">
-          <span>Agence</span>
-          <span class="nav-btn-logo-prism" aria-hidden="true"></span>
-          <span>3 Terres</span>
-        </span>
-        <span class="nav-btn-text nav-btn-text-logo nav-btn-text-logo-clone" aria-hidden="true">
-          <span>Agence</span>
-          <span class="nav-btn-logo-prism" aria-hidden="true"></span>
-          <span>3 Terres</span>
-        </span>
-      </span>
-    </button>
+  <button
+    class="nav-btn mobile-logo"
+    type="button"
+    aria-label="Retour à l'accueil"
+    on:click={handleLogoClick}
+  >
+    <img src="/images/logo_prisme.png" alt="" class="mobile-logo-img" />
+  </button>
 
-    <div
-      class="links"
-      class:opening={linksOpening}
-      class:text-ready={linksTextReady}
-      class:flip-in={linksTextFlipIn}
-      role="list"
-    >
-      {#each [
-        { label: "Services", page: "services" },
-        { label: "Projets", page: "travail" },
-        { label: "À propos", page: "apropos" },
-        { label: "Contact", page: "contact" }
-      ] as link, i}
-        <button
-          class="nav-btn header-nav-btn fade"
-          data-cursor="button"
-          type="button"
-          aria-current={$page.url.pathname === `/${link.page}` ? "page" : undefined}
-          bind:this={btnEls[i + 1]}
-          on:mousemove={handleButtonMove}
-          on:pointerenter={triggerHoverFlip}
-          on:focus={triggerHoverFlip}
-          on:click={() => navigate(link.page)}
-        >
-          <span class="nav-btn-flip" data-text={link.label}>
-            <span class="nav-btn-text">{link.label}</span>
-          </span>
-        </button>
-      {/each}
-    </div>
-
-    <div
-      bind:this={menuButtonEl}
-      use:registerBurger
-      class="nav-btn header-nav-btn more"
-      data-cursor="button"
-      role="button"
-      tabindex="0"
-      aria-label="Ouvrir le menu"
-      aria-expanded={menuOpen}
-      on:mousemove={handleButtonMove}
-      on:click={openMenu}
-      on:keydown={(e) => e.key === "Enter" && openMenu()}
-    >
-      <span></span>
-      <span></span>
-      <span></span>
-    </div>
-  </nav>
+  <div
+    bind:this={menuButtonEl}
+    class="nav-btn header-nav-btn more"
+    data-cursor="button"
+    role="button"
+    tabindex="0"
+    aria-label="Ouvrir le menu"
+    aria-expanded={menuOpen}
+    on:mousemove={handleButtonMove}
+    on:click={openMenu}
+    on:keydown={(e) => e.key === "Enter" && openMenu()}
+  >
+    <span class="menu-text">MENU</span>
+    <span class="dots">
+      <span class="dot"></span>
+      <span class="dot"></span>
+      <span class="dot"></span>
+    </span>
+  </div>
 </header>
 
 <FullscreenMenu bind:open={menuOpen} origin={menuOrigin} />
@@ -564,9 +395,17 @@
   header {
     position: fixed;
     top: 1rem;
-    left: 50%;
-    transform: translateX(-50%);
+    left: 0;
+    right: 0;
+    width: 100%;
+    padding: 0 1rem;
+    box-sizing: border-box;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    pointer-events: none;
     z-index: 400000;
+    overflow: visible;
   }
 
   .header-blur-prewarm {
@@ -592,15 +431,9 @@
     -webkit-backface-visibility: hidden;
   }
 
-  .header-blur-prewarm span:nth-child(1) { width: 168px; }
-  .header-blur-prewarm span:nth-child(2) { width: 112px; }
-  .header-blur-prewarm span:nth-child(3) { width: 124px; }
-  .header-blur-prewarm span:nth-child(4) { width: 118px; }
-  .header-blur-prewarm span:nth-child(5) { width: 114px; }
-  .header-blur-prewarm span:nth-child(6) { width: 44px; }
+  .header-blur-prewarm span:nth-child(1) { width: 130px; }
 
   .nav-wrapper {
-    padding: 0;
     background: none;
     backdrop-filter: none;
     box-shadow: none;
@@ -608,25 +441,20 @@
     overflow: visible;
     transition:
       color var(--project-theme-transition, 220ms ease),
-      opacity 0.9s ease,
-      transform 0.9s cubic-bezier(.22,.61,.36,1);
+      opacity 0.9s ease;
   }
 
   .nav-wrapper.is-loading {
     opacity: 0;
-    pointer-events: none;
   }
 
   .nav-wrapper.intro-hidden {
     opacity: 0;
-    transform: translateX(-50%);
     pointer-events: none;
   }
 
   .nav-wrapper.intro-visible {
     opacity: 1;
-    transform: translateX(-50%);
-    pointer-events: auto;
   }
 
   .nav-wrapper.intro-animating {
@@ -636,28 +464,20 @@
   @keyframes headerIntroReveal {
     from {
       opacity: 0;
-      transform: translateX(-50%) translate3d(0, -8px, 0);
+      transform: translateY(-8px);
     }
     to {
       opacity: 1;
-      transform: translateX(-50%) translate3d(0, 0, 0);
+      transform: translateY(0);
     }
   }
 
   .menu-open {
     opacity: 0.35;
-    transform: translateX(-50%) scale(0.97);
-  }
-
-  .nav-inner {
-    display: flex;
-    align-items: center;
-    gap: 0.6rem;
-    overflow: visible;
-    transition: gap 0.7s cubic-bezier(.22,.9,.3,1);
   }
 
   .nav-btn {
+    pointer-events: auto;
     font-family: "Clash Display", sans-serif;
     font-weight: 400;
     position: relative;
@@ -687,134 +507,72 @@
       background 1.2s cubic-bezier(.22,.61,.36,1);
   }
 
-  .logo {
-    font-family: "Clash Display", sans-serif;
-    font-weight: 400;
-    font-style: normal;
-  }
-
-  .nav-btn-flip {
-    position: relative;
-    display: block;
-    overflow: hidden;
-    height: 1.2em;
-    line-height: 1.2em;
-  }
-
-  .nav-btn-text {
-    display: block;
-    transform: translateY(0%);
-    transition:
-      transform 0.45s cubic-bezier(.22,.61,.36,1),
-      opacity 0.28s ease;
-  }
-
-  .nav-btn-text-logo {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.4rem;
-  }
-
-  .nav-btn-text-logo-clone {
-    position: absolute;
-    left: 0;
-    top: 0;
-    transform: translateY(100%);
-  }
-
-  .logo .nav-btn-flip::after {
-    content: none;
-  }
-
-  .nav-btn-logo-prism {
+  /* Logo mobile — masqué sur desktop */
+  .mobile-logo {
     display: none;
-    width: 0.95em;
-    height: 1.02em;
-    flex: 0 0 auto;
-    background-color: currentColor;
-    -webkit-mask: url("/logo_prisme_noir.svg") center / contain no-repeat;
-    mask: url("/logo_prisme_noir.svg") center / contain no-repeat;
+    padding: 0 1rem;
   }
 
-  .nav-btn-flip::after {
-    content: attr(data-text);
-    position: absolute;
-    left: 0;
-    top: 0;
-    line-height: 1.2em;
-    transform: translateY(100%);
-    transition:
-      transform 0.45s cubic-bezier(.22,.61,.36,1),
-      opacity 0.28s ease;
+  .mobile-logo-img {
+    display: block;
+    width: 1.25rem;
+    height: auto;
+  }
+
+  /* Menu button */
+  .more {
+    gap: 0;
+    padding: 0 1.4rem;
+    cursor: pointer;
+    overflow: visible;
+    justify-content: center;
+  }
+
+  .menu-text {
+    font-family: "Clash Display", sans-serif;
+    font-size: 0.9rem;
+    font-weight: 400;
+    letter-spacing: 0.06em;
     white-space: nowrap;
-    color: inherit;
+    max-width: 4rem;
+    opacity: 1;
+    overflow: hidden;
+    margin-right: 0.45rem;
+    transition:
+      max-width 0.65s cubic-bezier(.22,.61,.36,1),
+      opacity 0.5s cubic-bezier(.22,.61,.36,1),
+      margin-right 0.65s cubic-bezier(.22,.61,.36,1);
   }
 
-  .nav-btn:hover .nav-btn-text,
-  .nav-btn:global(.is-hover-flipping) .nav-btn-text {
-    transform: translateY(-100%);
-  }
-
-  .nav-btn:hover .nav-btn-flip::after,
-  .nav-btn:global(.is-hover-flipping) .nav-btn-flip::after {
-    transform: translateY(0%);
-  }
-
-  .links:not(.text-ready) .nav-btn-text {
-    transform: translateY(115%) rotateX(-70deg);
-    transform-origin: bottom center;
+  .compact .menu-text,
+  .menu-open .menu-text {
+    max-width: 0;
     opacity: 0;
+    margin-right: 0;
   }
 
-  .links:not(.text-ready) .nav-btn-flip::after {
-    transform: translateY(100%);
-    opacity: 0;
+  /* Conteneur des 3 points — centrage garanti même quand MENU est caché */
+  .dots {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    flex-shrink: 0;
   }
 
-  .links.flip-in .nav-btn-text {
-    transform: translateY(0%) rotateX(0deg);
-    opacity: 1;
+  .dot {
+    width: 3px;
+    height: 3px;
+    background: currentColor;
+    border-radius: 50%;
+    flex-shrink: 0;
+    transition: all 1s cubic-bezier(.22,.61,.36,1);
   }
 
-  .links.flip-in .nav-btn-flip::after {
-    transform: translateY(100%);
-    opacity: 0;
-  }
+  .more:hover .dots .dot:nth-child(1) { transform: translateX(6px) scale(1.6); }
+  .more:hover .dots .dot:nth-child(2) { opacity: 0; transform: scale(0); }
+  .more:hover .dots .dot:nth-child(3) { transform: translateX(-6px) scale(1.6); }
 
-  .links.text-ready:not(.flip-in) .nav-btn-text {
-    transform: translateY(0%);
-    opacity: 1;
-  }
-
-  .links.text-ready:not(.flip-in) .nav-btn-flip::after {
-    transform: translateY(100%);
-    opacity: 1;
-  }
-
-  .links .nav-btn:hover .nav-btn-text,
-  .links .nav-btn:global(.is-hover-flipping) .nav-btn-text {
-    transform: translateY(-100%);
-    opacity: 1;
-  }
-
-  .links .nav-btn:hover .nav-btn-flip::after,
-  .links .nav-btn:global(.is-hover-flipping) .nav-btn-flip::after {
-    transform: translateY(0%);
-    opacity: 1;
-  }
-
-  .logo:hover .nav-btn-text-logo-main,
-  .logo:global(.is-hover-flipping) .nav-btn-text-logo-main {
-    transform: translateY(-100%);
-    opacity: 1;
-  }
-
-  .logo:hover .nav-btn-text-logo-clone,
-  .logo:global(.is-hover-flipping) .nav-btn-text-logo-clone {
-    transform: translateY(0%);
-    opacity: 1;
-  }
-
+  /* Glow border effect */
   .nav-btn::before,
   .nav-btn::after {
     content: "";
@@ -831,10 +589,10 @@
     border-image-slice: 1;
     border-image-source: radial-gradient(
       68px circle at var(--mx, 50%) var(--my, 50%),
-      rgba(255, 225, 140, 1) 0%,
-      rgba(212, 175, 55, 0.95) 22%,
-      rgba(212, 102, 55, 0.55) 45%,
-      rgba(212, 102, 55, 0.12) 62%,
+      rgba(208, 219, 255, 1) 0%,
+      rgba(87, 104, 255, 0.95) 22%,
+      rgba(87, 104, 255, 0.58) 45%,
+      rgba(23, 5, 47, 0.16) 62%,
       transparent 78%
     );
     transition: opacity 0.25s ease;
@@ -846,8 +604,8 @@
     border-image-slice: 1;
     border-image-source: radial-gradient(
       78px circle at var(--mx, 50%) var(--my, 50%),
-      rgba(212, 175, 55, 0.55) 0%,
-      rgba(212, 102, 55, 0.22) 42%,
+      rgba(87, 104, 255, 0.38) 0%,
+      rgba(87, 104, 255, 0.18) 42%,
       transparent 72%
     );
     filter: blur(2px);
@@ -891,7 +649,7 @@
   }
 
   .theme-projets .nav-btn::before {
-     border-image-source: radial-gradient(
+    border-image-source: radial-gradient(
       68px circle at var(--mx, 50%) var(--my, 50%),
       rgba(220, 240, 255, 1) 0%,
       rgba(145, 205, 255, 0.98) 22%,
@@ -902,7 +660,7 @@
   }
 
   .theme-projets .nav-btn::after {
-     border-image-source: radial-gradient(
+    border-image-source: radial-gradient(
       78px circle at var(--mx, 50%) var(--my, 50%),
       rgba(95, 165, 255, 0.42) 0%,
       rgba(74, 140, 255, 0.18) 42%,
@@ -923,7 +681,7 @@
 
   .theme-apropos .nav-btn::after {
     border-image-source: radial-gradient(
-     78px circle at var(--mx, 50%) var(--my, 50%),
+      78px circle at var(--mx, 50%) var(--my, 50%),
       rgba(212, 175, 55, 0.55) 0%,
       rgba(212, 102, 55, 0.22) 42%,
       transparent 72%
@@ -931,7 +689,7 @@
   }
 
   .theme-contact .nav-btn::before {
-     border-image-source: radial-gradient(
+    border-image-source: radial-gradient(
       68px circle at var(--mx, 50%) var(--my, 50%),
       rgba(235, 232, 255, 1) 0%,
       rgba(210, 210, 230, 0.98) 22%,
@@ -942,7 +700,7 @@
   }
 
   .theme-contact .nav-btn::after {
-   border-image-source: radial-gradient(
+    border-image-source: radial-gradient(
       78px circle at var(--mx, 50%) var(--my, 50%),
       rgba(150, 140, 230, 0.42) 0%,
       rgba(130, 110, 220, 0.18) 42%,
@@ -950,379 +708,60 @@
     );
   }
 
-  .links {
-    display: flex;
-    gap: 0.5rem;
-    overflow: visible;
-    max-width: 32rem;
-    opacity: 1;
-    padding: 8px 0;
-    margin: -8px 0;
-    transition:
-      max-width 0.68s cubic-bezier(.2,.85,.25,1),
-      opacity 0.12s linear,
-      clip-path 0.68s cubic-bezier(.2,.85,.25,1);
-  }
-
-  .links button {
-    flex: 0 0 auto;
-    transform-origin: center center;
-    box-shadow: 0 6px 8px rgba(0, 0, 0, 0.04);
-    transition:
-      transform 0.58s cubic-bezier(.2,.85,.25,1),
-      opacity 0.12s linear,
-      filter 0.58s cubic-bezier(.2,.85,.25,1);
-  }
-
-  .links button:nth-child(1) { transition-delay: 0.045s; }
-  .links button:nth-child(2) { transition-delay: 0s; }
-  .links button:nth-child(3) { transition-delay: 0s; }
-  .links button:nth-child(4) { transition-delay: 0.045s; }
-
-  .compact .links {
-    max-width: 0;
-    clip-path: inset(0 100% 0 0);
-  }
-
-  .compact .links button {
-    opacity: 0;
-    transform: scaleX(0.84) scaleY(0.96);
-    filter: blur(1.2px);
-    pointer-events: none;
-  }
-
-  .compact .links button:nth-child(1) { transition-delay: 0s; }
-  .compact .links button:nth-child(2) { transition-delay: 0.045s; }
-  .compact .links button:nth-child(3) { transition-delay: 0.045s; }
-  .compact .links button:nth-child(4) { transition-delay: 0s; }
-
-  .compact .nav-inner {
-    justify-content: center;
-    gap: 0.5rem;
-  }
-
-  .more {
-    width: 44px;
-    padding: 0;
-    cursor: pointer;
-    gap: 3px;
-  }
-
-  .more span {
-    width: 3px;
-    height: 3px;
-    background: currentColor;
-    border-radius: 50%;
-    transition: all 1s cubic-bezier(.22,.61,.36,1);
-  }
-
-  .more:hover span:nth-child(1) { transform: translateX(6px) scale(1.6); }
-  .more:hover span:nth-child(2) { opacity: 0; transform: scale(0); }
-  .more:hover span:nth-child(3) { transform: translateX(-6px) scale(1.6); }
-
   @media (max-width: 768px) {
-    .header-blur-prewarm {
-      display: flex;
-      top: 0.85rem;
-      left: 50%;
-      z-index: 399999;
-      opacity: 0.001;
-      transform: translate3d(-50%, 0, 0);
-    }
-
-    .nav-btn-logo-prism {
-      display: block;
-    }
-
-    .nav-btn-text-logo {
-      gap: 0.48rem;
-    }
-
     header {
       top: 0.85rem;
-      width: min(calc(100vw - 1.2rem), 28.8rem);
-      overflow: visible;
+      padding: 0 0.6rem;
+      justify-content: space-between;
+      /* Pas de transform ici : transform sur le parent casse le backdrop-filter des enfants */
     }
 
-    .nav-wrapper,
-    .nav-wrapper.intro-hidden,
-    .nav-wrapper.intro-visible,
-    .nav-wrapper.intro-animating,
-    .menu-open {
-      transform: translateX(-50%);
+    .mobile-logo {
+      display: flex;
     }
 
     .nav-wrapper {
       transition:
-        color 180ms ease,
-        opacity 720ms cubic-bezier(.22, 1, .36, 1);
-    }
-
-    .nav-wrapper.intro-animating {
-      animation-duration: 620ms;
-    }
-
-    .nav-inner {
-      position: relative;
-      width: 100%;
-      flex-wrap: nowrap;
-      justify-content: center;
-      overflow: visible;
+        color 150ms ease,
+        opacity 600ms cubic-bezier(.22, 1, .36, 1);
     }
 
     .nav-btn {
-      background: rgba(128, 128, 128, 0.24);
-      backdrop-filter: blur(10px);
-      -webkit-backdrop-filter: blur(10px);
-      box-shadow: none;
       will-change: transform, opacity;
-      transform: translate3d(0, 0, 0);
+      transition: color 150ms ease;
+    }
+
+    .menu-text {
       transition:
-        color 180ms ease,
-        background 320ms cubic-bezier(.22, 1, .36, 1);
+        max-width 0.58s cubic-bezier(.22,.61,.36,1),
+        opacity 0.42s ease,
+        margin-right 0.58s cubic-bezier(.22,.61,.36,1);
     }
 
-    .nav-btn-text,
-    .nav-btn-flip::after {
-      backface-visibility: hidden;
-      -webkit-backface-visibility: hidden;
-    }
-
-    @media (hover: none) and (pointer: coarse) {
-      .header-nav-btn .nav-btn-text,
-      .header-nav-btn .nav-btn-flip::after {
-        transition: none;
-        will-change: transform;
-      }
-
-      .header-nav-btn .nav-btn-text {
-        transform: translate3d(0, 0%, 0);
-      }
-
-      .header-nav-btn .nav-btn-flip::after,
-      .header-nav-btn .nav-btn-text-logo-clone {
-        transform: translate3d(0, 100%, 0);
-      }
-
-      .header-nav-btn:hover .nav-btn-text,
-      .links .header-nav-btn:hover .nav-btn-text,
-      .header-nav-btn.logo:hover .nav-btn-text-logo-main {
-        opacity: 1;
-        transform: translate3d(0, 0%, 0);
-      }
-
-      .header-nav-btn:hover .nav-btn-flip::after,
-      .links .header-nav-btn:hover .nav-btn-flip::after,
-      .header-nav-btn.logo:hover .nav-btn-text-logo-clone {
-        opacity: 1;
-        transform: translate3d(0, 100%, 0);
-      }
-    }
-
-    .header-nav-btn.touch-flip-active .nav-btn-text:not(.nav-btn-text-logo-clone) {
-      animation: headerMobileTextFlipMain 680ms cubic-bezier(.22, .9, .3, 1) both;
-      will-change: transform;
-    }
-
-    .header-nav-btn.touch-flip-active .nav-btn-flip::after,
-    .header-nav-btn.touch-flip-active .nav-btn-text-logo-clone {
-      animation: headerMobileTextFlipClone 680ms cubic-bezier(.22, .9, .3, 1) both;
-      will-change: transform;
-    }
-
-    @keyframes headerMobileTextFlipMain {
-      0%,
-      100% {
-        transform: translate3d(0, 0%, 0);
-      }
-
-      42%,
-      62% {
-        transform: translate3d(0, -100%, 0);
-      }
-    }
-
-    @keyframes headerMobileTextFlipClone {
-      0%,
-      100% {
-        transform: translate3d(0, 100%, 0);
-      }
-
-      42%,
-      62% {
-        transform: translate3d(0, 0%, 0);
-      }
-    }
-
-    .links {
-      position: absolute;
-      top: calc(100% + 0.55rem);
-      left: 50%;
-      display: flex;
-      width: max-content;
+    .compact .menu-text,
+    .menu-open .menu-text {
       max-width: 0;
-      justify-content: center;
-      gap: 0.42rem;
-      padding: 0;
-      margin: 0;
-      max-height: 0;
-      transform-origin: center center;
-      clip-path: inset(0 50% 0 50%);
-      transition:
-        max-width 920ms cubic-bezier(.4, 0, .2, 1),
-        max-height 920ms cubic-bezier(.4, 0, .2, 1),
-        clip-path 920ms cubic-bezier(.4, 0, .2, 1),
-        visibility 0s linear 920ms;
-      opacity: 1;
-      overflow: hidden;
-      visibility: hidden;
-      pointer-events: none;
-      will-change: max-width, max-height, clip-path;
-      transform: translate3d(-50%, 0, 0);
-    }
-
-    .links button {
-      flex: 0 0 auto;
-      padding: 0 1.16rem;
-      font-size: 0.84rem;
       opacity: 0;
-      transform: translateZ(0) scaleX(0.84) scaleY(0.96);
-      filter: none;
+      margin-right: 0;
+    }
+
+    /* Pas d'effet hover sur touch, mais tap donne un feedback */
+    .more:active .dots .dot:nth-child(1) { transform: translateX(4px) scale(1.3); }
+    .more:active .dots .dot:nth-child(2) { opacity: 0; transform: scale(0); }
+    .more:active .dots .dot:nth-child(3) { transform: translateX(-4px) scale(1.3); }
+
+    .dot {
       transition:
-        transform 900ms cubic-bezier(.4, 0, .2, 1),
-        opacity 650ms cubic-bezier(.4, 0, .2, 1);
-      will-change: transform, opacity;
-    }
-
-    .links button:nth-child(1) { transition-delay: 0ms, 0ms; }
-    .links button:nth-child(2) { transition-delay: 45ms, 45ms; }
-    .links button:nth-child(3) { transition-delay: 45ms, 45ms; }
-    .links button:nth-child(4) { transition-delay: 0ms, 0ms; }
-
-    .links:not(.text-ready) .nav-btn-text,
-    .links.flip-in .nav-btn-text,
-    .links.text-ready:not(.flip-in) .nav-btn-text {
-      transform: translate3d(0, 0, 0);
-      opacity: 1;
-    }
-
-    .links:not(.text-ready) .nav-btn-flip::after,
-    .links.flip-in .nav-btn-flip::after,
-    .links.text-ready:not(.flip-in) .nav-btn-flip::after {
-      transform: translate3d(0, 100%, 0);
-      opacity: 1;
-    }
-
-    .compact .nav-inner {
-      justify-content: center;
-      gap: 0.6rem;
-    }
-
-    .compact .links {
-      width: max-content;
-      max-width: 0;
-      max-height: 0;
-      margin-top: 0;
-      clip-path: inset(0 50% 0 50%);
-      visibility: hidden;
-      pointer-events: none;
-    }
-
-    .compact .links button {
-      filter: none;
-    }
-
-    .nav-wrapper.mobile-top-links-visible:not(.menu-open) .links {
-      width: max-content;
-      max-width: calc(100vw - 0.8rem);
-      max-height: 40px;
-      opacity: 1;
-      margin-top: 0;
-      clip-path: inset(0 0 0 0);
-      visibility: visible;
-      transition:
-        max-width 680ms cubic-bezier(.2, .85, .25, 1),
-        max-height 680ms cubic-bezier(.2, .85, .25, 1),
-        clip-path 680ms cubic-bezier(.2, .85, .25, 1),
-        visibility 0s linear 0s;
-      pointer-events: auto;
-      overflow: visible;
-    }
-
-    .nav-wrapper.mobile-top-links-visible:not(.menu-open) .links button {
-      opacity: 1;
-      transform: translateZ(0) scaleX(1) scaleY(1);
-      transition-duration: 580ms, 120ms;
-      transition-timing-function:
-        cubic-bezier(.2, .85, .25, 1),
-        linear;
-    }
-
-    .nav-wrapper.mobile-top-links-visible:not(.menu-open) .links button:nth-child(1) {
-      transition-delay: 45ms, 45ms;
-    }
-
-    .nav-wrapper.mobile-top-links-visible:not(.menu-open) .links button:nth-child(2) {
-      transition-delay: 0ms, 0ms;
-    }
-
-    .nav-wrapper.mobile-top-links-visible:not(.menu-open) .links button:nth-child(3) {
-      transition-delay: 0ms, 0ms;
-    }
-
-    .nav-wrapper.mobile-top-links-visible:not(.menu-open) .links button:nth-child(4) {
-      transition-delay: 45ms, 45ms;
-    }
-
-    .more span {
-      transition:
-        transform 320ms cubic-bezier(.22, 1, .36, 1),
-        opacity 220ms ease;
-    }
-
-    .more:hover span:nth-child(1),
-    .more:hover span:nth-child(3) {
-      transform: none;
-    }
-
-    .more:hover span:nth-child(2) {
-      opacity: 1;
-      transform: none;
-    }
-
-    .more:active span:nth-child(1) {
-      transform: translateX(4px) scale(1.3);
-    }
-
-    .more:active span:nth-child(2) {
-      opacity: 0;
-      transform: scale(0);
-    }
-
-    .more:active span:nth-child(3) {
-      transform: translateX(-4px) scale(1.3);
-    }
-  }
-
-  @media (max-width: 390px) {
-    .links {
-      gap: 0.38rem;
-    }
-
-    .links button {
-      padding: 0 1.02rem;
-      font-size: 0.8rem;
+        transform 280ms cubic-bezier(.22, 1, .36, 1),
+        opacity 200ms ease;
     }
   }
 
   @media (prefers-reduced-motion: reduce) {
     .nav-wrapper,
     .nav-btn,
-    .links,
-    .links button,
-    .more span,
-    .nav-btn-text,
-    .nav-btn-flip::after {
+    .menu-text,
+    .dot {
       transition: none;
     }
 
@@ -1330,7 +769,7 @@
     .nav-wrapper.intro-visible,
     .nav-wrapper.intro-animating {
       opacity: 1;
-      transform: translateX(-50%);
+      transform: none;
       filter: none;
       animation: none;
       pointer-events: auto;
