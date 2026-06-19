@@ -77,7 +77,7 @@
     --cta-bg: #000;
     --cta-fg: #fff;
     --cta-muted: rgba(255,255,255,.48);
-    --cta-button-bg: rgba(255,255,255,.10);
+    --cta-button-bg: rgba(255, 255, 255, 0.11);
     --cta-button-border: rgba(255,255,255,.15);
     position: relative;
     background: var(--cta-bg);
@@ -92,7 +92,7 @@
     --cta-bg: #f3f0e8;
     --cta-fg: #111;
     --cta-muted: rgba(17,17,17,.52);
-    --cta-button-bg: rgba(17,17,17,.05);
+    --cta-button-bg: rgba(17, 17, 17, 0.18);
     --cta-button-border: rgba(17,17,17,.14);
   }
 
@@ -169,13 +169,13 @@
     background: var(--cta-button-bg);
     color: var(--cta-fg);
     cursor: pointer;
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    will-change: transform, opacity, backdrop-filter, -webkit-backdrop-filter;
+    backdrop-filter: blur(20px) saturate(160%) brightness(0.82);
+    -webkit-backdrop-filter: blur(20px) saturate(160%) brightness(0.82);
+    will-change: transform, opacity;
     transform: translateZ(0);
     backface-visibility: hidden;
     -webkit-backface-visibility: hidden;
-    border-radius: 2px;
+    border-radius: 10px;
     box-shadow: 0 6px 8px rgba(0, 0, 0, 0.04);
     transition:
       color 220ms ease,
@@ -230,14 +230,16 @@
     position: absolute;
     inset: -1px;
     border-radius: inherit;
+    padding: 1px;
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
     pointer-events: none;
     opacity: 0;
   }
 
   .premium-contact-cta__button::before {
-    border: 1px solid transparent;
-    border-image-slice: 1;
-    border-image-source: radial-gradient(
+    background: radial-gradient(
       68px circle at var(--mx, 50%) var(--my, 50%),
       var(--site-glow-strong) 0%,
       var(--site-glow-mid) 22%,
@@ -249,9 +251,7 @@
   }
 
   .premium-contact-cta__button::after {
-    border: 1px solid transparent;
-    border-image-slice: 1;
-    border-image-source: radial-gradient(
+    background: radial-gradient(
       78px circle at var(--mx, 50%) var(--my, 50%),
       var(--site-glow-ambient) 0%,
       var(--site-glow-outer) 42%,
@@ -267,6 +267,11 @@
   }
 
   @media (max-width: 900px) {
+    .premium-contact-cta__button {
+      backdrop-filter: blur(12px) saturate(130%);
+      -webkit-backdrop-filter: blur(12px) saturate(130%);
+    }
+
     .premium-contact-cta__inner {
       min-height: auto;
       padding:

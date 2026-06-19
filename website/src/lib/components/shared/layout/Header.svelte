@@ -422,16 +422,24 @@
   .header-blur-prewarm span {
     display: block;
     height: 40px;
-    border-radius: 2px;
-    background: rgba(255, 255, 255, 0.10);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.11);
+    backdrop-filter: blur(20px) saturate(160%) brightness(0.82);
+    -webkit-backdrop-filter: blur(20px) saturate(160%) brightness(0.82);
     transform: translateZ(0);
     backface-visibility: hidden;
     -webkit-backface-visibility: hidden;
   }
 
   .header-blur-prewarm span:nth-child(1) { width: 130px; }
+  .header-blur-prewarm span:nth-child(2) { width: 44px; }
+
+  @media (max-width: 768px) {
+    .header-blur-prewarm span {
+      backdrop-filter: blur(12px) saturate(130%);
+      -webkit-backdrop-filter: blur(12px) saturate(130%);
+    }
+  }
 
   .nav-wrapper {
     background: none;
@@ -491,14 +499,14 @@
     color: inherit;
     border: 0px solid rgba(255, 255, 255, 0.15);
     cursor: pointer;
-    background: rgba(128, 128, 128, 0.24);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    will-change: transform, opacity, backdrop-filter, -webkit-backdrop-filter;
+    background: rgba(255, 255, 255, 0.11);
+    backdrop-filter: blur(20px) saturate(160%) brightness(0.82);
+    -webkit-backdrop-filter: blur(20px) saturate(160%) brightness(0.82);
+    will-change: transform, opacity;
     transform: translateZ(0);
     backface-visibility: hidden;
     -webkit-backface-visibility: hidden;
-    border-radius: 2px;
+    border-radius: 10px;
     box-shadow: 0 6px 8px rgba(0, 0, 0, 0);
     transition:
       color 220ms ease,
@@ -530,9 +538,9 @@
 
   .menu-text {
     font-family: "Clash Display", sans-serif;
-    font-size: 0.9rem;
+    font-size: 0.72rem;
     font-weight: 400;
-    letter-spacing: 0.06em;
+    letter-spacing: 0.1em;
     white-space: nowrap;
     max-width: 4rem;
     opacity: 1;
@@ -572,22 +580,23 @@
   .more:hover .dots .dot:nth-child(2) { opacity: 0; transform: scale(0); }
   .more:hover .dots .dot:nth-child(3) { transform: translateX(-6px) scale(1.6); }
 
-  /* Glow border effect */
+  /* Glow border effect — approche mask pour respecter border-radius */
   .nav-btn::before,
   .nav-btn::after {
     content: "";
     position: absolute;
     inset: -1px;
     border-radius: inherit;
+    padding: 1px;
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
     pointer-events: none;
     opacity: 0;
   }
 
   .nav-btn::before {
-    border: 1px solid transparent;
-    border-radius: inherit;
-    border-image-slice: 1;
-    border-image-source: radial-gradient(
+    background: radial-gradient(
       68px circle at var(--mx, 50%) var(--my, 50%),
       rgba(208, 219, 255, 1) 0%,
       rgba(87, 104, 255, 0.95) 22%,
@@ -599,10 +608,7 @@
   }
 
   .nav-btn::after {
-    border: 1px solid transparent;
-    border-radius: inherit;
-    border-image-slice: 1;
-    border-image-source: radial-gradient(
+    background: radial-gradient(
       78px circle at var(--mx, 50%) var(--my, 50%),
       rgba(87, 104, 255, 0.38) 0%,
       rgba(87, 104, 255, 0.18) 42%,
@@ -629,7 +635,7 @@
   }
 
   .theme-services .nav-btn::before {
-    border-image-source: radial-gradient(
+    background: radial-gradient(
       68px circle at var(--mx, 50%) var(--my, 50%),
       rgba(220, 240, 255, 1) 0%,
       rgba(145, 205, 255, 0.98) 22%,
@@ -640,7 +646,7 @@
   }
 
   .theme-services .nav-btn::after {
-    border-image-source: radial-gradient(
+    background: radial-gradient(
       78px circle at var(--mx, 50%) var(--my, 50%),
       rgba(95, 165, 255, 0.42) 0%,
       rgba(74, 140, 255, 0.18) 42%,
@@ -649,7 +655,7 @@
   }
 
   .theme-projets .nav-btn::before {
-    border-image-source: radial-gradient(
+    background: radial-gradient(
       68px circle at var(--mx, 50%) var(--my, 50%),
       rgba(220, 240, 255, 1) 0%,
       rgba(145, 205, 255, 0.98) 22%,
@@ -660,7 +666,7 @@
   }
 
   .theme-projets .nav-btn::after {
-    border-image-source: radial-gradient(
+    background: radial-gradient(
       78px circle at var(--mx, 50%) var(--my, 50%),
       rgba(95, 165, 255, 0.42) 0%,
       rgba(74, 140, 255, 0.18) 42%,
@@ -669,7 +675,7 @@
   }
 
   .theme-apropos .nav-btn::before {
-    border-image-source: radial-gradient(
+    background: radial-gradient(
       68px circle at var(--mx, 50%) var(--my, 50%),
       rgba(255, 225, 140, 1) 0%,
       rgba(212, 175, 55, 0.95) 22%,
@@ -680,7 +686,7 @@
   }
 
   .theme-apropos .nav-btn::after {
-    border-image-source: radial-gradient(
+    background: radial-gradient(
       78px circle at var(--mx, 50%) var(--my, 50%),
       rgba(212, 175, 55, 0.55) 0%,
       rgba(212, 102, 55, 0.22) 42%,
@@ -689,7 +695,7 @@
   }
 
   .theme-contact .nav-btn::before {
-    border-image-source: radial-gradient(
+    background: radial-gradient(
       68px circle at var(--mx, 50%) var(--my, 50%),
       rgba(235, 232, 255, 1) 0%,
       rgba(210, 210, 230, 0.98) 22%,
@@ -700,7 +706,7 @@
   }
 
   .theme-contact .nav-btn::after {
-    border-image-source: radial-gradient(
+    background: radial-gradient(
       78px circle at var(--mx, 50%) var(--my, 50%),
       rgba(150, 140, 230, 0.42) 0%,
       rgba(130, 110, 220, 0.18) 42%,
@@ -729,6 +735,8 @@
     .nav-btn {
       will-change: transform, opacity;
       transition: color 150ms ease;
+      backdrop-filter: blur(12px) saturate(130%);
+      -webkit-backdrop-filter: blur(12px) saturate(130%);
     }
 
     .menu-text {

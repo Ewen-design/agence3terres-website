@@ -454,10 +454,10 @@
     color: inherit;
     border: 0px solid rgba(255, 255, 255, 0.15);
     cursor: pointer;
-    background: rgba(255, 255, 255, 0.15);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    border-radius: 2px;
+    background: rgba(255, 255, 255, 0.11);
+    backdrop-filter: blur(20px) saturate(160%) brightness(0.82);
+    -webkit-backdrop-filter: blur(20px) saturate(160%) brightness(0.82);
+    border-radius: 10px;
     box-shadow: 0 6px 8px rgba(0, 0, 0, 0.04);
     transition:
       transform 1.2s cubic-bezier(.22,.61,.36,1),
@@ -509,15 +509,16 @@
     position: absolute;
     inset: -1px;
     border-radius: inherit;
+    padding: 1px;
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
     pointer-events: none;
     opacity: 0;
   }
 
   .nav-btn::before {
-    border: 1px solid transparent;
-    border-radius: inherit;
-    border-image-slice: 1;
-    border-image-source: radial-gradient(
+    background: radial-gradient(
       68px circle at var(--mx, 50%) var(--my, 50%),
       var(--site-glow-strong) 0%,
       var(--site-glow-mid) 22%,
@@ -529,10 +530,7 @@
   }
 
   .nav-btn::after {
-    border: 1px solid transparent;
-    border-radius: inherit;
-    border-image-slice: 1;
-    border-image-source: radial-gradient(
+    background: radial-gradient(
       78px circle at var(--mx, 50%) var(--my, 50%),
       var(--site-glow-ambient) 0%,
       var(--site-glow-outer) 42%,
@@ -782,6 +780,11 @@
   }
 
   @media (max-width: 900px) {
+    .nav-btn {
+      backdrop-filter: blur(12px) saturate(130%);
+      -webkit-backdrop-filter: blur(12px) saturate(130%);
+    }
+
     .desktop-stack {
       display: none;
     }

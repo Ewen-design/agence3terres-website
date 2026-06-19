@@ -597,10 +597,10 @@
     color: #f7f2e8;
     border: 0;
     cursor: pointer;
-    background: rgba(255, 255, 255, 0.1);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    border-radius: 2px;
+    background: rgba(255, 255, 255, 0.11);
+    backdrop-filter: blur(20px) saturate(160%) brightness(0.82);
+    -webkit-backdrop-filter: blur(20px) saturate(160%) brightness(0.82);
+    border-radius: 10px;
     box-shadow: 0 6px 8px rgba(0, 0, 0, 0.04);
     text-decoration: none;
     transition:
@@ -646,14 +646,16 @@
     position: absolute;
     inset: -1px;
     border-radius: inherit;
+    padding: 1px;
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
     pointer-events: none;
     opacity: 0;
   }
 
   .hero-cta::before {
-    border: 1px solid transparent;
-    border-image-slice: 1;
-    border-image-source: radial-gradient(
+    background: radial-gradient(
       68px circle at var(--mx, 50%) var(--my, 50%),
       var(--site-glow-strong) 0%,
       var(--site-glow-mid) 22%,
@@ -665,9 +667,7 @@
   }
 
   .hero-cta::after {
-    border: 1px solid transparent;
-    border-image-slice: 1;
-    border-image-source: radial-gradient(
+    background: radial-gradient(
       78px circle at var(--mx, 50%) var(--my, 50%),
       var(--site-glow-ambient) 0%,
       var(--site-glow-outer) 42%,
@@ -691,6 +691,11 @@
   }
 
   @media (max-width: 900px) {
+    .hero-cta {
+      backdrop-filter: blur(12px) saturate(130%);
+      -webkit-backdrop-filter: blur(12px) saturate(130%);
+    }
+
     .after-grid {
       width: min(94%, 760px);
       grid-template-columns: 1fr;

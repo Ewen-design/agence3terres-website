@@ -239,13 +239,14 @@
     white-space: nowrap;
     color: inherit;
     cursor: pointer;
-    background: rgba(255, 255, 255, 0.15);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    will-change: transform, opacity, backdrop-filter, -webkit-backdrop-filter;
+    background: rgba(255, 255, 255, 0.11);
+    backdrop-filter: blur(20px) saturate(160%) brightness(0.82);
+    -webkit-backdrop-filter: blur(20px) saturate(160%) brightness(0.82);
+    will-change: transform, opacity;
     transform: translateZ(0);
     backface-visibility: hidden;
     -webkit-backface-visibility: hidden;
+    border-radius: 10px;
     box-shadow: 0 6px 8px rgba(0, 0, 0, 0.04);
     transition:
       color 220ms ease,
@@ -298,15 +299,16 @@
     position: absolute;
     inset: -1px;
     border-radius: inherit;
+    padding: 1px;
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
     pointer-events: none;
     opacity: 0;
   }
 
   .nav-btn::before {
-    border: 1px solid transparent;
-    border-radius: inherit;
-    border-image-slice: 1;
-    border-image-source: radial-gradient(
+    background: radial-gradient(
       128px circle at var(--mx, 50%) var(--my, 50%),
       var(--footer-glow-strong, var(--site-glow-strong)) 0%,
       var(--footer-glow-mid, var(--site-glow-mid)) 26%,
@@ -318,10 +320,7 @@
   }
 
   .nav-btn::after {
-    border: 1px solid transparent;
-    border-radius: inherit;
-    border-image-slice: 1;
-    border-image-source: radial-gradient(
+    background: radial-gradient(
       156px circle at var(--mx, 50%) var(--my, 50%),
       var(--footer-glow-ambient, var(--site-glow-ambient)) 0%,
       var(--footer-glow-outer, var(--site-glow-outer)) 48%,
@@ -342,8 +341,8 @@
     padding: 0 2rem;
     margin-top: clamp(0.35rem, 1vw, 0.8rem);
     border: 0 solid rgba(255, 255, 255, 0.15);
-    border-radius: 2px;
-    background: rgba(255, 255, 255, 0.15);
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.11);
     color: #fff;
     text-decoration: none;
     font-size: clamp(1.08rem, 1.5vw, 1.26rem);
@@ -351,7 +350,7 @@
 
   .contact-button:hover {
     transform: translateY(-3px);
-    background: rgba(255, 255, 255, 0.15);
+    background: rgba(255, 255, 255, 0.17);
   }
 
   .theme-home,
@@ -407,6 +406,12 @@
   }
 
   @media (max-width: 768px) {
+    .nav-btn,
+    .contact-button {
+      backdrop-filter: blur(12px) saturate(130%);
+      -webkit-backdrop-filter: blur(12px) saturate(130%);
+    }
+
     .footer {
       inset: auto 0 auto 0;
       top: 30lvh;
