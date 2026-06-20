@@ -220,15 +220,15 @@
     min-width: 44px;
     height: 42px;
     padding: 0 16px;
-    border-radius: 2px;
+    border-radius: 10px;
     display: flex;
     align-items: center;
     justify-content: center;
     color: white;
     white-space: nowrap;
     background: rgba(6, 6, 8, 0.72);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(12px) saturate(130%);
+    -webkit-backdrop-filter: blur(12px) saturate(130%);
     box-shadow: 0 14px 24px rgba(0, 0, 0, 0.28);
   }
 

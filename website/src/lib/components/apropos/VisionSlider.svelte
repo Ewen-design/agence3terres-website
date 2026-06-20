@@ -349,10 +349,10 @@
     width: 500px;
     padding: 5.5rem;
     translate: -50% -50%;
-    background: rgba(255,255,255,0.15);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    border-radius: 3px;
+    background: rgba(255, 255, 255, 0.11);
+    backdrop-filter: blur(20px) saturate(160%) brightness(0.82);
+    -webkit-backdrop-filter: blur(20px) saturate(160%) brightness(0.82);
+    border-radius: 10px;
     box-shadow:
       0 8px 10px rgba(0,0,0,0.06),
       inset 0 0 0 0px rgba(255,255,255,0.4);
@@ -431,6 +431,11 @@
   }
 
   @media (max-width: 768px) {
+    .card {
+      backdrop-filter: blur(12px) saturate(130%);
+      -webkit-backdrop-filter: blur(12px) saturate(130%);
+    }
+
     .nav-zones {
       display: none;
     }

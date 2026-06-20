@@ -30,11 +30,11 @@
   ];
 
   const links = [
-    { label: "Accueil", page: "home", image: "/images/photo.webp" },
-    { label: "Services", page: "services", image: "/images/creation_logo_desktop2.webp" },
-    { label: "Projets", page: "travail", image: "/images/parfum4.webp" },
-    { label: "A propos", page: "apropos", image: "/images/creation_logo_desktop.webp" },
-    { label: "Contact", page: "contact", image: "/images/photo2.webp" }
+    { label: "Accueil", page: "home", image: "/images/parfum_rouge.webp" },
+    { label: "Services", page: "services", image: "/images/moovy.webp" },
+    { label: "Projets", page: "travail", image: "/images/missionx-hero-agency.jpg" },
+    { label: "A propos", page: "apropos", image: "/images/serein_design.webp" },
+    { label: "Contact", page: "contact", image: "/images/carte-copie.jpg" }
   ];
 
   const projectPreviewCards = [
@@ -713,6 +713,16 @@
     filter: drop-shadow(0 0 18px rgba(255, 255, 255, 0.08));
   }
 
+  .menu-nav .menu-link:nth-child(1) .menu-link-text { transition-delay: 80ms; }
+  .menu-nav .menu-link:nth-child(2) .menu-link-text { transition-delay: 140ms; }
+  .menu-nav .menu-link:nth-child(3) .menu-link-text { transition-delay: 190ms; }
+  .menu-nav .menu-link:nth-child(4) .menu-link-text { transition-delay: 230ms; }
+  .menu-nav .menu-link:nth-child(5) .menu-link-text { transition-delay: 260ms; }
+
+  .fs-menu.is-closing .menu-nav .menu-link .menu-link-text {
+    transition-delay: 0ms;
+  }
+
   .project-previews {
     position: relative;
     z-index: 9;
@@ -764,15 +774,17 @@
     position: absolute;
     inset: -1px;
     border-radius: inherit;
+    padding: 1px;
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
     pointer-events: none;
     opacity: 0;
   }
 
   .nav-btn::before,
   .social-link::before {
-    border: 1px solid transparent;
-    border-image-slice: 1;
-    border-image-source: radial-gradient(
+    background: radial-gradient(
       68px circle at var(--mx, 50%) var(--my, 50%),
       var(--site-glow-strong) 0%,
       var(--site-glow-mid) 22%,
@@ -785,9 +797,7 @@
 
   .nav-btn::after,
   .social-link::after {
-    border: 1px solid transparent;
-    border-image-slice: 1;
-    border-image-source: radial-gradient(
+    background: radial-gradient(
       78px circle at var(--mx, 50%) var(--my, 50%),
       var(--site-glow-ambient) 0%,
       var(--site-glow-outer) 42%,
@@ -941,10 +951,11 @@
     white-space: nowrap;
     color: inherit;
     border: 0px solid rgba(255, 255, 255, 0.14);
-    background: rgba(255, 255, 255, 0.15);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    border-radius: 2px;
+    background: rgba(255, 255, 255, 0.11);
+    backdrop-filter: blur(20px) saturate(160%) brightness(0.82);
+    -webkit-backdrop-filter: blur(20px) saturate(160%) brightness(0.82);
+    will-change: transform, opacity;
+    border-radius: 10px;
     cursor: pointer;
     transition:
       transform 1s cubic-bezier(.22,.61,.36,1),
@@ -1069,14 +1080,16 @@
     position: absolute;
     inset: -1px;
     border-radius: inherit;
+    padding: 1px;
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
     pointer-events: none;
     opacity: 0;
   }
 
   .mobile-square-btn::before {
-    border: 1px solid transparent;
-    border-image-slice: 1;
-    border-image-source: radial-gradient(
+    background: radial-gradient(
       68px circle at var(--mx, 50%) var(--my, 50%),
       var(--site-glow-strong) 0%,
       var(--site-glow-mid) 22%,
@@ -1088,9 +1101,7 @@
   }
 
   .mobile-square-btn::after {
-    border: 1px solid transparent;
-    border-image-slice: 1;
-    border-image-source: radial-gradient(
+    background: radial-gradient(
       78px circle at var(--mx, 50%) var(--my, 50%),
       var(--site-glow-ambient) 0%,
       var(--site-glow-outer) 42%,
@@ -1147,9 +1158,11 @@
     align-items: center;
     justify-content: center;
     border: 0px solid rgba(255, 255, 255, 0.14);
-    background: var(--menu-card-surface);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
+    background: rgba(255, 255, 255, 0.11);
+    backdrop-filter: blur(20px) saturate(160%) brightness(0.82);
+    -webkit-backdrop-filter: blur(20px) saturate(160%) brightness(0.82);
+    border-radius: 10px;
+    will-change: transform, opacity;
     transition:
       transform 0.35s cubic-bezier(.22, .61, .36, 1),
       background 0.35s ease,
@@ -1158,7 +1171,7 @@
   }
 
   .social-link:hover {
-    background: rgba(255, 255, 255, 0.12);
+    background: rgba(255, 255, 255, 0.18);
     border-color: rgba(255, 255, 255, 0.24);
   }
 
@@ -1308,6 +1321,12 @@
   }
 
   @media (max-width: 900px) {
+    .nav-btn,
+    .social-link {
+      backdrop-filter: blur(12px) saturate(130%);
+      -webkit-backdrop-filter: blur(12px) saturate(130%);
+    }
+
     .fs-menu {
       --menu-panel-duration: 460ms;
       --menu-content-duration: 420ms;
@@ -1609,8 +1628,44 @@
 
     .mobile-topbar,
     .menu-media-shell,
-    .mobile-preview-rail {
+    .mobile-preview-rail,
+    .ui-content {
       filter: none;
+    }
+
+    .menu-link-text {
+      clip-path: none;
+      -webkit-clip-path: none;
+      opacity: 0;
+      transform: translate3d(0, 14px, 0);
+      transition:
+        opacity var(--menu-content-duration) var(--menu-ease),
+        transform var(--menu-content-duration) var(--menu-ease);
+    }
+
+    .fs-menu.content-visible .menu-link-text {
+      clip-path: none;
+      -webkit-clip-path: none;
+      opacity: 1;
+      transform: translate3d(0, 0, 0);
+    }
+
+    .fs-menu.is-closing .menu-link-text {
+      clip-path: none;
+      -webkit-clip-path: none;
+      opacity: 0;
+      transform: translate3d(0, -10px, 0);
+      transition-delay: 0ms;
+    }
+
+    .menu-nav .menu-link:nth-child(1) .menu-link-text { transition-delay: 40ms; }
+    .menu-nav .menu-link:nth-child(2) .menu-link-text { transition-delay: 80ms; }
+    .menu-nav .menu-link:nth-child(3) .menu-link-text { transition-delay: 110ms; }
+    .menu-nav .menu-link:nth-child(4) .menu-link-text { transition-delay: 135ms; }
+    .menu-nav .menu-link:nth-child(5) .menu-link-text { transition-delay: 155ms; }
+
+    .fs-menu.is-closing .menu-nav .menu-link .menu-link-text {
+      transition-delay: 0ms;
     }
   }
 

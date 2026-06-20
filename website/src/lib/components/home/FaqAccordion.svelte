@@ -235,7 +235,7 @@
     font-size: clamp(1rem, 1.45vw, 1.55rem);
     line-height: 1.12;
     letter-spacing: -0.02em;
-    color: var(--lead-blue-pale);
+    color: rgba(245, 241, 232, 0.82);
     opacity: 0;
     transform: translate3d(0, -12px, 0);
     transition:
@@ -306,7 +306,7 @@
       max-width: 28ch;
       font-size: clamp(1.02rem, 4.1vw, 1.2rem);
       line-height: 1.12;
-      color: var(--lead-blue-pale);
+      color: rgba(245, 241, 232, 0.82);
       padding-right: 2rem;
     }
   }

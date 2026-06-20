@@ -4,9 +4,28 @@
   import { page } from "$app/stores";
 
   let footerEl;
-  let footerReveal = 0;
-  let scrollRaf = 0;
   let resizeObserver;
+  let curReveal = 0;
+  let tgtReveal = 0;
+  let rafId = null;
+
+  const lerp = (a, b, t) => a + (b - a) * t;
+
+  function applyReveal(val) {
+    footerEl?.style.setProperty("--footer-reveal", val.toFixed(4));
+  }
+
+  function revealLoop() {
+    curReveal = lerp(curReveal, tgtReveal, 0.1);
+    applyReveal(curReveal);
+    if (Math.abs(curReveal - tgtReveal) > 0.001) {
+      rafId = requestAnimationFrame(revealLoop);
+    } else {
+      curReveal = tgtReveal;
+      applyReveal(tgtReveal);
+      rafId = null;
+    }
+  }
 
   const footerImages = {
     "/": "/images/telephone3.webp",
@@ -38,54 +57,35 @@
     btn.style.setProperty("--my", `${event.clientY - rect.top}px`);
   }
 
-  function clamp01(value) {
-    return Math.max(0, Math.min(1, value));
-  }
-
-  function updateFooterMetrics() {
+  function computeReveal() {
     if (!browser || !footerEl) return;
-
     const footerHeight = footerEl.offsetHeight;
     document.documentElement.style.setProperty("--footer-reserve", `${footerHeight}px`);
-
-    const viewportHeight = document.documentElement.clientHeight || window.innerHeight || 0;
-    const scrollTop = window.scrollY || window.pageYOffset || 0;
-    const docHeight = Math.max(
-      document.documentElement.scrollHeight,
-      document.body.scrollHeight
-    );
+    const viewportHeight = window.innerHeight;
+    const scrollTop = window.scrollY;
+    const docHeight = Math.max(document.documentElement.scrollHeight, document.body.scrollHeight);
     const revealStart = Math.max(docHeight - viewportHeight - footerHeight * 1.05, 0);
     const revealDistance = Math.max(footerHeight * 0.82, 1);
-    const progress = (scrollTop - revealStart) / revealDistance;
-    footerReveal = clamp01(progress);
-  }
-
-  function scheduleFooterReveal() {
-    cancelAnimationFrame(scrollRaf);
-    scrollRaf = requestAnimationFrame(() => {
-      updateFooterMetrics();
-    });
+    tgtReveal = Math.min(Math.max((scrollTop - revealStart) / revealDistance, 0), 1);
+    if (!rafId) rafId = requestAnimationFrame(revealLoop);
   }
 
   onMount(() => {
     if (!browser || !footerEl) return;
 
-    resizeObserver = new ResizeObserver(() => {
-      scheduleFooterReveal();
-    });
-
+    resizeObserver = new ResizeObserver(computeReveal);
     resizeObserver.observe(footerEl);
 
-    updateFooterMetrics();
-    window.addEventListener("scroll", scheduleFooterReveal, { passive: true });
-    window.addEventListener("resize", scheduleFooterReveal, { passive: true });
+    computeReveal();
+    window.addEventListener("scroll", computeReveal, { passive: true });
+    window.addEventListener("resize", computeReveal, { passive: true });
 
     return () => {
-      cancelAnimationFrame(scrollRaf);
+      if (rafId) cancelAnimationFrame(rafId);
       resizeObserver?.disconnect();
       document.documentElement.style.removeProperty("--footer-reserve");
-      window.removeEventListener("scroll", scheduleFooterReveal);
-      window.removeEventListener("resize", scheduleFooterReveal);
+      window.removeEventListener("scroll", computeReveal);
+      window.removeEventListener("resize", computeReveal);
     };
   });
 </script>
@@ -93,7 +93,6 @@
 <footer
   class={`footer section-full ${footerThemeClass}`}
   bind:this={footerEl}
-  style={`--footer-reveal:${footerReveal};`}
 >
   <div class="footer-bg" style={`background-image: url('${footerImage}')`}></div>
   <div class="footer-overlay"></div>
@@ -141,7 +140,6 @@
     isolation: isolate;
     z-index: 0;
     opacity: var(--footer-reveal);
-    transition: opacity 0.35s linear;
   }
 
   .footer-bg,
@@ -157,9 +155,6 @@
     background-position: center center;
     filter: brightness(0.56) contrast(1.02) saturate(0.92);
     opacity: calc(0.12 + (0.88 * var(--footer-reveal)));
-    transition:
-      opacity 0.95s cubic-bezier(.22,.61,.36,1),
-      transform 0.95s cubic-bezier(.22,.61,.36,1);
     will-change: opacity;
     transform: scale(1.03);
   }
@@ -173,7 +168,6 @@
       rgba(2, 4, 6, 0.9) 100%
     );
     opacity: calc(0.2 + (0.8 * var(--footer-reveal)));
-    transition: opacity 0.95s cubic-bezier(.22,.61,.36,1);
     will-change: opacity;
   }
 
