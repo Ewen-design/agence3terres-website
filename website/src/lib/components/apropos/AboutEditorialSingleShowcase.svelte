@@ -105,7 +105,7 @@
 
   .about-editorial-single-showcase__scroll-arrow {
     display: block;
-    font-family: "Clash Display", sans-serif;
+    font-family: "Inter", sans-serif;
     font-size: clamp(1.1rem, 1.1vw, 1.2rem);
     font-weight: 300;
     line-height: 1;
@@ -120,7 +120,9 @@
     align-self: start;
     max-width: 23ch;
     font-size: clamp(1.3rem, 2.8vw, 2.8rem);
-    line-height: 1;
+    font-weight: 500;
+    line-height: 1.1;
+    color: #f5f1e8;
     padding-top: clamp(8rem, 14vh, 12rem);
     margin-left: clamp(-8.75rem, -6.2vw, -4.4rem);
   }
@@ -147,7 +149,8 @@
   }
 
   .about-editorial-single-showcase__muted {
-    color: rgb(157, 156, 156);
+    display: block;
+    color: rgba(245, 241, 232, 0.5);
   }
 
   @media (max-width: 900px) {

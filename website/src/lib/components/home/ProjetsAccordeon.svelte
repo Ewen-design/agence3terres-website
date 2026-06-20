@@ -309,7 +309,7 @@
 
   .header-title-wrap h2 {
     margin: 0;
-    font-family: "Clash Display", sans-serif;
+    font-family: "Inter", sans-serif;
     font-weight: 500;
     font-style: normal;
     font-synthesis: none;
@@ -409,7 +409,7 @@
 
   .title-row h3 {
     margin: 0;
-    font-family: "Clash Display", sans-serif;
+    font-family: "Inter", sans-serif;
     font-weight: 500;
     font-size: clamp(1.8rem, 3vw, 4rem);
     line-height: 0.96;
@@ -419,7 +419,7 @@
   }
 
   .number {
-    font-family: "Clash Display", sans-serif;
+    font-family: "Inter", sans-serif;
     font-style: normal;
     font-size: clamp(1.6rem, 2.4vw, 3rem);
     line-height: 1;
@@ -452,7 +452,7 @@
   .cta-text {
     margin: 0;
     max-width: 32rem;
-    font-family: "Clash Display", sans-serif;
+    font-family: "Inter", sans-serif;
     font-size: clamp(0.98rem, 1.08vw, 1.15rem);
     line-height: 1.48;
     color: var(--cta-text-color);
@@ -460,7 +460,7 @@
   }
 
   .nav-btn {
-    font-family: "Clash Display", sans-serif;
+    font-family: "Inter", sans-serif;
     position: relative;
     height: 40px;
     display: inline-flex;

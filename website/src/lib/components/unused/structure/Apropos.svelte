@@ -126,7 +126,7 @@
 }
 
 .about-hero h1 {
-  font-family: "Clash Display", sans-serif;
+  font-family: "Inter", sans-serif;
   font-weight: 500;
   font-size: clamp(3rem, 6vw, 6rem);
   letter-spacing: 0.2em;
@@ -167,7 +167,7 @@
   z-index: 2;
   width: 40%;
   color: white;
-  font-family: "Clash Display", sans-serif;
+  font-family: "Inter", sans-serif;
   font-weight: 500;
 }
 
@@ -177,7 +177,7 @@
 }
 
 .content p {
-  font-family: "Clash Display", sans-serif;
+  font-family: "Inter", sans-serif;
   font-size: 1rem;
   opacity: 0.75;
   margin-bottom: 2rem;
@@ -201,7 +201,7 @@ button {
   background: transparent;
   border: 1px solid white;
   color: white;
-  font-family: "Clash Display", sans-serif;
+  font-family: "Inter", sans-serif;
   font-size: 0.85rem;
   letter-spacing: 0.15em;
   text-transform: uppercase;

@@ -101,7 +101,7 @@
     <div class="footer-shell">
       <div class="hero-block">
         <div class="hero-copy">
-          <h2>Parlons de votre projet.</h2>
+          <h2>Parlons <span class="footer-h2-muted">de votre projet.</span></h2>
           <a
             href="/contact"
             class="contact-button nav-btn"
@@ -214,17 +214,21 @@
   .hero-copy h2 {
     margin: 0;
     max-width: 10ch;
-    font-family: "Clash Display", sans-serif;
-    font-weight: 200;
-    font-size: clamp(2.8rem, 7.1vw, 6.2rem);
+    font-family: "Inter", sans-serif;
+    font-weight: 500;
+    font-size: clamp(2.2rem, 5.5vw, 4.8rem);
     line-height: 0.96;
-    letter-spacing: -0.05em;
+    letter-spacing: -0.04em;
     color: #fff;
     text-wrap: balance;
   }
 
+  .footer-h2-muted {
+    color: rgba(255, 255, 255, 0.42);
+  }
+
   .nav-btn {
-    font-family: "Clash Display", sans-serif;
+    font-family: "Inter", sans-serif;
     font-weight: 400;
     position: relative;
     display: inline-flex;
@@ -340,6 +344,7 @@
     color: #fff;
     text-decoration: none;
     font-size: clamp(1.08rem, 1.5vw, 1.26rem);
+    font-weight: 300;
   }
 
   .contact-button:hover {
@@ -371,7 +376,7 @@
 
   .legal {
     margin: 0;
-    font-family: "Clash Display", sans-serif;
+    font-family: "Inter", sans-serif;
     font-weight: 300;
     font-size: 0.76rem;
     color: rgba(255, 255, 255, 0.44);
@@ -436,7 +441,7 @@
 
     .hero-copy h2 {
       max-width: 9ch;
-      font-size: clamp(2.4rem, 11.5vw, 4rem);
+      font-size: clamp(1.9rem, 9.5vw, 3.2rem);
     }
 
     .contact-button {

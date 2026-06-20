@@ -52,7 +52,7 @@
   .story-slider-intro__text {
     margin: 0;
     max-width: 30ch;
-    font-family: "Clash Display", sans-serif;
+    font-family: "Inter", sans-serif;
     font-weight: 300;
     font-size: clamp(1.3rem, 2.8vw, 2.8rem);
     line-height: 1;

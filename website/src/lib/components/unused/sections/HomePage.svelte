@@ -270,7 +270,7 @@
 
   .bg-title span {
     display: block;
-    font-family: "Clash Display", sans-serif;
+    font-family: "Inter", sans-serif;
   font-weight: 500;
     font-style: normal;
     font-size: clamp(4.8rem, 13vw, 12rem);
@@ -298,7 +298,7 @@
 
   .intro-card p {
     margin: 0;
-    font-family: "Clash Display", sans-serif;
+    font-family: "Inter", sans-serif;
     font-size: 1rem;
     line-height: 1.8;
     color: rgba(255, 255, 255, 0.62);
@@ -365,7 +365,7 @@
   }
 
   .content h2 {
-    font-family: "Clash Display", sans-serif;
+    font-family: "Inter", sans-serif;
   font-weight: 500;
     font-size: clamp(2.5rem, 4vw, 4.5rem);
     line-height: 1.05;
@@ -394,7 +394,7 @@
     border: 1px solid #fff;
     color: #fff;
     text-decoration: none;
-    font-family: "Clash Display", sans-serif;
+    font-family: "Inter", sans-serif;
     font-size: 0.8rem;
     letter-spacing: 0.2em;
     text-transform: uppercase;

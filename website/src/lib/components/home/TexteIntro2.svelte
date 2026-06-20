@@ -164,7 +164,7 @@
   h2 {
     margin: 0 auto;
     max-width: 11ch;
-    font-family: "Clash Display", sans-serif;
+    font-family: "Inter", sans-serif;
     font-style: normal;
     font-weight: 500;
     font-size: clamp(2.3rem, 4.6vw, 5rem);
@@ -177,7 +177,7 @@
   .text {
     margin: 1rem auto 0; /* ✅ réduit */
     max-width: 40rem;
-    font-family: "Clash Display", sans-serif;
+    font-family: "Inter", sans-serif;
     font-weight: 300;
     font-size: clamp(0.95rem, 1vw, 1.05rem);
     line-height: 1.65;

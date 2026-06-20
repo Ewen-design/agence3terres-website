@@ -30,10 +30,10 @@
   ];
 
   const links = [
-    { label: "Accueil", page: "home", image: "/images/parfum_rouge.webp" },
-    { label: "Services", page: "services", image: "/images/moovy.webp" },
-    { label: "Projets", page: "travail", image: "/images/missionx-hero-agency.jpg" },
-    { label: "A propos", page: "apropos", image: "/images/serein_design.webp" },
+    { label: "Accueil", page: "home", image: "/images/moovy2.webp" },
+    { label: "Services", page: "services", image: "/images/justx.webp" },
+    { label: "Projets", page: "travail", image: "/images/justx_fitness.webp" },
+    { label: "A propos", page: "apropos", image: "/images/missionX5.webp" },
     { label: "Contact", page: "contact", image: "/images/carte-copie.jpg" }
   ];
 
@@ -357,10 +357,6 @@
         </svg>
       </button>
 
-      <div class="mobile-top-logo" aria-hidden="true">
-        <img src="/images/logo_prisme.png" alt="" />
-      </div>
-
       <div class="mobile-actions">
         <button
           class="mobile-square-btn mobile-actions-toggle"
@@ -389,18 +385,11 @@
             {/each}
           </div>
 
-          <a class="mobile-mail-link" href="mailto:contact@agence3terres.com">
-            contact@agence3terres.com
-          </a>
         </div>
       </div>
     </div>
 
     <div class="menu-upper ui-content">
-      <div class="menu-top-logo" aria-hidden="true">
-        <img src="/images/logo_prisme.png" alt="" />
-      </div>
-
       <nav class="menu-nav" aria-label="Navigation principale">
         {#each links as link, i}
           <button
@@ -479,11 +468,6 @@
     </div>
 
     <div class="bottom-strip ui-bottom">
-      <div class="menu-email">
-        <div class="bottom-kicker">e-mail</div>
-        <a href="mailto:contact@agence3terres.com">contact@agence3terres.com</a>
-      </div>
-
       <div class="menu-socials">
         <div class="bottom-kicker">nous suivre</div>
         <div class="socials-group">
@@ -634,9 +618,9 @@
     z-index: 8;
     display: grid;
     grid-template-columns: minmax(0, 1fr) auto;
-    align-items: start;
+    align-items: center;
     min-height: 0;
-    padding: clamp(1.25rem, 2vw, 1.75rem) clamp(1rem, 2vw, 2rem) 0;
+    padding: clamp(1.25rem, 2vw, 1.75rem) clamp(1rem, 2vw, 2rem);
   }
 
   .menu-top-logo {
@@ -664,8 +648,8 @@
     display: flex;
     flex-direction: column;
     align-items: flex-start;
-    gap: clamp(0.3rem, 0.58vh, 0.62rem);
-    padding-top: clamp(4.9rem, 8.9vh, 6.9rem);
+    gap: clamp(0.6rem, 1.2vh, 1.2rem);
+    padding-top: 0;
   }
 
   .menu-link {
@@ -687,8 +671,8 @@
 
   .menu-link-text {
     display: inline-block;
-    font-family: "Clash Display", sans-serif;
-    font-weight: 300;
+    font-family: "Inter", sans-serif;
+    font-weight: 500;
     font-style: normal;
     font-size: clamp(2.95rem, 4.15vw, 4.8rem);
     line-height: 0.94;
@@ -744,6 +728,7 @@
   .mobile-square-btn {
     position: relative;
     overflow: hidden;
+    border-radius: 10px;
   }
 
   .project-card {
@@ -754,7 +739,7 @@
     gap: 0.75rem;
     padding: 0.95rem;
     border: 0;
-    border-radius: 2px;
+    border-radius: 14px;
     background: var(--menu-card-surface);
     color: #fff;
     text-align: left;
@@ -825,11 +810,11 @@
   }
 
   .project-card-title {
-    font-family: "Clash Display", sans-serif;
+    font-family: "Inter", sans-serif;
     font-size: 1rem;
     line-height: 1.1;
     letter-spacing: -0.03em;
-    font-weight: 400;
+    font-weight: 500;
   }
 
   .project-card.large .project-card-title {
@@ -841,7 +826,7 @@
   }
 
   .project-card-meta {
-    font-family: "Clash Display", sans-serif;
+    font-family: "Inter", sans-serif;
     font-size: 0.72rem;
     line-height: 1.2;
     color: rgba(255, 255, 255, 0.5);
@@ -857,7 +842,7 @@
   .project-card-image {
     width: 100%;
     height: clamp(82px, 8vw, 102px);
-    border-radius: 2px;
+    border-radius: 10px;
     object-fit: cover;
     filter: brightness(0.88) saturate(0.9);
   }
@@ -873,7 +858,7 @@
 
   .project-card-text {
     margin: 0;
-    font-family: "Clash Display", sans-serif;
+    font-family: "Inter", sans-serif;
     font-size: 0.76rem;
     line-height: 1.25;
     color: rgba(255, 255, 255, 0.72);
@@ -895,8 +880,8 @@
     height: min(74vh, 52rem);
     overflow: hidden;
     pointer-events: none;
-    border-radius: 2px;
-    clip-path: inset(100% 0 0 0);
+    border-radius: 14px;
+    clip-path: inset(100% 0 0 0 round 14px);
     -webkit-clip-path: inset(100% 0 0 0);
     will-change: clip-path;
     transition:
@@ -998,7 +983,7 @@
     z-index: 14;
     display: flex;
     align-items: flex-end;
-    justify-content: space-between;
+    justify-content: flex-end;
     gap: 2rem;
     opacity: 0;
     filter: blur(16px);
@@ -1036,6 +1021,7 @@
     background: var(--menu-card-surface);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
+    border-radius: 14px;
     text-align: left;
     cursor: pointer;
   }
@@ -1059,8 +1045,9 @@
 
   .mobile-preview-title {
     display: block;
-    font-family: "Clash Display", sans-serif;
+    font-family: "Inter", sans-serif;
     font-size: 0.82rem;
+    font-weight: 500;
     line-height: 1.04;
     letter-spacing: -0.03em;
     color: #fff;
@@ -1068,7 +1055,7 @@
 
   .mobile-preview-text {
     margin: 0.28rem 0 0;
-    font-family: "Clash Display", sans-serif;
+    font-family: "Inter", sans-serif;
     font-size: 0.64rem;
     line-height: 1.14;
     color: rgba(255, 255, 255, 0.68);
@@ -1121,7 +1108,7 @@
   }
 
   .bottom-kicker {
-    font-family: "Clash Display", sans-serif;
+    font-family: "Inter", sans-serif;
     font-size: 0.9rem;
     letter-spacing: 0.02em;
     color: var(--menu-muted-gray);
@@ -1129,7 +1116,7 @@
   }
 
   .menu-email a {
-    font-family: "Clash Display", sans-serif;
+    font-family: "Inter", sans-serif;
     font-size: clamp(1.05rem, 1.45vw, 1.5rem);
     line-height: 1;
     letter-spacing: -0.03em;
@@ -1212,8 +1199,8 @@
   }
 
   .fs-menu.media-visible .menu-media-reveal {
-    clip-path: inset(0 0 0 0);
-    -webkit-clip-path: inset(0 0 0 0);
+    clip-path: inset(0 0 0 0 round 14px);
+    -webkit-clip-path: inset(0 0 0 0 round 14px);
   }
 
   .fs-menu.content-visible .ui-content {
@@ -1254,8 +1241,8 @@
   }
 
   .fs-menu.is-closing .menu-media-reveal {
-    clip-path: inset(0 0 100% 0);
-    -webkit-clip-path: inset(0 0 100% 0);
+    clip-path: inset(0 0 100% 0 round 14px);
+    -webkit-clip-path: inset(0 0 100% 0 round 14px);
   }
 
   .fs-menu.is-closing .menu-panel {
@@ -1292,7 +1279,7 @@
       grid-column: auto;
       justify-self: center;
       align-items: flex-start;
-      padding-top: clamp(7.1rem, 15vw, 8.9rem);
+      padding-top: 0;
     }
   }
 
@@ -1438,6 +1425,7 @@
     .mobile-actions {
       position: relative;
       justify-self: end;
+      grid-column: 3;
     }
 
     .mobile-actions-panel {
@@ -1465,7 +1453,7 @@
 
     .mobile-mail-link {
       display: block;
-      font-family: "Clash Display", sans-serif;
+      font-family: "Inter", sans-serif;
       font-size: 0.76rem;
       line-height: 1.15;
       color: #fff;

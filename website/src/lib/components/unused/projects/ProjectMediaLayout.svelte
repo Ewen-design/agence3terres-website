@@ -42,7 +42,7 @@
 
   .project-media-layout__head h2 {
     margin: 0;
-    font-family: "Clash Display", sans-serif;
+    font-family: "Inter", sans-serif;
     font-style: normal;
     font-size: clamp(2rem, 4vw, 3.8rem);
     line-height: 0.92;
@@ -53,7 +53,7 @@
   .project-media-layout__head p {
     margin: 0;
     max-width: 22ch;
-    font-family: "Clash Display", sans-serif;
+    font-family: "Inter", sans-serif;
     font-size: clamp(0.98rem, 1.2vw, 1.05rem);
     line-height: 1.55;
     color: rgba(245, 241, 232, 0.72);

@@ -303,7 +303,6 @@
     <div class="gallery-overlay-wrap" aria-hidden="true">
       <div class="gallery-sticky-overlay">
         <div class="gallery-sticky-cue" bind:this={galleryCueEl}>
-          <span class="gallery-scroll-label">Scroll pour découvrir</span>
           <span class="gallery-scroll-arrow">↓</span>
         </div>
 
@@ -422,7 +421,7 @@
   }
 
   .gallery-scroll-label {
-    font-family: "Clash Display", sans-serif;
+    font-family: "Inter", sans-serif;
     font-size: clamp(0.82rem, 0.95vw, 0.98rem);
     font-weight: 300;
     line-height: 1;
@@ -432,7 +431,7 @@
 
   .gallery-scroll-arrow {
     display: block;
-    font-family: "Clash Display", sans-serif;
+    font-family: "Inter", sans-serif;
     font-size: clamp(1.1rem, 1.1vw, 1.2rem);
     line-height: 1;
     font-weight: 300;

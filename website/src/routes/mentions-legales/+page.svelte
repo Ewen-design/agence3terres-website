@@ -91,10 +91,10 @@
 
   h1 {
     margin: 0;
-    font-family: "Clash Display", sans-serif;
+    font-family: "Inter", sans-serif;
     font-size: clamp(3rem, 8vw, 6.25rem);
     line-height: 0.94;
-    font-weight: 200;
+    font-weight: 500;
     letter-spacing: var(--site-display-letter-spacing);
     color: #111111;
     text-wrap: balance;
@@ -114,7 +114,7 @@
 
   h2 {
     margin: 0 0 0.95rem;
-    font-family: "Clash Display", sans-serif;
+    font-family: "Inter", sans-serif;
     font-size: clamp(1.3rem, 1.9vw, 1.7rem);
     line-height: 1.04;
     font-weight: 300;
@@ -125,7 +125,7 @@
   .legal-section p {
     margin: 0;
     max-width: 34rem;
-    font-family: "Clash Display", sans-serif;
+    font-family: "Inter", sans-serif;
     font-size: clamp(0.98rem, 1.06vw, 1.05rem);
     line-height: 1.72;
     font-weight: 300;

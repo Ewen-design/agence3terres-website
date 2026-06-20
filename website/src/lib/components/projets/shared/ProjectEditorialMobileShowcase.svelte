@@ -74,7 +74,7 @@
     margin: 0;
     grid-column: 2;
     max-width: 13ch;
-    font-family: "Clash Display", sans-serif;
+    font-family: "Inter", sans-serif;
     font-weight: 300;
     font-size: var(--project-lead-size, clamp(1.35rem, 2.7vw, 2.8rem));
     line-height: 0.98;

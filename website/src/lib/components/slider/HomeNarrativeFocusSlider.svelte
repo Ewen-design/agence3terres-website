@@ -7,32 +7,32 @@
       title: "Moovy",
       description:
         "Une plateforme de recommandation de films qui aide a trouver rapidement le bon choix selon ses envies.",
-      image: "/images/moovy.webp"
+      image: "/images/moovy2.webp"
     },
     {
       number: "02",
       title: "JustX",
       description:
         "Une marque de sport portée par des programmes personnalisés de musculation, nutrition et une gamme textile.",
-      image: "/images/logo_justx.webp"
+      image: "/images/justx.webp"
     },
     {
       number: "03",
       title: "JustX\nFitness",
       description:
         "L'application JustX pour planifier ses séances, suivre l'effort et mesurer sa progression.",
-      image: "/images/telephone3.webp"
+      image: "/images/justx_fitness.webp"
     },
     {
       number: "04",
       title: "Mission X",
       description:
         "Un jeu social mobile où détectives et voleurs s'affrontent à travers des missions secrètes.",
-      image: "/images/missionx-hero-agency.jpg"
+      image: "/images/missionX5.webp"
     },
     {
       number: "05",
-      title: "Ludovic",
+      title: "Ludosphères",
       description:
         "Un site d'artiste pense pour presenter des oeuvres peintes avec calme, texture et clarte.",
       image: "/images/carte-copie.jpg"
@@ -42,7 +42,7 @@
       title: "Serein\nDesign",
       description:
         "Un univers premium, calme et fonctionnel, porté par une identité claire et sensible.",
-      image: "/images/telephone3.webp"
+      image: "/images/serein_design.webp"
     },
     {
       number: "07",

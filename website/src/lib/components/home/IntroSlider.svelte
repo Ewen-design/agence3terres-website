@@ -1,17 +1,15 @@
 <script>
-  export let main =
-    "Des projets conçus comme des signatures, où chaque détail sert une vision claire";
+  export let main = "Conçus comme des signatures,";
 
   export let muted =
-    "et donne à chaque marque une présence plus juste, plus désirable.";
+    "chaque projet construit une marque plus juste et plus désirable.";
 </script>
 
 <section class="story-slider-intro">
   <div class="story-slider-intro__text-wrap">
     <div class="story-slider-intro__card">
       <p class="story-slider-intro__text">
-        <span class="story-slider-intro__main">{main}</span>
-        <span class="story-slider-intro__muted"> {muted}</span>
+        <span class="story-slider-intro__main">{main}</span><span class="story-slider-intro__muted">{muted}</span>
       </p>
     </div>
   </div>
@@ -51,11 +49,11 @@
 
   .story-slider-intro__text {
     margin: 0;
-    max-width: 30ch;
-    font-family: "Clash Display", sans-serif;
-    font-weight: 300;
+    max-width: 28ch;
+    font-family: "Inter", sans-serif;
+    font-weight: 500;
     font-size: clamp(1.3rem, 2.8vw, 2.8rem);
-    line-height: 1;
+    line-height: 1.1;
     letter-spacing: -0.02em;
     color: var(--intro-text);
   }
@@ -65,7 +63,8 @@
   }
 
   .story-slider-intro__muted {
-    color: rgb(157, 156, 156);
+    display: block;
+    color: rgba(245, 241, 232, 0.5);
   }
 
   @media (max-width: 1100px) {
@@ -98,8 +97,8 @@
 
     .story-slider-intro__text {
       font-size: clamp(1.3rem, 6.8vw, 2.7rem);
-      line-height: 1.04;
-      max-width: 18ch;
+      line-height: 1.1;
+      max-width: 22ch;
     }
   }
 
@@ -119,8 +118,8 @@
     }
 
     .story-slider-intro__text {
-      font-size: clamp(1.15rem, 6.4vw, 1.95rem);
-      line-height: 1.16;
+      font-size: clamp(1.15rem, 6.4vw, 2rem);
+      line-height: 1.12;
     }
   }
 

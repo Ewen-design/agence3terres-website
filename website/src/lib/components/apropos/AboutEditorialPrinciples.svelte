@@ -313,7 +313,7 @@
 
   .principle-title {
     display: inline-block;
-    font-family: "Clash Display", sans-serif;
+    font-family: "Inter", sans-serif;
     font-weight: 300;
     font-size: clamp(1.95rem, 4.35vw, 4.35rem);
     line-height: 0.88;
@@ -382,7 +382,7 @@
   .preview-text {
     margin: 0;
     max-width: 16ch;
-    font-family: "Clash Display", sans-serif;
+    font-family: "Inter", sans-serif;
     font-weight: 300;
     font-size: clamp(1.04rem, 1.18vw, 1.24rem);
     line-height: 1.28;
@@ -522,7 +522,7 @@
 
     .principle-mobile-title {
       margin-bottom: 7rem;
-      font-family: "Clash Display", sans-serif;
+      font-family: "Inter", sans-serif;
       font-weight: 300;
       font-size: clamp(2rem, 9vw, 3rem);
       line-height: 0.96;
@@ -559,7 +559,7 @@
 
     .principle-mobile-text {
       margin: 0;
-      font-family: "Clash Display", sans-serif;
+      font-family: "Inter", sans-serif;
       font-weight: 300;
       font-size: clamp(1.06rem, 3.9vw, 1.22rem);
       line-height: 1.34;

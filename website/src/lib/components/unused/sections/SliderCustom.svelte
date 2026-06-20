@@ -200,7 +200,7 @@
 
   .hero-title h1 {
     margin: 0;
-    font-family: "Clash Display", sans-serif;
+    font-family: "Inter", sans-serif;
   font-weight: 500;
     font-size:clamp(4rem,4vw,8rem);
     font-weight: 700;

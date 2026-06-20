@@ -303,9 +303,9 @@
   }
 
   .vision-header h2 {
-    font-family: "Clash Display", sans-serif;
+    font-family: "Inter", sans-serif;
     font-size: clamp(2.5rem, 4vw, 4rem);
-    font-weight: 200;
+    font-weight: 500;
     margin-bottom: 1.5rem;
     line-height: 0.96;
     letter-spacing: -0.04em;
@@ -313,7 +313,7 @@
   }
 
   .vision-header p {
-    font-family: "Clash Display", sans-serif;
+    font-family: "Inter", sans-serif;
     font-size: 1rem;
     font-weight: 300;
     opacity: 0.65;
@@ -394,7 +394,7 @@
   }
 
   .quote p {
-    font-family: "Clash Display", sans-serif;
+    font-family: "Inter", sans-serif;
     font-style: normal;
     font-weight: 300;
     font-size: 1.5rem;
@@ -404,7 +404,7 @@
 
   .mark {
     position: absolute;
-    font-family: "Clash Display", sans-serif;
+    font-family: "Inter", sans-serif;
     font-size: 3rem;
     font-weight: 400;
     opacity: 0.35;
@@ -424,7 +424,7 @@
   .author {
     margin-top: 2rem;
     text-align: center;
-    font-family: "Clash Display", sans-serif;
+    font-family: "Inter", sans-serif;
     font-size: 0.95rem;
     font-weight: 300;
     color: #9b9b9b;

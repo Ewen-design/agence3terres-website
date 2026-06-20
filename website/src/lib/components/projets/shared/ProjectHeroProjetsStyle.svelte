@@ -489,9 +489,9 @@
 
   .hero-scroll-label {
     margin: 0;
-    font-family: "Clash Display", sans-serif;
+    font-family: "Inter", sans-serif;
     font-size: clamp(5.8rem, 5vw, 18rem);
-    font-weight: 200;
+    font-weight: 500;
     line-height: 1;
     letter-spacing: 0.02em;
     text-align: left;
@@ -512,7 +512,7 @@
 
   .hero-scroll-arrow {
     display: block;
-    font-family: "Clash Display", sans-serif;
+    font-family: "Inter", sans-serif;
     font-size: clamp(1.1rem, 1.1vw, 1.2rem);
     line-height: 1;
     font-weight: 300;
@@ -547,7 +547,7 @@
 
   .after-meta__block h2 {
     margin: 0 0 0.7rem;
-    font-family: "Clash Display", sans-serif;
+    font-family: "Inter", sans-serif;
     font-size: clamp(1.55rem, 2vw, 2rem);
     font-weight: 300;
     line-height: 0.98;
@@ -558,7 +558,7 @@
   .after-meta__block p,
   .after-meta__block li {
     margin: 0;
-    font-family: "Clash Display", sans-serif;
+    font-family: "Inter", sans-serif;
     font-size: clamp(1.28rem, 2vw, 2.05rem);
     font-weight: 300;
     line-height: 1.14;
@@ -583,7 +583,7 @@
   }
 
   .hero-cta {
-    font-family: "Clash Display", sans-serif;
+    font-family: "Inter", sans-serif;
     position: relative;
     min-width: clamp(10.5rem, 16vw, 14rem);
     height: clamp(3.15rem, 4vw, 3.9rem);

@@ -214,7 +214,7 @@ export const projectPages = {
   },
   projet4: {
     slug: "projet4",
-    title: "Ludovic",
+    title: "Ludosphères",
     category: "Site d'artiste",
     year: "2025",
     hero: {

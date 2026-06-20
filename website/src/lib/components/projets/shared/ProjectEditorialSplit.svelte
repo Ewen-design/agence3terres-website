@@ -50,7 +50,7 @@
 
   .editorial-split__copy h2 {
     margin: 0;
-    font-family: "Clash Display", sans-serif;
+    font-family: "Inter", sans-serif;
     font-style: normal;
     font-weight: 400;
     font-size: var(--project-title-size, clamp(1.8rem, 2.45vw, 2.7rem));
@@ -61,7 +61,7 @@
   .editorial-split__copy p {
     margin: 1rem 0 0;
     max-width: 26rem;
-    font-family: "Clash Display", sans-serif;
+    font-family: "Inter", sans-serif;
     font-weight: 400;
     font-size: var(--project-body-size, clamp(0.98rem, 1.04vw, 1.08rem));
     line-height: var(--project-body-line-height, 1.52);

@@ -70,7 +70,7 @@
   .editorial-role__title-wrap h2 {
     margin: 0;
     padding-inline: var(--project-text-inset, 0);
-    font-family: "Clash Display", sans-serif;
+    font-family: "Inter", sans-serif;
     font-style: normal;
     font-weight: 400;
     font-size: var(--project-display-size, clamp(2.1rem, 3vw, 3.45rem));
@@ -93,7 +93,7 @@
 
   .editorial-role__item h3 {
     margin: 0;
-    font-family: "Clash Display", sans-serif;
+    font-family: "Inter", sans-serif;
     font-style: normal;
     font-weight: 400;
     font-size: var(--project-subtitle-size, clamp(1.3rem, 1.9vw, 2rem));
@@ -104,7 +104,7 @@
   .editorial-role__item p {
     margin: 0;
     max-width: 22rem;
-    font-family: "Clash Display", sans-serif;
+    font-family: "Inter", sans-serif;
     font-weight: 400;
     font-size: var(--project-body-size, clamp(0.98rem, 1.04vw, 1.08rem));
     line-height: var(--project-body-line-height, 1.52);

@@ -23,7 +23,7 @@
 
   .editorial-statement__eyebrow {
     padding-inline: var(--project-text-inset, 0);
-    font-family: "Clash Display", sans-serif;
+    font-family: "Inter", sans-serif;
     font-style: normal;
     font-size: var(--project-overline-size, clamp(1.08rem, 1.45vw, 1.5rem));
     line-height: 1;
@@ -38,7 +38,7 @@
   .editorial-statement__body p {
     margin: 0;
     max-width: 21ch;
-    font-family: "Clash Display", sans-serif;
+    font-family: "Inter", sans-serif;
     font-weight: 300;
     font-size: var(--project-lead-size, clamp(1.35rem, 2.7vw, 2.8rem));
     line-height: 0.98;

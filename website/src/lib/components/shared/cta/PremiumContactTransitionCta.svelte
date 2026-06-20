@@ -116,7 +116,7 @@
   }
 
   .premium-contact-cta__eyebrow {
-    font-family: "Clash Display", sans-serif;
+    font-family: "Inter", sans-serif;
     font-size: clamp(2.2rem, 3vw, 3rem);
     line-height: 1;
     color: var(--cta-muted);
@@ -136,7 +136,7 @@
 
   .premium-contact-cta__copy h2 {
     margin: 0;
-    font-family: "Clash Display", sans-serif;
+    font-family: "Inter", sans-serif;
     font-size: clamp(3rem, 5.8vw, 6rem);
     font-weight: 300;
     line-height: .98;
@@ -156,7 +156,7 @@
   }
 
   .premium-contact-cta__button {
-    font-family: "Clash Display", sans-serif;
+    font-family: "Inter", sans-serif;
     position: relative;
     height: 40px;
     display: flex;

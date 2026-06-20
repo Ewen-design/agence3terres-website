@@ -438,10 +438,10 @@
   .focus-zone-slider__item h2 {
     margin: 0;
     font-family: var(--site-font);
-    font-size: clamp(3.8rem, 7.2vw, 6.4rem);
-    font-weight: 300;
+    font-size: clamp(2.8rem, 5.5vw, 5rem);
+    font-weight: 600;
     line-height: 0.92;
-    letter-spacing: -0.045em;
+    letter-spacing: -0.03em;
     white-space: pre-line;
     color: var(--title-muted);
     text-shadow: 0 2px 16px rgba(0, 0, 0, 0.16);
@@ -528,7 +528,7 @@
     }
 
     .focus-zone-slider__item h2 {
-      font-size: clamp(2.8rem, 11vw, 4rem);
+      font-size: clamp(2.2rem, 9vw, 3.4rem);
       line-height: 0.94;
     }
 

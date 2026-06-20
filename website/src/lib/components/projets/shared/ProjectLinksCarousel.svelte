@@ -41,7 +41,7 @@
     },
     {
       number: "05",
-      title: "Ludovic",
+      title: "Ludosphères",
       rest: "Un site vitrine imagine pour presenter les oeuvres peintes par Ludovic avec plus d'air, de matiere et de clarte.",
       image: "/images/carte-copie.jpg",
       page: "projet4",
@@ -441,7 +441,7 @@
   }
 
   .nav-btn {
-    font-family: "Clash Display", sans-serif;
+    font-family: "Inter", sans-serif;
     position: relative;
     height: 40px;
     display: inline-flex;
@@ -587,7 +587,7 @@
     -webkit-appearance: none;
     border: 0;
     outline: none;
-    border-radius: 3px;
+    border-radius: 14px;
     padding: 0;
     background: transparent;
     text-align: left;
@@ -605,7 +605,7 @@
     min-height: min(78vh, 860px);
     overflow: hidden;
     background: var(--project-showcase-card-bg, #080808);
-    border-radius: 3px;
+    border-radius: 14px;
   }
 
   .desktop-image img {
@@ -656,9 +656,9 @@
 
   .desktop-card-title {
     display: block;
-    font-family: "Clash Display", sans-serif;
+    font-family: "Inter", sans-serif;
     font-size: clamp(2.2rem, 4.2vw, 4.2rem);
-    font-weight: 200;
+    font-weight: 500;
     line-height: 0.96;
     max-width: 12ch;
     color: rgba(255,255,255,.98);
@@ -681,7 +681,7 @@
 
   .desktop-card-rest {
     margin: 0;
-    font-family: "Clash Display", sans-serif;
+    font-family: "Inter", sans-serif;
     font-weight: 300;
     color: rgba(245,241,232,.82);
     text-shadow: 0 1px 10px rgba(0,0,0,.34);
@@ -865,7 +865,7 @@
 
     .mobile-card-title {
       display: block;
-      font-family: "Clash Display", sans-serif;
+      font-family: "Inter", sans-serif;
       font-size: 1.46rem;
       font-weight: 400;
       line-height: 1.04;
@@ -884,7 +884,7 @@
       aspect-ratio: .8 / 1.76;
       overflow: hidden;
       background: var(--project-showcase-card-bg, #080808);
-      border-radius: 3px;
+      border-radius: 14px;
     }
 
     .mobile-image img {

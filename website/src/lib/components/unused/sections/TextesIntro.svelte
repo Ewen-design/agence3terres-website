@@ -188,7 +188,7 @@
 }
 
 .bg-text {
-	font-family: "Clash Display", sans-serif;
+	font-family: "Inter", sans-serif;
   font-weight: 500;
 	color: #1a1a1a;
 	font-size: clamp(3rem, 6vw, 6rem);
@@ -205,7 +205,7 @@
 }
 
 .accent {
-	font-family: "Clash Display", sans-serif;
+	font-family: "Inter", sans-serif;
   font-weight: 500;
 	font-style: normal;
 	background: linear-gradient(
@@ -250,7 +250,7 @@
 	align-items: center;
 	justify-content: center;
 	text-align: center;
-	font-family: "Clash Display", sans-serif;
+	font-family: "Inter", sans-serif;
   font-weight: 500;
 	font-size: 1.6rem;
 	line-height: 1.4;
@@ -259,7 +259,7 @@
 
 .panel.right {
 	padding: 2rem;
-	font-family: "Clash Display", sans-serif;
+	font-family: "Inter", sans-serif;
   font-weight: 300;
 	font-size: 1.05rem;
 	line-height: 1.5;
@@ -370,7 +370,7 @@
 		padding: 0;
 		display: block;
 		text-align: center;
-		font-family: "Clash Display", sans-serif;
+		font-family: "Inter", sans-serif;
   font-weight: 500;
 		font-size: 1rem;
 		line-height: 1.2;

@@ -372,7 +372,7 @@
 
   .compass-bearing text {
     fill: currentColor;
-    font-family: "Clash Display", sans-serif;
+    font-family: "Inter", sans-serif;
     font-size: 12px;
     font-weight: 400;
     letter-spacing: 0.12em;

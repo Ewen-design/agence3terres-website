@@ -98,10 +98,10 @@
       imageAlt: "Projet Moovy par Agence 3 Terres"
     },
     "/projet4": {
-      title: "Ludovic | Projet Agence 3 Terres",
+      title: "Ludosphères | Projet Agence 3 Terres",
       description:
-        "Site d'artiste, direction artistique et approche éditoriale: découvrez le projet Ludovic par Agence 3 Terres.",
-      imageAlt: "Projet Ludovic par Agence 3 Terres"
+        "Site d'artiste, direction artistique et approche éditoriale: découvrez le projet Ludosphères par Agence 3 Terres.",
+      imageAlt: "Projet Ludosphères par Agence 3 Terres"
     },
     "/projet5": {
       title: "JustX | Projet Agence 3 Terres",

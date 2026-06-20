@@ -19,7 +19,7 @@
 
 <ProjectThemePage headerToneOverride={sliderActive ? "light" : null}>
   <ProjectHeroProjetsStyle
-    title="Ludovic"
+    title="Ludosphères"
     image="/images/carte-copie.jpg"
     metaBlocks={[
       { label: "Date", value: "2025 - Present" },

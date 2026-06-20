@@ -243,7 +243,7 @@ if (!sectionIsNearViewport(rect)) return;
 
   h2 {
     margin: 0 0 1.4rem 0;
-    font-family: "Clash Display", sans-serif;
+    font-family: "Inter", sans-serif;
   font-weight: 500;
     font-size: clamp(2.7rem, 5vw, 5rem);
     font-weight: 250;
@@ -256,7 +256,7 @@ if (!sectionIsNearViewport(rect)) return;
   p {
     margin: 0;
     max-width: 36rem;
-    font-family: "Clash Display", sans-serif;
+    font-family: "Inter", sans-serif;
     font-size: clamp(1rem, 1.15vw, 1.2rem);
     line-height: 1.7;
     color: #9b9b9b;
@@ -296,7 +296,7 @@ if (!sectionIsNearViewport(rect)) return;
     display: flex;
     gap: 0.35rem;
     align-items: center;
-    font-family: "Clash Display", sans-serif;
+    font-family: "Inter", sans-serif;
     font-size: 0.95rem;
     color: rgba(255,255,255,0.86);
     white-space: nowrap;

@@ -323,7 +323,7 @@
   }
 
   .gallery-header h2 {
-font-family: "Clash Display", sans-serif;
+font-family: "Inter", sans-serif;
   font-weight: 500;
     font-size: clamp(2.5rem, 4vw, 4rem);
     letter-spacing: 0.05em;
@@ -331,7 +331,7 @@ font-family: "Clash Display", sans-serif;
   }
 
   .gallery-header p {
-    font-family: "Clash Display", sans-serif;
+    font-family: "Inter", sans-serif;
     font-size: 1rem;
     opacity: 0.65;
     line-height: 1.6;
@@ -428,7 +428,7 @@ font-family: "Clash Display", sans-serif;
   .date { opacity: 0.7; }
 
   .title {
-    font-family: "Clash Display", sans-serif;
+    font-family: "Inter", sans-serif;
   }
 
   /* ─── Index numéro ──────────────────────────────────────────────────────── */
@@ -436,7 +436,7 @@ font-family: "Clash Display", sans-serif;
     position: absolute;
     top: 16px;
     right: 16px;
-    font-family: "Clash Display", sans-serif;
+    font-family: "Inter", sans-serif;
     font-size: 0.65rem;
     letter-spacing: 0.18em;
     color: rgba(255, 255, 255, 0.3);
@@ -485,7 +485,7 @@ font-family: "Clash Display", sans-serif;
     border: 1px solid #fff;
     color: #fff;
     text-decoration: none;
-    font-family: "Clash Display", sans-serif;
+    font-family: "Inter", sans-serif;
     font-size: 0.8rem;
     letter-spacing: 0.2em;
     text-transform: uppercase;

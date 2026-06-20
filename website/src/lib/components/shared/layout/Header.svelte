@@ -486,7 +486,7 @@
 
   .nav-btn {
     pointer-events: auto;
-    font-family: "Clash Display", sans-serif;
+    font-family: "Inter", sans-serif;
     font-weight: 400;
     position: relative;
     height: 40px;
@@ -537,7 +537,7 @@
   }
 
   .menu-text {
-    font-family: "Clash Display", sans-serif;
+    font-family: "Inter", sans-serif;
     font-size: 0.72rem;
     font-weight: 400;
     letter-spacing: 0.1em;

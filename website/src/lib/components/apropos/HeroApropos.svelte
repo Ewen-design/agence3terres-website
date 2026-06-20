@@ -47,20 +47,7 @@
 
   const words = finalText.split(" ");
 
-  let charCount = 0;
-  const totalChars = finalText.replace(/\s/g, "").length;
-  const halfChars = totalChars / 2;
-
-  let grayStartsAtWord = words.length;
-
-  for (let w = 0; w < words.length; w++) {
-    const nextCount = charCount + words[w].length;
-    if (nextCount >= halfChars) {
-      grayStartsAtWord = w + 1;
-      break;
-    }
-    charCount = nextCount;
-  }
+  const grayStartsAtWord = 3;
 
   const clamp = (v, min = 0, max = 1) => Math.max(min, Math.min(max, v));
   const lerp = (a, b, t) => a + (b - a) * t;
@@ -299,7 +286,7 @@
       <div class="after-text" bind:this={afterTextEl}>
         <h2 aria-label={finalText}>
           {#each words as word, w}
-            <span class="word" class:muted-word={w >= grayStartsAtWord}>{word}</span>{#if w < words.length - 1}<span class="space">&nbsp;</span>{/if}
+            {#if w === grayStartsAtWord}<br>{/if}<span class="word" class:muted-word={w >= grayStartsAtWord}>{word}</span>{#if w < words.length - 1 && w !== grayStartsAtWord - 1}<span class="space">&nbsp;</span>{/if}
           {/each}
         </h2>
       </div>
@@ -442,9 +429,9 @@
   }
 
   .hero-scroll-label {
-    font-family: "Clash Display", sans-serif;
+    font-family: "Inter", sans-serif;
     font-size: clamp(5.8rem, 5vw, 18rem);
-    font-weight: 200;
+    font-weight: 500;
     line-height: 1;
     letter-spacing: var(--site-display-letter-spacing);
     text-align: left;
@@ -463,7 +450,7 @@
 
   .hero-scroll-arrow {
     display: block;
-    font-family: "Clash Display", sans-serif;
+    font-family: "Inter", sans-serif;
     font-size: clamp(1.1rem, 1.1vw, 1.2rem);
     line-height: 1;
     font-weight: 300;
@@ -496,10 +483,10 @@
     margin: 0;
     width: 100%;
     max-width: 30ch;
-    font-family: "Clash Display", sans-serif;
-    font-weight: 300;
+    font-family: "Inter", sans-serif;
+    font-weight: 500;
     font-size: clamp(1.3rem, 2.8vw, 2.8rem);
-    line-height: 1;
+    line-height: 1.1;
     letter-spacing: var(--site-display-letter-spacing-soft);
     color: #fff;
   }
@@ -507,11 +494,11 @@
   .word {
     display: inline-block;
     white-space: nowrap;
-    color: #fff;
+    color: #f5f1e8;
   }
 
   .word.muted-word {
-    color: rgba(255, 255, 255, 0.7);
+    color: rgba(245, 241, 232, 0.5);
   }
 
   .space {

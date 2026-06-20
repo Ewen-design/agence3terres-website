@@ -63,7 +63,7 @@
     max-width: 21ch;
     margin: clamp(1.35rem, 2vw, 1.8rem) 0 0;
     padding-inline: var(--project-text-inset, 0);
-    font-family: "Clash Display", sans-serif;
+    font-family: "Inter", sans-serif;
     font-weight: 300;
     font-size: var(--project-lead-size, clamp(1.35rem, 2.7vw, 2.8rem));
     line-height: 0.98;

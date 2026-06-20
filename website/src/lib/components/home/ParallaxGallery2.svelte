@@ -5,30 +5,36 @@
 
   const items = [
     {
-      title: "Identite visuelle et strategie",
+      title: "Identite de marque",
+      subtitle: "Du systeme visuel a l'identite complete, pensee pour durer.",
       image: "/images/carte_visite_desktop.webp",
       mobileImage: "/images/carte_visite_mobile.webp"
     },
     {
-      title: "Conception de site web",
+      title: "Site web",
+      subtitle: "Des interfaces fluides, desirables et precises.",
       image: "/images/telephone_parfum.webp"
     },
     {
-      title: "Creation de logo",
+      title: "Logo",
+      subtitle: "Des sigles memorables qui incarnent une vision.",
       image: "/images/creation_logo_desktop.webp",
       mobileImage: "/images/creation_logo_mobile.webp"
     },
     {
-      title: "Gestion des reseaux sociaux",
-      image: "/images/telephone_main.webp"
+      title: "Reseaux sociaux",
+      subtitle: "Une presence visuelle forte sur toutes les plateformes.",
+      image: "/images/moovy2.webp"
     },
     {
-      title: "Couverture d'evenements",
-      image: "/images/appareil_photo.webp"
+      title: "Photo & evenements",
+      subtitle: "Couverture photo de qualite pour vos evenements.",
+      image: "/images/justx.webp"
     },
     {
-      title: "Suivi strategique",
-      image: "/images/parfum_ordinateur.webp"
+      title: "Accompagnement",
+      subtitle: "Iterations precises et execution soignee a chaque etape.",
+      image: "/images/justx_fitness.webp"
     }
   ];
 
@@ -56,6 +62,14 @@
   let isAutoScrollingDesktop = false;
   let isAutoScrollingMobile = false;
 
+  function handleCardMove(event) {
+    const btn = event.currentTarget.querySelector(".dc-btn");
+    if (!btn) return;
+    const rect = btn.getBoundingClientRect();
+    btn.style.setProperty("--mx", `${event.clientX - rect.left}px`);
+    btn.style.setProperty("--my", `${event.clientY - rect.top}px`);
+  }
+
   function measure() {
     if (!browser) return;
     isMobile = window.innerWidth <= 900;
@@ -67,12 +81,14 @@
     const cards = desktopRailEl.querySelectorAll(".desktop-card");
     if (!cards.length) return;
 
-    const centerX = desktopRailEl.scrollLeft + desktopRailEl.clientWidth * 0.5;
+    // Find the card whose left edge is snapped to the scroll-padding position
+    const scrollPad = desktopCardEls[0] ? desktopCardEls[0].offsetLeft : 0;
+    const targetLeft = desktopRailEl.scrollLeft + scrollPad;
     let nearest = 0;
     let nearestDistance = Infinity;
 
     cards.forEach((card, index) => {
-      const distance = Math.abs(card.offsetLeft + card.offsetWidth * 0.5 - centerX);
+      const distance = Math.abs(card.offsetLeft - targetLeft);
       if (distance < nearestDistance) {
         nearestDistance = distance;
         nearest = index;
@@ -131,7 +147,9 @@
     const card = desktopCardEls[index];
     if (!desktopRailEl || !card) return;
 
-    const targetLeft = card.offsetLeft - (desktopRailEl.clientWidth - card.offsetWidth) * 0.5;
+    // Align the card's left edge to the scroll-padding-left of the rail
+    const scrollPad = desktopCardEls[0] ? desktopCardEls[0].offsetLeft : 0;
+    const targetLeft = card.offsetLeft - scrollPad;
 
     activeDesktopIndex = index;
     isAutoScrollingDesktop = true;
@@ -184,7 +202,7 @@
     if (!isInView || isMobile || !desktopRailEl || prefersReduced || items.length < 2) return;
 
     desktopAutoAdvanceTimer = setInterval(() => {
-      const nextIndex = (activeDesktopIndex + 1) % items.length;
+      const nextIndex = activeDesktopIndex + 2 >= items.length ? 0 : activeDesktopIndex + 2;
       scrollToDesktopCard(nextIndex, "smooth");
     }, 5000);
   }
@@ -321,8 +339,7 @@
     <div class="gallery-header">
       <div class="intro-card">
         <p>
-          <span class="intro-main">Nous imaginons des identites fortes, des experiences digitales immersives</span>
-          <span class="intro-muted"> et des directions artistiques pensees pour laisser une empreinte durable.</span>
+          <span class="intro-main">Identites fortes,</span><span class="intro-muted">experiences immersives et directions artistiques pensees pour laisser une empreinte durable.</span>
         </p>
       </div>
     </div>
@@ -334,14 +351,15 @@
         {#each items as item, index}
           <a
             class="desktop-card"
-            class:is-active={activeDesktopIndex === index}
+            class:is-active={activeDesktopIndex === index || activeDesktopIndex + 1 === index}
             bind:this={desktopCardEls[index]}
             href="/services"
             data-cursor="view"
             aria-label={`Voir le service ${item.title}`}
             draggable="false"
+            onmousemove={handleCardMove}
           >
-            <div class="desktop-image">
+            <div class="desktop-card-img">
               <picture>
                 {#if item.mobileImage}
                   <source media="(max-width: 900px)" srcset={item.mobileImage} />
@@ -355,13 +373,18 @@
                   draggable="false"
                 />
               </picture>
-              <div class="desktop-image-shade" aria-hidden="true"></div>
             </div>
+            <div class="desktop-card-shade" aria-hidden="true"></div>
 
-            <div class="desktop-card-overlay">
+            <div class="desktop-card-content">
               <div class="desktop-card-title-wrap" aria-hidden="true">
                 <span class="desktop-card-title">{item.title}</span>
               </div>
+              <span class="dc-btn">
+                <span class="dc-btn-flip" data-text="Decouvrir">
+                  <span class="dc-btn-text">Decouvrir</span>
+                </span>
+              </span>
             </div>
           </a>
         {/each}
@@ -375,7 +398,7 @@
           aria-label="Service precedent"
           onclick={() => {
             pauseAndResumeDesktopAutoAdvance();
-            scrollToDesktopCard(Math.max(activeDesktopIndex - 1, 0), prefersReduced ? "auto" : "smooth");
+            scrollToDesktopCard(Math.max(activeDesktopIndex - 2, 0), prefersReduced ? "auto" : "smooth");
           }}
         >
           <span class="desktop-nav-chevron" aria-hidden="true"></span>
@@ -383,12 +406,12 @@
 
         <button
           class="desktop-nav-btn desktop-nav-next"
-          class:is-hidden={activeDesktopIndex === items.length - 1}
+          class:is-hidden={activeDesktopIndex >= items.length - 2}
           type="button"
           aria-label="Service suivant"
           onclick={() => {
             pauseAndResumeDesktopAutoAdvance();
-            scrollToDesktopCard(Math.min(activeDesktopIndex + 1, items.length - 1), prefersReduced ? "auto" : "smooth");
+            scrollToDesktopCard(Math.min(activeDesktopIndex + 2, items.length - 1), prefersReduced ? "auto" : "smooth");
           }}
         >
           <span class="desktop-nav-chevron" aria-hidden="true"></span>
@@ -408,10 +431,6 @@
             aria-label={`Voir le service ${item.title}`}
             draggable="false"
           >
-            <div class="mobile-card-title-wrap" aria-hidden="true">
-              <span class="mobile-card-title">{item.title}</span>
-            </div>
-
             <div class="mobile-image">
               <picture>
                 {#if item.mobileImage}
@@ -426,6 +445,18 @@
                   draggable="false"
                 />
               </picture>
+            </div>
+            <div class="mobile-card-shade" aria-hidden="true"></div>
+
+            <div class="mobile-card-content">
+              <div class="mobile-card-title-wrap" aria-hidden="true">
+                <span class="mobile-card-title">{item.title}</span>
+              </div>
+              <span class="mc-btn">
+                <span class="mc-btn-flip" data-text="Decouvrir">
+                  <span class="mc-btn-text">Decouvrir</span>
+                </span>
+              </span>
             </div>
           </a>
         {/each}
@@ -522,16 +553,19 @@
 
   .intro-card p {
     margin: 0;
-    max-width: 30ch;
-    font-family: "Clash Display", sans-serif;
-    font-weight: 200;
-    font-size: clamp(1.3rem,2.8vw,2.8rem);
-    line-height: 1;
+    max-width: 28ch;
+    font-family: "Inter", sans-serif;
+    font-weight: 500;
+    font-size: clamp(1.3rem, 2.8vw, 2.8rem);
+    line-height: 1.1;
     color: var(--intro-body);
   }
 
   .intro-main { color: var(--intro-main); }
-  .intro-muted { color: var(--intro-muted); }
+  .intro-muted {
+    display: block;
+    color: rgba(245, 241, 232, 0.5);
+  }
 
   .desktop-stack {
     display: block;
@@ -545,7 +579,7 @@
     width: 100%;
     margin: 0;
     display: flex;
-    gap: 1rem;
+    gap: 2px;
     overflow-x: auto;
     overflow-y: visible;
     padding: 0 9vw 2rem;
@@ -565,37 +599,37 @@
 
   .desktop-card {
     position: relative;
-    flex: 0 0 min(70vw, 1040px);
-    width: min(70vw, 1040px);
+    flex: 0 0 calc(41vw - 0.5rem);
+    width: calc(41vw - 0.5rem);
+    aspect-ratio: 1 / 1;
     display: block;
-    scroll-snap-align: center;
+    scroll-snap-align: start;
     scroll-snap-stop: always;
-    border-radius: 3px;
+    border-radius: 14px;
     text-decoration: none;
     color: inherit;
     -webkit-tap-highlight-color: transparent;
     overflow: hidden;
-  }
-
-  .desktop-image {
-    position: relative;
-    aspect-ratio: 1.64 / 1;
-    min-height: min(62vh, 680px);
-    overflow: hidden;
     background: #080808;
-    border-radius: 3px;
   }
 
-  .desktop-image img,
-  .desktop-image picture,
-  .mobile-image picture,
-  .mobile-image img {
+  .desktop-card-img {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    overflow: hidden;
+    border-radius: 14px;
+    background: #080808;
+  }
+
+  .desktop-card-img picture,
+  .mobile-image picture {
     width: 100%;
     height: 100%;
     display: block;
   }
 
-  .desktop-image img,
+  .desktop-card-img img,
   .mobile-image img {
     width: 100%;
     height: 100%;
@@ -605,25 +639,32 @@
     will-change: transform;
   }
 
-  .desktop-image-shade {
+  .desktop-card-shade {
     position: absolute;
     inset: 0;
-    background: radial-gradient(
-      72% 64% at 13% 88%,
-      rgba(0, 0, 0, 0.82) 0%,
-      rgba(0, 0, 0, 0.5) 34%,
-      rgba(0, 0, 0, 0.2) 62%,
-      rgba(0, 0, 0, 0) 100%
+    z-index: 1;
+    background: linear-gradient(
+      to bottom,
+      rgba(0, 0, 0, 0.76) 0%,
+      rgba(0, 0, 0, 0.32) 50%,
+      rgba(0, 0, 0, 0.16) 100%
     );
     pointer-events: none;
+    border-radius: 14px;
   }
 
-  .desktop-card-overlay {
+  .desktop-card-content {
     position: absolute;
-    left: clamp(1.1rem,2vw,1.7rem);
-    right: clamp(1.1rem,2vw,1.7rem);
-    bottom: clamp(1rem,1.8vw,1.5rem);
-    z-index: 8;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: clamp(1.4rem, 2.8vw, 2.6rem) clamp(1rem, 2vw, 2rem);
+    gap: 0;
     pointer-events: none;
   }
 
@@ -634,29 +675,136 @@
 
   .desktop-card-title {
     display: block;
-    font-family: "Clash Display", sans-serif;
-    font-size: clamp(2rem,3.7vw,3.35rem);
-    font-weight: 200;
-    line-height: .96;
-    max-width: 12ch;
+    font-family: "Inter", sans-serif;
+    font-size: clamp(1.3rem, 2.8vw, 2.8rem);
+    font-weight: 500;
+    line-height: 1.05;
+    max-width: 14ch;
     color: var(--desktop-title-color);
     text-shadow: 0 1px 12px rgba(0,0,0,.38);
     opacity: 0;
-    transform: translate3d(0,-115%,0);
+    transform: translate3d(0, -115%, 0);
     transition:
       transform .42s cubic-bezier(.22,.61,.36,1),
       opacity .32s ease;
   }
 
-  .desktop-card.is-active .desktop-image img,
+  .desktop-card.is-active .desktop-card-title {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+
+  .dc-btn {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 1.1rem;
+    height: 36px;
+    padding: 0 1.2rem;
+    font-size: 0.82rem;
+    font-weight: 400;
+    white-space: nowrap;
+    color: #fff;
+    background: rgba(255, 255, 255, 0.11);
+    backdrop-filter: blur(20px) saturate(160%) brightness(0.82);
+    -webkit-backdrop-filter: blur(20px) saturate(160%) brightness(0.82);
+    border-radius: 10px;
+    box-shadow: 0 6px 8px rgba(0, 0, 0, 0.08);
+    opacity: 0;
+    transform: translate3d(0, 4px, 0);
+    transition:
+      transform .52s cubic-bezier(.22,.61,.36,1),
+      opacity .38s ease,
+      background .3s ease;
+  }
+
+  .dc-btn::before,
+  .dc-btn::after {
+    content: "";
+    position: absolute;
+    inset: -1px;
+    border-radius: inherit;
+    padding: 1px;
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+    opacity: 0;
+  }
+
+  .dc-btn::before {
+    background: radial-gradient(
+      96px circle at var(--mx, 50%) var(--my, 50%),
+      var(--site-glow-strong) 0%,
+      var(--site-glow-mid) 26%,
+      var(--site-glow-soft) 52%,
+      var(--site-glow-fade) 70%,
+      transparent 86%
+    );
+    transition: opacity .25s ease;
+  }
+
+  .dc-btn::after {
+    background: radial-gradient(
+      120px circle at var(--mx, 50%) var(--my, 50%),
+      var(--site-glow-ambient) 0%,
+      var(--site-glow-outer) 48%,
+      transparent 82%
+    );
+    filter: blur(3px);
+    transition: opacity .25s ease;
+  }
+
+  .desktop-card.is-active:hover .dc-btn::before,
+  .desktop-card.is-active:hover .dc-btn::after {
+    opacity: 1;
+  }
+
+  .dc-btn-flip {
+    position: relative;
+    display: block;
+    overflow: hidden;
+    height: 1.2em;
+    line-height: 1.2em;
+  }
+
+  .dc-btn-text {
+    display: block;
+    transform: translateY(0%);
+    transition: transform .42s cubic-bezier(.22,.61,.36,1);
+  }
+
+  .dc-btn-flip::after {
+    content: attr(data-text);
+    position: absolute;
+    left: 0;
+    top: 0;
+    line-height: 1.2em;
+    transform: translateY(100%);
+    transition: transform .42s cubic-bezier(.22,.61,.36,1);
+    white-space: nowrap;
+    color: inherit;
+  }
+
+  .desktop-card.is-active .dc-btn {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+    transition-delay: .08s;
+  }
+
+  .desktop-card.is-active .dc-btn:hover { background: rgba(255, 255, 255, 0.18); }
+  .desktop-card.is-active:hover .dc-btn-text { transform: translateY(-100%); }
+  .desktop-card.is-active:hover .dc-btn-flip::after { transform: translateY(0%); }
+
+  .desktop-card.is-active .desktop-card-img img,
   .mobile-card.is-active .mobile-image img {
     transform: scale(1.045) translateZ(0);
   }
 
-  .desktop-card.is-active .desktop-card-title,
   .mobile-card.is-active .mobile-card-title {
     opacity: 1;
-    transform: translate3d(0,0,0);
+    transform: translate3d(0, 0, 0);
   }
 
   .desktop-nav-shell {
@@ -664,7 +812,7 @@
     top: clamp(5.8rem, 9vh, 7rem);
     left: 0;
     right: 0;
-    height: min(62vh, 680px);
+    height: clamp(280px, 41vw, 680px);
     pointer-events: none;
   }
 
@@ -721,7 +869,7 @@
   }
 
   .services-btn {
-    font-family: "Clash Display", sans-serif;
+    font-family: "Inter", sans-serif;
     font-weight: 400;
     position: relative;
     height: 40px;
@@ -834,9 +982,9 @@
     .intro-card { width: min(72vw,24rem); }
 
     .intro-card p {
-      font-size: clamp(1.3rem,6.8vw,2.7rem);
-      max-width: 18ch;
-      line-height: 1.04;
+      font-size: clamp(1.3rem, 6.8vw, 2.7rem);
+      max-width: 22ch;
+      line-height: 1.1;
     }
 
     .desktop-stack {
@@ -884,31 +1032,8 @@
       text-decoration: none;
       color: inherit;
       -webkit-tap-highlight-color: transparent;
-    }
-
-    .mobile-card-title-wrap {
-      position: absolute;
-      left: 14px;
-      right: 14px;
-      bottom: 1.2rem;
-      z-index: 8;
-      pointer-events: none;
-    }
-
-    .mobile-card-title {
-      display: block;
-      font-family: "Clash Display", sans-serif;
-      font-size: 1.28rem;
-      font-weight: 300;
-      line-height: 1.04;
-      max-width: 12ch;
-      color: rgba(255,255,255,.98);
-      text-shadow: 0 1px 10px rgba(0,0,0,.34);
-      opacity: 0;
-      transform: translate3d(0,-115%,0);
-      transition:
-        transform .42s cubic-bezier(.22,.61,.36,1),
-        opacity .32s ease;
+      overflow: hidden;
+      border-radius: 14px;
     }
 
     .mobile-image {
@@ -916,7 +1041,97 @@
       aspect-ratio: .82 / 1.52;
       overflow: hidden;
       background: #080808;
-      border-radius: 3px;
+      border-radius: 14px;
+    }
+
+    .mobile-card-shade {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 70%;
+      z-index: 1;
+      background: linear-gradient(
+        to bottom,
+        rgba(0, 0, 0, 0.76) 0%,
+        rgba(0, 0, 0, 0.32) 60%,
+        rgba(0, 0, 0, 0) 100%
+      );
+      pointer-events: none;
+      border-radius: 14px 14px 0 0;
+    }
+
+    .mobile-card-content {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 2;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      padding: 1.25rem 1rem 0;
+      pointer-events: none;
+    }
+
+    .mobile-card-title-wrap {
+      overflow: hidden;
+    }
+
+    .mobile-card-title {
+      display: block;
+      font-family: "Inter", sans-serif;
+      font-size: clamp(1.3rem, 6.8vw, 2.7rem);
+      font-weight: 500;
+      line-height: 1.1;
+      color: rgba(255,255,255,.98);
+      text-shadow: 0 1px 10px rgba(0,0,0,.34);
+      opacity: 0;
+      transform: translate3d(0, -115%, 0);
+      transition:
+        transform .42s cubic-bezier(.22,.61,.36,1),
+        opacity .32s ease;
+    }
+
+    .mc-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      margin-top: 0.9rem;
+      height: 34px;
+      padding: 0 1rem;
+      font-size: 0.78rem;
+      font-weight: 400;
+      white-space: nowrap;
+      color: #fff;
+      background: rgba(255, 255, 255, 0.11);
+      backdrop-filter: blur(12px) saturate(130%);
+      -webkit-backdrop-filter: blur(12px) saturate(130%);
+      border-radius: 10px;
+      opacity: 0;
+      transform: translate3d(0, 4px, 0);
+      transition:
+        transform .5s cubic-bezier(.22,.61,.36,1),
+        opacity .36s ease;
+    }
+
+    .mc-btn-flip {
+      position: relative;
+      display: block;
+      overflow: hidden;
+      height: 1.2em;
+      line-height: 1.2em;
+    }
+
+    .mc-btn-text {
+      display: block;
+    }
+
+    .mobile-card.is-active .mc-btn {
+      opacity: 1;
+      transform: translate3d(0, 0, 0);
+      transition-delay: .12s;
     }
 
     .mobile-nav-shell {
@@ -968,8 +1183,6 @@
       width: clamp(244px,78vw,300px);
     }
 
-    .mobile-card-title { font-size: 1.14rem; }
-
     .mobile-nav-btn {
       width: 2.65rem;
       height: 2.65rem;
@@ -987,10 +1200,12 @@
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .desktop-image img,
+    .desktop-card-img img,
     .mobile-image img,
     .desktop-card-title,
     .mobile-card-title,
+    .dc-btn-text,
+    .dc-btn-flip::after,
     .services-btn-text,
     .services-btn-flip::after {
       transition: none;
