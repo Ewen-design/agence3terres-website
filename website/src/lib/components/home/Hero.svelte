@@ -43,11 +43,11 @@
   };
 
   const finalText =
-    "Exister, marquer, durer. Des identités et des expériences pensées pour une présence forte.";
+    "Présence forte. Identité juste, marque durable.";
 
   const words = finalText.split(" ");
 
-  const grayStartsAtWord = 3;
+  const grayStartsAtWord = 2;
 
   const clamp = (v, min = 0, max = 1) => Math.max(min, Math.min(max, v));
   const lerp = (a, b, t) => a + (b - a) * t;
@@ -441,13 +441,14 @@
     position: relative;
     z-index: 3;
     background: transparent;
-    padding: 12vh 0 18vh;
+    padding: 22vh 0 28vh;
   }
 
   .after-grid {
     width: min(1400px, 92%);
     margin: 0 auto;
-    display: block;
+    display: flex;
+    justify-content: center;
     align-items: start;
   }
 
@@ -457,17 +458,20 @@
     min-width: 0;
     opacity: 1;
     transform: none;
+    display: flex;
+    justify-content: center;
   }
 
   .after-text h2 {
     margin: 0;
     width: 100%;
-    max-width: 24ch;
+    max-width: 18ch;
     font-family: "Inter", sans-serif;
-    font-weight: 500;
-    font-size: clamp(1.3rem, 2.8vw, 2.8rem);
-    line-height: 1.1;
+    font-weight: 300;
+    font-size: clamp(1rem, 1.8vw, 1.8rem);
+    line-height: 1.2;
     color: #fff;
+    text-align: center;
   }
 
   .word {
@@ -492,9 +496,9 @@
     }
 
     .after-text h2 {
-      font-size: clamp(1.3rem, 6.8vw, 2.7rem);
-      max-width: 18ch;
-      line-height: 1.1;
+      font-size: clamp(1rem, 4.5vw, 1.6rem);
+      max-width: 16ch;
+      line-height: 1.2;
     }
   }
 
@@ -537,7 +541,7 @@
     }
 
     .after-section {
-      padding: 0 0 28vh;
+      padding: 26vh 0 28vh;
       background: #000;
     }
 
@@ -568,7 +572,7 @@
       width: min(100%, 520px);
       padding-inline: var(--project-side-padding, 0.8rem);
       box-sizing: border-box;
-      margin-top: -9.5rem;
+      margin-top: -3rem;
       position: relative;
       z-index: 1;
     }
@@ -579,9 +583,9 @@
     }
 
     .after-text h2 {
-      max-width: 13ch;
-      font-size: clamp(1.15rem, 6.4vw, 1.95rem);
-      line-height: 1.04;
+      max-width: 16ch;
+      font-size: clamp(0.95rem, 4.8vw, 1.4rem);
+      line-height: 1.2;
       padding-inline: var(--project-text-inset, 0);
     }
 

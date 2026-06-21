@@ -1,8 +1,7 @@
 <script>
-  export let main = "Conçus comme des signatures,";
+  export let main = "Des signatures,";
 
-  export let muted =
-    "chaque projet construit une marque plus juste et plus désirable.";
+  export let muted = "marques désirables.";
 </script>
 
 <section class="story-slider-intro">
@@ -22,7 +21,6 @@
 
     position: relative;
     z-index: 3;
-    min-height: clamp(120px, 12vw, 180px);
     background: var(--section-bg);
     padding: 0;
     width: 100%;
@@ -32,30 +30,31 @@
     width: min(1500px, 100%);
     margin: 0 auto;
     display: flex;
-    justify-content: flex-end;
+    justify-content: center;
     padding:
-      clamp(2rem, 4vw, 4rem)
+      clamp(5rem, 10vw, 10rem)
       clamp(1.5rem, 3vw, 3rem)
-      clamp(1.5rem, 2.8vw, 2.4rem);
+      clamp(5rem, 10vw, 10rem);
     align-self: start;
     min-width: 0;
   }
 
   .story-slider-intro__card {
-    width: min(560px, 100%);
+    width: min(400px, 100%);
     padding: 0;
     min-width: 0;
   }
 
   .story-slider-intro__text {
-    margin: 0;
-    max-width: 28ch;
+    margin: 0 auto;
+    max-width: 14ch;
     font-family: "Inter", sans-serif;
-    font-weight: 500;
-    font-size: clamp(1.3rem, 2.8vw, 2.8rem);
-    line-height: 1.1;
-    letter-spacing: -0.02em;
+    font-weight: 300;
+    font-size: clamp(1rem, 1.8vw, 1.8rem);
+    line-height: 1.2;
+    letter-spacing: -0.01em;
     color: var(--intro-text);
+    text-align: center;
   }
 
   .story-slider-intro__main {
@@ -68,26 +67,18 @@
   }
 
   @media (max-width: 1100px) {
-    .story-slider-intro {
-      min-height: clamp(110px, 14vw, 170px);
-    }
-
     .story-slider-intro__card {
-      width: min(520px, 100%);
+      width: min(400px, 100%);
     }
   }
 
   @media (max-width: 900px) {
-    .story-slider-intro {
-      min-height: auto;
-    }
-
     .story-slider-intro__text-wrap {
       width: min(100%, 760px);
       margin: 0 auto;
       display: flex;
       justify-content: center;
-      padding: 2.75rem 1.25rem 2.4rem;
+      padding: 4rem 1.25rem 4rem;
     }
 
     .story-slider-intro__card {
@@ -96,15 +87,15 @@
     }
 
     .story-slider-intro__text {
-      font-size: clamp(1.3rem, 6.8vw, 2.7rem);
-      line-height: 1.1;
-      max-width: 22ch;
+      font-size: clamp(1rem, 4.5vw, 1.6rem);
+      line-height: 1.2;
+      max-width: 12ch;
     }
   }
 
   @media (max-width: 640px) {
     .story-slider-intro__text-wrap {
-      padding: 2.4rem 1.1rem 2.15rem;
+      padding: 3.5rem 1.1rem 3.5rem;
     }
 
     .story-slider-intro__card {
@@ -118,8 +109,8 @@
     }
 
     .story-slider-intro__text {
-      font-size: clamp(1.15rem, 6.4vw, 2rem);
-      line-height: 1.12;
+      font-size: clamp(0.95rem, 4.8vw, 1.4rem);
+      line-height: 1.2;
     }
   }
 

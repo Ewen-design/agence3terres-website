@@ -28,11 +28,11 @@
   }
 
   const footerImages = {
-    "/": "/images/telephone3.webp",
+    "/": "/images/justx.webp",
     "/services": "/images/creation_logo_desktop2.webp",
-    "/travail": "/images/parfum4.webp",
-    "/apropos": "/images/creation_logo_desktop.webp",
-    "/contact": "/images/photo2.webp",
+    "/travail": "/images/moovy2.webp",
+    "/apropos": "/images/moovy",
+    "/contact": "/images/justx.webp",
     "/projet1": "/images/parfum4.webp",
     "/projet3": "/images/telephone_main.webp",
     "/projet4": "/images/carte-copie.jpg",

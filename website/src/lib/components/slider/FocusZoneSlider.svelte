@@ -4,8 +4,8 @@
 
   export let slides = [];
   export let zoneHeight = "34svh";
-  export let itemHeightDesktop = "38vh";
-  export let itemHeightMobile = "42svh";
+  export let itemHeightDesktop = "58vh";
+  export let itemHeightMobile = "56svh";
   export let slideLinks = [];
   export let variant = "default";
 
@@ -25,6 +25,13 @@
   const dispatch = createEventDispatcher();
 
   const clamp = (value, min = 0, max = 1) => Math.max(min, Math.min(max, value));
+
+  function handleBtnMove(event) {
+    const btn = event.currentTarget;
+    const rect = btn.getBoundingClientRect();
+    btn.style.setProperty("--mx", `${event.clientX - rect.left}px`);
+    btn.style.setProperty("--my", `${event.clientY - rect.top}px`);
+  }
   const normalizeSlideLines = (description = "") => description.split("\n").filter(Boolean);
 
   $: activeIndex = clamp(activeIndex, 0, Math.max(slides.length - 1, 0));
@@ -225,6 +232,21 @@
               </span>
             {/each}
           </div>
+
+          {#if resolvedSlideLinks[index]}
+            <a
+              class="fzs-btn"
+              class:is-active={activeIndex === index}
+              href={resolvedSlideLinks[index]}
+              tabindex={activeIndex === index ? 0 : -1}
+              data-cursor="button"
+              onmousemove={handleBtnMove}
+            >
+              <span class="fzs-btn-flip" data-text="Voir le projet">
+                <span class="fzs-btn-text">Voir le projet</span>
+              </span>
+            </a>
+          {/if}
         </div>
       </article>
     {/each}
@@ -403,10 +425,11 @@
 
   .focus-zone-slider__track {
     position: relative;
-    z-index: 2;
+    z-index: 5;
     margin-top: -100vh;
     padding-left: var(--left-gutter);
     padding-right: clamp(7rem, 16vw, 20rem);
+    pointer-events: none;
   }
 
   .focus-zone-slider__spacer {
@@ -432,13 +455,13 @@
     transform: translate3d(0, var(--content-center-shift), 0);
     display: grid;
     align-content: start;
-    grid-template-rows: auto minmax(7.2rem, auto);
+    grid-template-rows: auto minmax(4rem, auto) auto;
   }
 
   .focus-zone-slider__item h2 {
     margin: 0;
     font-family: var(--site-font);
-    font-size: clamp(2.8rem, 5.5vw, 5rem);
+    font-size: clamp(3.2rem, 6.2vw, 5.8rem);
     font-weight: 600;
     line-height: 0.92;
     letter-spacing: -0.03em;
@@ -454,9 +477,9 @@
   }
 
   .focus-zone-slider__copy {
-    margin-top: 1rem;
+    margin-top: 2rem;
     max-width: 30rem;
-    min-height: 7.2rem;
+    min-height: 4rem;
   }
 
   .focus-zone-slider__copy-line {
@@ -468,8 +491,8 @@
   .focus-zone-slider__copy-line > span {
     display: block;
     font-family: var(--site-font);
-    font-size: clamp(0.96rem, 1.22vw, 1.16rem);
-    font-weight: 500;
+    font-size: clamp(0.88rem, 1.1vw, 1.05rem);
+    font-weight: 300;
     line-height: 1.42;
     color: var(--copy-color);
     opacity: 0;
@@ -489,6 +512,119 @@
     transform: translate3d(0, 0, 0);
     -webkit-transform: translate3d(0, 0, 0);
     transition-delay: calc(var(--line-index, 0) * 0.05s);
+  }
+
+  .fzs-btn {
+    font-family: var(--site-font);
+    font-weight: 400;
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 40px;
+    padding: 0 1.5rem;
+    font-size: 0.9rem;
+    white-space: nowrap;
+    color: #f5f1e8;
+    text-decoration: none;
+    cursor: pointer;
+    background: rgba(255, 255, 255, 0.11);
+    backdrop-filter: blur(20px) saturate(160%) brightness(0.82);
+    -webkit-backdrop-filter: blur(20px) saturate(160%) brightness(0.82);
+    border-radius: 10px;
+    box-shadow: 0 6px 8px rgba(0, 0, 0, 0.04);
+    pointer-events: auto;
+    margin-top: 0.45rem;
+    justify-self: start;
+    opacity: 0;
+    transform: translate3d(0, 80%, 0);
+    transition:
+      opacity 0.38s ease,
+      transform 0.42s cubic-bezier(.22,.61,.36,1),
+      color 220ms ease,
+      box-shadow 1.2s cubic-bezier(.22,.61,.36,1),
+      background 1.2s cubic-bezier(.22,.61,.36,1);
+  }
+
+  .fzs-btn.is-active {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+    transition-delay: 0.18s;
+  }
+
+  .fzs-btn:not(.is-active) {
+    transition-delay: 0s;
+  }
+
+  .fzs-btn-flip {
+    position: relative;
+    display: block;
+    overflow: hidden;
+    height: 1.2em;
+    line-height: 1.2em;
+  }
+
+  .fzs-btn-text {
+    display: block;
+    transform: translateY(0%);
+    transition: transform 0.45s cubic-bezier(.22,.61,.36,1), opacity 0.28s ease;
+  }
+
+  .fzs-btn-flip::after {
+    content: attr(data-text);
+    position: absolute;
+    left: 0;
+    top: 0;
+    line-height: 1.2em;
+    transform: translateY(100%);
+    transition: transform 0.45s cubic-bezier(.22,.61,.36,1), opacity 0.28s ease;
+    white-space: nowrap;
+    color: inherit;
+  }
+
+  .fzs-btn:hover .fzs-btn-text { transform: translateY(-100%); }
+  .fzs-btn:hover .fzs-btn-flip::after { transform: translateY(0%); }
+
+  .fzs-btn::before,
+  .fzs-btn::after {
+    content: "";
+    position: absolute;
+    inset: -1px;
+    border-radius: inherit;
+    padding: 1px;
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+    opacity: 0;
+  }
+
+  .fzs-btn::before {
+    background: radial-gradient(
+      128px circle at var(--mx, 50%) var(--my, 50%),
+      var(--site-glow-strong) 0%,
+      var(--site-glow-mid) 26%,
+      var(--site-glow-soft) 52%,
+      var(--site-glow-fade) 70%,
+      transparent 86%
+    );
+    transition: opacity 0.25s ease;
+  }
+
+  .fzs-btn::after {
+    background: radial-gradient(
+      156px circle at var(--mx, 50%) var(--my, 50%),
+      var(--site-glow-ambient) 0%,
+      var(--site-glow-outer) 48%,
+      transparent 82%
+    );
+    filter: blur(3px);
+    transition: opacity 0.25s ease;
+  }
+
+  .fzs-btn:hover::before,
+  .fzs-btn:hover::after {
+    opacity: 1;
   }
 
   @media (max-width: 900px) {
@@ -524,23 +660,32 @@
     .focus-zone-slider__item-inner {
       max-width: min(78vw, 24rem);
       transform: translate3d(0, var(--content-center-shift-mobile), 0);
-      grid-template-rows: auto minmax(6.2rem, auto);
+      grid-template-rows: auto minmax(3.6rem, auto);
     }
 
     .focus-zone-slider__item h2 {
-      font-size: clamp(2.2rem, 9vw, 3.4rem);
+      font-size: clamp(2.6rem, 10vw, 3.8rem);
       line-height: 0.94;
     }
 
     .focus-zone-slider__copy {
-      margin-top: 0.8rem;
+      margin-top: 1.6rem;
       max-width: 17rem;
-      min-height: 6.2rem;
+      min-height: 3.6rem;
     }
 
     .focus-zone-slider__copy-line > span {
-      font-size: clamp(0.92rem, 3.7vw, 1.02rem);
+      font-size: clamp(0.85rem, 3.4vw, 0.95rem);
       line-height: 1.46;
+    }
+
+    .fzs-btn {
+      height: 36px;
+      font-size: 0.85rem;
+      padding: 0 1.2rem;
+      margin-top: 0.45rem;
+      backdrop-filter: blur(12px) saturate(130%);
+      -webkit-backdrop-filter: blur(12px) saturate(130%);
     }
 
     .focus-zone-slider__number {

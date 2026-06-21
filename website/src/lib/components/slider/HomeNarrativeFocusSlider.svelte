@@ -5,50 +5,43 @@
     {
       number: "01",
       title: "Moovy",
-      description:
-        "Une plateforme de recommandation de films qui aide a trouver rapidement le bon choix selon ses envies.",
+      description: "Recommandation de films selon ses envies.",
       image: "/images/moovy2.webp"
     },
     {
       number: "02",
       title: "JustX",
-      description:
-        "Une marque de sport portée par des programmes personnalisés de musculation, nutrition et une gamme textile.",
+      description: "Marque sport, programmes et gamme textile.",
       image: "/images/justx.webp"
     },
     {
       number: "03",
       title: "JustX\nFitness",
-      description:
-        "L'application JustX pour planifier ses séances, suivre l'effort et mesurer sa progression.",
+      description: "Planifier séances, suivre effort et progression.",
       image: "/images/justx_fitness.webp"
     },
     {
       number: "04",
       title: "Mission X",
-      description:
-        "Un jeu social mobile où détectives et voleurs s'affrontent à travers des missions secrètes.",
+      description: "Jeu mobile, détectives contre voleurs.",
       image: "/images/missionX5.webp"
     },
     {
       number: "05",
       title: "Ludosphères",
-      description:
-        "Un site d'artiste pense pour presenter des oeuvres peintes avec calme, texture et clarte.",
+      description: "Site d'artiste pour oeuvres peintes.",
       image: "/images/carte-copie.jpg"
     },
     {
       number: "06",
       title: "Serein\nDesign",
-      description:
-        "Un univers premium, calme et fonctionnel, porté par une identité claire et sensible.",
+      description: "Univers premium, identité claire et sensible.",
       image: "/images/serein_design.webp"
     },
     {
       number: "07",
       title: "Votre\nprojet ?",
-      description:
-        "Une approche sur mesure pour révéler une singularité avec exigence et impact.",
+      description: "Approche sur mesure, singularité et impact.",
       image: "/images/telephone2.webp"
     }
   ];

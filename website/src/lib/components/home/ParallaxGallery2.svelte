@@ -369,7 +369,7 @@
     <div class="gallery-header">
       <div class="intro-card">
         <p>
-          <span class="intro-main">Identites fortes,</span><span class="intro-muted">experiences immersives et directions artistiques pensees pour laisser une empreinte durable.</span>
+          <span class="intro-main">Identités fortes,</span><span class="intro-muted">empreintes durables.</span>
         </p>
       </div>
     </div>
@@ -521,19 +521,6 @@
       </div>
     </div>
 
-    <div class="gallery-footer">
-      <button
-        class="services-btn"
-        type="button"
-        data-cursor="button"
-        onmousemove={handleButtonMove}
-        onclick={() => navigate("services")}
-      >
-        <span class="services-btn-flip" data-text="Decouvrir tous les services">
-          <span class="services-btn-text">Decouvrir tous les services</span>
-        </span>
-      </button>
-    </div>
   </div>
 </section>
 
@@ -544,9 +531,6 @@
     --intro-main: #fff;
     --intro-muted: rgba(255,255,255,.70);
     --desktop-title-color: rgba(255,255,255,.96);
-    --services-btn-text: #fff;
-    --services-btn-border: rgba(255,255,255,.15);
-    --services-btn-bg: rgba(255, 255, 255, 0.11);
     position: relative;
     z-index: 0;
     width: 100%;
@@ -568,27 +552,28 @@
     width: min(1500px,100%);
     margin: 0 auto;
     display: flex;
-    justify-content: flex-end;
+    justify-content: center;
     padding:
-      clamp(2rem,4vw,4rem)
+      clamp(5rem,10vw,10rem)
       clamp(1.5rem,3vw,3rem)
-      clamp(1.6rem,2.8vw,2.6rem);
+      clamp(5rem,10vw,10rem);
   }
 
   .intro-card {
     position: relative;
     z-index: 2;
-    width: min(560px,100%);
+    width: min(400px,100%);
   }
 
   .intro-card p {
-    margin: 0;
-    max-width: 28ch;
+    margin: 0 auto;
+    max-width: 14ch;
     font-family: "Inter", sans-serif;
-    font-weight: 500;
-    font-size: clamp(1.3rem, 2.8vw, 2.8rem);
-    line-height: 1.1;
+    font-weight: 300;
+    font-size: clamp(1rem, 1.8vw, 1.8rem);
+    line-height: 1.2;
     color: var(--intro-body);
+    text-align: center;
   }
 
   .intro-main { color: var(--intro-main); }
@@ -893,128 +878,22 @@
     display: none;
   }
 
-  .gallery-footer {
-    text-align: center;
-    margin-top: 6rem;
-  }
-
-  .services-btn {
-    font-family: "Inter", sans-serif;
-    font-weight: 400;
-    position: relative;
-    height: 40px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    padding: 0 1.5rem;
-    font-size: .9rem;
-    white-space: nowrap;
-    color: var(--services-btn-text);
-    border: 0px solid var(--services-btn-border);
-    cursor: pointer;
-    background: var(--services-btn-bg);
-    backdrop-filter: blur(20px) saturate(160%) brightness(0.82);
-    -webkit-backdrop-filter: blur(20px) saturate(160%) brightness(0.82);
-    border-radius: 10px;
-    box-shadow: 0 6px 8px rgba(0,0,0,.04);
-    transition:
-      transform 1.2s cubic-bezier(.22,.61,.36,1),
-      box-shadow 1.2s cubic-bezier(.22,.61,.36,1),
-      background 1.2s cubic-bezier(.22,.61,.36,1);
-  }
-
-  .services-btn-flip {
-    position: relative;
-    display: block;
-    overflow: hidden;
-    height: 1.2em;
-    line-height: 1.2em;
-  }
-
-  .services-btn-text {
-    display: block;
-    transform: translateY(0%);
-    transition: transform .45s cubic-bezier(.22,.61,.36,1);
-  }
-
-  .services-btn-flip::after {
-    content: attr(data-text);
-    position: absolute;
-    left: 0;
-    top: 0;
-    line-height: 1.2em;
-    transform: translateY(100%);
-    transition: transform .45s cubic-bezier(.22,.61,.36,1);
-    white-space: nowrap;
-    color: inherit;
-  }
-
-  .services-btn:hover .services-btn-text { transform: translateY(-100%); }
-  .services-btn:hover .services-btn-flip::after { transform: translateY(0%); }
-
-  .services-btn::before,
-  .services-btn::after {
-    content: "";
-    position: absolute;
-    inset: -1px;
-    border-radius: inherit;
-    padding: 1px;
-    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-    -webkit-mask-composite: xor;
-    mask-composite: exclude;
-    pointer-events: none;
-    opacity: 0;
-  }
-
-  .services-btn::before {
-    background: radial-gradient(
-      68px circle at var(--mx,50%) var(--my,50%),
-      var(--site-glow-strong) 0%,
-      var(--site-glow-mid) 22%,
-      var(--site-glow-soft) 45%,
-      var(--site-glow-fade) 62%,
-      transparent 78%
-    );
-    transition: opacity .25s ease;
-  }
-
-  .services-btn::after {
-    background: radial-gradient(
-      78px circle at var(--mx,50%) var(--my,50%),
-      var(--site-glow-ambient) 0%,
-      var(--site-glow-outer) 42%,
-      transparent 72%
-    );
-    filter: blur(2px);
-    transition: opacity .25s ease;
-  }
-
-  .services-btn:hover::before,
-  .services-btn:hover::after {
-    opacity: 1;
-  }
-
   @media (max-width: 900px) {
-    .services-btn {
-      backdrop-filter: blur(12px) saturate(130%);
-      -webkit-backdrop-filter: blur(12px) saturate(130%);
-    }
-
     .gallery { padding: 0 0 8rem 0; }
 
     .gallery-header {
       width: min(100%,760px);
       margin: 0 auto;
       justify-content: center;
-      padding: 2.75rem 1.25rem 2.4rem;
+      padding: 4rem 1.25rem 4rem;
     }
 
     .intro-card { width: min(72vw,24rem); }
 
     .intro-card p {
-      font-size: clamp(1.3rem, 6.8vw, 2.7rem);
-      max-width: 22ch;
-      line-height: 1.1;
+      font-size: clamp(1rem, 4.5vw, 1.6rem);
+      max-width: 12ch;
+      line-height: 1.2;
     }
 
     .desktop-stack {
@@ -1191,13 +1070,12 @@
     .mobile-nav-prev { left: .4rem; }
     .mobile-nav-next { right: .4rem; }
 
-    .gallery-footer { margin-top: 2.75rem; }
   }
 
   @media (max-width: 640px) {
     .gallery { padding: 1.75rem 0 8rem 0; }
 
-    .gallery-header { padding: 2.4rem 1.1rem 2.15rem; }
+    .gallery-header { padding: 3.5rem 1.1rem 3.5rem; }
     .intro-card { width: min(76vw,21rem); }
 
     .mobile-rail {
@@ -1225,8 +1103,6 @@
       border-right-width: 1.4px;
     }
 
-    .gallery-footer { margin-top: 2.85rem; }
-    .services-btn { padding: 0 1.2rem; font-size: .8rem; }
   }
 
   @media (prefers-reduced-motion: reduce) {
@@ -1235,9 +1111,7 @@
     .desktop-card-title,
     .mobile-card-title,
     .dc-btn-text,
-    .dc-btn-flip::after,
-    .services-btn-text,
-    .services-btn-flip::after {
+    .dc-btn-flip::after {
       transition: none;
     }
   }
