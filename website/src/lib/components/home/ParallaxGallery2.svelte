@@ -368,8 +368,8 @@
   <div class="gallery-intro-group">
     <div class="gallery-header">
       <div class="intro-card">
-        <p>
-          <span class="intro-main">Identités fortes,</span><span class="intro-muted">empreintes durables.</span>
+        <p class="intro-headline">
+          <span class="intro-main">De l'identité</span><span class="intro-muted">à l'expérience complète.</span>
         </p>
       </div>
     </div>
@@ -552,7 +552,7 @@
     width: min(1500px,100%);
     margin: 0 auto;
     display: flex;
-    justify-content: center;
+    justify-content: flex-start;
     padding:
       clamp(5rem,10vw,10rem)
       clamp(1.5rem,3vw,3rem)
@@ -562,24 +562,34 @@
   .intro-card {
     position: relative;
     z-index: 2;
-    width: min(400px,100%);
+    width: min(640px, 100%);
   }
 
-  .intro-card p {
-    margin: 0 auto;
-    max-width: 14ch;
+  .intro-headline {
+    margin: 0;
+    max-width: 22ch;
     font-family: "Inter", sans-serif;
     font-weight: 300;
-    font-size: clamp(1rem, 1.8vw, 1.8rem);
-    line-height: 1.2;
+    font-size: clamp(1.4rem, 2.5vw, 2.8rem);
+    line-height: 1.1;
+    letter-spacing: -0.015em;
     color: var(--intro-body);
-    text-align: center;
+    text-align: left;
   }
 
-  .intro-main { color: var(--intro-main); }
+  .intro-headline::before {
+    content: "";
+    display: block;
+    width: 24px;
+    height: 1px;
+    background: #5768ff;
+    margin-bottom: 1.2rem;
+  }
+
+  .intro-main { color: rgba(245, 241, 232, 0.35); }
   .intro-muted {
     display: block;
-    color: rgba(245, 241, 232, 0.5);
+    color: rgba(245, 241, 232, 0.35);
   }
 
   .desktop-stack {
@@ -884,16 +894,16 @@
     .gallery-header {
       width: min(100%,760px);
       margin: 0 auto;
-      justify-content: center;
+      justify-content: flex-start;
       padding: 4rem 1.25rem 4rem;
     }
 
-    .intro-card { width: min(72vw,24rem); }
+    .intro-card { width: min(90vw, 560px); }
 
-    .intro-card p {
-      font-size: clamp(1rem, 4.5vw, 1.6rem);
-      max-width: 12ch;
-      line-height: 1.2;
+    .intro-headline {
+      font-size: clamp(1.3rem, 5.5vw, 2.2rem);
+      max-width: 18ch;
+      line-height: 1.12;
     }
 
     .desktop-stack {
@@ -1076,7 +1086,11 @@
     .gallery { padding: 1.75rem 0 8rem 0; }
 
     .gallery-header { padding: 3.5rem 1.1rem 3.5rem; }
-    .intro-card { width: min(76vw,21rem); }
+    .intro-card { width: min(88vw, 480px); }
+
+    .intro-headline {
+      font-size: clamp(1.2rem, 6vw, 2rem);
+    }
 
     .mobile-rail {
       gap: .8rem;

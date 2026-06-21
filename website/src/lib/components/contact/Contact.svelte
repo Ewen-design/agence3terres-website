@@ -136,7 +136,7 @@
   class:intro-content-visible={introContentVisible}
 >
   <div class="background">
-    <img src="/images/contact.webp" alt="" />
+    <img src="/images/justx.webp" alt="" />
     <div class="overlay"></div>
   </div>
 
@@ -147,9 +147,6 @@
           Parlons<br />
           de&nbsp;votre&nbsp;projet.
         </h1>
-        <p>
-          Chaque collaboration commence par une conversation claire, directe et bien cadrée.
-        </p>
       </div>
 
       <div class="form-shell">
@@ -447,16 +444,16 @@
     line-height: 0.95;
     font-weight: 500;
     letter-spacing: var(--site-display-letter-spacing);
+    color: rgba(245, 241, 232, 0.35);
   }
 
-  .hero p {
-    margin-top: 1rem;
-    max-width: 28rem;
-    font-family: "Inter", sans-serif;
-     font-weight: 400;
-    font-size: 1rem;
-    line-height: 1.5;
-    color: rgba(255, 255, 255, 0.72);
+  .hero h1::before {
+    content: "";
+    display: block;
+    width: 24px;
+    height: 1px;
+    background: #5768ff;
+    margin-bottom: 1.2rem;
   }
 
   .form {
@@ -588,7 +585,7 @@
     font-weight: 500;
     line-height: 0.94;
     letter-spacing: -0.045em;
-    color: #ffffff;
+    color: rgba(245, 241, 232, 0.6);
     text-decoration: none;
     white-space: nowrap;
   }
@@ -992,14 +989,6 @@
     .hero h1 {
       font-size: clamp(2.95rem, 10.8vw, 3.75rem);
       max-width: 9ch;
-    }
-
-    .hero p {
-      margin: 0;
-      font-size: 0.9rem;
-      line-height: 1.42;
-      max-width: 16rem;
-      color: rgba(255, 255, 255, 0.76);
     }
 
     .form {

@@ -43,11 +43,11 @@
   };
 
   const finalText =
-    "Présence forte. Identité juste, marque durable.";
+    "Créer pour durer. Des identités qui habitent le temps.";
 
   const words = finalText.split(" ");
 
-  const grayStartsAtWord = 2;
+  const grayStartsAtWord = 3;
 
   const clamp = (v, min = 0, max = 1) => Math.max(min, Math.min(max, v));
   const lerp = (a, b, t) => a + (b - a) * t;
@@ -447,9 +447,7 @@
   .after-grid {
     width: min(1400px, 92%);
     margin: 0 auto;
-    display: flex;
-    justify-content: center;
-    align-items: start;
+    display: block;
   }
 
   .after-text {
@@ -458,30 +456,37 @@
     min-width: 0;
     opacity: 1;
     transform: none;
-    display: flex;
-    justify-content: center;
   }
 
   .after-text h2 {
     margin: 0;
     width: 100%;
-    max-width: 18ch;
+    max-width: 24ch;
     font-family: "Inter", sans-serif;
     font-weight: 300;
-    font-size: clamp(1rem, 1.8vw, 1.8rem);
-    line-height: 1.2;
+    font-size: clamp(1.8rem, 3.5vw, 3.8rem);
+    line-height: 1.08;
+    letter-spacing: -0.02em;
     color: #fff;
-    text-align: center;
+  }
+
+  .after-text h2::before {
+    content: "";
+    display: block;
+    width: 24px;
+    height: 1px;
+    background: #5768ff;
+    margin-bottom: 1.2rem;
   }
 
   .word {
     display: inline-block;
     white-space: nowrap;
-    color: #fff;
+    color: rgba(245, 241, 232, 0.35);
   }
 
   .word.muted-word {
-    color: rgba(245, 241, 232, 0.5);
+    color: rgba(245, 241, 232, 0.35);
   }
 
   .space {
@@ -496,9 +501,9 @@
     }
 
     .after-text h2 {
-      font-size: clamp(1rem, 4.5vw, 1.6rem);
-      max-width: 16ch;
-      line-height: 1.2;
+      font-size: clamp(1.6rem, 5.5vw, 2.8rem);
+      max-width: 22ch;
+      line-height: 1.1;
     }
   }
 
@@ -583,10 +588,14 @@
     }
 
     .after-text h2 {
-      max-width: 16ch;
-      font-size: clamp(0.95rem, 4.8vw, 1.4rem);
-      line-height: 1.2;
+      max-width: 22ch;
+      font-size: clamp(1.4rem, 6.5vw, 2.2rem);
+      line-height: 1.1;
       padding-inline: var(--project-text-inset, 0);
+    }
+
+    .after-text h2::before {
+      margin-top: clamp(2.5rem, 9vw, 4rem);
     }
 
     .after-text {

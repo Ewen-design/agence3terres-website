@@ -3,7 +3,7 @@
   export let mutedText = "";
   export let image = "";
   export let alt = "";
-  export let accentImage = "/images/telephone2.webp";
+  export let accentImage = "/images/moovy2.webp";
   export let accentAlt = "Visuel 3 Terres";
   export let mediaMinHeight = "32rem";
 </script>
@@ -120,11 +120,20 @@
     align-self: start;
     max-width: 23ch;
     font-size: clamp(1.3rem, 2.8vw, 2.8rem);
-    font-weight: 500;
+    font-weight: 300;
     line-height: 1.1;
-    color: #f5f1e8;
+    color: rgba(245, 241, 232, 0.35);
     padding-top: clamp(8rem, 14vh, 12rem);
     margin-left: clamp(-8.75rem, -6.2vw, -4.4rem);
+  }
+
+  .about-editorial-single-showcase__text::before {
+    content: "";
+    display: block;
+    width: 24px;
+    height: 1px;
+    background: #5768ff;
+    margin-bottom: 1.2rem;
   }
 
   .about-editorial-single-showcase__accent {
@@ -150,7 +159,7 @@
 
   .about-editorial-single-showcase__muted {
     display: block;
-    color: rgba(245, 241, 232, 0.5);
+    color: rgba(245, 241, 232, 0.35);
   }
 
   @media (max-width: 900px) {

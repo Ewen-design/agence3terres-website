@@ -17,7 +17,7 @@
 <AboutEditorialSingleShowcase
   text="Une direction artistique"
   mutedText="pensee pour donner plus de presence, de coherence et d'intensite a chaque prise de parole."
-  image="/images/telephone3.webp"
+  image="/images/justx.webp"
   alt="Direction artistique Agence 3 Terres"
   mediaMinHeight="38rem"
 />
