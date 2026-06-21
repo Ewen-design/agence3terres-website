@@ -428,25 +428,6 @@
     display: none;
   }
 
-  .hero-scroll-label {
-    font-family: "Inter", sans-serif;
-    font-size: clamp(0.82rem, 0.95vw, 0.98rem);
-    font-weight: 300;
-    line-height: 1;
-    letter-spacing: 0.02em;
-    text-align: left;
-    opacity: 0;
-    transform: translate3d(0, 14px, 0);
-    transition:
-      opacity 720ms cubic-bezier(0.22, 1, 0.36, 1),
-      transform 720ms cubic-bezier(0.22, 1, 0.36, 1);
-  }
-
-  .title-visible .hero-scroll-label {
-    opacity: 1;
-    transform: translate3d(0, 0, 0);
-  }
-
   .hero-scroll-arrow {
     display: block;
     font-family: "Inter", sans-serif;
@@ -551,11 +532,6 @@
       pointer-events: none;
     }
 
-    .hero-scroll-label {
-      font-size: 0.78rem;
-      letter-spacing: 0.03em;
-    }
-
     .hero-scroll-arrow {
       font-size: 1.05rem;
     }
@@ -621,7 +597,6 @@
   @media (prefers-reduced-motion: reduce) {
     .hero-media img,
     .hero-scroll-cue,
-    .hero-scroll-label,
     .after-text {
       transition: none !important;
       animation: none !important;

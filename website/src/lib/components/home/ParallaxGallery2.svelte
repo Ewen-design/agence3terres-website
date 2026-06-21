@@ -61,6 +61,23 @@
   let mobileAutoResumeTimer = null;
   let isAutoScrollingDesktop = false;
   let isAutoScrollingMobile = false;
+  let supportsScrollEnd = false;
+  let desktopScrollEndFallback = null;
+  let mobileScrollEndFallback = null;
+
+  function handleDesktopScrollEnd() {
+    if (!isAutoScrollingDesktop) return;
+    clearTimeout(desktopScrollEndFallback);
+    isAutoScrollingDesktop = false;
+    updateDesktopActive();
+  }
+
+  function handleMobileScrollEnd() {
+    if (!isAutoScrollingMobile) return;
+    clearTimeout(mobileScrollEndFallback);
+    isAutoScrollingMobile = false;
+    updateMobileActive();
+  }
 
   function handleCardMove(event) {
     const btn = event.currentTarget.querySelector(".dc-btn");
@@ -120,11 +137,9 @@
   }
 
   function handleDesktopRailScroll() {
-    if (!isAutoScrollingDesktop) {
-      pauseAndResumeDesktopAutoAdvance();
-    }
+    if (isAutoScrollingDesktop) return;
+    pauseAndResumeDesktopAutoAdvance();
     if (desktopScrollRaf) cancelAnimationFrame(desktopScrollRaf);
-
     desktopScrollRaf = requestAnimationFrame(() => {
       updateDesktopActive();
       desktopScrollRaf = null;
@@ -132,11 +147,9 @@
   }
 
   function handleMobileRailScroll() {
-    if (!isAutoScrollingMobile) {
-      pauseAndResumeMobileAutoAdvance();
-    }
+    if (isAutoScrollingMobile) return;
+    pauseAndResumeMobileAutoAdvance();
     if (mobileScrollRaf) cancelAnimationFrame(mobileScrollRaf);
-
     mobileScrollRaf = requestAnimationFrame(() => {
       updateMobileActive();
       mobileScrollRaf = null;
@@ -147,21 +160,22 @@
     const card = desktopCardEls[index];
     if (!desktopRailEl || !card) return;
 
-    // Align the card's left edge to the scroll-padding-left of the rail
     const scrollPad = desktopCardEls[0] ? desktopCardEls[0].offsetLeft : 0;
     const targetLeft = card.offsetLeft - scrollPad;
 
     activeDesktopIndex = index;
-    isAutoScrollingDesktop = true;
-    desktopRailEl.scrollTo({
-      left: Math.max(0, targetLeft),
-      behavior
-    });
 
-    window.setTimeout(() => {
-      isAutoScrollingDesktop = false;
+    if (behavior === "smooth") {
+      isAutoScrollingDesktop = true;
+      desktopRailEl.scrollTo({ left: Math.max(0, targetLeft), behavior: "smooth" });
+      if (!supportsScrollEnd) {
+        clearTimeout(desktopScrollEndFallback);
+        desktopScrollEndFallback = window.setTimeout(handleDesktopScrollEnd, 950);
+      }
+    } else {
+      desktopRailEl.scrollTo({ left: Math.max(0, targetLeft), behavior: "instant" });
       updateDesktopActive();
-    }, behavior === "smooth" ? 900 : 0);
+    }
   }
 
   function scrollToMobileCard(index, behavior = "smooth") {
@@ -171,16 +185,18 @@
     const targetLeft = card.offsetLeft - (mobileRailEl.clientWidth - card.offsetWidth) * 0.5;
 
     activeMobileIndex = index;
-    isAutoScrollingMobile = true;
-    mobileRailEl.scrollTo({
-      left: Math.max(0, targetLeft),
-      behavior
-    });
 
-    window.setTimeout(() => {
-      isAutoScrollingMobile = false;
+    if (behavior === "smooth") {
+      isAutoScrollingMobile = true;
+      mobileRailEl.scrollTo({ left: Math.max(0, targetLeft), behavior: "smooth" });
+      if (!supportsScrollEnd) {
+        clearTimeout(mobileScrollEndFallback);
+        mobileScrollEndFallback = window.setTimeout(handleMobileScrollEnd, 950);
+      }
+    } else {
+      mobileRailEl.scrollTo({ left: Math.max(0, targetLeft), behavior: "instant" });
       updateMobileActive();
-    }, behavior === "smooth" ? 900 : 0);
+    }
   }
 
   function clearDesktopAutoTimers() {
@@ -246,8 +262,8 @@
     clearTimeout(resizeTimer);
     resizeTimer = setTimeout(() => {
       measure();
-      scrollToDesktopCard(activeDesktopIndex, "auto");
-      scrollToMobileCard(activeMobileIndex, "auto");
+      scrollToDesktopCard(activeDesktopIndex, "instant");
+      scrollToMobileCard(activeMobileIndex, "instant");
       startDesktopAutoAdvance();
       startMobileAutoAdvance();
     }, 80);
@@ -272,6 +288,8 @@
       mq.addListener(onMotion);
       removeMotionListener = () => mq.removeListener(onMotion);
     }
+
+    supportsScrollEnd = "onscrollend" in window;
 
     requestAnimationFrame(() => {
       requestAnimationFrame(() => {
@@ -305,6 +323,10 @@
     window.addEventListener("orientationchange", handleResize, { passive: true });
     desktopRailEl?.addEventListener("scroll", handleDesktopRailScroll, { passive: true });
     mobileRailEl?.addEventListener("scroll", handleMobileRailScroll, { passive: true });
+    if (supportsScrollEnd) {
+      desktopRailEl?.addEventListener("scrollend", handleDesktopScrollEnd, { passive: true });
+      mobileRailEl?.addEventListener("scrollend", handleMobileScrollEnd, { passive: true });
+    }
 
     return () => {
       removeMotionListener?.();
@@ -312,10 +334,14 @@
       clearDesktopAutoTimers();
       clearMobileAutoTimers();
       clearTimeout(resizeTimer);
+      clearTimeout(desktopScrollEndFallback);
+      clearTimeout(mobileScrollEndFallback);
       window.removeEventListener("resize", handleResize);
       window.removeEventListener("orientationchange", handleResize);
       desktopRailEl?.removeEventListener("scroll", handleDesktopRailScroll);
       mobileRailEl?.removeEventListener("scroll", handleMobileRailScroll);
+      desktopRailEl?.removeEventListener("scrollend", handleDesktopScrollEnd);
+      mobileRailEl?.removeEventListener("scrollend", handleMobileScrollEnd);
     };
   });
 
@@ -327,8 +353,12 @@
     clearDesktopAutoTimers();
     clearMobileAutoTimers();
     clearTimeout(resizeTimer);
+    clearTimeout(desktopScrollEndFallback);
+    clearTimeout(mobileScrollEndFallback);
     desktopRailEl?.removeEventListener("scroll", handleDesktopRailScroll);
     mobileRailEl?.removeEventListener("scroll", handleMobileRailScroll);
+    desktopRailEl?.removeEventListener("scrollend", handleDesktopScrollEnd);
+    mobileRailEl?.removeEventListener("scrollend", handleMobileScrollEnd);
     if (desktopScrollRaf) cancelAnimationFrame(desktopScrollRaf);
     if (mobileScrollRaf) cancelAnimationFrame(mobileScrollRaf);
   });
