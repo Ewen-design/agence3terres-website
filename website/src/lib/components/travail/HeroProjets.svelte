@@ -50,8 +50,8 @@
   };
 
   const finalText =
-    "Une sélection de projets où stratégie, direction artistique et exécution dialoguent avec précision jusque dans le détail.";
-  const activeAfterImage = "/images/telephone2.webp";
+    "Une sélection de projets où stratégie, direction artistique et exécution dialoguent.";
+  const activeAfterImage = "/images/justx.webp";
 
   const words = finalText.split(" ");
 
@@ -671,7 +671,7 @@
     }
 
     .after-text h2 {
-      max-width: 12ch;
+      max-width: 14ch;
       font-size: clamp(1.15rem, 6.4vw, 1.95rem);
       line-height: 1.04;
       padding-inline: var(--project-text-inset, 0);

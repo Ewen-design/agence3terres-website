@@ -248,7 +248,7 @@
   .focus-zone-slider {
     --title-active: #f5f1e8;
     --title-muted: #707070;
-    --copy-color: rgba(255, 255, 255, 0.86);
+    --copy-color: rgba(245, 241, 232, 0.5);
     --number-color: rgba(245, 241, 232, 0.96);
     --left-gutter: clamp(2rem, 7vw, 7rem);
     --right-gutter: clamp(1.6rem, 4vw, 4.6rem);
@@ -469,7 +469,7 @@
     display: block;
     font-family: var(--site-font);
     font-size: clamp(0.96rem, 1.22vw, 1.16rem);
-    font-weight: 300;
+    font-weight: 500;
     line-height: 1.42;
     color: var(--copy-color);
     opacity: 0;

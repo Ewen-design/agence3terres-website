@@ -29,12 +29,10 @@
   ];
 
   let activeTab = "inquiries";
-  let previousTab = null;
-  let isSwitching = false;
-  let nextVisible = false;
+  let outgoingTab = null;
+  let outgoingKey = 0;
   let copied = false;
-  let switchTimer;
-  let revealTimer;
+  let cleanupTimer;
   let copyTimer;
   let introBlockTimer;
   let introContentTimer;
@@ -59,24 +57,15 @@
 
   function setTab(tab) {
     if (tab === activeTab) return;
+    clearTimeout(cleanupTimer);
 
-    clearTimeout(switchTimer);
-    clearTimeout(revealTimer);
-
-    previousTab = activeTab;
+    outgoingTab = activeTab;
+    outgoingKey += 1;
     activeTab = tab;
-    isSwitching = true;
-    nextVisible = false;
 
-    revealTimer = setTimeout(() => {
-      nextVisible = true;
-    }, 90);
-
-    switchTimer = setTimeout(() => {
-      previousTab = null;
-      isSwitching = false;
-      nextVisible = false;
-    }, 820);
+    cleanupTimer = setTimeout(() => {
+      outgoingTab = null;
+    }, 750);
   }
 
   async function copyEmail() {
@@ -132,8 +121,7 @@
   });
 
   onDestroy(() => {
-    clearTimeout(switchTimer);
-    clearTimeout(revealTimer);
+    clearTimeout(cleanupTimer);
     clearTimeout(copyTimer);
     clearTimeout(introBlockTimer);
     clearTimeout(introContentTimer);
@@ -223,14 +211,66 @@
       </div>
 
       <div class="content-stage">
-        {#if previousTab}
+        {#if outgoingTab}
+          {#key outgoingKey}
+            <div
+              class="panel panel-out"
+              role="tabpanel"
+              id={`panel-out-${outgoingTab}`}
+              aria-hidden="true"
+            >
+              {#if outgoingTab === "inquiries"}
+                <div class="email-panel">
+                  <a class="headline-link" href={`mailto:${mail}`}>{mail}</a>
+                  <button
+                    type="button"
+                    class="nav-btn copy-btn"
+                    class:has-label={copied}
+                    aria-label="Copier l'adresse email"
+                    data-cursor="button"
+                    tabindex="-1"
+                  >
+                    <span class="copy-icon" aria-hidden="true">
+                      <svg viewBox="0 0 24 24" focusable="false">
+                        <path
+                          d="M9 4h10v10H9zM5 8h10v10H5z"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="1.75"
+                          stroke-linejoin="round"
+                        />
+                      </svg>
+                    </span>
+                  </button>
+                </div>
+              {:else if outgoingTab === "socials"}
+                <div class="socials-group">
+                  {#each socialLinks as social}
+                    <a
+                      class="social-link"
+                      href={social.href}
+                      aria-label={social.label}
+                      tabindex="-1"
+                    >
+                      <img src={social.icon} alt="" class={`icon ${social.className}`} />
+                    </a>
+                  {/each}
+                </div>
+              {:else}
+                <p class="headline">Paris, France</p>
+              {/if}
+            </div>
+          {/key}
+        {/if}
+
+        {#key activeTab}
           <div
-            class="panel panel-out"
+            class="panel panel-in"
             role="tabpanel"
-            id={`panel-${previousTab}`}
-            aria-labelledby={`tab-${previousTab}`}
+            id={`panel-${activeTab}`}
+            aria-labelledby={`tab-${activeTab}`}
           >
-            {#if previousTab === "inquiries"}
+            {#if activeTab === "inquiries"}
               <div class="email-panel">
                 <a class="headline-link" href={`mailto:${mail}`}>{mail}</a>
                 <button
@@ -261,7 +301,7 @@
                   {/if}
                 </button>
               </div>
-            {:else if previousTab === "socials"}
+            {:else if activeTab === "socials"}
               <div class="socials-group">
                 {#each socialLinks as social}
                   <a
@@ -280,65 +320,7 @@
               <p class="headline">Paris, France</p>
             {/if}
           </div>
-        {/if}
-
-        <div
-          class="panel panel-in"
-          class:is-visible={!isSwitching || nextVisible}
-          role="tabpanel"
-          id={`panel-${activeTab}`}
-          aria-labelledby={`tab-${activeTab}`}
-        >
-          {#if activeTab === "inquiries"}
-            <div class="email-panel">
-              <a class="headline-link" href={`mailto:${mail}`}>{mail}</a>
-              <button
-                type="button"
-                class="nav-btn copy-btn"
-                class:has-label={copied}
-                aria-label={copied ? "Email copié" : "Copier l'adresse email"}
-                data-cursor="button"
-                on:mousemove={handleButtonMove}
-                on:click={copyEmail}
-              >
-                {#if copied}
-                  <span class="nav-btn-flip" data-text="Copié">
-                    <span class="nav-btn-text">Copié</span>
-                  </span>
-                {:else}
-                  <span class="copy-icon" aria-hidden="true">
-                    <svg viewBox="0 0 24 24" focusable="false">
-                      <path
-                        d="M9 4h10v10H9zM5 8h10v10H5z"
-                        fill="none"
-                        stroke="currentColor"
-                        stroke-width="1.75"
-                        stroke-linejoin="round"
-                      />
-                    </svg>
-                  </span>
-                {/if}
-              </button>
-            </div>
-          {:else if activeTab === "socials"}
-            <div class="socials-group">
-              {#each socialLinks as social}
-                <a
-                  class="social-link"
-                  href={social.href}
-                  aria-label={social.label}
-                  data-cursor="button"
-                  on:mousemove={handleButtonMove}
-                  on:click|preventDefault
-                >
-                  <img src={social.icon} alt={social.label} class={`icon ${social.className}`} />
-                </a>
-              {/each}
-            </div>
-          {:else}
-            <p class="headline">Paris, France</p>
-          {/if}
-        </div>
+        {/key}
       </div>
     </div>
   </div>
@@ -556,50 +538,35 @@
     overflow: visible;
   }
 
+  @keyframes panel-enter {
+    from { transform: translateY(90%); opacity: 0; filter: blur(10px); }
+    to   { transform: translateY(0);   opacity: 1; filter: blur(0);    }
+  }
+
+  @keyframes panel-exit {
+    from { transform: translateY(0);    opacity: 1; filter: blur(0);    }
+    to   { transform: translateY(-60%); opacity: 0; filter: blur(10px); }
+  }
+
   .panel {
     min-height: inherit;
     display: flex;
     align-items: flex-end;
     width: max-content;
     max-width: none;
-    transition:
-      transform 0.98s cubic-bezier(.16,.84,.2,1),
-      opacity 0.72s ease,
-      filter 0.72s ease;
     will-change: transform, opacity;
   }
 
   .panel-in {
     position: relative;
-    transform: translateY(116%);
-    opacity: 0;
-    filter: blur(12px);
-  }
-
-  .panel-in.is-visible {
-    transform: translateY(0%);
-    opacity: 1;
-    filter: blur(0);
+    animation: panel-enter 0.72s cubic-bezier(.16,.84,.2,1) both;
   }
 
   .panel-out {
     position: absolute;
     inset: 0;
-    transform: translateY(0%);
-    opacity: 1;
-    filter: blur(0);
-  }
-
-  .panel-out .email-panel,
-  .panel-out .headline,
-  .panel-out .socials-group {
-    transform: translateY(-72%);
-    opacity: 0;
-    transition:
-      transform 0.98s cubic-bezier(.16,.84,.2,1),
-      opacity 0.72s ease,
-      filter 0.72s ease;
-    filter: blur(12px);
+    animation: panel-exit 0.6s cubic-bezier(.16,.84,.2,1) both;
+    pointer-events: none;
   }
 
   .email-panel {
@@ -1161,10 +1128,18 @@
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .panel,
-    .panel-out .email-panel,
-    .panel-out .headline,
-    .panel-out .socials-group,
+    .panel-in {
+      animation: none;
+      opacity: 1;
+      transform: none;
+      filter: none;
+    }
+
+    .panel-out {
+      animation: none;
+      opacity: 0;
+    }
+
     .nav-btn,
     .nav-btn-text,
     .nav-btn-flip::after,
@@ -1185,13 +1160,6 @@
     .contact-legal {
       opacity: 1;
       transform: none;
-    }
-
-    .panel-in,
-    .panel-in.is-visible,
-    .panel-out {
-      transform: none;
-      opacity: 1;
     }
   }
 </style>
