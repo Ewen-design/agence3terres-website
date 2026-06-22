@@ -167,6 +167,7 @@
 <section
   class="focus-zone-slider"
   class:focus-zone-slider--project={variant === "project"}
+  class:focus-zone-slider--home={variant === "home"}
   bind:this={sliderEl}
   style={`--focus-zone-height:${zoneHeight}; --slide-count:${slides.length}; --item-height-desktop:${itemHeightDesktop}; --item-height-mobile:${itemHeightMobile};`}
 >
@@ -217,6 +218,7 @@
         <div class="focus-zone-slider__item-inner">
           <h2>{slide.title}</h2>
 
+          {#if variant !== "home"}
           <div
             class="focus-zone-slider__copy"
             class:is-active={activeIndex === index}
@@ -232,6 +234,7 @@
               </span>
             {/each}
           </div>
+          {/if}
 
           {#if resolvedSlideLinks[index]}
             <a
@@ -625,6 +628,24 @@
   .fzs-btn:hover::before,
   .fzs-btn:hover::after {
     opacity: 1;
+  }
+
+  .focus-zone-slider--home .focus-zone-slider__item-inner {
+    grid-template-rows: auto auto;
+  }
+
+  .focus-zone-slider--home .focus-zone-slider__item h2 {
+    font-size: clamp(4.2rem, 7.8vw, 7.6rem);
+  }
+
+  .focus-zone-slider--home .fzs-btn {
+    margin-top: 1.4rem;
+  }
+
+  @media (max-width: 900px) {
+    .focus-zone-slider--home .focus-zone-slider__item h2 {
+      font-size: clamp(3.4rem, 12vw, 5rem);
+    }
   }
 
   @media (max-width: 900px) {

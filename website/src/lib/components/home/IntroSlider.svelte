@@ -63,7 +63,7 @@
   }
 
   .story-slider-intro__main {
-    color: rgba(245, 241, 232, 0.35);
+    color: #f5f1e8;
   }
 
   .story-slider-intro__muted {

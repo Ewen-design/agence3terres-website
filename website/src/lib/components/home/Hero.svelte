@@ -482,7 +482,7 @@
   .word {
     display: inline-block;
     white-space: nowrap;
-    color: rgba(245, 241, 232, 0.35);
+    color: #f5f1e8;
   }
 
   .word.muted-word {

@@ -122,7 +122,7 @@
     font-size: clamp(1.3rem, 2.8vw, 2.8rem);
     font-weight: 300;
     line-height: 1.1;
-    color: rgba(245, 241, 232, 0.35);
+    color: #f5f1e8;
     padding-top: clamp(8rem, 14vh, 12rem);
     margin-left: clamp(-8.75rem, -6.2vw, -4.4rem);
   }

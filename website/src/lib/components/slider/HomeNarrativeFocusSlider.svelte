@@ -49,4 +49,4 @@
   const slideLinks = ["/projet3", "/projet5", "/projet7", "/projet6", "/projet4", "/projet1", "/contact"];
 </script>
 
-<FocusZoneSlider {slides} {slideLinks} zoneHeight="33svh" />
+<FocusZoneSlider {slides} {slideLinks} zoneHeight="33svh" variant="home" />

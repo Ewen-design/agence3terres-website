@@ -586,7 +586,7 @@
     margin-bottom: 1.2rem;
   }
 
-  .intro-main { color: rgba(245, 241, 232, 0.35); }
+  .intro-main { color: #f5f1e8; }
   .intro-muted {
     display: block;
     color: rgba(245, 241, 232, 0.35);
