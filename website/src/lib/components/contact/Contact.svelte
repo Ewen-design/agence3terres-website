@@ -136,7 +136,7 @@
   class:intro-content-visible={introContentVisible}
 >
   <div class="background">
-    <img src="/images/justx.webp" alt="" />
+    <img src="/images/agence.webp" alt="" />
     <div class="overlay"></div>
   </div>
 
@@ -368,7 +368,7 @@
     inset: 0;
     z-index: 0;
     opacity: 0;
-    transform: scale(1.025);
+    transform: scale(1.05);
     transition:
       opacity 720ms cubic-bezier(0.22, 1, 0.36, 1),
       transform 980ms cubic-bezier(0.22, 1, 0.36, 1);
@@ -1108,11 +1108,15 @@
       text-align: center;
       line-height: 1.4;
       opacity: 0;
-      transition: opacity 620ms cubic-bezier(0.22, 1, 0.36, 1);
+      filter: blur(8px);
+      transition:
+        opacity 620ms cubic-bezier(0.22, 1, 0.36, 1),
+        filter 800ms cubic-bezier(0.22, 1, 0.36, 1);
     }
 
     .intro-content-visible .contact-legal {
       opacity: 1;
+      filter: blur(0);
     }
   }
 

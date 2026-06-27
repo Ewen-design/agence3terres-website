@@ -499,6 +499,7 @@
     line-height: 1.42;
     color: var(--copy-color);
     opacity: 0;
+    filter: blur(8px);
     transform: translate3d(0, 115%, 0);
     -webkit-transform: translate3d(0, 115%, 0);
     backface-visibility: hidden;
@@ -506,12 +507,14 @@
     will-change: transform, opacity;
     transition:
       transform 0.42s cubic-bezier(.22,.61,.36,1),
-      opacity 0.32s ease;
+      opacity 0.32s ease,
+      filter 0.57s cubic-bezier(.22,.61,.36,1);
     transition-delay: calc(var(--line-out-index, 0) * 0.045s);
   }
 
   .focus-zone-slider__copy.is-active .focus-zone-slider__copy-line > span {
     opacity: 1;
+    filter: blur(0);
     transform: translate3d(0, 0, 0);
     -webkit-transform: translate3d(0, 0, 0);
     transition-delay: calc(var(--line-index, 0) * 0.05s);

@@ -97,6 +97,37 @@ select {
 }
 
 
+/* ── Text arrival effect (focus-pull) ──
+   Shared across the whole site via the `reveal` action (src/lib/actions/reveal.js).
+   Same motion language as the sliders: blur → sharp, slight rise, fade-in. */
+.reveal {
+  opacity: 0;
+  filter: blur(12px);
+  transform: translate3d(0, 18px, 0);
+  transition:
+    opacity 0.6s ease,
+    filter 0.85s cubic-bezier(0.22, 0.61, 0.36, 1),
+    transform 0.85s cubic-bezier(0.22, 0.61, 0.36, 1);
+  transition-delay: var(--reveal-delay, 0ms);
+  will-change: opacity, filter, transform;
+  backface-visibility: hidden;
+}
+
+.reveal.is-revealed {
+  opacity: 1;
+  filter: blur(0);
+  transform: translate3d(0, 0, 0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal {
+    opacity: 1;
+    filter: none;
+    transform: none;
+    transition: none;
+  }
+}
+
 /* Links */
 a {
   color: inherit;

@@ -664,9 +664,11 @@
     color: rgba(255,255,255,.98);
     text-shadow: 0 1px 12px rgba(0,0,0,.38);
     opacity: 0;
+    filter: blur(14px);
     transform: translate3d(0,-115%,0);
     transition:
       transform .42s cubic-bezier(.22,.61,.36,1),
+      filter .57s cubic-bezier(.22,.61,.36,1),
       opacity .32s ease;
   }
 
@@ -718,6 +720,7 @@
 
   .desktop-card.is-active .desktop-card-title {
     opacity: 1;
+    filter: blur(0);
     transform: translate3d(0, 0, 0);
   }
 
@@ -873,9 +876,11 @@
       color: rgba(255,255,255,.98);
       text-shadow: 0 1px 10px rgba(0,0,0,.34);
       opacity: 0;
+      filter: blur(10px);
       transform: translate3d(0,-115%,0);
       transition:
         transform .42s cubic-bezier(.22,.61,.36,1),
+        filter .57s cubic-bezier(.22,.61,.36,1),
         opacity .32s ease;
     }
 
@@ -928,6 +933,7 @@
 
     .mobile-card.is-active .mobile-card-title {
       opacity: 1;
+      filter: blur(0);
       transform: translate3d(0, 0, 0);
     }
 

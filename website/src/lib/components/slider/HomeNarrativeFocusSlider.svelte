@@ -24,13 +24,13 @@
       number: "04",
       title: "Mission X",
       description: "Jeu mobile, détectives contre voleurs.",
-      image: "/images/missionX5.webp"
+      image: "/images/jeu_mockup.webp"
     },
     {
       number: "05",
       title: "Ludosphères",
       description: "Site d'artiste pour oeuvres peintes.",
-      image: "/images/carte-copie.jpg"
+      image: "/images/apple_justx.webp"
     },
     {
       number: "06",
@@ -42,7 +42,7 @@
       number: "07",
       title: "Votre\nprojet ?",
       description: "Approche sur mesure, singularité et impact.",
-      image: "/images/telephone2.webp"
+      image: "/images/tel_moovy.webp"
     }
   ];
 

@@ -40,7 +40,7 @@
       title: "Ludosphères",
       category: "Site d'artiste",
       lead: "Un site sobre pour laisser respirer les œuvres.",
-      image: "/images/carte-copie.jpg",
+      image: "/images/apple_justx.webp",
       page: "projet4",
       button: "Voir le projet"
     },
@@ -56,7 +56,7 @@
       title: "Votre projet ?",
       category: "Collaboration",
       lead: "Une vision à faire naître, clarifier ou amplifier.",
-      image: "/images/telephone2.webp",
+      image: "/images/agence.webp",
       page: "contact",
       button: "Nous contacter"
     }

@@ -1,23 +1,11 @@
 <script>
   import ProjectThemePage from "$lib/components/projets/shared/ProjectThemePage.svelte";
-  import ProjectThemeTrigger from "$lib/components/projets/shared/ProjectThemeTrigger.svelte";
   import ProjectHeroProjetsStyle from "$lib/components/projets/shared/ProjectHeroProjetsStyle.svelte";
-  import ProjectEditorialRole from "$lib/components/projets/shared/ProjectEditorialRole.svelte";
-  import ProjectStorySlider from "$lib/components/projets/shared/ProjectStorySlider.svelte";
-  import ProjectEditorialSplit from "$lib/components/projets/shared/ProjectEditorialSplit.svelte";
-  import ProjectEditorialStatement from "$lib/components/projets/shared/ProjectEditorialStatement.svelte";
-  import ProjectEditorialMobileShowcase from "$lib/components/projets/shared/ProjectEditorialMobileShowcase.svelte";
-  import ProjectEditorialMosaic from "$lib/components/projets/shared/ProjectEditorialMosaic.svelte";
-  import ProjectLinksCarousel from "$lib/components/projets/shared/ProjectLinksCarousel.svelte";
-
-  let sliderActive = false;
-
-  function handleSliderActiveChange(event) {
-    sliderActive = !!event.detail?.active;
-  }
+  import ProjectBrief from "$lib/components/projets/shared/ProjectBrief.svelte";
+  import ProjectInProgress from "$lib/components/projets/shared/ProjectInProgress.svelte";
 </script>
 
-<ProjectThemePage headerToneOverride={sliderActive ? "light" : null}>
+<ProjectThemePage>
   <ProjectHeroProjetsStyle
     title="Ludosphères"
     image="/images/carte-copie.jpg"
@@ -30,104 +18,22 @@
       }
     ]}
     ctaLabel="Visiter le site"
+    scrollToId="projet-en-cours"
   />
 
-  <ProjectThemeTrigger theme="light" offset={132} />
-
-  <div class="project-theme-band">
-    <ProjectEditorialRole
-      title="Notre rôle"
-      images={[
-        { src: "/images/photo.webp", alt: "Composition visuelle large du projet Ludovic" },
-        { src: "/images/carte-copie.jpg", alt: "Univers principal du projet Ludovic" }
-      ]}
-      items={[
-        {
-          title: "Site vitrine artiste",
-          text: "Une structure sobre pour presenter les oeuvres peintes de Ludovic avec davantage d'espace et de tenue."
-        },
-        {
-          title: "Direction editoriale",
-          text: "Le rythme entre images, titres et respirations laisse la peinture prendre naturellement le premier plan."
-        },
-        {
-          title: "Experience mobile",
-          text: "Chaque oeuvre garde sa presence sur mobile grace a une lecture plus aeree et plus directe."
-        }
-      ]}
-    />
-  </div>
-
-  <div class="project-theme-band">
-    <ProjectEditorialSplit
-      title="Interface mobile"
-      text="Une presence plus calme et plus sensible. Le projet garde son espace jusque dans les vues les plus rapprochees."
-      image="/images/carte-copie.jpg"
-      alt="Vue mobile projet Ludovic"
-      mediaMinHeight="52.5rem"
-    />
-
-    <ProjectEditorialStatement
-      eyebrow="Matiere et respiration"
-      text="Le projet avance surtout par contraste doux, par espaces justes et par une mise en page qui laisse les oeuvres respirer."
-    />
-
-    <ProjectEditorialSplit
-      title="Vue desktop"
-      text="Sur desktop, la structure reste volontairement retenue pour donner plus de place aux peintures et a leur detail."
-      image="/images/livre.png"
-      alt="Vue desktop projet Ludovic"
-      reverse={true}
-    />
-  </div>
-
-  <ProjectStorySlider
-    on:slideractivechange={handleSliderActiveChange}
-    slides={[
-      {
-        label: "Direction artistique",
-        title: "Epurer",
-        text: "Moins d'effets. Plus de respiration.",
-        image: "/images/carte-copie.jpg"
-      },
-      {
-        label: "Editorial",
-        title: "Cadencer",
-        text: "Un rythme plus juste entre image, texte et vide.",
-        image: "/images/livre.png"
-      },
-      {
-        label: "Site web",
-        title: "Presenter",
-        text: "Une vitrine claire pour laisser la peinture prendre la place.",
-        image: "/images/photo.webp"
-      }
+  <ProjectBrief
+    lines={[
+      "Ludosphères est un site vitrine d'artiste pensé pour laisser les œuvres peintes prendre toute la place.",
+      "Une direction éditoriale sobre, beaucoup d'espace et un rythme juste entre images, titres et respirations."
+    ]}
+    images={[
+      { src: "/images/carte_visite_desktop.webp", alt: "Univers éditorial de Ludosphères" },
+      { src: "/images/carte_visite_desktop2.webp", alt: "Mise en page de Ludosphères" }
     ]}
   />
 
-  <div class="project-theme-band">
-    <ProjectEditorialMobileShowcase
-      text="Le mobile devait rester discret pour que la matiere des oeuvres et la lecture des series gardent toute leur presence."
-      leftImage="/images/photo.webp"
-      leftAlt="Interface mobile verticale Ludovic"
-      rightImage="/images/carte-copie.jpg"
-      rightAlt="Mise en situation mobile Ludovic"
-      mediaMinHeight="46.5rem"
-    />
-  </div>
-
-  <ProjectThemeTrigger theme="dark" />
-
-  <div class="project-theme-band">
-    <ProjectEditorialMosaic
-      text="Un premier visuel plus ouvert, puis deux plans plus proches qui gardent le meme calme."
-      feature={{ src: "/images/photo.webp", alt: "Grand visuel projet Ludovic" }}
-      items={[
-        { src: "/images/carte-copie.jpg", alt: "Vue oeuvre projet Ludovic" },
-        { src: "/images/livre.png", alt: "Vue desktop projet Ludovic" }
-      ]}
-    />
-
-    <ProjectLinksCarousel currentPage="projet4" />
-  </div>
+  <ProjectInProgress
+    image="/images/carte.png"
+    alt="Univers visuel du projet Ludosphères"
+  />
 </ProjectThemePage>

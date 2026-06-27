@@ -39,6 +39,7 @@
   let removeProjectThemeListener;
 
   let transitionLayer;
+  let pageWrapper;
 
   let wheelDamping = null;
 
@@ -246,17 +247,20 @@
     }
 
     return {
-      enterDuration: isMobile ? 220 : 260,
-      exitDuration: isMobile ? 300 : 340
+      enterDuration: isMobile ? 260 : 300,
+      exitDuration: isMobile ? 460 : 520
     };
   }
 
   function resetTransitionStyles() {
     cancelTransitionAnimation?.();
-    if (!transitionLayer) return;
-    transitionLayer.style.opacity = "0";
-    transitionLayer.style.visibility = "hidden";
-    transitionLayer.style.willChange = "";
+    if (!pageWrapper) return;
+    pageWrapper.style.transition = "none";
+    pageWrapper.style.opacity = "1";
+    // IMPORTANT: reset to `none` (not blur(0)) so no filter containing-block
+    // lingers — that would break sticky/fixed inside the page.
+    pageWrapper.style.filter = "none";
+    pageWrapper.style.willChange = "";
   }
 
   function settleGlobalScrollLocks() {
@@ -271,55 +275,46 @@
     }
   }
 
-  function fadeTransitionLayer(targetOpacity, duration) {
+  // Focus-pull page transition: the content itself blurs + fades (over the
+  // black background), then the next page blurs + fades back in. A soft,
+  // progressive blur fade — and the only thing animated is the page content.
+  // amount: 0 = sharp & visible, 1 = blurred & hidden.
+  function fadeTransitionLayer(amount, duration) {
     cancelTransitionAnimation?.();
-    if (!transitionLayer) return Promise.resolve(false);
+    if (!pageWrapper) return Promise.resolve(false);
+
+    const opacity = (1 - amount).toFixed(3);
+    const blur = amount * (isMobile ? 8 : 12);
+    const setTarget = () => {
+      pageWrapper.style.opacity = opacity;
+      // Always a blur() value (incl. blur(0px)) so it can interpolate; the final
+      // `filter: none` reset is applied by resetTransitionStyles after settle.
+      pageWrapper.style.filter = `blur(${blur.toFixed(2)}px)`;
+    };
 
     if (duration <= 0) {
-      transitionLayer.style.opacity = `${targetOpacity}`;
+      pageWrapper.style.transition = "none";
+      setTarget();
       return Promise.resolve(true);
     }
 
-    const startOpacity = Number.parseFloat(getComputedStyle(transitionLayer).opacity) || 0;
-    const animation = transitionLayer.animate(
-      [{ opacity: startOpacity }, { opacity: targetOpacity }],
-      {
-        duration,
-        easing: "cubic-bezier(0.45, 0, 0.55, 1)",
-        fill: "forwards"
-      }
-    );
+    const ease = "cubic-bezier(0.33, 0, 0.2, 1)";
+    pageWrapper.style.transition = `opacity ${duration}ms ${ease}, filter ${duration}ms ${ease}`;
+    void pageWrapper.offsetWidth;   // commit the current state so it animates
+    setTarget();
 
     return new Promise((resolve) => {
-      let settled = false;
-
-      const finish = (completed) => {
-        if (settled) return;
-        settled = true;
-        if (completed) {
-          transitionLayer.style.opacity = `${targetOpacity}`;
-        }
-        if (cancelTransitionAnimation === cancel) {
-          cancelTransitionAnimation = null;
-        }
-        animation.cancel();
-        resolve(completed);
-      };
-
-      const cancel = () => {
-        const currentOpacity = Number.parseFloat(getComputedStyle(transitionLayer).opacity) || 0;
-        animation.cancel();
-        transitionLayer.style.opacity = `${currentOpacity}`;
-      };
-
+      const timer = setTimeout(() => {
+        if (cancelTransitionAnimation === cancel) cancelTransitionAnimation = null;
+        resolve(true);
+      }, duration + 30);
+      const cancel = () => { clearTimeout(timer); resolve(false); };
       cancelTransitionAnimation = cancel;
-      animation.onfinish = () => finish(true);
-      animation.oncancel = () => finish(false);
     });
   }
 
   onNavigate(async () => {
-    if (!transitionLayer) return;
+    if (!pageWrapper) return;
 
     if (activatePendingSilentNavigation()) {
       resetTransitionStyles();
@@ -333,8 +328,7 @@
       return;
     }
 
-    transitionLayer.style.visibility = "visible";
-    transitionLayer.style.willChange = "opacity";
+    pageWrapper.style.willChange = "opacity, filter";
 
     await fadeTransitionLayer(1, profile.enterDuration);
   });
@@ -343,7 +337,7 @@
     settleGlobalScrollLocks();
     syncScrollState();
 
-    if (!transitionLayer) {
+    if (!pageWrapper) {
       return;
     }
 
@@ -360,9 +354,8 @@
       return;
     }
 
-    transitionLayer.style.visibility = "visible";
-    transitionLayer.style.opacity = "1";
-    transitionLayer.style.willChange = "opacity";
+    pageWrapper.style.willChange = "opacity, filter";
+    fadeTransitionLayer(1, 0);   // start hidden + blurred (covers the swap)
 
     requestAnimationFrame(() => {
       settleGlobalScrollLocks();
@@ -535,16 +528,17 @@
     <CustomCursor />
   {/if}
 
-  <div class="site-prism-mark" aria-hidden="true">
+  <a class="site-prism-mark" href="/" aria-label="Accueil — Agence 3 Terres">
     <img src="/images/logo_prisme.png" alt="" loading="eager" />
-  </div>
+  </a>
 
+  <div class="ios-top-mask" aria-hidden="true"></div>
   <div class="ios-bottom-mask" aria-hidden="true"></div>
 
   <Header />
   <SiteIntroLoader />
 
-  <div class="page-wrapper">
+  <div class="page-wrapper" bind:this={pageWrapper}>
     <slot />
   </div>
 
@@ -568,6 +562,7 @@
     background: #000;
   }
 
+  .ios-top-mask,
   .ios-bottom-mask {
     display: none;
   }
@@ -580,15 +575,19 @@
     margin-bottom: var(--footer-reserve, 0px);
   }
 
+  /* Frosted-blur page transition. Resting state = invisible (blur 0, clear);
+     the JS animates the blur radius + tint for a clean, ghost-free blur. */
   .route-transition-layer {
     position: fixed;
     inset: 0;
     pointer-events: none;
     z-index: 300000;
-    opacity: 0;
+    opacity: 1;
     visibility: hidden;
     overflow: hidden;
-    background: #000;
+    background: rgba(5, 11, 20, 0);
+    -webkit-backdrop-filter: blur(0px);
+    backdrop-filter: blur(0px);
   }
 
   .site-prism-mark {
@@ -596,13 +595,19 @@
     top: 1rem;
     left: 1rem;
     z-index: 5000;
-    pointer-events: none;
+    pointer-events: auto;
+    cursor: pointer;
+    display: block;
     padding: 0.22rem;
     border-radius: 2px;
     background: rgba(255, 255, 255, 0.05);
     backdrop-filter: blur(3px);
     -webkit-backdrop-filter: blur(3px);
+    transition: transform .3s cubic-bezier(.22,.61,.36,1), background .3s ease;
+    -webkit-tap-highlight-color: transparent;
   }
+  .site-prism-mark:hover { transform: scale(1.06); background: rgba(255,255,255,.1); }
+  .site-prism-mark:focus-visible { outline: 2px solid rgba(245,241,232,.9); outline-offset: 3px; }
 
   .site-prism-mark img {
     display: block;
@@ -611,6 +616,18 @@
   }
 
   @media (hover: none) and (pointer: coarse) {
+    .ios-top-mask {
+      position: fixed;
+      left: 0;
+      right: 0;
+      top: 0;
+      display: block;
+      height: env(safe-area-inset-top, 0px);
+      background: #000;
+      pointer-events: none;
+      z-index: 999999;
+    }
+
     .ios-bottom-mask {
       position: fixed;
       left: 0;

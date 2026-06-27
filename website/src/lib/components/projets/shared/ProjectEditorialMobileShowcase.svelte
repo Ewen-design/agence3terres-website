@@ -1,4 +1,6 @@
 <script>
+  import { reveal } from "$lib/actions/reveal.js";
+
   export let text = "";
   export let leftImage = "";
   export let leftAlt = "";
@@ -26,7 +28,7 @@
   </div>
 
   <div class="editorial-mobile-showcase__text-grid">
-    <p>{text}</p>
+    <p use:reveal>{text}</p>
   </div>
 </section>
 

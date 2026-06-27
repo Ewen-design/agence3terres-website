@@ -15,6 +15,10 @@
   let heroMediaImgEl;
   let heroDarkLayerEl;
 
+  let h2TextEl;
+  let textRevealed  = false;
+  let textObserver;
+
   let introStarted = false;
   let introVisible = true;
   let heroMediaVisible = false;
@@ -44,10 +48,6 @@
 
   const finalText =
     "Créer pour durer. Des identités qui habitent le temps.";
-
-  const words = finalText.split(" ");
-
-  const grayStartsAtWord = 3;
 
   const clamp = (v, min = 0, max = 1) => Math.max(min, Math.min(max, v));
   const lerp = (a, b, t) => a + (b - a) * t;
@@ -87,7 +87,7 @@
 
     const localTextReveal = getLocalRevealFromAbsolute(y, afterTextTop, 0.92, 0.16);
     pendingFrame = {
-      imageScale: q(lerp(1.03, 1.005, globalFade), 0.0001),
+      imageScale: q(lerp(1.05, 1.0, globalFade), 0.0001),
       imageBrightness: isMobile ? 1 : q(lerp(1, 0.62, globalFade), 0.001),
       imageOpacity: isMobile ? 1 : q(lerp(1, 0, globalFade), 0.001),
       imageDark: isMobile ? 0 : q(lerp(0.08, 0.62, globalFade), 0.001)
@@ -214,6 +214,19 @@
     registerParallax(handleParallax, { priority: 2 });
     registerWrite(handleWrite, { priority: 2 });
 
+    // Word-by-word opacity reveal on scroll-into-view
+    if (!window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches && h2TextEl) {
+      textObserver = new IntersectionObserver(
+        ([entry]) => {
+          if (entry.isIntersecting) { textRevealed = true; textObserver.disconnect(); }
+        },
+        { rootMargin: "0px 0px -10% 0px", threshold: 0 }
+      );
+      textObserver.observe(h2TextEl);
+    } else {
+      textRevealed = true;
+    }
+
     window.addEventListener("resize", scheduleResizeUpdate, { passive: true });
     window.addEventListener("orientationchange", scheduleResizeUpdate, { passive: true });
     window.addEventListener("load", handleWindowLoad);
@@ -258,6 +271,7 @@
       clearTimeout(titleIntroTimeout);
       clearTimeout(resizeTimer);
       resizeObserver?.disconnect();
+      textObserver?.disconnect();
     };
   });
 </script>
@@ -268,7 +282,7 @@
       <div class="hero-media" class:media-visible={heroMediaVisible} bind:this={heroStage}>
         <img
           bind:this={heroMediaImgEl}
-          src="/images/contact.webp"
+          src="/images/tel_moovy2.webp"
           alt=""
         />
         <div class="hero-dark-layer" bind:this={heroDarkLayerEl}></div>
@@ -285,10 +299,13 @@
   <section class="after-section">
     <div class="after-grid">
       <div class="after-text" bind:this={afterTextEl}>
-        <h2 aria-label={finalText}>
-          {#each words as word, w}
-            {#if w === grayStartsAtWord}<br>{/if}<span class="word" class:muted-word={w >= grayStartsAtWord}>{word}</span>{#if w < words.length - 1 && w !== grayStartsAtWord - 1}<span class="space">&nbsp;</span>{/if}
-          {/each}
+        <h2
+          aria-label={finalText}
+          bind:this={h2TextEl}
+          class:is-text-revealed={textRevealed}
+        >
+          <span class="title-line title-line--gradient" style="--l:0">Créer pour durer.</span>
+          <span class="title-line title-line--white" style="--l:1">Des marques fortes.</span>
         </h2>
       </div>
     </div>
@@ -329,15 +346,19 @@
     height: var(--viewport-height);
     background: #000;
     opacity: 0;
-    transition: opacity 760ms cubic-bezier(0.22, 1, 0.36, 1);
-    will-change: opacity;
-    transform: translateZ(0);
+    /* Gentle zoom-in on arrival (settles together with the fade-in). */
+    transform: translateZ(0) scale(1.07);
+    transition:
+      opacity 760ms cubic-bezier(0.22, 1, 0.36, 1),
+      transform 1800ms cubic-bezier(0.22, 1, 0.36, 1);
+    will-change: opacity, transform;
     backface-visibility: hidden;
     -webkit-backface-visibility: hidden;
   }
 
   .hero-media.media-visible {
     opacity: 1;
+    transform: translateZ(0) scale(1);
   }
 
   .hero-media::after {
@@ -366,7 +387,7 @@
     height: 100%;
     object-fit: cover;
     opacity: 1;
-    transform: scale(1.03);
+    transform: scale(1.05);
     filter: brightness(1);
     transition:
       opacity 1.2s cubic-bezier(0.22, 1, 0.36, 1),
@@ -461,36 +482,58 @@
   .after-text h2 {
     margin: 0;
     width: 100%;
-    max-width: 24ch;
+    max-width: none;
     font-family: "Inter", sans-serif;
-    font-weight: 300;
-    font-size: clamp(1.8rem, 3.5vw, 3.8rem);
-    line-height: 1.08;
-    letter-spacing: -0.02em;
+    font-weight: 500;
+    font-size: clamp(2.6rem, 5.6vw, 6rem);
+    line-height: 1.04;
+    letter-spacing: -0.025em;
+    text-align: center;
+    text-transform: uppercase;
     color: #fff;
   }
 
-  .after-text h2::before {
-    content: "";
+  .title-line {
     display: block;
-    width: 24px;
-    height: 1px;
-    background: #5768ff;
-    margin-bottom: 1.2rem;
-  }
-
-  .word {
-    display: inline-block;
     white-space: nowrap;
-    color: #f5f1e8;
   }
 
-  .word.muted-word {
-    color: rgba(245, 241, 232, 0.35);
+  .title-line--gradient {
+    background: linear-gradient(
+      90deg,
+      #ffffff 0%,
+      #f2f3f5 30%,
+      #b9bdc6 52%,
+      #8d919b 64%,
+      #eceef1 100%
+    );
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
   }
 
-  .space {
-    display: inline;
+  .title-line--white {
+    color: #fff;
+    font-weight: 200;
+  }
+
+  /* reveal: lines fade and slide in with a small stagger */
+  .title-line {
+    opacity: 0;
+    filter: blur(14px);
+    transform: translateY(0.28em);
+    transition:
+      opacity 0.6s ease,
+      filter 0.85s cubic-bezier(0.22, 0.61, 0.36, 1),
+      transform 0.7s cubic-bezier(0.22, 0.61, 0.36, 1);
+    transition-delay: calc(var(--l, 0) * 0.12s);
+  }
+
+  h2.is-text-revealed .title-line {
+    opacity: 1;
+    filter: blur(0);
+    transform: none;
   }
 
   @media (max-width: 900px) {
@@ -501,9 +544,9 @@
     }
 
     .after-text h2 {
-      font-size: clamp(1.6rem, 5.5vw, 2.8rem);
-      max-width: 22ch;
-      line-height: 1.1;
+      font-size: clamp(2.2rem, 7vw, 4rem);
+      max-width: none;
+      line-height: 1.06;
     }
   }
 
@@ -588,14 +631,10 @@
     }
 
     .after-text h2 {
-      max-width: 22ch;
-      font-size: clamp(1.4rem, 6.5vw, 2.2rem);
-      line-height: 1.1;
+      max-width: none;
+      font-size: clamp(1.75rem, 7.6vw, 2.6rem);
+      line-height: 1.08;
       padding-inline: var(--project-text-inset, 0);
-    }
-
-    .after-text h2::before {
-      margin-top: clamp(2.5rem, 9vw, 4rem);
     }
 
     .after-text {
@@ -617,6 +656,12 @@
       opacity: 1 !important;
       -webkit-mask-image: none !important;
       mask-image: none !important;
+      transform: none !important;
+    }
+
+    .title-line {
+      transition: none !important;
+      opacity: 1 !important;
       transform: none !important;
     }
 

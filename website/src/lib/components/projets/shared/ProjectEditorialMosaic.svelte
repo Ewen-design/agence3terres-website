@@ -1,4 +1,6 @@
 <script>
+  import { reveal } from "$lib/actions/reveal.js";
+
   export let text = "";
   export let feature = { src: "", alt: "" };
   export let items = [];
@@ -18,7 +20,7 @@
   </div>
 
   {#if text}
-    <p class="project-editorial-mosaic__text">{text}</p>
+    <p class="project-editorial-mosaic__text" use:reveal>{text}</p>
   {/if}
 </section>
 

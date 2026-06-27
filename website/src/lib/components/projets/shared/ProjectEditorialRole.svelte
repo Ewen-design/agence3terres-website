@@ -1,4 +1,6 @@
 <script>
+  import { reveal } from "$lib/actions/reveal.js";
+
   export let title = "";
   export let items = [];
   export let images = [];
@@ -17,14 +19,14 @@
 
   <div class="editorial-role__grid">
     <div class="editorial-role__title-wrap">
-      <h2>{title}</h2>
+      <h2 use:reveal>{title}</h2>
     </div>
 
     <div class="editorial-role__list">
-      {#each items as item}
+      {#each items as item, i}
         <article class="editorial-role__item">
-          <h3>{item.title}</h3>
-          <p>{item.text}</p>
+          <h3 use:reveal={{ delay: i * 80 }}>{item.title}</h3>
+          <p use:reveal={{ delay: i * 80 + 80 }}>{item.text}</p>
         </article>
       {/each}
     </div>

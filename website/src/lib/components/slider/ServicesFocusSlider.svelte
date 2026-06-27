@@ -1,5 +1,5 @@
 <script>
-  import FocusZoneSlider from "$lib/components/slider/FocusZoneSlider.svelte";
+  import BlurFocusSlider from "$lib/components/slider/BlurFocusSlider.svelte";
 
   const slides = [
     {
@@ -49,4 +49,4 @@
   ];
 </script>
 
-<FocusZoneSlider {slides} headerTone="light" zoneHeight="33svh" itemHeightDesktop="47vh" />
+<BlurFocusSlider {slides} />

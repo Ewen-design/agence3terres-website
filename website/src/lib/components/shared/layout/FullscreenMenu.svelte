@@ -34,7 +34,7 @@
     { label: "Services", page: "services", image: "/images/justx.webp" },
     { label: "Projets", page: "travail", image: "/images/justx_fitness.webp" },
     { label: "A propos", page: "apropos", image: "/images/missionX5.webp" },
-    { label: "Contact", page: "contact", image: "/images/carte-copie.jpg" }
+    { label: "Contact", page: "contact", image: "/images/agence.webp" }
   ];
 
   const projectPreviewCards = [
@@ -42,7 +42,7 @@
       page: "projet3",
       title: projectPages.projet3.title,
       meta: "Projet sélectionné",
-      image: projectPages.projet3.hero.image,
+      image: "/images/moovy2.webp",
       alt: projectPages.projet3.hero.alt,
       text: projectPages.projet3.hero.summaryMain,
       large: true
@@ -50,7 +50,7 @@
     {
       page: "projet5",
       title: projectPages.projet5.title,
-      image: projectPages.projet5.hero.image,
+      image: "/images/justx.webp",
       alt: projectPages.projet5.hero.alt,
       text: projectPages.projet5.hero.summaryMain,
       large: false
@@ -58,7 +58,7 @@
     {
       page: "projet7",
       title: projectPages.projet7.title,
-      image: projectPages.projet7.hero.image,
+      image: "/images/apple_justx.webp",
       alt: projectPages.projet7.hero.alt,
       text: projectPages.projet7.hero.summaryMain,
       large: false
@@ -66,7 +66,7 @@
     {
       page: "projet6",
       title: projectPages.projet6.title,
-      image: projectPages.projet6.hero.image,
+      image: "/images/missionx4.webp",
       alt: projectPages.projet6.hero.alt,
       text: projectPages.projet6.hero.summaryMain,
       large: false
@@ -74,7 +74,7 @@
     {
       page: "projet4",
       title: projectPages.projet4.title,
-      image: projectPages.projet4.hero.image,
+      image: "/images/justx_fitness.webp",
       alt: projectPages.projet4.hero.alt,
       text: projectPages.projet4.hero.summaryMain,
       large: false
@@ -98,7 +98,7 @@
     {
       page: "contact",
       title: "Contact",
-      image: "/images/photo2.webp",
+      image: "/images/contact.webp",
       alt: "Aperçu page contact",
       text: "Un point d'entrée direct pour cadrer votre projet avec clarté et exigence.",
       large: false
@@ -1280,10 +1280,25 @@
   }
 
   @media (min-width: 901px) {
+    .menu-shell {
+      grid-template-rows: 1fr;
+    }
+
+    .menu-upper {
+      height: 100%;
+      align-content: center;
+      pointer-events: none;
+    }
+
+    .menu-nav,
+    .project-previews {
+      pointer-events: auto;
+    }
+
     .menu-media-shell {
       position: absolute;
-      top: clamp(6.75rem, 9vh, 7.75rem);
-      bottom: clamp(2.5rem, 4vh, 3.5rem);
+      top: clamp(2rem, 4vh, 3.25rem);
+      bottom: clamp(2rem, 4vh, 3.25rem);
       left: 0;
       right: 0;
       width: min(32vw, 39rem);
@@ -1300,6 +1315,15 @@
       height: 100%;
       max-height: none;
       min-height: 0;
+    }
+  }
+
+  @media (min-width: 1101px) {
+    .project-previews {
+      position: absolute;
+      top: clamp(2rem, 4vh, 3.25rem);
+      right: clamp(1rem, 2vw, 2rem);
+      padding-top: 0;
     }
   }
 

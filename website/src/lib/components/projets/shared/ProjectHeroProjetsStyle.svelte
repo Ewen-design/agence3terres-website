@@ -16,6 +16,7 @@
   export let ctaLabel = "Visit Website";
   export let ctaHref = "";
   export let ctaExternal = false;
+  export let scrollToId = "";
 
   let heroSection;
   let heroStage;
@@ -97,7 +98,7 @@
     const actionReveal = getLocalRevealFromAbsolute(y, afterActionTop, 0.96, 0.2);
 
     pendingFrame = {
-      imageScale: q(lerp(1.03, 1.005, globalFade), 0.0001),
+      imageScale: q(lerp(1.05, 1.0, globalFade), 0.0001),
       imageBrightness: isMobile ? 1 : q(lerp(1, 0.62, globalFade), 0.001),
       imageOpacity: isMobile ? 1 : q(lerp(1, 0, globalFade), 0.001),
       imageDark: isMobile ? 0 : q(lerp(0.08, 0.62, globalFade), 0.001),
@@ -151,6 +152,14 @@
     const rect = button.getBoundingClientRect();
     button.style.setProperty("--mx", `${event.clientX - rect.left}px`);
     button.style.setProperty("--my", `${event.clientY - rect.top}px`);
+  }
+
+  function handleScrollCta() {
+    if (!browser || !scrollToId) return;
+    const target = document.getElementById(scrollToId);
+    if (!target) return;
+    const top = target.getBoundingClientRect().top + (window.scrollY || window.pageYOffset || 0);
+    window.scrollTo({ top, behavior: "smooth" });
   }
 
   function startIntro(withDelay = true) {
@@ -343,7 +352,12 @@
             </span>
           </a>
         {:else}
-          <button class="hero-cta" type="button" on:mousemove={handleButtonMove}>
+          <button
+            class="hero-cta"
+            type="button"
+            on:click={handleScrollCta}
+            on:mousemove={handleButtonMove}
+          >
             <span class="hero-cta__flip" data-text={ctaLabel}>
               <span class="hero-cta__text">{ctaLabel}</span>
             </span>
@@ -389,15 +403,18 @@
     height: var(--viewport-height);
     background: #000;
     opacity: 0;
-    transition: opacity 760ms cubic-bezier(0.22, 1, 0.36, 1);
-    will-change: opacity;
-    transform: translateZ(0);
+    transform: translateZ(0) scale(1.07);
+    transition:
+      opacity 760ms cubic-bezier(0.22, 1, 0.36, 1),
+      transform 1800ms cubic-bezier(0.22, 1, 0.36, 1);
+    will-change: opacity, transform;
     backface-visibility: hidden;
     -webkit-backface-visibility: hidden;
   }
 
   .hero-media.media-visible {
     opacity: 1;
+    transform: translateZ(0) scale(1);
   }
 
   .hero-media::after {
@@ -425,7 +442,7 @@
     height: 100%;
     object-fit: cover;
     opacity: 1;
-    transform: scale(1.03);
+    transform: scale(1.05);
     filter: brightness(1);
     transition:
       opacity 1.2s cubic-bezier(0.22, 1, 0.36, 1),
@@ -499,14 +516,17 @@
     max-width: 10ch;
     text-wrap: balance;
     opacity: 0;
+    filter: blur(14px);
     transform: translate3d(0, 14px, 0);
     transition:
       opacity 720ms cubic-bezier(0.22, 1, 0.36, 1),
+      filter 900ms cubic-bezier(0.22, 1, 0.36, 1),
       transform 720ms cubic-bezier(0.22, 1, 0.36, 1);
   }
 
   .title-visible .hero-scroll-label {
     opacity: 1;
+    filter: blur(0);
     transform: translate3d(0, 0, 0);
   }
 

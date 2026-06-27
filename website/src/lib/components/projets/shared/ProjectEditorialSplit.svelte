@@ -1,4 +1,6 @@
 <script>
+  import { reveal } from "$lib/actions/reveal.js";
+
   export let title = "";
   export let text = "";
   export let image = "";
@@ -11,8 +13,8 @@
 
 <section class="editorial-split" class:editorial-split--reverse={reverse}>
   <div class="editorial-split__copy">
-    <h2>{title}</h2>
-    <p>{text}</p>
+    <h2 use:reveal>{title}</h2>
+    <p use:reveal={{ delay: 90 }}>{text}</p>
   </div>
 
   <figure

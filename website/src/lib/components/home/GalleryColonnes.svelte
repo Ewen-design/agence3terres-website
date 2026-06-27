@@ -21,7 +21,7 @@
       height: 23
     },
     {
-      src: "images/missionx2.webp",
+      src: "images/tel_justx.webp",
       alt: "",
       ratio: "portrait",
       height: 34
@@ -42,7 +42,7 @@
       height: 42
     },
     {
-      src: "images/missionx1.webp",
+      src: "images/apple_justx.webp",
       alt: "",
       ratio: "portrait",
       height: 36
@@ -51,13 +51,13 @@
 
   const rightImages = [
     {
-      src: "images/telephone2.webp",
+      src: "images/tel_justx.webp",
       alt: "",
       ratio: "portrait",
       height: 38
     },
     {
-      src: "images/appareil_photo.webp",
+      src: "images/tel_moovy.webp",
       alt: "",
       ratio: "landscape",
       height: 23

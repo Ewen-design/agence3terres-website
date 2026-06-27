@@ -188,7 +188,7 @@
   on:touchend={touchEnd}
   on:touchcancel={touchEnd}
 >
-  <div class="bg" bind:this={bgEl} style="background-image:url('/images/telephone3.webp')"></div>
+  <div class="bg" bind:this={bgEl} style="background-image:url('/images/agence2.webp')"></div>
   <div class="overlay"></div>
   <div class="nav-zones" aria-hidden={isMobile}>
     <button

@@ -237,14 +237,17 @@
     letter-spacing: -0.02em;
     color: rgba(245, 241, 232, 0.82);
     opacity: 0;
+    filter: blur(8px);
     transform: translate3d(0, -12px, 0);
     transition:
       opacity 0.42s ease,
+      filter 0.87s cubic-bezier(0.16, 1, 0.3, 1),
       transform 0.72s cubic-bezier(0.16, 1, 0.3, 1);
   }
 
   .faq-panel.is-open .faq-answer {
     opacity: 1;
+    filter: blur(0);
     transform: translate3d(0, 0, 0);
     transition-delay: 0.08s;
   }

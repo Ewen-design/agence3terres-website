@@ -1,4 +1,6 @@
 <script>
+  import { reveal } from "$lib/actions/reveal.js";
+
   export let main =
     "Une histoire née de trois terres, entre intuition, exigence créative et sens du détail";
 
@@ -9,7 +11,7 @@
 <section class="story-slider-intro">
   <div class="story-slider-intro__text-wrap">
     <div class="story-slider-intro__card">
-      <p class="story-slider-intro__text">
+      <p class="story-slider-intro__text" use:reveal>
         <span class="story-slider-intro__main">{main}</span>
         <span class="story-slider-intro__muted"> {muted}</span>
       </p>

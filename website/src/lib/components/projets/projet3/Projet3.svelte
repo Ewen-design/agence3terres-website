@@ -42,7 +42,7 @@
       title="Notre rôle"
       images={[
         { src: "/images/moovy.webp", alt: "Interface desktop de Moovy" },
-        { src: "/images/moovy_mobile.webp", alt: "Interface mobile de Moovy" }
+        { src: "/images/tel_moovy3.webp", alt: "Interface mobile de Moovy" }
       ]}
       items={[
         {
@@ -78,7 +78,7 @@
     <ProjectEditorialSplit
       title="Vue desktop"
       text="Sur desktop, la plateforme ouvre davantage le catalogue tout en gardant un chemin tres lisible vers le bon film."
-      image="/images/moovy.webp"
+      image="/images/moovy_mac.webp"
       alt="Vue desktop du projet Moovy"
       reverse={true}
     />
@@ -113,9 +113,9 @@
   <div class="project-theme-band">
     <ProjectEditorialMobileShowcase
       text="Le mobile devait permettre de passer d'une envie vague a un choix concret avec le moins de friction possible."
-      leftImage="/images/moovy_mobile.webp"
+      leftImage="/images/moovy_mac.webp"
       leftAlt="Interface mobile verticale Moovy"
-      rightImage="/images/moovy.webp"
+      rightImage="/images/tel_moovy3.webp"
       rightAlt="Interface desktop Moovy"
       mediaMinHeight="46.5rem"
     />

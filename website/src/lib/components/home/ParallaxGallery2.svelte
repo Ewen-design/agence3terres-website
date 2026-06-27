@@ -13,7 +13,7 @@
     {
       title: "Site web",
       subtitle: "Des interfaces fluides, desirables et precises.",
-      image: "/images/telephone_parfum.webp"
+      image: "/images/tel_moovy2.webp"
     },
     {
       title: "Logo",
@@ -708,14 +708,17 @@
     color: var(--desktop-title-color);
     text-shadow: 0 1px 12px rgba(0,0,0,.38);
     opacity: 0;
+    filter: blur(14px);
     transform: translate3d(0, -115%, 0);
     transition:
       transform .42s cubic-bezier(.22,.61,.36,1),
+      filter .57s cubic-bezier(.22,.61,.36,1),
       opacity .32s ease;
   }
 
   .desktop-card.is-active .desktop-card-title {
     opacity: 1;
+    filter: blur(0);
     transform: translate3d(0, 0, 0);
   }
 
@@ -829,6 +832,7 @@
 
   .mobile-card.is-active .mobile-card-title {
     opacity: 1;
+    filter: blur(0);
     transform: translate3d(0, 0, 0);
   }
 
@@ -911,7 +915,7 @@
     }
 
     .mobile-stack {
-      display: block;
+      display: flow-root;
       width: 100%;
       margin: 0 auto;
       position: relative;
@@ -1007,9 +1011,11 @@
       color: rgba(255,255,255,.98);
       text-shadow: 0 1px 10px rgba(0,0,0,.34);
       opacity: 0;
+      filter: blur(14px);
       transform: translate3d(0, -115%, 0);
       transition:
         transform .42s cubic-bezier(.22,.61,.36,1),
+        filter .57s cubic-bezier(.22,.61,.36,1),
         opacity .32s ease;
     }
 
@@ -1055,19 +1061,22 @@
 
     .mobile-nav-shell {
       position: absolute;
-      inset: 0;
+      top: 2.8rem;
+      left: 0;
+      right: 0;
+      height: calc(clamp(258px,74vw,324px) * 1.52 / 0.82);
       pointer-events: none;
     }
 
     .mobile-nav-btn {
       position: absolute;
-      top: calc(2.8rem + (clamp(258px,74vw,324px) * 1.52 / 0.82) * 0.5);
+      top: 50%;
+      transform: translateY(-50%);
       width: 3rem;
       height: 3rem;
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      transform: translateY(-50%);
       z-index: 10;
       border: 0;
       background: transparent;
@@ -1103,6 +1112,10 @@
     .mobile-card {
       flex-basis: clamp(244px,78vw,300px);
       width: clamp(244px,78vw,300px);
+    }
+
+    .mobile-nav-shell {
+      height: calc(clamp(244px,78vw,300px) * 1.52 / 0.82);
     }
 
     .mobile-nav-btn {

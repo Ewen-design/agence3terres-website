@@ -1,4 +1,6 @@
 <script>
+  import { reveal } from "$lib/actions/reveal.js";
+
   export let eyebrow = "";
   export let text = "";
   export let leftImage = "";
@@ -74,8 +76,8 @@
   </div>
 
   <div class="services-editorial-hover-showcase__text-grid">
-    <div class="services-editorial-hover-showcase__eyebrow">{eyebrow}</div>
-    <p>{text}</p>
+    <div class="services-editorial-hover-showcase__eyebrow" use:reveal>{eyebrow}</div>
+    <p use:reveal={{ delay: 90 }}>{text}</p>
   </div>
 </section>
 

@@ -1,12 +1,14 @@
 <script>
+  import { reveal } from "$lib/actions/reveal.js";
+
   export let eyebrow = "";
   export let text = "";
 </script>
 
 <section class="editorial-statement">
-  <div class="editorial-statement__eyebrow">{eyebrow}</div>
+  <div class="editorial-statement__eyebrow" use:reveal>{eyebrow}</div>
   <div class="editorial-statement__body">
-    <p>{text}</p>
+    <p use:reveal={{ delay: 90 }}>{text}</p>
   </div>
 </section>
 
