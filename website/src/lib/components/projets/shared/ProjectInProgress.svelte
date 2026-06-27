@@ -56,6 +56,9 @@
     overflow: clip;
     background: #000;
     isolation: isolate;
+    /* Solid black backstop — paints over any subpixel seam at the very bottom
+       edge of the page so no thin line shows under the gradient. */
+    box-shadow: 0 2px 0 0 #000;
   }
 
   .pip__media {
@@ -74,8 +77,8 @@
     transform: scale(1.06);
   }
 
-  /* Clean black fade — just a thin black anchor at the very bottom so the edge
-     melts into the page, then a light, quick dissolve so the image stays visible. */
+  /* Clean black fade — a smooth, many-stop ramp (no flat band or hard step that
+     would read as a line) dissolving upward so the image stays visible. */
   .pip__shade {
     position: absolute;
     inset: 0;
@@ -83,11 +86,16 @@
       linear-gradient(
         to top,
         #000 0%,
-        rgba(0, 0, 0, 0.86) 6%,
-        rgba(0, 0, 0, 0.52) 16%,
-        rgba(0, 0, 0, 0.28) 28%,
-        rgba(0, 0, 0, 0.1) 44%,
-        rgba(0, 0, 0, 0) 64%
+        rgba(0, 0, 0, 0.95) 4%,
+        rgba(0, 0, 0, 0.82) 9%,
+        rgba(0, 0, 0, 0.66) 15%,
+        rgba(0, 0, 0, 0.5) 22%,
+        rgba(0, 0, 0, 0.36) 30%,
+        rgba(0, 0, 0, 0.24) 39%,
+        rgba(0, 0, 0, 0.14) 49%,
+        rgba(0, 0, 0, 0.07) 61%,
+        rgba(0, 0, 0, 0.02) 76%,
+        rgba(0, 0, 0, 0) 100%
       ),
       linear-gradient(
         90deg,
@@ -115,7 +123,7 @@
     /* Same size as the project hero title (.hero-scroll-label). */
     font-size: clamp(5.8rem, 5vw, 18rem);
     line-height: 1;
-    letter-spacing: 0.02em;
+    letter-spacing: normal;
     white-space: pre-line;
     text-wrap: balance;
     color: #f7f3ea;

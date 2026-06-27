@@ -53,12 +53,15 @@
     text-wrap: pretty;
   }
 
-  /* First text — above the images, aligned to the left edge of the first image. */
+  /* First text — above the images, spanning exactly the first image's column
+     (aligned to both its left and right edges). */
   .project-brief__lead--top {
-    grid-column: 1 / -1;
-    justify-self: start;
-    max-width: 52ch;
+    grid-column: 1 / 2;
     margin-bottom: clamp(2rem, 4vw, 3.5rem);
+  }
+
+  .project-brief--single .project-brief__lead--top {
+    grid-column: 1 / -1;
   }
 
   /* Second text — below the images, aligned to the left edge of the second image. */
