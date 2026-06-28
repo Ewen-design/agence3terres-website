@@ -594,9 +594,13 @@
     transition: all 1s cubic-bezier(.22,.61,.36,1);
   }
 
-  .more:hover .dots .dot:nth-child(1) { transform: translateX(6px) scale(1.6); }
-  .more:hover .dots .dot:nth-child(2) { opacity: 0; transform: scale(0); }
-  .more:hover .dots .dot:nth-child(3) { transform: translateX(-6px) scale(1.6); }
+  /* Hover effects ONLY on real hover devices — on touch, :hover "sticks" after a
+     tap, which would leave the dots spread/scaled after closing the menu. */
+  @media (hover: hover) and (pointer: fine) {
+    .more:hover .dots .dot:nth-child(1) { transform: translateX(6px) scale(1.6); }
+    .more:hover .dots .dot:nth-child(2) { opacity: 0; transform: scale(0); }
+    .more:hover .dots .dot:nth-child(3) { transform: translateX(-6px) scale(1.6); }
+  }
 
   /* Close (X) — appears in place of the dots while the menu is open. */
   .close-cross {
@@ -628,8 +632,10 @@
     transform: scale(1) rotate(0deg);
   }
 
-  .menu-open .more:hover .close-cross {
-    transform: scale(1.12) rotate(90deg);
+  @media (hover: hover) and (pointer: fine) {
+    .menu-open .more:hover .close-cross {
+      transform: scale(1.12) rotate(90deg);
+    }
   }
 
   /* Glow border effect — approche mask pour respecter border-radius */
@@ -733,15 +739,21 @@
       margin-right: 0;
     }
 
-    /* Pas d'effet hover sur touch, mais tap donne un feedback */
-    .more:active .dots .dot:nth-child(1) { transform: translateX(4px) scale(1.3); }
-    .more:active .dots .dot:nth-child(2) { opacity: 0; transform: scale(0); }
-    .more:active .dots .dot:nth-child(3) { transform: translateX(-4px) scale(1.3); }
+    /* No :active dot feedback on touch — :active "sticks" after a tap on mobile,
+       which would leave the dots shifted/scaled after closing the menu (they
+       wouldn't reset on their own). The menu-open toggle handles the dots. */
 
     .dot {
       transition:
         transform 280ms cubic-bezier(.22, 1, .36, 1),
         opacity 200ms ease;
+    }
+
+    /* Snap the dots straight back to their neutral state when the menu closes. */
+    .more .dots {
+      transition:
+        opacity 0.28s cubic-bezier(.22,.61,.36,1),
+        transform 0.28s cubic-bezier(.22,.61,.36,1);
     }
   }
 

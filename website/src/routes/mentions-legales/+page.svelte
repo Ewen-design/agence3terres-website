@@ -1,4 +1,6 @@
 <script>
+  import { reveal } from "$lib/actions/reveal.js";
+
   const legalSections = [
     {
       title: "Éditeur du site",
@@ -50,12 +52,12 @@
 <section class="creative-section legal-page">
   <div class="legal-shell">
     <div class="legal-hero">
-      <h1>Mentions légales</h1>
+      <h1 use:reveal>Mentions légales</h1>
     </div>
 
     <div class="legal-content">
-      {#each legalSections as section}
-        <section class="legal-section">
+      {#each legalSections as section, i}
+        <section class="legal-section" use:reveal={{ delay: i * 80 }}>
           <h2>{section.title}</h2>
 
           {#each section.paragraphs as paragraph}

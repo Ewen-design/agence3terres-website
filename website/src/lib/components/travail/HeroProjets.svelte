@@ -47,7 +47,9 @@
     textY: -9999,
     textEdge: -9999,
     smallImageScale: -1,
-    smallImageY: -9999
+    smallImageY: -9999,
+    smallImageOpacity: -1,
+    smallImageBlur: -1
   };
 
   const finalText =
@@ -107,7 +109,9 @@
       textY: q(lerp(18, 0, localTextReveal), 0.1),
       textEdge: q(lerp(0, 118, localTextReveal), 0.1),
       smallImageScale: q(lerp(0.885, 1.02, localImageReveal), 0.001),
-      smallImageY: q(lerp(22, 0, localImageReveal), 0.1)
+      smallImageY: q(lerp(22, 0, localImageReveal), 0.1),
+      smallImageOpacity: q(lerp(0, 1, localImageReveal), 0.001),
+      smallImageBlur: q(lerp(12, 0, localImageReveal), 0.01)
     };
 
     dirty = true;
@@ -138,16 +142,8 @@
       applied.imageDark = f.imageDark;
     }
 
-    if (afterImageEl) {
-      if (
-        f.smallImageScale !== applied.smallImageScale ||
-        f.smallImageY !== applied.smallImageY
-      ) {
-        afterImageEl.style.transform = `translate3d(0, ${f.smallImageY}px, 0) scale(${f.smallImageScale})`;
-        applied.smallImageScale = f.smallImageScale;
-        applied.smallImageY = f.smallImageY;
-      }
-    }
+    // The small after-image now arrives via the shared `use:reveal` action
+    // (blur → sharp fade), like every other image on the site.
 
     dirty = false;
   }
@@ -322,7 +318,7 @@
         </h2>
       </div>
 
-      <div class="after-image" bind:this={afterImageEl}>
+      <div class="after-image" bind:this={afterImageEl} use:reveal>
         <img class="after-image-asset" src={activeAfterImage} alt="Visuel 3 Terres" />
       </div>
     </div>
@@ -563,10 +559,7 @@
     aspect-ratio: 1.45 / 1;
     overflow: hidden;
     background: #0b0b0b;
-    will-change: transform;
     margin-top: clamp(4rem, 6vw, 7rem);
-    transform-origin: 50% 50%;
-    transform: translate3d(0, 22px, 0) scale(0.885);
   }
 
   .after-image img {
@@ -704,8 +697,7 @@
       margin-top: 3.5rem;
     }
 
-    .after-text,
-    .after-image {
+    .after-text {
       transition: none !important;
       animation: none !important;
       filter: none !important;

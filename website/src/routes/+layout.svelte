@@ -523,6 +523,7 @@
   class:travail-soft-gradients={isTravailPage}
   class:contact-page={pathname === "/contact"}
   class:project-light-theme={isProjectLightTheme}
+  class:legal-route={pathname === "/mentions-legales"}
 >
   {#if !isMobile}
     <CustomCursor />
@@ -696,6 +697,13 @@
 
   main.project-light-theme .top-gradient,
   main.project-light-theme .bottom-gradient {
+    opacity: 0;
+  }
+
+  /* Mentions légales is a light/white page → the global darkening gradients
+     would show as dark edges, so remove them on this route. */
+  main.legal-route .top-gradient,
+  main.legal-route .bottom-gradient {
     opacity: 0;
   }
 

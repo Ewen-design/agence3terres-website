@@ -1,5 +1,6 @@
 <script>
   import { onMount } from "svelte";
+  import { reveal } from "$lib/actions/reveal.js";
 
   const items = [
     {
@@ -150,7 +151,7 @@
 </script>
 
 <section class="about-editorial-principles">
-  <div class="principles-shell principles-shell-desktop" bind:this={shellEl}>
+  <div class="principles-shell principles-shell-desktop" bind:this={shellEl} use:reveal>
     <div class="principles-list" role="tablist" aria-label="Principes Agence 3 Terres">
       {#each items as item, index}
         <button
@@ -191,7 +192,7 @@
     </div>
   </div>
 
-  <div class="principles-mobile" aria-label="Principes Agence 3 Terres">
+  <div class="principles-mobile" aria-label="Principes Agence 3 Terres" use:reveal>
     <div class="principles-mobile-track" bind:this={mobileTrackEl} on:scroll={handleMobileTrackScroll} data-native-wheel="true">
       {#each items as item, index}
         <article
