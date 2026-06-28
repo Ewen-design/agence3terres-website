@@ -1,4 +1,6 @@
 <script>
+  import { reveal } from "$lib/actions/reveal.js";
+
   const items = [
     {
       question: "Quels types de projets prenez-vous en charge ?",
@@ -41,12 +43,12 @@
 
 <section class="faq-section">
   <div class="faq-title-wrap">
-    <h2 class="faq-title">FAQs</h2>
+    <h2 class="faq-title" use:reveal>FAQs</h2>
   </div>
 
   <div class="faq-list">
     {#each items as item, index}
-      <article class="faq-item" class:is-open={openIndex === index}>
+      <article class="faq-item" class:is-open={openIndex === index} use:reveal={{ delay: index * 70 }}>
         <button
           class="faq-trigger"
           type="button"

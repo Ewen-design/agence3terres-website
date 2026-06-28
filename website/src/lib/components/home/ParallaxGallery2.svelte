@@ -2,8 +2,18 @@
   import { onMount, onDestroy } from "svelte";
   import { browser } from "$app/environment";
   import { navigate } from "$lib/navigate.js";
+  import { reveal } from "$lib/actions/reveal.js";
 
-  const items = [
+  // Reusable: the home page uses the defaults; project pages pass their own
+  // `items`, `href`, `ctaLabel` and intro copy while keeping the exact same UI.
+  export let href = "/services";
+  export let ctaLabel = "Decouvrir";
+  export let ariaLabelPrefix = "Voir le service";
+  export let introMain = "De l'identité";
+  export let introMuted = "à l'expérience complète.";
+
+  // items: {title, image, mobileImage?, href?, cta?, ariaLabel?, subtitle?}[]
+  export let items = [
     {
       title: "Identite de marque",
       subtitle: "Du systeme visuel a l'identite complete, pensee pour durer.",
@@ -368,8 +378,8 @@
   <div class="gallery-intro-group">
     <div class="gallery-header">
       <div class="intro-card">
-        <p class="intro-headline">
-          <span class="intro-main">De l'identité</span><span class="intro-muted">à l'expérience complète.</span>
+        <p class="intro-headline" use:reveal>
+          <span class="intro-main">{introMain}</span><span class="intro-muted">{introMuted}</span>
         </p>
       </div>
     </div>
@@ -383,9 +393,9 @@
             class="desktop-card"
             class:is-active={activeDesktopIndex === index || activeDesktopIndex + 1 === index}
             bind:this={desktopCardEls[index]}
-            href="/services"
+            href={item.href ?? href}
             data-cursor="view"
-            aria-label={`Voir le service ${item.title}`}
+            aria-label={item.ariaLabel ?? `${ariaLabelPrefix} ${item.title}`}
             draggable="false"
             onmousemove={handleCardMove}
           >
@@ -411,8 +421,8 @@
                 <span class="desktop-card-title">{item.title}</span>
               </div>
               <span class="dc-btn">
-                <span class="dc-btn-flip" data-text="Decouvrir">
-                  <span class="dc-btn-text">Decouvrir</span>
+                <span class="dc-btn-flip" data-text={item.cta ?? ctaLabel}>
+                  <span class="dc-btn-text">{item.cta ?? ctaLabel}</span>
                 </span>
               </span>
             </div>
@@ -456,9 +466,9 @@
             class="mobile-card"
             class:is-active={activeMobileIndex === index}
             bind:this={mobileCardEls[index]}
-            href="/services"
+            href={item.href ?? href}
             data-cursor="view"
-            aria-label={`Voir le service ${item.title}`}
+            aria-label={item.ariaLabel ?? `${ariaLabelPrefix} ${item.title}`}
             draggable="false"
           >
             <div class="mobile-image">
@@ -483,8 +493,8 @@
                 <span class="mobile-card-title">{item.title}</span>
               </div>
               <span class="mc-btn">
-                <span class="mc-btn-flip" data-text="Decouvrir">
-                  <span class="mc-btn-text">Decouvrir</span>
+                <span class="mc-btn-flip" data-text={item.cta ?? ctaLabel}>
+                  <span class="mc-btn-text">{item.cta ?? ctaLabel}</span>
                 </span>
               </span>
             </div>

@@ -9,8 +9,8 @@
 <section class="editorial-role">
   {#if images.length}
     <div class="editorial-role__media-row">
-      {#each images as image}
-        <figure class="editorial-role__media">
+      {#each images as image, i}
+        <figure class="editorial-role__media" use:reveal={{ delay: i * 90 }}>
           <img src={image.src} alt={image.alt} loading="lazy" />
         </figure>
       {/each}

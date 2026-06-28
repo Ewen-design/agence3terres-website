@@ -1,6 +1,7 @@
 <script>
   import { onMount, onDestroy } from "svelte";
   import { browser } from "$app/environment";
+  import { reveal } from "$lib/actions/reveal.js";
   import {
     registerParallax,
     unregisterParallax,
@@ -284,7 +285,7 @@
   <section class="after-section">
     <div class="after-grid">
       <div class="after-text" bind:this={afterTextEl}>
-        <h2 aria-label={finalText}>
+        <h2 aria-label={finalText} use:reveal>
           {#each words as word, w}
             {#if w === grayStartsAtWord}<br>{/if}<span class="word" class:muted-word={w >= grayStartsAtWord}>{word}</span>{#if w < words.length - 1 && w !== grayStartsAtWord - 1}<span class="space">&nbsp;</span>{/if}
           {/each}

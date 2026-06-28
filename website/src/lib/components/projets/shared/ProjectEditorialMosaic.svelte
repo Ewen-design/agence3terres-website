@@ -8,12 +8,12 @@
 
 <section class="project-editorial-mosaic">
   <div class="project-editorial-mosaic__grid">
-    <figure class="project-editorial-mosaic__media project-editorial-mosaic__media--feature">
+    <figure class="project-editorial-mosaic__media project-editorial-mosaic__media--feature" use:reveal>
       <img src={feature.src} alt={feature.alt} loading="lazy" />
     </figure>
 
-    {#each items.slice(0, 2) as item}
-      <figure class="project-editorial-mosaic__media">
+    {#each items.slice(0, 2) as item, i}
+      <figure class="project-editorial-mosaic__media" use:reveal={{ delay: i * 90 + 90 }}>
         <img src={item.src} alt={item.alt} loading="lazy" />
       </figure>
     {/each}

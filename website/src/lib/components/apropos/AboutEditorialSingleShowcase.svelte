@@ -1,4 +1,6 @@
 <script>
+  import { reveal } from "$lib/actions/reveal.js";
+
   export let text = "";
   export let mutedText = "";
   export let image = "";
@@ -22,11 +24,11 @@
       <span class="about-editorial-single-showcase__scroll-arrow">↓</span>
     </div>
 
-    <figure class="about-editorial-single-showcase__accent">
+    <figure class="about-editorial-single-showcase__accent" use:reveal>
       <img src={accentImage} alt={accentAlt} loading="lazy" />
     </figure>
 
-    <p class="about-editorial-single-showcase__text">
+    <p class="about-editorial-single-showcase__text" use:reveal={{ delay: 120 }}>
       <span>{text}</span>
       {#if mutedText}
         <span class="about-editorial-single-showcase__muted"> {mutedText}</span>

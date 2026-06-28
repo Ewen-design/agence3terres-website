@@ -15,6 +15,7 @@
     <figure
       class="editorial-mobile-showcase__media editorial-mobile-showcase__media--dark"
       style={`--editorial-mobile-showcase-media-min-height:${mediaMinHeight};`}
+      use:reveal
     >
       <img src={leftImage} alt={leftAlt} loading="lazy" />
     </figure>
@@ -22,6 +23,7 @@
     <figure
       class="editorial-mobile-showcase__media"
       style={`--editorial-mobile-showcase-media-min-height:${mediaMinHeight};`}
+      use:reveal={{ delay: 100 }}
     >
       <img src={rightImage} alt={rightAlt} loading="lazy" />
     </figure>

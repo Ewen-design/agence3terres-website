@@ -462,6 +462,40 @@ body {
   transition: background-color var(--project-theme-transition);
 }
 
+/* The themed colour/background transitions above redeclare `transition` on the
+   same media and text elements with higher specificity than the global `.reveal`
+   rule, which would cancel the focus-pull arrival (it would appear instantly).
+   Re-assert the reveal transition with matching specificity so it always plays. */
+.project-theme-page :is(
+  .editorial-role__media,
+  .editorial-split__media,
+  .editorial-mobile-showcase__media
+).reveal,
+.project-theme-page :is(
+  .editorial-role__item,
+  .editorial-split__copy
+) .reveal {
+  transition:
+    opacity 0.6s ease,
+    filter 0.85s cubic-bezier(0.22, 0.61, 0.36, 1),
+    transform 0.85s cubic-bezier(0.22, 0.61, 0.36, 1);
+  transition-delay: var(--reveal-delay, 0ms);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .project-theme-page :is(
+    .editorial-role__media,
+    .editorial-split__media,
+    .editorial-mobile-showcase__media
+  ).reveal,
+  .project-theme-page :is(
+    .editorial-role__item,
+    .editorial-split__copy
+  ) .reveal {
+    transition: none;
+  }
+}
+
 .project-theme-page.theme-light,
 .project-theme-band.theme-light {
   --project-surface-bg: #f7f5f1;

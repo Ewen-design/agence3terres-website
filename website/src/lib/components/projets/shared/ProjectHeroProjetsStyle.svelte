@@ -1,6 +1,7 @@
 <script>
   import { onMount } from "svelte";
   import { browser } from "$app/environment";
+  import { reveal } from "$lib/actions/reveal.js";
   import {
     registerParallax,
     unregisterParallax,
@@ -322,8 +323,8 @@
   <section class="after-section">
     <div class="after-grid">
       <div class="after-meta" bind:this={afterTextEl}>
-        {#each metaBlocks as block}
-          <article class="after-meta__block">
+        {#each metaBlocks as block, i}
+          <article class="after-meta__block" use:reveal={{ delay: i * 90 }}>
             <h2>{block.label}</h2>
             {#if Array.isArray(block.value)}
               <ul>
@@ -338,7 +339,7 @@
         {/each}
       </div>
 
-      <div class="after-action" bind:this={afterActionEl}>
+      <div class="after-action" bind:this={afterActionEl} use:reveal={{ delay: 120 }}>
         {#if ctaHref}
           <a
             class="hero-cta"
@@ -597,8 +598,6 @@
   .after-action {
     justify-self: end;
     padding-inline: var(--project-text-inset, 0);
-    opacity: 1;
-    transform: none;
     will-change: transform, opacity;
   }
 

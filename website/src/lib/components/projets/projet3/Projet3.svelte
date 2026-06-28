@@ -3,21 +3,23 @@
   import ProjectThemeTrigger from "$lib/components/projets/shared/ProjectThemeTrigger.svelte";
   import ProjectHeroProjetsStyle from "$lib/components/projets/shared/ProjectHeroProjetsStyle.svelte";
   import ProjectEditorialRole from "$lib/components/projets/shared/ProjectEditorialRole.svelte";
-  import ProjectStorySlider from "$lib/components/projets/shared/ProjectStorySlider.svelte";
   import ProjectEditorialSplit from "$lib/components/projets/shared/ProjectEditorialSplit.svelte";
   import ProjectEditorialStatement from "$lib/components/projets/shared/ProjectEditorialStatement.svelte";
   import ProjectEditorialMobileShowcase from "$lib/components/projets/shared/ProjectEditorialMobileShowcase.svelte";
   import ProjectEditorialMosaic from "$lib/components/projets/shared/ProjectEditorialMosaic.svelte";
-  import ProjectLinksCarousel from "$lib/components/projets/shared/ProjectLinksCarousel.svelte";
+  import ParallaxGallery2 from "$lib/components/home/ParallaxGallery2.svelte";
 
-  let sliderActive = false;
-
-  function handleSliderActiveChange(event) {
-    sliderActive = !!event.detail?.active;
-  }
+  const otherProjects = [
+    { title: "JustX", image: "/images/logo_justx.webp", href: "/projet5" },
+    { title: "JustX Fitness", image: "/images/telephone3.webp", mobileImage: "/images/telephone2.webp", href: "/projet7" },
+    { title: "Mission X", image: "/images/missionx-hero-agency.jpg", mobileImage: "/images/missionx3.webp", href: "/projet6" },
+    { title: "Ludosphères", image: "/images/carte-copie.jpg", href: "/projet4" },
+    { title: "Serein Design", image: "/images/telephone3.webp", href: "/projet1" },
+    { title: "Votre projet ?", image: "/images/telephone2.webp", href: "/contact", cta: "Nous contacter" }
+  ];
 </script>
 
-<ProjectThemePage headerToneOverride={sliderActive ? "light" : null}>
+<ProjectThemePage>
   <ProjectHeroProjetsStyle
     title="Moovy"
     image="/images/moovy.webp"
@@ -84,32 +86,6 @@
     />
   </div>
 
-  <ProjectStorySlider
-    on:slideractivechange={handleSliderActiveChange}
-    slides={[
-      {
-        label: "Identité",
-        title: "Charte graphique",
-        text: "Un langage visuel clair pour installer l'univers de Moovy.",
-        image: "/images/moovy.webp",
-        mobileImage: "/images/moovy_mobile.webp"
-      },
-      {
-        label: "Logo",
-        title: "Création de logo",
-        text: "Un signe simple et reconnaissable, pensé pour tous les formats.",
-        image: "/images/moovy_mobile.webp"
-      },
-      {
-        label: "Digital",
-        title: "Site web",
-        text: "Une expérience fluide pour explorer et choisir sans surcharge.",
-        image: "/images/moovy.webp",
-        mobileImage: "/images/moovy_mobile.webp"
-      }
-    ]}
-  />
-
   <div class="project-theme-band">
     <ProjectEditorialMobileShowcase
       text="Le mobile devait permettre de passer d'une envie vague a un choix concret avec le moins de friction possible."
@@ -133,6 +109,12 @@
       ]}
     />
 
-    <ProjectLinksCarousel currentPage="projet3" />
+    <ParallaxGallery2
+      items={otherProjects}
+      ctaLabel="Voir le projet"
+      ariaLabelPrefix="Voir le projet"
+      introMain="Découvrez"
+      introMuted="nos autres projets."
+    />
   </div>
 </ProjectThemePage>

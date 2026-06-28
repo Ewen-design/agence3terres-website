@@ -1,6 +1,7 @@
 <script>
   import { onMount, onDestroy } from "svelte";
   import { browser } from "$app/environment";
+  import { reveal } from "$lib/actions/reveal.js";
 
   // ── Data ───────────────────────────────────────────────────────────────────
   const quotes = [
@@ -206,8 +207,8 @@
   </div>
 
   <div class="vision-header">
-    <h2>Notre vision</h2>
-    <p>Une collection de principes qui guident chacune de nos créations.</p>
+    <h2 use:reveal>Notre vision</h2>
+    <p use:reveal={{ delay: 120 }}>Une collection de principes qui guident chacune de nos créations.</p>
   </div>
 
   <div bind:this={section}></div>
@@ -316,9 +317,8 @@
     font-family: "Inter", sans-serif;
     font-size: 1rem;
     font-weight: 300;
-    opacity: 0.65;
     line-height: 1.6;
-    color: #fff;
+    color: rgba(255, 255, 255, 0.65);
   }
 
   .carousel-wrapper {

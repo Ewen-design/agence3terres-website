@@ -342,6 +342,7 @@
     background: #050505;
   }
 
+  /* Black info backdrop arrives as a progressive blur-fade (focus-pull). */
   .contact::before {
     content: "";
     position: absolute;
@@ -349,14 +350,17 @@
     width: var(--contact-panel-width);
     background: #050505;
     z-index: 1;
-    transform: scale3d(0, 1, 1);
-    transform-origin: left center;
-    transition: transform 860ms cubic-bezier(0.22, 1, 0.36, 1);
-    will-change: transform;
+    opacity: 0;
+    filter: blur(30px);
+    transition:
+      opacity 860ms cubic-bezier(0.22, 1, 0.36, 1),
+      filter 980ms cubic-bezier(0.22, 1, 0.36, 1);
+    will-change: opacity, filter;
   }
 
   .contact.intro-block-visible::before {
-    transform: scale3d(1, 1, 1);
+    opacity: 1;
+    filter: blur(0);
   }
 
   .contact-legal {
@@ -405,15 +409,32 @@
       minmax(20rem, 34rem);
     justify-content: start;
     column-gap: var(--contact-panel-gap);
-    opacity: 0;
-    transform: translate3d(0, 14px, 0);
-    transition:
-      opacity 620ms cubic-bezier(0.22, 1, 0.36, 1),
-      transform 620ms cubic-bezier(0.22, 1, 0.36, 1);
   }
 
-  .intro-content-visible .container {
+  /* Each block focus-pulls in (blur → sharp, slight rise), staggered. */
+  .hero,
+  .form-shell,
+  .contact-info {
+    opacity: 0;
+    filter: blur(14px);
+    transform: translate3d(0, 20px, 0);
+    transition:
+      opacity 0.6s ease,
+      filter 0.85s cubic-bezier(0.22, 0.61, 0.36, 1),
+      transform 0.85s cubic-bezier(0.22, 0.61, 0.36, 1);
+    will-change: opacity, filter, transform;
+    backface-visibility: hidden;
+  }
+
+  .intro-content-visible .hero { transition-delay: 0ms; }
+  .intro-content-visible .form-shell { transition-delay: 130ms; }
+  .intro-content-visible .contact-info { transition-delay: 240ms; }
+
+  .intro-content-visible .hero,
+  .intro-content-visible .form-shell,
+  .intro-content-visible .contact-info {
     opacity: 1;
+    filter: blur(0);
     transform: translate3d(0, 0, 0);
   }
 
@@ -903,14 +924,9 @@
       inset: 80svh 0 0;
       width: auto;
       background: #050505;
-      transform: scale3d(1, 0, 1);
-      transform-origin: center bottom;
+      transform: none;
       backface-visibility: hidden;
       -webkit-backface-visibility: hidden;
-    }
-
-    .contact.intro-block-visible::before {
-      transform: scale3d(1, 1, 1);
     }
 
     .background {
@@ -1142,6 +1158,9 @@
     label,
     .background,
     .container,
+    .hero,
+    .form-shell,
+    .contact-info,
     .contact::before,
     .contact-legal {
       transition: none;
@@ -1149,9 +1168,13 @@
 
     .background,
     .container,
+    .hero,
+    .form-shell,
+    .contact-info,
     .contact::before,
     .contact-legal {
       opacity: 1;
+      filter: none;
       transform: none;
     }
   }

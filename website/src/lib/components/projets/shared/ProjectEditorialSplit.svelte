@@ -21,6 +21,7 @@
     class="editorial-split__media"
     class:editorial-split__media--ratio={!!mediaAspectRatio}
     style={`--editorial-split-media-min-height:${mediaMinHeight}; --editorial-split-media-fit:${mediaFit}; ${mediaAspectRatio ? `--editorial-split-media-aspect-ratio:${mediaAspectRatio};` : ""}`}
+    use:reveal={{ delay: 120 }}
   >
     <img src={image} alt={alt} loading="lazy" />
   </figure>

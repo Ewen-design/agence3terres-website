@@ -1,5 +1,6 @@
 <script>
   import { navigate } from "$lib/navigate.js";
+  import { reveal } from "$lib/actions/reveal.js";
 
   export let excludePages = [];
 
@@ -75,11 +76,12 @@
 
 <section class="projects-grid">
   <div class="grid-inner">
-    {#each filteredProjects as p}
+    {#each filteredProjects as p, i}
       <button
         class="p-card"
         type="button"
         data-cursor="view"
+        use:reveal={{ delay: (i % 2) * 100 }}
         on:mousemove={handleMove}
         on:click={() => navigate(p.page)}
       >
