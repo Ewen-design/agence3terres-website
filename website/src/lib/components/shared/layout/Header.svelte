@@ -214,6 +214,14 @@
     menuOpen = true;
   }
 
+  function toggleMenu() {
+    if (menuOpen) {
+      menuOpen = false;
+    } else {
+      openMenu();
+    }
+  }
+
   function startHeaderIntro() {
     if (headerIntroStarted) return;
     headerIntroStarted = true;
@@ -356,7 +364,7 @@
 
 <header
   class="nav-wrapper {compact ? 'compact' : ''} {menuOpen ? 'menu-open' : ''} {themeClass} {headerReady ? 'is-ready' : 'is-loading'} {headerIntroVisible ? 'intro-visible' : 'intro-hidden'} {headerIntroVisible && !headerIntroDone ? 'intro-animating' : ''}"
-  style="color:{textColor}"
+  style="color:{menuOpen ? '#ffffff' : textColor}"
   bind:this={headerEl}
 >
   <button
@@ -374,11 +382,11 @@
     data-cursor="button"
     role="button"
     tabindex="0"
-    aria-label="Ouvrir le menu"
+    aria-label={menuOpen ? "Fermer le menu" : "Ouvrir le menu"}
     aria-expanded={menuOpen}
     on:mousemove={handleButtonMove}
-    on:click={openMenu}
-    on:keydown={(e) => e.key === "Enter" && openMenu()}
+    on:click={toggleMenu}
+    on:keydown={(e) => e.key === "Enter" && toggleMenu()}
   >
     <span class="menu-text">MENU</span>
     <span class="dots">
@@ -386,6 +394,10 @@
       <span class="dot"></span>
       <span class="dot"></span>
     </span>
+    <svg class="close-cross" viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M6 6L18 18" />
+      <path d="M18 6L6 18" />
+    </svg>
   </div>
 </header>
 
@@ -404,7 +416,9 @@
     justify-content: flex-end;
     align-items: center;
     pointer-events: none;
-    z-index: 400000;
+    /* Above the fullscreen menu (z 500000) so the trigger stays on top and
+       turns into the close (X) control. */
+    z-index: 600000;
     overflow: visible;
   }
 
@@ -480,8 +494,9 @@
     }
   }
 
+  /* The header sits ABOVE the menu and acts as the close control → stay full. */
   .menu-open {
-    opacity: 0.35;
+    opacity: 1;
   }
 
   .nav-btn {
@@ -565,6 +580,9 @@
     align-items: center;
     gap: 4px;
     flex-shrink: 0;
+    transition:
+      opacity 0.4s cubic-bezier(.22,.61,.36,1),
+      transform 0.5s cubic-bezier(.22,.61,.36,1);
   }
 
   .dot {
@@ -579,6 +597,40 @@
   .more:hover .dots .dot:nth-child(1) { transform: translateX(6px) scale(1.6); }
   .more:hover .dots .dot:nth-child(2) { opacity: 0; transform: scale(0); }
   .more:hover .dots .dot:nth-child(3) { transform: translateX(-6px) scale(1.6); }
+
+  /* Close (X) — appears in place of the dots while the menu is open. */
+  .close-cross {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 16px;
+    height: 16px;
+    margin: -8px 0 0 -8px;
+    stroke: currentColor;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    fill: none;
+    opacity: 0;
+    transform: scale(0.5) rotate(-90deg);
+    transition:
+      opacity 0.45s cubic-bezier(.22,.61,.36,1),
+      transform 0.6s cubic-bezier(.22,.61,.36,1);
+    pointer-events: none;
+  }
+
+  .menu-open .more .dots {
+    opacity: 0;
+    transform: scale(0.5);
+  }
+
+  .menu-open .more .close-cross {
+    opacity: 1;
+    transform: scale(1) rotate(0deg);
+  }
+
+  .menu-open .more:hover .close-cross {
+    transform: scale(1.12) rotate(90deg);
+  }
 
   /* Glow border effect — approche mask pour respecter border-radius */
   .nav-btn::before,
@@ -644,6 +696,14 @@
 
     .mobile-logo {
       display: flex;
+    }
+
+    /* Menu open → the menu shows the contact button on the left, so free that
+       corner by hiding the header logo (only the X close stays, on the right). */
+    .menu-open .mobile-logo {
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
     }
 
     .nav-wrapper {

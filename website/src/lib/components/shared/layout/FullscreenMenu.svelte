@@ -389,7 +389,7 @@
       </div>
     </div>
 
-    <div class="menu-upper ui-content">
+    <div class="menu-upper">
       <nav class="menu-nav" aria-label="Navigation principale">
         {#each links as link, i}
           <button
@@ -591,16 +591,17 @@
     grid-template-rows: minmax(0, 1fr) minmax(220px, 30vh);
   }
 
+  /* Black background materialises as a progressive blur-fade (no wipe). */
   .menu-panel {
     position: absolute;
     inset: 0;
     background: #010101;
-    clip-path: inset(0 0 100% 0);
-    -webkit-clip-path: inset(0 0 100% 0);
-    will-change: clip-path;
+    opacity: 0;
+    filter: blur(26px);
+    will-change: opacity, filter;
     transition:
-      clip-path var(--menu-panel-duration) var(--menu-ease),
-      -webkit-clip-path var(--menu-panel-duration) var(--menu-ease);
+      opacity var(--menu-panel-duration) var(--menu-ease),
+      filter var(--menu-panel-duration) var(--menu-ease);
   }
 
   .ui-content {
@@ -663,10 +664,23 @@
     cursor: pointer;
   }
 
+  /* Focus-pull arrival lives on the line wrapper so the text element stays free
+     to drive its own colour / glow on hover (no filter conflict). */
   .menu-link-line {
     display: block;
     overflow: visible;
     padding: 0.16em 0 0.2em;
+    opacity: 0;
+    filter: blur(16px);
+    transform: translate3d(0, 26px, 0);
+    /* Slider signature: opacity resolves a touch faster than the blur/translate
+       so the text "comes into focus" rather than just sliding in. */
+    transition:
+      opacity 0.55s ease,
+      filter 0.85s var(--menu-ease),
+      transform 0.85s var(--menu-ease);
+    will-change: opacity, filter, transform;
+    backface-visibility: hidden;
   }
 
   .menu-link-text {
@@ -677,13 +691,9 @@
     font-size: clamp(2.95rem, 4.15vw, 4.8rem);
     line-height: 0.94;
     letter-spacing: -0.025em;
-    clip-path: inset(100% 0 0 0);
-    -webkit-clip-path: inset(100% 0 0 0);
     color: var(--menu-muted-gray);
     padding-right: 0.08em;
     transition:
-      clip-path var(--menu-content-duration) var(--menu-ease),
-      -webkit-clip-path var(--menu-content-duration) var(--menu-ease),
       color 620ms ease,
       filter 720ms ease;
   }
@@ -695,13 +705,13 @@
     filter: drop-shadow(0 0 18px rgba(255, 255, 255, 0.08));
   }
 
-  .menu-nav .menu-link:nth-child(1) .menu-link-text { transition-delay: 80ms; }
-  .menu-nav .menu-link:nth-child(2) .menu-link-text { transition-delay: 140ms; }
-  .menu-nav .menu-link:nth-child(3) .menu-link-text { transition-delay: 190ms; }
-  .menu-nav .menu-link:nth-child(4) .menu-link-text { transition-delay: 230ms; }
-  .menu-nav .menu-link:nth-child(5) .menu-link-text { transition-delay: 260ms; }
+  .menu-nav .menu-link:nth-child(1) .menu-link-line { transition-delay: 90ms; }
+  .menu-nav .menu-link:nth-child(2) .menu-link-line { transition-delay: 155ms; }
+  .menu-nav .menu-link:nth-child(3) .menu-link-line { transition-delay: 210ms; }
+  .menu-nav .menu-link:nth-child(4) .menu-link-line { transition-delay: 255ms; }
+  .menu-nav .menu-link:nth-child(5) .menu-link-line { transition-delay: 290ms; }
 
-  .fs-menu.is-closing .menu-nav .menu-link .menu-link-text {
+  .fs-menu.is-closing .menu-nav .menu-link .menu-link-line {
     transition-delay: 0ms;
   }
 
@@ -748,6 +758,23 @@
     gap: 0.9rem;
     background: var(--menu-card-surface);
   }
+
+  /* Each preview card focus-pulls in on its own (blur → sharp, slight rise). */
+  .project-card {
+    opacity: 0;
+    filter: blur(16px);
+    transform: translate3d(0, 26px, 0);
+    transition:
+      opacity 0.55s ease,
+      filter 0.85s var(--menu-ease),
+      transform 0.85s var(--menu-ease);
+    will-change: opacity, filter, transform;
+    backface-visibility: hidden;
+  }
+
+  .project-previews .project-card:nth-child(1) { transition-delay: 200ms; }
+  .project-previews .project-card:nth-child(2) { transition-delay: 265ms; }
+  .project-previews .project-card:nth-child(3) { transition-delay: 320ms; }
 
   .nav-btn::before,
   .nav-btn::after,
@@ -872,6 +899,8 @@
     padding-bottom: 13vh;
   }
 
+  /* The media frame rides its parent (.menu-media-shell.ui-content) blur-fade —
+     no separate wipe, so it arrives / leaves like every other element. */
   .menu-media-reveal {
     position: relative;
     width: min(28vw, 34rem);
@@ -879,12 +908,6 @@
     overflow: hidden;
     pointer-events: none;
     border-radius: 14px;
-    clip-path: inset(100% 0 0 0 round 14px);
-    -webkit-clip-path: inset(100% 0 0 0);
-    will-change: clip-path;
-    transition:
-      clip-path var(--menu-media-duration) var(--menu-ease),
-      -webkit-clip-path var(--menu-media-duration) var(--menu-ease);
   }
 
   .menu-media-stack {
@@ -946,7 +969,10 @@
       border-color 0.35s ease;
   }
 
+  /* The header trigger now serves as the close (X) control → hide the in-menu
+     close button (both desktop & mobile rely on the header X now). */
   .close-block {
+    display: none;
     position: absolute;
     left: 50%;
     bottom: clamp(1rem, 2.2vh, 1.75rem);
@@ -1192,13 +1218,8 @@
   }
 
   .fs-menu.expanded .menu-panel {
-    clip-path: inset(0 0 0 0);
-    -webkit-clip-path: inset(0 0 0 0);
-  }
-
-  .fs-menu.media-visible .menu-media-reveal {
-    clip-path: inset(0 0 0 0 round 14px);
-    -webkit-clip-path: inset(0 0 0 0 round 14px);
+    opacity: 1;
+    filter: blur(0);
   }
 
   .fs-menu.content-visible .ui-content {
@@ -1207,9 +1228,11 @@
     transform: translate3d(0, 0, 0);
   }
 
-  .fs-menu.content-visible .menu-link-text {
-    clip-path: inset(0 0 0 0);
-    -webkit-clip-path: inset(0 0 0 0);
+  .fs-menu.content-visible .menu-link-line,
+  .fs-menu.content-visible .project-card {
+    opacity: 1;
+    filter: blur(0);
+    transform: translate3d(0, 0, 0);
   }
 
   .fs-menu.footer-visible .bottom-strip {
@@ -1231,19 +1254,17 @@
     transform: translate3d(0, -18px, 0);
   }
 
-  .fs-menu.is-closing .menu-link-text {
-    clip-path: inset(0 0 100% 0);
-    -webkit-clip-path: inset(0 0 100% 0);
-  }
-
-  .fs-menu.is-closing .menu-media-reveal {
-    clip-path: inset(0 0 100% 0 round 14px);
-    -webkit-clip-path: inset(0 0 100% 0 round 14px);
+  .fs-menu.is-closing .menu-link-line,
+  .fs-menu.is-closing .project-card {
+    opacity: 0;
+    filter: blur(14px);
+    transform: translate3d(0, -14px, 0);
+    transition-delay: 0ms;
   }
 
   .fs-menu.is-closing .menu-panel {
-    clip-path: inset(0 0 100% 0);
-    -webkit-clip-path: inset(0 0 100% 0);
+    opacity: 0;
+    filter: blur(26px);
   }
 
   .fs-menu.is-closing .menu-scrim {
@@ -1265,7 +1286,8 @@
 
     .project-previews {
       position: absolute;
-      top: 1rem;
+      /* Sit below the header close (X) so they never overlap it. */
+      top: clamp(4.5rem, 8vh, 5.5rem);
       right: 1rem;
       grid-column: auto;
       width: min(34vw, 260px);
@@ -1321,7 +1343,8 @@
   @media (min-width: 1101px) {
     .project-previews {
       position: absolute;
-      top: clamp(2rem, 4vh, 3.25rem);
+      /* Sit below the header close (X) so they never overlap it. */
+      top: clamp(5rem, 9vh, 6.5rem);
       right: clamp(1rem, 2vw, 2rem);
       padding-top: 0;
     }
@@ -1347,25 +1370,25 @@
       display: none;
     }
 
+    /* Mobile keeps the same fade language but drops the blur on the solid
+       black surface (negligible visually, costly on mobile GPUs). */
     .menu-panel {
-      clip-path: none;
-      -webkit-clip-path: none;
-      transform: scale3d(1, 0, 1);
-      transform-origin: center top;
-      will-change: transform;
-      transition: transform var(--menu-panel-duration) var(--menu-ease);
+      transform: none;
+      filter: none;
+      will-change: opacity;
+      transition: opacity var(--menu-panel-duration) var(--menu-ease);
     }
 
     .fs-menu.expanded .menu-panel {
-      clip-path: none;
-      -webkit-clip-path: none;
-      transform: scale3d(1, 1, 1);
+      transform: none;
+      filter: none;
+      opacity: 1;
     }
 
     .fs-menu.is-closing .menu-panel {
-      clip-path: none;
-      -webkit-clip-path: none;
-      transform: scale3d(1, 0, 1);
+      transform: none;
+      filter: none;
+      opacity: 0;
     }
 
     .ui-content,
@@ -1438,25 +1461,28 @@
         border-color 0.35s ease;
     }
 
+    /* The header X (top-right) closes the menu now → drop the in-menu close. */
     .mobile-close-btn {
-      justify-self: start;
+      display: none;
     }
 
+    /* Contact button moves to the LEFT corner. */
     .mobile-actions {
       position: relative;
-      justify-self: end;
-      grid-column: 3;
+      justify-self: start;
+      grid-column: 1;
     }
 
     .mobile-actions-panel {
       position: absolute;
       top: calc(100% + 0.55rem);
-      right: 0;
+      left: 0;
+      right: auto;
       width: 2.75rem;
       padding: 0;
       display: flex;
       flex-direction: column;
-      align-items: flex-end;
+      align-items: flex-start;
       opacity: 0;
       pointer-events: none;
       transform: translate3d(0, -8px, 0);
@@ -1641,6 +1667,15 @@
       filter: none;
     }
 
+    /* Mobile drives the lightweight reveal on the text itself (no blur, for
+       perf) — keep the line wrapper neutral so the two don't compound. */
+    .menu-link-line {
+      opacity: 1;
+      filter: none;
+      transform: none;
+      transition: none;
+    }
+
     .menu-link-text {
       clip-path: none;
       -webkit-clip-path: none;
@@ -1685,6 +1720,8 @@
     .menu-media-image,
     .ui-content,
     .menu-link-text,
+    .menu-link-line,
+    .project-card,
     .bottom-strip,
     .nav-btn,
     .social-link,
@@ -1692,6 +1729,12 @@
       transition: none !important;
       animation: none !important;
       filter: none !important;
+    }
+
+    .fs-menu.content-visible .menu-link-line,
+    .fs-menu.content-visible .project-card {
+      opacity: 1;
+      transform: none;
     }
 
     .fs-menu.is-visible,
