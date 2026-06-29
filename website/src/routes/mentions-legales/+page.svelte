@@ -73,7 +73,7 @@
   .legal-page {
     position: relative;
     min-height: 100svh;
-    background: #ffffff;
+    background: #f4f6fc;
     color: #131313;
   }
 

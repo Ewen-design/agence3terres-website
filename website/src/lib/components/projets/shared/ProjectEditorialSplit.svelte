@@ -23,7 +23,7 @@
     style={`--editorial-split-media-min-height:${mediaMinHeight}; --editorial-split-media-fit:${mediaFit}; ${mediaAspectRatio ? `--editorial-split-media-aspect-ratio:${mediaAspectRatio};` : ""}`}
     use:reveal={{ delay: 120 }}
   >
-    <img src={image} alt={alt} loading="lazy" />
+    <img src={image} alt={alt} loading="lazy" decoding="async" />
   </figure>
 </section>
 

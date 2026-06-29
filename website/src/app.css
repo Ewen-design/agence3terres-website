@@ -414,7 +414,7 @@ body {
 .project-theme-page {
   position: relative;
   isolation: isolate;
-  background-color: var(--project-surface-bg, #f7f5f1);
+  background-color: var(--project-surface-bg, #f4f6fc);
   color: var(--project-surface-ink, #121212);
   transition:
     background-color var(--project-theme-transition),
@@ -498,13 +498,15 @@ body {
 
 .project-theme-page.theme-light,
 .project-theme-band.theme-light {
-  --project-surface-bg: #f7f5f1;
-  --project-surface-bg-alt: #efe7dc;
-  --project-surface-bg-soft: #ded7cc;
+  /* Blanc à très légère teinte bleu clair (remplace l'ancien blanc cassé crème).
+     Les surfaces alt/soft/card sont refroidies en accord avec ce fond. */
+  --project-surface-bg: #f4f6fc;
+  --project-surface-bg-alt: #e9edf6;
+  --project-surface-bg-soft: #dde2ee;
   --project-surface-ink: #121212;
   --project-surface-muted: rgba(18, 18, 18, 0.66);
   --project-surface-border: rgba(18, 18, 18, 0.1);
-  --project-surface-card: #ddd3c3;
+  --project-surface-card: #dce1ec;
   --project-surface-card-strong: #040404;
   --project-showcase-bg: #000;
   --project-showcase-card-bg: #080808;

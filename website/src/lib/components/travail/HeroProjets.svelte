@@ -56,10 +56,6 @@
     "Stratégie, esthétique, exécution. Des projets où chaque décision a du sens.";
   const activeAfterImage = "/images/justx.webp";
 
-  const words = finalText.split(" ");
-
-  const grayStartsAtWord = 3;
-
   const clamp = (v, min = 0, max = 1) => Math.max(min, Math.min(max, v));
   const lerp = (a, b, t) => a + (b - a) * t;
   const q = (v, step) => Math.round(v / step) * step;
@@ -311,11 +307,7 @@
   <section class="after-section">
     <div class="after-grid">
       <div class="after-text" bind:this={afterTextEl}>
-        <h2 aria-label={finalText} use:reveal>
-          {#each words as word, w}
-            {#if w === grayStartsAtWord}<br>{/if}<span class="word" class:muted-word={w >= grayStartsAtWord}>{word}</span>{#if w < words.length - 1 && w !== grayStartsAtWord - 1}<span class="space">&nbsp;</span>{/if}
-          {/each}
-        </h2>
+        <h2 use:reveal>{finalText}</h2>
       </div>
 
       <div class="after-image" bind:this={afterImageEl} use:reveal>
@@ -517,39 +509,18 @@
     transform: none;
   }
 
+  /* Même style que les textes des pages projet (ProjectBrief). */
   .after-text h2 {
     margin: 0;
     width: 100%;
     max-width: 24ch;
     font-family: "Inter", sans-serif;
     font-weight: 300;
-    font-size: clamp(1.8rem, 3.5vw, 3.8rem);
-    line-height: 1.08;
-    letter-spacing: -0.02em;
-    color: #fff;
-  }
-
-  .after-text h2::before {
-    content: "";
-    display: block;
-    width: 24px;
-    height: 1px;
-    background: #5768ff;
-    margin-bottom: 1.2rem;
-  }
-
-  .word {
-    display: inline-block;
-    white-space: nowrap;
-    color: #f5f1e8;
-  }
-
-  .word.muted-word {
-    color: rgba(245, 241, 232, 0.35);
-  }
-
-  .space {
-    display: inline;
+    font-size: clamp(1.5rem, 2.5vw, 2.55rem);
+    line-height: 1.18;
+    letter-spacing: -0.025em;
+    color: #f4efe6;
+    text-wrap: pretty;
   }
 
   .after-image {
@@ -585,9 +556,9 @@
     }
 
     .after-text h2 {
-      font-size: clamp(1.6rem, 5.5vw, 2.8rem);
-      max-width: 20ch;
-      line-height: 1.08;
+      font-size: clamp(1.5rem, 6.6vw, 2rem);
+      max-width: 26ch;
+      line-height: 1.2;
       padding-inline: var(--project-text-inset, 0);
     }
   }
@@ -680,13 +651,10 @@
     }
 
     .after-text h2 {
-      max-width: 20ch;
-      font-size: clamp(1.4rem, 6.5vw, 2.1rem);
-      line-height: 1.08;
+      max-width: 26ch;
+      font-size: clamp(1.4rem, 6.6vw, 1.9rem);
+      line-height: 1.2;
       padding-inline: var(--project-text-inset, 0);
-    }
-
-    .after-text h2::before {
       margin-top: clamp(2.5rem, 9vw, 4rem);
     }
 

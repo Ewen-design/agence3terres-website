@@ -28,12 +28,7 @@
       <img src={accentImage} alt={accentAlt} loading="lazy" />
     </figure>
 
-    <p class="about-editorial-single-showcase__text" use:reveal={{ delay: 120 }}>
-      <span>{text}</span>
-      {#if mutedText}
-        <span class="about-editorial-single-showcase__muted"> {mutedText}</span>
-      {/if}
-    </p>
+    <p class="about-editorial-single-showcase__text" use:reveal={{ delay: 120 }}>{[text, mutedText].filter(Boolean).join(" ")}</p>
   </div>
 </section>
 
@@ -121,21 +116,14 @@
     justify-self: start;
     align-self: start;
     max-width: 23ch;
-    font-size: clamp(1.3rem, 2.8vw, 2.8rem);
+    font-size: clamp(1.5rem, 2.5vw, 2.55rem);
     font-weight: 300;
-    line-height: 1.1;
-    color: #f5f1e8;
+    line-height: 1.18;
+    letter-spacing: -0.025em;
+    color: #f4efe6;
+    text-wrap: pretty;
     padding-top: clamp(8rem, 14vh, 12rem);
     margin-left: clamp(-8.75rem, -6.2vw, -4.4rem);
-  }
-
-  .about-editorial-single-showcase__text::before {
-    content: "";
-    display: block;
-    width: 24px;
-    height: 1px;
-    background: #5768ff;
-    margin-bottom: 1.2rem;
   }
 
   .about-editorial-single-showcase__accent {
@@ -159,11 +147,6 @@
     display: block;
   }
 
-  .about-editorial-single-showcase__muted {
-    display: block;
-    color: rgba(245, 241, 232, 0.35);
-  }
-
   @media (max-width: 900px) {
     .about-editorial-single-showcase__content {
       grid-template-columns: 1fr;
@@ -180,11 +163,11 @@
     .about-editorial-single-showcase__text {
       grid-column: 1;
       grid-row: 2;
-      max-width: 15ch;
+      max-width: 18ch;
       justify-self: start;
-      font-size: clamp(1.3rem, 6.8vw, 2.7rem);
+      font-size: clamp(1.5rem, 6.6vw, 2rem);
       padding-inline: var(--project-text-inset, 0);
-      line-height: 1.04;
+      line-height: 1.2;
       padding-top: 6rem;
       margin-left: 0;
     }
@@ -233,9 +216,9 @@
     .about-editorial-single-showcase__text {
       grid-row: 2;
       align-self: start;
-      max-width: 14ch;
-      font-size: clamp(1.2rem, 6.9vw, 2.15rem);
-      line-height: 1.04;
+      max-width: 18ch;
+      font-size: clamp(1.4rem, 6.6vw, 1.9rem);
+      line-height: 1.2;
       padding-inline: var(--project-text-inset, 0);
       padding-top: 0;
       padding-bottom: 0;

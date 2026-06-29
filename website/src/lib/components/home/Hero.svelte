@@ -47,7 +47,7 @@
   };
 
   const finalText =
-    "Créer pour durer. Des identités qui habitent le temps.";
+    "Nous créons des marques fortes, pensées pour durer, avec une identité claire qui garde la même présence sur chaque support.";
 
   const clamp = (v, min = 0, max = 1) => Math.max(min, Math.min(max, v));
   const lerp = (a, b, t) => a + (b - a) * t;
@@ -300,13 +300,10 @@
     <div class="after-grid">
       <div class="after-text" bind:this={afterTextEl}>
         <h2
-          aria-label={finalText}
+          class="after-lead"
           bind:this={h2TextEl}
           class:is-text-revealed={textRevealed}
-        >
-          <span class="title-line title-line--gradient" style="--l:0">Créer pour durer.</span>
-          <span class="title-line title-line--white" style="--l:1">Des marques fortes.</span>
-        </h2>
+        >{finalText}</h2>
       </div>
     </div>
   </section>
@@ -479,47 +476,19 @@
     transform: none;
   }
 
+  /* Même présentation que les textes des pages projet (ProjectBrief) :
+     un paragraphe léger, aligné à gauche, sans trait ni découpe muted. */
   .after-text h2 {
     margin: 0;
-    width: 100%;
-    max-width: none;
+    max-width: 24ch;
     font-family: "Inter", sans-serif;
-    font-weight: 500;
-    font-size: clamp(2.6rem, 5.6vw, 6rem);
-    line-height: 1.04;
+    font-weight: 300;
+    font-size: clamp(1.5rem, 2.5vw, 2.55rem);
+    line-height: 1.18;
     letter-spacing: -0.025em;
-    text-align: center;
-    text-transform: uppercase;
-    color: #fff;
-  }
-
-  .title-line {
-    display: block;
-    white-space: nowrap;
-  }
-
-  .title-line--gradient {
-    background: linear-gradient(
-      90deg,
-      #ffffff 0%,
-      #f2f3f5 30%,
-      #b9bdc6 52%,
-      #8d919b 64%,
-      #eceef1 100%
-    );
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
-    color: transparent;
-  }
-
-  .title-line--white {
-    color: #fff;
-    font-weight: 200;
-  }
-
-  /* reveal: lines fade and slide in with a small stagger */
-  .title-line {
+    text-align: left;
+    color: #f4efe6;
+    text-wrap: pretty;
     opacity: 0;
     filter: blur(14px);
     transform: translateY(0.28em);
@@ -527,10 +496,9 @@
       opacity 0.6s ease,
       filter 0.85s cubic-bezier(0.22, 0.61, 0.36, 1),
       transform 0.7s cubic-bezier(0.22, 0.61, 0.36, 1);
-    transition-delay: calc(var(--l, 0) * 0.12s);
   }
 
-  h2.is-text-revealed .title-line {
+  h2.is-text-revealed {
     opacity: 1;
     filter: blur(0);
     transform: none;
@@ -544,9 +512,9 @@
     }
 
     .after-text h2 {
-      font-size: clamp(2.2rem, 7vw, 4rem);
-      max-width: none;
-      line-height: 1.06;
+      font-size: clamp(1.5rem, 6.6vw, 2rem);
+      max-width: 26ch;
+      line-height: 1.2;
     }
   }
 
@@ -631,9 +599,9 @@
     }
 
     .after-text h2 {
-      max-width: none;
-      font-size: clamp(1.75rem, 7.6vw, 2.6rem);
-      line-height: 1.08;
+      max-width: 26ch;
+      font-size: clamp(1.4rem, 6.6vw, 1.9rem);
+      line-height: 1.2;
       padding-inline: var(--project-text-inset, 0);
     }
 
@@ -659,9 +627,10 @@
       transform: none !important;
     }
 
-    .title-line {
+    .after-text h2 {
       transition: none !important;
       opacity: 1 !important;
+      filter: none !important;
       transform: none !important;
     }
 

@@ -11,6 +11,9 @@
   export let ariaLabelPrefix = "Voir le service";
   export let introMain = "De l'identité";
   export let introMuted = "à l'expérience complète.";
+  // Si fourni, l'intro s'affiche comme un texte de page projet (style ProjectBrief :
+  // paragraphe léger aligné à gauche) au lieu du couple main/muted à puce bleue.
+  export let introLead = "";
 
   // items: {title, image, mobileImage?, href?, cta?, ariaLabel?, subtitle?}[]
   export let items = [
@@ -378,9 +381,13 @@
   <div class="gallery-intro-group">
     <div class="gallery-header">
       <div class="intro-card">
-        <p class="intro-headline" use:reveal>
-          <span class="intro-main">{introMain}</span><span class="intro-muted">{introMuted}</span>
-        </p>
+        {#if introLead}
+          <p class="intro-lead" use:reveal>{introLead}</p>
+        {:else}
+          <p class="intro-headline" use:reveal>
+            <span class="intro-main">{introMain}</span><span class="intro-muted">{introMuted}</span>
+          </p>
+        {/if}
       </div>
     </div>
   </div>
@@ -580,9 +587,10 @@
     max-width: 22ch;
     font-family: "Inter", sans-serif;
     font-weight: 300;
-    font-size: clamp(1.4rem, 2.5vw, 2.8rem);
-    line-height: 1.1;
-    letter-spacing: -0.015em;
+    /* Même taille que le texte juste au-dessus (ProjectEditorialMosaic). */
+    font-size: var(--project-lead-size, clamp(1.35rem, 2.7vw, 2.8rem));
+    line-height: 0.98;
+    letter-spacing: -0.05em;
     color: var(--intro-body);
     text-align: left;
   }
@@ -596,10 +604,24 @@
     margin-bottom: 1.2rem;
   }
 
-  .intro-main { color: #f5f1e8; }
+  .intro-main { color: #f4efe6; }
   .intro-muted {
     display: block;
-    color: rgba(245, 241, 232, 0.35);
+    color: #f4efe6;
+  }
+
+  /* Style identique aux textes des pages projet (ProjectBrief). */
+  .intro-lead {
+    margin: 0;
+    max-width: 24ch;
+    font-family: "Inter", sans-serif;
+    font-weight: 300;
+    font-size: clamp(1.5rem, 2.5vw, 2.55rem);
+    line-height: 1.18;
+    letter-spacing: -0.025em;
+    color: #f4efe6;
+    text-align: left;
+    text-wrap: pretty;
   }
 
   .desktop-stack {
@@ -915,9 +937,15 @@
     .intro-card { width: min(90vw, 560px); }
 
     .intro-headline {
-      font-size: clamp(1.3rem, 5.5vw, 2.2rem);
+      font-size: clamp(1.7rem, 8.5vw, 2.55rem);
       max-width: 18ch;
-      line-height: 1.12;
+      line-height: 1;
+    }
+
+    .intro-lead {
+      font-size: clamp(1.5rem, 6.6vw, 2rem);
+      max-width: 26ch;
+      line-height: 1.2;
     }
 
     .desktop-stack {
@@ -1107,8 +1135,8 @@
     .gallery-header { padding: 3.5rem 1.1rem 3.5rem; }
     .intro-card { width: min(88vw, 480px); }
 
-    .intro-headline {
-      font-size: clamp(1.2rem, 6vw, 2rem);
+    .intro-lead {
+      font-size: clamp(1.4rem, 6.6vw, 1.9rem);
     }
 
     .mobile-rail {

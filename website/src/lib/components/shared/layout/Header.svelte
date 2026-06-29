@@ -198,6 +198,8 @@
   }
 
   function handleLogoClick() {
+    // Sur la page d'accueil, le logo ne doit pas naviguer (on y est déjà).
+    if (pathname === "/") return;
     navigate("home");
   }
 
@@ -363,14 +365,15 @@
 {/if}
 
 <header
-  class="nav-wrapper {compact ? 'compact' : ''} {menuOpen ? 'menu-open' : ''} {themeClass} {headerReady ? 'is-ready' : 'is-loading'} {headerIntroVisible ? 'intro-visible' : 'intro-hidden'} {headerIntroVisible && !headerIntroDone ? 'intro-animating' : ''}"
+  class="nav-wrapper {compact ? 'compact' : ''} {menuOpen ? 'menu-open' : ''} {themeClass} {headerReady ? 'is-ready' : 'is-loading'} {headerIntroVisible ? 'intro-visible' : 'intro-hidden'} {headerIntroVisible && !headerIntroDone ? 'intro-animating' : ''} {textColor === LIGHT_TEXT_COLOR && !menuOpen ? 'ink-dark' : ''}"
   style="color:{menuOpen ? '#ffffff' : textColor}"
   bind:this={headerEl}
 >
   <button
-    class="nav-btn mobile-logo"
+    class="nav-btn mobile-logo {pathname === '/' ? 'is-home' : ''}"
     type="button"
     aria-label="Retour à l'accueil"
+    aria-disabled={pathname === "/"}
     on:click={handleLogoClick}
   >
     <img src="/images/logo_prisme.png" alt="" class="mobile-logo-img" />
@@ -540,6 +543,17 @@
     display: block;
     width: 1.25rem;
     height: auto;
+    transition: filter 220ms ease;
+  }
+
+  /* Quand le texte du header passe au noir (fond clair), le logo suit. */
+  .ink-dark .mobile-logo-img {
+    filter: brightness(0);
+  }
+
+  /* Sur la home, le logo ne navigue pas : pas de curseur cliquable. */
+  .mobile-logo.is-home {
+    cursor: default;
   }
 
   /* Menu button */

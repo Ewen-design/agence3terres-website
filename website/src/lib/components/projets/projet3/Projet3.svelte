@@ -9,13 +9,15 @@
   import ProjectEditorialMosaic from "$lib/components/projets/shared/ProjectEditorialMosaic.svelte";
   import ParallaxGallery2 from "$lib/components/home/ParallaxGallery2.svelte";
 
+  // Mêmes visuels (optimisés .webp) que la page Travail, en excluant Moovy
+  // (le projet courant). Évite aussi les .jpg lourds qui chargeaient mal ici.
   const otherProjects = [
-    { title: "JustX", image: "/images/logo_justx.webp", href: "/projet5" },
-    { title: "JustX Fitness", image: "/images/telephone3.webp", mobileImage: "/images/telephone2.webp", href: "/projet7" },
-    { title: "Mission X", image: "/images/missionx-hero-agency.jpg", mobileImage: "/images/missionx3.webp", href: "/projet6" },
-    { title: "Ludosphères", image: "/images/carte-copie.jpg", href: "/projet4" },
-    { title: "Serein Design", image: "/images/telephone3.webp", href: "/projet1" },
-    { title: "Votre projet ?", image: "/images/telephone2.webp", href: "/contact", cta: "Nous contacter" }
+    { title: "JustX", image: "/images/justx.webp", href: "/projet5" },
+    { title: "JustX Fitness", image: "/images/justx_fitness.webp", href: "/projet7" },
+    { title: "Mission X", image: "/images/missionX5.webp", href: "/projet6" },
+    { title: "Ludosphères", image: "/images/apple_justx.webp", href: "/projet4" },
+    { title: "Serein Design", image: "/images/serein_design.webp", href: "/projet1" },
+    { title: "Votre projet ?", image: "/images/agence.webp", href: "/contact", cta: "Nous contacter" }
   ];
 </script>
 

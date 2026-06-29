@@ -2,12 +2,10 @@
   import { onMount } from "svelte";
   import { browser } from "$app/environment";
 
-  export let main  = "Chaque projet,";
-  export let muted = "une signature.";
-
-  // split into words for staggered reveal
-  const mainWords  = main.split(" ");
-  const mutedWords = muted.split(" ");
+  // Présenté comme les textes des pages projet (ProjectBrief) :
+  // un paragraphe léger, aligné à gauche.
+  export let lead =
+    "Chaque projet devient une signature : une direction claire, un univers singulier et une exécution soignée qui le distingue durablement.";
 
   let pEl;
   let revealed = false;
@@ -31,20 +29,7 @@
 <section class="story-slider-intro">
   <div class="story-slider-intro__text-wrap">
     <div class="story-slider-intro__card">
-      <p class="story-slider-intro__text" class:is-revealed={revealed} bind:this={pEl}>
-        <!-- main words -->
-        {#each mainWords as word, w}
-          {#if w > 0}<span class="ssi__space"> </span>{/if}
-          <span class="ssi__word" style="--w:{w}">{word}</span>
-        {/each}
-        <!-- muted words (display:block gives the line break) -->
-        <span class="story-slider-intro__muted-line">
-          {#each mutedWords as word, w}
-            {#if w > 0}<span class="ssi__space"> </span>{/if}
-            <span class="ssi__word ssi__word--muted" style="--w:{mainWords.length + w}">{word}</span>
-          {/each}
-        </span>
-      </p>
+      <p class="story-slider-intro__lead" class:is-revealed={revealed} bind:this={pEl}>{lead}</p>
     </div>
   </div>
 </section>
@@ -77,69 +62,40 @@
     min-width: 0;
   }
 
-  .story-slider-intro__text {
+  .story-slider-intro__lead {
     margin: 0;
-    max-width: 22ch;
+    max-width: 24ch;
     font-family: "Inter", sans-serif;
     font-weight: 300;
-    font-size: clamp(1.4rem, 2.5vw, 2.8rem);
-    line-height: 1.1;
-    letter-spacing: -0.015em;
+    font-size: clamp(1.5rem, 2.5vw, 2.55rem);
+    line-height: 1.18;
+    letter-spacing: -0.025em;
+    color: #f4efe6;
     text-align: left;
-  }
-
-  .story-slider-intro__text::before {
-    content: "";
-    display: block;
-    width: 24px;
-    height: 1px;
-    background: #5768ff;
-    margin-bottom: 1.2rem;
-  }
-
-  /* muted-line wraps the second line — display:block creates the break */
-  .story-slider-intro__muted-line {
-    display: block;
-  }
-
-  .ssi__space {
-    display: inline;
-  }
-
-  /* each word starts hidden and slides up into place */
-  .ssi__word {
-    display: inline-block;
-    color: #f5f1e8;
+    text-wrap: pretty;
     opacity: 0;
-    filter: blur(9px);
-    transform: translateY(0.3em);
+    filter: blur(12px);
+    transform: translate3d(0, 18px, 0);
     transition:
-      opacity  0.52s ease,
-      filter 0.7s cubic-bezier(0.22, 0.61, 0.36, 1),
-      transform 0.62s cubic-bezier(0.22, 0.61, 0.36, 1);
-    transition-delay: calc(var(--w, 0) * 0.07s);
+      opacity 0.6s ease,
+      filter 0.85s cubic-bezier(0.22, 0.61, 0.36, 1),
+      transform 0.85s cubic-bezier(0.22, 0.61, 0.36, 1);
+    will-change: opacity, filter, transform;
+    backface-visibility: hidden;
   }
 
-  .ssi__word--muted {
-    color: rgba(245, 241, 232, 0.35);
-  }
-
-  /* reveal: all words animate to final state */
-  .story-slider-intro__text.is-revealed .ssi__word {
+  .story-slider-intro__lead.is-revealed {
     opacity: 1;
     filter: blur(0);
-    transform: none;
-  }
-
-  .story-slider-intro__text.is-revealed .ssi__word--muted {
-    opacity: 1; /* color already handles the muted look */
+    transform: translate3d(0, 0, 0);
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .ssi__word {
+    .story-slider-intro__lead {
       transition: none;
-      opacity: 1 !important;
-      transform: none !important;
+      opacity: 1;
+      filter: none;
+      transform: none;
     }
   }
 
@@ -157,10 +113,10 @@
       padding: 0;
     }
 
-    .story-slider-intro__text {
-      font-size: clamp(1.3rem, 5.5vw, 2.2rem);
-      line-height: 1.12;
-      max-width: 18ch;
+    .story-slider-intro__lead {
+      font-size: clamp(1.5rem, 6.6vw, 2rem);
+      line-height: 1.2;
+      max-width: 26ch;
     }
   }
 
@@ -173,8 +129,8 @@
       width: min(88vw, 480px);
     }
 
-    .story-slider-intro__text {
-      font-size: clamp(1.2rem, 6vw, 2rem);
+    .story-slider-intro__lead {
+      font-size: clamp(1.4rem, 6.6vw, 1.9rem);
     }
   }
 
@@ -183,9 +139,8 @@
       width: min(90vw, 18rem);
     }
 
-    .story-slider-intro__text {
-      font-size: clamp(1.1rem, 5.8vw, 1.6rem);
+    .story-slider-intro__lead {
+      font-size: clamp(1.3rem, 5.8vw, 1.6rem);
     }
   }
-
 </style>

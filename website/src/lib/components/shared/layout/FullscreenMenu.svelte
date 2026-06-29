@@ -16,10 +16,10 @@
       className: "icon-instagram"
     },
     {
-      href: "/",
-      label: "Facebook",
-      icon: "/images/facebook.png",
-      className: "icon-facebook"
+      href: "mailto:contact@agence3terres.com",
+      label: "Mail",
+      icon: "/images/mail.png",
+      className: "icon-mail"
     },
     {
       href: "/",
@@ -1197,9 +1197,9 @@
     height: clamp(1.4rem, 1.8vw, 1.7rem);
   }
 
-  .icon-facebook {
-    width: clamp(1.2rem, 1.6vw, 1.5rem);
-    height: clamp(1.2rem, 1.6vw, 1.5rem);
+  .icon-mail {
+    width: clamp(1.32rem, 1.72vw, 1.62rem);
+    height: clamp(1.32rem, 1.72vw, 1.62rem);
   }
 
   .icon-x {
@@ -1650,9 +1650,9 @@
       height: 1.05rem;
     }
 
-    .icon-facebook {
-      width: 0.98rem;
-      height: 0.98rem;
+    .icon-mail {
+      width: 1.06rem;
+      height: 1.06rem;
     }
 
     .icon-x {

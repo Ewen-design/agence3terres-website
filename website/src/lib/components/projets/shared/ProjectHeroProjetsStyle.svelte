@@ -306,6 +306,8 @@
             bind:this={heroMediaImgEl}
             src={image}
             alt=""
+            fetchpriority="high"
+            decoding="async"
           />
         </picture>
         <div class="hero-dark-layer" bind:this={heroDarkLayerEl}></div>

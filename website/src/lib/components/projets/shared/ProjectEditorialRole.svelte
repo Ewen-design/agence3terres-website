@@ -11,7 +11,7 @@
     <div class="editorial-role__media-row">
       {#each images as image, i}
         <figure class="editorial-role__media" use:reveal={{ delay: i * 90 }}>
-          <img src={image.src} alt={image.alt} loading="lazy" />
+          <img src={image.src} alt={image.alt} loading="lazy" decoding="async" />
         </figure>
       {/each}
     </div>

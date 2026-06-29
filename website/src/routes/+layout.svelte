@@ -529,7 +529,13 @@
     <CustomCursor />
   {/if}
 
-  <a class="site-prism-mark" href="/" aria-label="Accueil — Agence 3 Terres">
+  <a
+    class="site-prism-mark {pathname === '/' ? 'is-home' : ''}"
+    href="/"
+    aria-label="Accueil — Agence 3 Terres"
+    aria-disabled={pathname === "/"}
+    on:click={(e) => { if (pathname === "/") e.preventDefault(); }}
+  >
     <img src="/images/logo_prisme.png" alt="" loading="eager" />
   </a>
 
@@ -610,10 +616,22 @@
   .site-prism-mark:hover { transform: scale(1.06); background: rgba(255,255,255,.1); }
   .site-prism-mark:focus-visible { outline: 2px solid rgba(245,241,232,.9); outline-offset: 3px; }
 
+  /* Sur la home, le logo ne navigue pas (on y est déjà). */
+  .site-prism-mark.is-home { cursor: default; }
+  .site-prism-mark.is-home:hover { transform: none; background: rgba(255,255,255,.05); }
+
   .site-prism-mark img {
     display: block;
     width: clamp(1.8rem, 2.9vw, 2.7rem);
     height: auto;
+    transition: filter 220ms ease;
+  }
+
+  /* Pages à fond clair (Moovy en thème clair, mentions légales) : le texte du
+     header passe au noir → le logo suit. */
+  main.project-light-theme .site-prism-mark img,
+  main.legal-route .site-prism-mark img {
+    filter: brightness(0);
   }
 
   @media (hover: none) and (pointer: coarse) {

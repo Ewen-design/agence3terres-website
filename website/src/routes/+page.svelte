@@ -59,7 +59,9 @@
 <h1 class="seo-page-title">Agence 3 Terres - Sites web, identité et direction artistique</h1>
 <Hero />
 <GalleryColonnes />
-<ParallaxGallery2 />
+<ParallaxGallery2
+  introLead="De l'identité visuelle au site web, nous façonnons l'expérience complète d'une marque, du premier symbole jusqu'aux interfaces."
+/>
 
 <IntroSlider />
 <BlurFocusSlider slides={hsliderSlides} />

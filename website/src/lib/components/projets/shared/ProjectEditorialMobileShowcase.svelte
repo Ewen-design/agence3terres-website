@@ -17,7 +17,7 @@
       style={`--editorial-mobile-showcase-media-min-height:${mediaMinHeight};`}
       use:reveal
     >
-      <img src={leftImage} alt={leftAlt} loading="lazy" />
+      <img src={leftImage} alt={leftAlt} loading="lazy" decoding="async" />
     </figure>
 
     <figure
@@ -25,7 +25,7 @@
       style={`--editorial-mobile-showcase-media-min-height:${mediaMinHeight};`}
       use:reveal={{ delay: 100 }}
     >
-      <img src={rightImage} alt={rightAlt} loading="lazy" />
+      <img src={rightImage} alt={rightAlt} loading="lazy" decoding="async" />
     </figure>
   </div>
 
