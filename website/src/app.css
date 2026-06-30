@@ -514,6 +514,23 @@ body {
   --project-hero-after-muted: rgba(18, 18, 18, 0.58);
 }
 
+.project-theme-page.theme-night,
+.project-theme-band.theme-night {
+  /* Bleu — 3e univers (vient après le blanc). */
+  --project-surface-bg: #0e1019;
+  --project-surface-bg-alt: #14161f;
+  --project-surface-bg-soft: #191c27;
+  --project-surface-ink: #f4efe6;
+  --project-surface-muted: rgba(244, 239, 230, 0.74);
+  --project-surface-border: rgba(244, 239, 230, 0.16);
+  --project-surface-card: #171a24;
+  --project-surface-card-strong: #0e1019;
+  --project-showcase-bg: #0e1019;
+  --project-showcase-card-bg: #0e1019;
+  --project-hero-after-ink: #fff;
+  --project-hero-after-muted: rgba(255, 255, 255, 0.7);
+}
+
 .project-theme-page.theme-dark,
 .project-theme-band.theme-dark {
   --project-surface-bg: #040404;

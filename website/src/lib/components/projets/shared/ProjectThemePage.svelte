@@ -175,7 +175,8 @@
 <div
   class="project-theme-page"
   class:theme-light={theme === "light"}
-  class:theme-dark={theme !== "light"}
+  class:theme-night={theme === "night"}
+  class:theme-dark={theme !== "light" && theme !== "night"}
   data-project-theme={theme}
   bind:this={rootEl}
 >

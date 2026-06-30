@@ -24,8 +24,8 @@
 <ProjectThemePage>
   <ProjectHeroProjetsStyle
     title="Moovy"
-    image="/images/moovy.webp"
-    mobileImage="/images/moovy_mobile.webp"
+    image="/images/moovy_recherche.webp"
+    mobileImage="/images/moovy_recherche.webp"
     metaBlocks={[
       { label: "Date", value: "2025 - Present" },
       { label: "Localisation", value: "Digital" },
@@ -104,7 +104,7 @@
   <div class="project-theme-band">
     <ProjectEditorialMosaic
       text="Un premier plan large pour ouvrir l'univers, puis deux vues resserrees qui gardent la meme clarte."
-      feature={{ src: "/images/moovy.webp", alt: "Grand visuel desktop de Moovy" }}
+      feature={{ src: "/images/moovy_recherche.webp", alt: "Grand visuel desktop de Moovy" }}
       items={[
         { src: "/images/moovy_mobile.webp", alt: "Vue mobile du projet Moovy" },
         { src: "/images/moovy.webp", alt: "Vue catalogue du projet Moovy" }

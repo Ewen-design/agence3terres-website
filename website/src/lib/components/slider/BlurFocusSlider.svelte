@@ -3,6 +3,7 @@
   import { browser } from "$app/environment";
 
   export let slides = [];
+  export let ctaLabel = "Voir le projet";
   const N = slides.length;
 
   // ── Progressive-blur ladder (sharp → strong). Adjacent levels are close,
@@ -328,10 +329,10 @@
                 tabindex={activeIndex === i ? 0 : -1}
                 data-cursor="button"
                 on:mousemove={handleBtnMove}
-                aria-label={"Voir le projet " + (slide.title ?? "").replace(/\n/g, " ")}
+                aria-label={ctaLabel + (slide.title ? " — " + slide.title.replace(/\n/g, " ") : "")}
               >
-                <span class="bfs__btn-inner" data-text="Voir le projet">
-                  <span class="bfs__btn-text">Voir le projet</span>
+                <span class="bfs__btn-inner" data-text={ctaLabel}>
+                  <span class="bfs__btn-text">{ctaLabel}</span>
                 </span>
               </a>
             {/if}

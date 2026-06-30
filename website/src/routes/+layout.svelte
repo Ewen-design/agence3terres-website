@@ -75,6 +75,12 @@
         "Agence 3 Terres accompagne les marques avec une approche stratégique, sensible et précise du design digital.",
       imageAlt: "Approche et vision Agence 3 Terres"
     },
+    "/poles": {
+      title: "Nos pôles | Agence 3 Terres",
+      description:
+        "Trois pôles complémentaires : création digitale, conseil stratégique et studio. Agence 3 Terres accompagne chaque marque de la stratégie à la production.",
+      imageAlt: "Les trois pôles de l'Agence 3 Terres"
+    },
     "/contact": {
       title: "Contact | Agence 3 Terres",
       description:

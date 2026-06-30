@@ -1,6 +1,8 @@
 <script>
   import { reveal } from "$lib/actions/reveal.js";
+  import { navigate } from "$lib/navigate.js";
 
+  export let label = "";
   export let text = "";
   export let mutedText = "";
   export let image = "";
@@ -8,9 +10,22 @@
   export let accentImage = "/images/moovy2.webp";
   export let accentAlt = "Visuel 3 Terres";
   export let mediaMinHeight = "32rem";
+  export let ctaLabel = "";
+  export let ctaHref = "";
+  export let showCue = true;
+  export let background = "#000";
+  export let ink = "#f4efe6";
+  export let inkMuted = "rgba(245, 241, 232, 0.62)";
+
+  function handleButtonMove(event) {
+    const button = event.currentTarget;
+    const rect = button.getBoundingClientRect();
+    button.style.setProperty("--mx", `${event.clientX - rect.left}px`);
+    button.style.setProperty("--my", `${event.clientY - rect.top}px`);
+  }
 </script>
 
-<section class="about-editorial-single-showcase">
+<section class="about-editorial-single-showcase" style={`--ase-bg:${background}; --ase-ink:${ink}; --ase-muted:${inkMuted};`}>
   <figure
     class="about-editorial-single-showcase__media"
     style={`--about-editorial-single-showcase-media-min-height:${mediaMinHeight};`}
@@ -20,15 +35,37 @@
   </figure>
 
   <div class="about-editorial-single-showcase__content">
-    <div class="about-editorial-single-showcase__scroll-cue" aria-hidden="true">
-      <span class="about-editorial-single-showcase__scroll-arrow">↓</span>
-    </div>
+    {#if showCue}
+      <div class="about-editorial-single-showcase__scroll-cue" aria-hidden="true">
+        <span class="about-editorial-single-showcase__scroll-arrow">↓</span>
+      </div>
+    {/if}
 
     <figure class="about-editorial-single-showcase__accent" use:reveal>
       <img src={accentImage} alt={accentAlt} loading="lazy" />
     </figure>
 
-    <p class="about-editorial-single-showcase__text" use:reveal={{ delay: 120 }}>{[text, mutedText].filter(Boolean).join(" ")}</p>
+    <div class="about-editorial-single-showcase__text-block">
+      {#if label}
+        <h2 class="about-editorial-single-showcase__label" use:reveal>{label}</h2>
+      {/if}
+      <p class="about-editorial-single-showcase__text" use:reveal={{ delay: 120 }}>{[text, mutedText].filter(Boolean).join(" ")}</p>
+
+      {#if ctaLabel && ctaHref}
+        <div class="about-editorial-single-showcase__cta" use:reveal={{ delay: 220 }}>
+          <button
+            class="ase-btn"
+            type="button"
+            on:click={() => navigate(ctaHref)}
+            on:mousemove={handleButtonMove}
+          >
+            <span class="ase-btn__flip" data-text={ctaLabel}>
+              <span class="ase-btn__text">{ctaLabel}</span>
+            </span>
+          </button>
+        </div>
+      {/if}
+    </div>
   </div>
 </section>
 
@@ -37,8 +74,8 @@
     position: relative;
     width: 100%;
     min-height: max(220vh, var(--about-editorial-single-showcase-media-min-height, 32rem));
-    background: #000;
-    color: #f5f1e8;
+    background: var(--ase-bg, #000);
+    color: var(--ase-ink, #f5f1e8);
     overflow: clip;
   }
 
@@ -64,12 +101,9 @@
     height: 56vh;
     background: linear-gradient(
       to top,
-      rgba(0, 0, 0, 1) 0%,
-      rgba(0, 0, 0, 0.98) 18%,
-      rgba(0, 0, 0, 0.88) 38%,
-      rgba(0, 0, 0, 0.62) 62%,
-      rgba(0, 0, 0, 0.26) 82%,
-      rgba(0, 0, 0, 0) 100%
+      var(--ase-bg, #000) 0%,
+      var(--ase-bg, #000) 30%,
+      transparent 100%
     );
     pointer-events: none;
   }
@@ -109,22 +143,145 @@
     color: #fff;
   }
 
-  .about-editorial-single-showcase__text {
-    margin: 0;
+  .about-editorial-single-showcase__text-block {
     grid-column: 3;
     grid-row: 2;
     justify-self: start;
     align-self: start;
+    padding-top: clamp(8rem, 14vh, 12rem);
+    margin-left: clamp(-8.75rem, -6.2vw, -4.4rem);
+  }
+
+  .about-editorial-single-showcase__label {
+    margin: 0 0 clamp(1rem, 1.8vw, 1.5rem);
+    font-family: "Inter", sans-serif;
+    font-size: var(--project-overline-size, clamp(1.02rem, 1.35vw, 1.4rem));
+    font-weight: 400;
+    letter-spacing: -0.01em;
+    color: var(--ase-muted, rgba(245, 241, 232, 0.62));
+  }
+
+  .about-editorial-single-showcase__label::before {
+    content: "";
+    display: block;
+    width: 24px;
+    height: 1px;
+    background: var(--lead-blue, #5768ff);
+    margin-bottom: 1.2rem;
+  }
+
+  .about-editorial-single-showcase__text {
+    margin: 0;
     max-width: 23ch;
     font-size: clamp(1.5rem, 2.5vw, 2.55rem);
     font-weight: 300;
     line-height: 1.18;
     letter-spacing: -0.025em;
-    color: #f4efe6;
+    color: var(--ase-ink, #f4efe6);
     text-wrap: pretty;
-    padding-top: clamp(8rem, 14vh, 12rem);
-    margin-left: clamp(-8.75rem, -6.2vw, -4.4rem);
   }
+
+  .about-editorial-single-showcase__cta {
+    margin-top: clamp(1.6rem, 2.6vw, 2.4rem);
+  }
+
+  .ase-btn {
+    font-family: "Inter", sans-serif;
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: clamp(9rem, 12vw, 11rem);
+    height: clamp(3rem, 3.6vw, 3.4rem);
+    padding: 0 1.4rem;
+    font-size: clamp(0.92rem, 1.05vw, 1.05rem);
+    font-weight: 400;
+    color: #f7f2e8;
+    border: 0;
+    cursor: pointer;
+    background: rgba(255, 255, 255, 0.11);
+    backdrop-filter: blur(20px) saturate(160%) brightness(0.82);
+    -webkit-backdrop-filter: blur(20px) saturate(160%) brightness(0.82);
+    border-radius: 10px;
+    box-shadow: 0 6px 8px rgba(0, 0, 0, 0.04);
+    transition:
+      transform 1.2s cubic-bezier(.22, .61, .36, 1),
+      background 0.3s ease,
+      box-shadow 1.2s cubic-bezier(.22, .61, .36, 1);
+  }
+
+  .ase-btn:hover {
+    background: rgba(255, 255, 255, 0.18);
+    transform: translateY(-2px);
+  }
+
+  .ase-btn__flip {
+    position: relative;
+    display: block;
+    overflow: hidden;
+    height: 1.2em;
+    line-height: 1.2em;
+  }
+
+  .ase-btn__text {
+    display: block;
+    transform: translateY(0%);
+    transition: transform 0.45s cubic-bezier(.22, .61, .36, 1);
+  }
+
+  .ase-btn__flip::after {
+    content: attr(data-text);
+    position: absolute;
+    left: 0;
+    top: 0;
+    line-height: 1.2em;
+    transform: translateY(100%);
+    transition: transform 0.45s cubic-bezier(.22, .61, .36, 1);
+    white-space: nowrap;
+    color: inherit;
+  }
+
+  .ase-btn:hover .ase-btn__text { transform: translateY(-100%); }
+  .ase-btn:hover .ase-btn__flip::after { transform: translateY(0%); }
+
+  .ase-btn::before,
+  .ase-btn::after {
+    content: "";
+    position: absolute;
+    inset: -1px;
+    border-radius: inherit;
+    padding: 1px;
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.25s ease;
+  }
+
+  .ase-btn::before {
+    background: radial-gradient(
+      68px circle at var(--mx, 50%) var(--my, 50%),
+      var(--site-glow-strong) 0%,
+      var(--site-glow-mid) 22%,
+      var(--site-glow-soft) 45%,
+      var(--site-glow-fade) 62%,
+      transparent 78%
+    );
+  }
+
+  .ase-btn::after {
+    background: radial-gradient(
+      78px circle at var(--mx, 50%) var(--my, 50%),
+      var(--site-glow-ambient) 0%,
+      var(--site-glow-outer) 42%,
+      transparent 72%
+    );
+    filter: blur(2px);
+  }
+
+  .ase-btn:hover::before,
+  .ase-btn:hover::after { opacity: 1; }
 
   .about-editorial-single-showcase__accent {
     grid-column: 2;
@@ -160,16 +317,23 @@
       padding-bottom: 0;
     }
 
-    .about-editorial-single-showcase__text {
+    .about-editorial-single-showcase__text-block {
       grid-column: 1;
       grid-row: 2;
-      max-width: 18ch;
       justify-self: start;
+      padding-top: 6rem;
+      margin-left: 0;
+    }
+
+    .about-editorial-single-showcase__text {
+      max-width: 18ch;
       font-size: clamp(1.5rem, 6.6vw, 2rem);
       padding-inline: var(--project-text-inset, 0);
       line-height: 1.2;
-      padding-top: 6rem;
-      margin-left: 0;
+    }
+
+    .about-editorial-single-showcase__cta {
+      padding-inline: var(--project-text-inset, 0);
     }
 
     .about-editorial-single-showcase__accent {
@@ -195,11 +359,9 @@
       height: 52vh;
       background: linear-gradient(
         to top,
-        rgba(0, 0, 0, 1) 0%,
-        rgba(0, 0, 0, 1) 28%,
-        rgba(0, 0, 0, 0.95) 56%,
-        rgba(0, 0, 0, 0.6) 80%,
-        rgba(0, 0, 0, 0) 100%
+        var(--ase-bg, #000) 0%,
+        var(--ase-bg, #000) 34%,
+        transparent 100%
       );
     }
 
@@ -213,19 +375,21 @@
       padding-bottom: max(7rem, calc(var(--safe-bottom-offset) + 5rem));
     }
 
-    .about-editorial-single-showcase__text {
+    .about-editorial-single-showcase__text-block {
       grid-row: 2;
       align-self: start;
-      max-width: 18ch;
-      font-size: clamp(1.4rem, 6.6vw, 1.9rem);
-      line-height: 1.2;
-      padding-inline: var(--project-text-inset, 0);
       padding-top: 0;
-      padding-bottom: 0;
       margin-top: -2vh;
       margin-left: 0;
       position: relative;
       z-index: 2;
+    }
+
+    .about-editorial-single-showcase__text {
+      max-width: 18ch;
+      font-size: clamp(1.4rem, 6.6vw, 1.9rem);
+      line-height: 1.2;
+      padding-inline: var(--project-text-inset, 0);
     }
 
     .about-editorial-single-showcase__accent {

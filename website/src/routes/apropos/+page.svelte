@@ -15,10 +15,11 @@
 
 <AboutFocusSlider />
 <AboutEditorialSingleShowcase
-  text="Une direction artistique"
-  mutedText="pensee pour donner plus de presence, de coherence et d'intensite a chaque prise de parole."
+  text="Organisée en trois pôles complémentaires, l'agence accompagne chaque marque du conseil stratégique à la création digitale, jusqu'à la production de contenus."
   image="/images/justx.webp"
   alt="Direction artistique Agence 3 Terres"
   mediaMinHeight="38rem"
+  ctaLabel="Découvrir"
+  ctaHref="poles"
 />
 <AboutEditorialPrinciples />
