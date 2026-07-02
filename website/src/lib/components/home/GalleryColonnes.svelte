@@ -9,13 +9,13 @@
 
   const leftImages = [
     {
-      src: "images/telephone3.webp",
+      src: "images/moovy_recherche.webp",
       alt: "",
       ratio: "portrait",
       height: 38
     },
     {
-      src: "images/moovy_ipad.webp",
+      src: "images/moovy_page.webp",
       alt: "",
       ratio: "landscape",
       height: 23
@@ -30,13 +30,13 @@
 
   const centerImages = [
     {
-      src: "images/moovy.webp",
+      src: "images/tel_moovy2.webp",
       alt: "",
       ratio: "landscape",
       height: 28
     },
     {
-      src: "images/moovy_mobile.webp",
+      src: "images/justx_app.webp",
       alt: "",
       ratio: "portrait",
       height: 42
@@ -51,19 +51,19 @@
 
   const rightImages = [
     {
-      src: "images/tel_justx.webp",
+      src: "images/moovy_ipad.webp",
       alt: "",
       ratio: "portrait",
       height: 38
     },
     {
-      src: "images/tel_moovy.webp",
+      src: "images/justx-tel.webp",
       alt: "",
       ratio: "landscape",
       height: 23
     },
     {
-      src: "images/telephone3.webp",
+      src: "images/justx_couleurs.webp",
       alt: "",
       ratio: "portrait",
       height: 34

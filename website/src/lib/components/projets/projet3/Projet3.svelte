@@ -13,7 +13,7 @@
   // (le projet courant). Évite aussi les .jpg lourds qui chargeaient mal ici.
   const otherProjects = [
     { title: "JustX", image: "/images/justx.webp", href: "/projet5" },
-    { title: "JustX Fitness", image: "/images/justx_fitness.webp", href: "/projet7" },
+    { title: "JustX Fitness", image: "/images/justx_app.webp", href: "/projet7" },
     { title: "Mission X", image: "/images/missionX5.webp", href: "/projet6" },
     { title: "Ludosphères", image: "/images/apple_justx.webp", href: "/projet4" },
     { title: "Serein Design", image: "/images/serein_design.webp", href: "/projet1" },
@@ -24,8 +24,8 @@
 <ProjectThemePage>
   <ProjectHeroProjetsStyle
     title="Moovy"
-    image="/images/moovy_recherche.webp"
-    mobileImage="/images/moovy_recherche.webp"
+    image="/images/tel_moovy2.webp"
+    mobileImage="/images/tel_moovy2.webp"
     metaBlocks={[
       { label: "Date", value: "2025 - Present" },
       { label: "Localisation", value: "Digital" },
@@ -45,7 +45,7 @@
     <ProjectEditorialRole
       title="Notre rôle"
       images={[
-        { src: "/images/moovy.webp", alt: "Interface desktop de Moovy" },
+        { src: "/images/moovy_page.webp", alt: "Interface desktop de Moovy" },
         { src: "/images/tel_moovy3.webp", alt: "Interface mobile de Moovy" }
       ]}
       items={[
@@ -69,7 +69,7 @@
     <ProjectEditorialSplit
       title="Interface mobile"
       text="Une presence plus simple et plus fluide. Le projet garde sa clarte jusque dans les vues les plus rapprochees."
-      image="/images/moovy_mobile.webp"
+      image="/images/moovy_recherche.webp"
       alt="Vue mobile du projet Moovy"
       mediaMinHeight="52.5rem"
     />
@@ -91,7 +91,7 @@
   <div class="project-theme-band">
     <ProjectEditorialMobileShowcase
       text="Le mobile devait permettre de passer d'une envie vague a un choix concret avec le moins de friction possible."
-      leftImage="/images/moovy_mac.webp"
+      leftImage="/images/moovy_ipad.webp"
       leftAlt="Interface mobile verticale Moovy"
       rightImage="/images/tel_moovy3.webp"
       rightAlt="Interface desktop Moovy"

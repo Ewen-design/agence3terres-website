@@ -9,7 +9,7 @@
       title: "Moovy",
       category: "Plateforme web",
       lead: "Une recommandation de films simple, directe et personnelle.",
-      image: "/images/moovy2.webp",
+      image: "/images/tel_moovy2.webp",
       page: "projet3",
       button: "Voir le projet"
     },
@@ -25,7 +25,7 @@
       title: "JustX Fitness",
       category: "Application fitness",
       lead: "Programmes, suivi et progression dans une expérience directe.",
-      image: "/images/justx_fitness.webp",
+      image: "/images/justx_app.webp",
       page: "projet7",
       button: "Voir le projet"
     },

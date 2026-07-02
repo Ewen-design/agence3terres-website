@@ -5,7 +5,7 @@
   import ProjectInProgress from "$lib/components/projets/shared/ProjectInProgress.svelte";
 
   const appPrimary = "/images/justx_fitness.webp";
-  const appSecondary = "/images/justx.webp";
+  const appSecondary = "/images/justx_app.webp";
 </script>
 
 <ProjectThemePage>
@@ -31,8 +31,8 @@
       "Chaque écran se concentre sur une action précise, dans un design system cohérent qui garde l'identité de la marque jusque dans le détail."
     ]}
     images={[
-      { src: "/images/justx_textile.webp", alt: "Univers visuel de JustX Fitness" },
-      { src: "/images/justx-couleurs.webp", alt: "Application JustX Fitness sur mobile" }
+      { src: "/images/justx-tel.webp", alt: "Univers visuel de JustX Fitness" },
+      { src: "/images/justx_couleurs.webp", alt: "Application JustX Fitness sur mobile" }
     ]}
   />
 
