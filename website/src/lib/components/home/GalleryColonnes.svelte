@@ -15,7 +15,7 @@
       height: 38
     },
     {
-      src: "images/moovy.webp",
+      src: "images/moovy_ipad.webp",
       alt: "",
       ratio: "landscape",
       height: 23

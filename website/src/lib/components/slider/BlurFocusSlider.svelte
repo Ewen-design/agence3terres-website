@@ -476,6 +476,13 @@
     left: 0;
     width: min(72rem, calc(100vw - clamp(1.5rem, 5.5vw, 5.5rem) - clamp(3.5rem, 8vw, 8rem)));
   }
+  /* Desktop: cap the caption to ~3 lines so short descriptions read as a small
+     stacked block rather than one very long line. Mobile keeps its own width. */
+  @media (min-width: 901px) {
+    .bfs__caption {
+      width: min(34ch, calc(100vw - clamp(1.5rem, 5.5vw, 5.5rem) - clamp(3.5rem, 8vw, 8rem)));
+    }
+  }
   .bfs__caption-line { display: block; }
   .bfs__caption-line > span {
     display: block;

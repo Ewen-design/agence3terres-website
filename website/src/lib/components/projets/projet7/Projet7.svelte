@@ -32,7 +32,7 @@
     ]}
     images={[
       { src: "/images/justx_textile.webp", alt: "Univers visuel de JustX Fitness" },
-      { src: "/images/tel_justx.webp", alt: "Application JustX Fitness sur mobile" }
+      { src: "/images/justx-couleurs.webp", alt: "Application JustX Fitness sur mobile" }
     ]}
   />
 
