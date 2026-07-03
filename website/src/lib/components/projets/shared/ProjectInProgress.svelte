@@ -1,5 +1,32 @@
 <script>
+  import { onMount } from "svelte";
+  import { browser } from "$app/environment";
   import { reveal } from "$lib/actions/reveal.js";
+
+  let dockEl;
+
+  // While the glass dock is on screen, tell the layout to fade the global
+  // bottom vignette (`.bottom-gradient`, z-index 99999) so the dock reads in
+  // front of it instead of scrolling behind it.
+  onMount(() => {
+    if (!browser || !dockEl) return;
+
+    const notify = (visible) =>
+      window.dispatchEvent(
+        new CustomEvent("pip-dock-visible", { detail: { visible } })
+      );
+
+    const io = new IntersectionObserver(
+      ([entry]) => notify(entry.isIntersecting),
+      { threshold: 0 }
+    );
+    io.observe(dockEl);
+
+    return () => {
+      io.disconnect();
+      notify(false);
+    };
+  });
 
   export let id = "projet-en-cours";
   export let image = "";
@@ -8,13 +35,6 @@
   export let title = "Projet en cours\nde création";
   export let ctaLabel = "Voir tous les projets";
   export let ctaHref = "/travail";
-
-  function handleButtonMove(event) {
-    const button = event.currentTarget;
-    const rect = button.getBoundingClientRect();
-    button.style.setProperty("--mx", `${event.clientX - rect.left}px`);
-    button.style.setProperty("--my", `${event.clientY - rect.top}px`);
-  }
 </script>
 
 <section class="pip" {id}>
@@ -32,17 +52,13 @@
     <h2 class="pip__title" use:reveal>{title}</h2>
 
     {#if ctaHref}
-      <a
-        class="pip__cta"
-        href={ctaHref}
-        data-cursor="button"
-        use:reveal={{ delay: 160 }}
-        on:mousemove={handleButtonMove}
-      >
-        <span class="pip__cta-flip" data-text={ctaLabel}>
-          <span class="pip__cta-text">{ctaLabel}</span>
-        </span>
-      </a>
+      <div class="pip__dock" bind:this={dockEl}>
+        <a class="pip__cta" href={ctaHref} data-cursor="button">
+          <span class="pip__cta-flip" data-text={ctaLabel}>
+            <span class="pip__cta-text">{ctaLabel}</span>
+          </span>
+        </a>
+      </div>
     {/if}
   </div>
 </section>
@@ -52,7 +68,7 @@
     position: relative;
     min-height: 100svh;
     display: flex;
-    align-items: flex-end;
+    align-items: stretch;
     overflow: clip;
     background: #000;
     isolation: isolate;
@@ -97,6 +113,14 @@
         rgba(0, 0, 0, 0.02) 76%,
         rgba(0, 0, 0, 0) 100%
       ),
+      /* Soft top darkening so the title stays legible over the image. */
+      linear-gradient(
+        to bottom,
+        rgba(0, 0, 0, 0.6) 0%,
+        rgba(0, 0, 0, 0.34) 12%,
+        rgba(0, 0, 0, 0.12) 26%,
+        rgba(0, 0, 0, 0) 42%
+      ),
       linear-gradient(
         90deg,
         rgba(0, 0, 0, 0.34) 0%,
@@ -111,7 +135,11 @@
     z-index: 2;
     width: min(1400px, 92%);
     margin: 0 auto;
-    padding: 0 0 clamp(3.5rem, 9vh, 7rem);
+    min-height: 100svh;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: clamp(3.2rem, 8vh, 6rem) 0 0;
     color: #f5f1e8;
   }
 
@@ -120,36 +148,65 @@
     max-width: 14ch;
     font-family: "Inter", sans-serif;
     font-weight: 500;
-    /* Same size as the project hero title (.hero-scroll-label). */
-    font-size: clamp(5.8rem, 5vw, 18rem);
+    font-size: clamp(4.6rem, 4vw, 12rem);
     line-height: 1;
-    letter-spacing: normal;
+    letter-spacing: -0.02em;
     white-space: pre-line;
     text-wrap: balance;
     color: #f7f3ea;
     text-shadow: 0 8px 40px rgba(0, 0, 0, 0.32);
   }
 
+  /* Glass dock behind the button: blurred surface, faint inner white glow and
+     a hairline white border — the button sits on top of it. */
+  .pip__dock {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    width: 100%;
+    max-width: 540px;
+    margin-inline: auto;
+    padding: clamp(1.5rem, 2.6vw, 2.4rem) clamp(1.6rem, 3vw, 3rem);
+    /* rounded top only — the bottom is flush with the section edge */
+    border-radius: clamp(26px, 3vw, 40px) clamp(26px, 3vw, 40px) 0 0;
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(24px) saturate(150%);
+    -webkit-backdrop-filter: blur(24px) saturate(150%);
+    /* very very thin white contour — a hairline, no line at the bottom */
+    border: 0.5px solid rgba(255, 255, 255, 0.2);
+    border-bottom: none;
+    box-shadow:
+      /* internal white glow */
+      inset 0 0 60px rgba(255, 255, 255, 0.14),
+      inset 0 1px 1px rgba(255, 255, 255, 0.28),
+      0 24px 60px rgba(0, 0, 0, 0.4);
+  }
+
   .pip__cta {
     position: relative;
     display: inline-flex;
+    flex: 1;
+    max-width: 640px;
     align-items: center;
     justify-content: center;
-    height: clamp(3.1rem, 3.6vw, 3.6rem);
-    margin-top: clamp(2rem, 3.4vw, 2.8rem);
+    height: clamp(3.1rem, 3.8vw, 3.7rem);
     padding: 0 1.6rem;
     font-family: "Inter", sans-serif;
-    font-weight: 400;
-    font-size: clamp(0.95rem, 1.05vw, 1.08rem);
-    color: #f5f1e8;
+    font-weight: 500;
+    font-size: clamp(0.98rem, 1.1vw, 1.12rem);
+    color: #14110c;
     text-decoration: none;
     white-space: nowrap;
     cursor: pointer;
-    background: rgba(255, 255, 255, 0.11);
-    backdrop-filter: blur(20px) saturate(160%) brightness(0.82);
-    -webkit-backdrop-filter: blur(20px) saturate(160%) brightness(0.82);
-    border-radius: 12px;
-    box-shadow: 0 6px 8px rgba(0, 0, 0, 0.04);
+    background: #f4f0e7;
+    border-radius: clamp(14px, 1.8vw, 22px);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.18);
+    transition: background 0.35s ease, transform 0.35s ease;
+  }
+
+  .pip__cta:hover {
+    background: #fffdf8;
+    transform: translateY(-1px);
   }
 
   .pip__cta-flip {
@@ -186,51 +243,9 @@
     transform: translateY(0%);
   }
 
-  .pip__cta::before,
-  .pip__cta::after {
-    content: "";
-    position: absolute;
-    inset: -1px;
-    border-radius: inherit;
-    padding: 1px;
-    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-    -webkit-mask-composite: xor;
-    mask-composite: exclude;
-    pointer-events: none;
-    opacity: 0;
-  }
-
-  .pip__cta::before {
-    background: radial-gradient(
-      128px circle at var(--mx, 50%) var(--my, 50%),
-      var(--site-glow-strong) 0%,
-      var(--site-glow-mid) 26%,
-      var(--site-glow-soft) 52%,
-      var(--site-glow-fade) 70%,
-      transparent 86%
-    );
-    transition: opacity 0.25s ease;
-  }
-
-  .pip__cta::after {
-    background: radial-gradient(
-      156px circle at var(--mx, 50%) var(--my, 50%),
-      var(--site-glow-ambient) 0%,
-      var(--site-glow-outer) 48%,
-      transparent 82%
-    );
-    filter: blur(3px);
-    transition: opacity 0.25s ease;
-  }
-
-  .pip__cta:hover::before,
-  .pip__cta:hover::after {
-    opacity: 1;
-  }
-
   @media (max-width: 900px) {
     .pip__title {
-      font-size: clamp(4rem, 10vw, 7rem);
+      font-size: clamp(3.4rem, 8.5vw, 6rem);
       max-width: 12ch;
     }
   }
@@ -241,8 +256,13 @@
     }
 
     .pip__title {
-      font-size: clamp(2.9rem, 13vw, 4.8rem);
+      font-size: clamp(2.5rem, 11.5vw, 4.2rem);
       max-width: 11ch;
+    }
+
+    .pip__dock {
+      /* keep the blur flush to the bottom edge but lift the button higher */
+      padding: clamp(1.4rem, 4vw, 1.8rem) 1.2rem clamp(3.8rem, 12vw, 5rem);
     }
 
     .pip__cta {

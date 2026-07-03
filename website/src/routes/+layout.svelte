@@ -37,6 +37,7 @@
   let removeTouchFlipListener;
   let projectTheme = null;
   let removeProjectThemeListener;
+  let pipDockVisible = false;
 
   let transitionLayer;
   let pageWrapper;
@@ -383,10 +384,15 @@
     const handleProjectThemeChange = (event) => {
       projectTheme = event.detail?.theme ?? null;
     };
+    const handlePipDockVisible = (event) => {
+      pipDockVisible = Boolean(event.detail?.visible);
+    };
 
     window.addEventListener("project-theme-change", handleProjectThemeChange);
+    window.addEventListener("pip-dock-visible", handlePipDockVisible);
     removeProjectThemeListener = () => {
       window.removeEventListener("project-theme-change", handleProjectThemeChange);
+      window.removeEventListener("pip-dock-visible", handlePipDockVisible);
     };
 
     const init = async () => {
@@ -541,6 +547,7 @@
   class:contact-page={pathname === "/contact"}
   class:project-light-theme={isProjectLightTheme}
   class:legal-route={pathname === "/mentions-legales"}
+  class:pip-dock-active={pipDockVisible}
 >
   {#if !isMobile}
     <CustomCursor />
@@ -748,6 +755,13 @@
 
   main.travail-soft-gradients .bottom-gradient {
     opacity: 0.3;
+  }
+
+  /* The "projet en création" glass dock sits flush at the bottom of the
+     viewport; while it is on screen, fade the global bottom vignette so the
+     dock reads in front of it instead of scrolling behind it. */
+  main.pip-dock-active .bottom-gradient {
+    opacity: 0;
   }
 
   @media (max-width: 900px) {

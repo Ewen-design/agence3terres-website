@@ -15,9 +15,17 @@
   for (let k = K - 2; k >= 0; k--) ANIM.push({ bl: BLUR_LEVELS[k], k });
 
   // ── DOM refs ──────────────────────────────────────────────────────────
-  let sectionEl, stickyEl, spacerEl, bottomEl;
+  let sectionEl, stickyEl, spacerEl;
   const bgRefs    = slides.map(() => null);
   const layerRefs = slides.map(() => new Array(K - 1).fill(null));
+
+  // Glow-on-hover border (same as the rest of the site's buttons).
+  function handleBtnMove(event) {
+    const btn = event.currentTarget;
+    const rect = btn.getBoundingClientRect();
+    btn.style.setProperty("--mx", `${event.clientX - rect.left}px`);
+    btn.style.setProperty("--my", `${event.clientY - rect.top}px`);
+  }
 
   // ── Geometry ──────────────────────────────────────────────────────────
   const SEGMENT_FRAC = 1.5;   // scroll-per-slide (viewport heights). Match the CSS spacer.
@@ -213,7 +221,7 @@
   }
 
   // ── Lifecycle ─────────────────────────────────────────────────────────
-  let _bodyObs, _dockObs;
+  let _bodyObs;
   onMount(() => {
     if (!browser || N === 0) return;
 
@@ -233,20 +241,6 @@
 
     _bodyObs = new ResizeObserver(() => measure());
     _bodyObs.observe(document.body);
-
-    // While the glass dock is on screen, tell the layout to fade the global
-    // bottom vignette (`.bottom-gradient`, z-index 99999) so the dock reads in
-    // front of it — same mechanism as ProjectInProgress.
-    if (bottomEl) {
-      _dockObs = new IntersectionObserver(
-        ([entry]) =>
-          window.dispatchEvent(
-            new CustomEvent("pip-dock-visible", { detail: { visible: entry.isIntersecting } })
-          ),
-        { threshold: 0 }
-      );
-      _dockObs.observe(bottomEl);
-    }
   });
 
   onDestroy(() => {
@@ -263,8 +257,6 @@
     window.removeEventListener("pageshow",          measure);
     window.visualViewport?.removeEventListener("resize", onResize);
     _bodyObs?.disconnect();
-    _dockObs?.disconnect();
-    window.dispatchEvent(new CustomEvent("pip-dock-visible", { detail: { visible: false } }));
   });
 </script>
 
@@ -301,54 +293,51 @@
       <div class="bfs__overlay"></div>
     </div>
 
-    <!-- Head (top): title + small description + arrow, per-slide swap -->
-    <div class="bfs__heads" aria-live="polite">
+    <!-- Titles (top, swap in place) -->
+    <div class="bfs__titles">
       {#each slides as slide, i}
-        <div
-          class="bfs__head"
-          class:is-active={activeIndex === i}
-          aria-hidden={activeIndex !== i ? "true" : undefined}
-        >
-          <h2 class="bfs__title">{slide.title}</h2>
-
-          <div class="bfs__sub">
-            <div class="bfs__caption">
-              {#each (slide.description ?? "").split("\n").filter(Boolean) as line, li}
-                <span class="bfs__caption-line" style="--li:{li}">
-                  <span>{line}</span>
-                </span>
-              {/each}
-            </div>
-
-            <button
-              class="bfs__arrow-cue"
-              type="button"
-              on:mousedown|preventDefault
-              on:click={goNext}
-              tabindex={activeIndex === i ? 0 : -1}
-              aria-label="Slide suivante"
-            >
-              <span class="bfs__arrow-symbol" aria-hidden="true">↓</span>
-            </button>
-          </div>
-        </div>
+        <h2 class="bfs__title" class:is-active={activeIndex === i} aria-hidden={activeIndex !== i ? "true" : undefined}>
+          {slide.title}
+        </h2>
       {/each}
     </div>
 
-    <!-- Bottom: glass dock with the CTA button (href follows the active slide) -->
-    <div class="bfs__bottom" bind:this={bottomEl}>
+    <!-- Scroll hint arrow → advances to the next slide -->
+    <button class="bfs__arrow-cue" type="button" on:click={goNext} aria-label="Slide suivante">
+      <span class="bfs__arrow-symbol" aria-hidden="true">↓</span>
+    </button>
+
+    <!-- Bottom: gradient + captions + buttons (swap in place) -->
+    <div class="bfs__bottom">
       <div class="bfs__bottom-grad" aria-hidden="true"></div>
-      <div class="bfs__dock">
-        <a
-          href={slides[activeIndex]?.href}
-          class="bfs__btn"
-          data-cursor="button"
-          aria-label={ctaLabel + (slides[activeIndex]?.title ? " — " + slides[activeIndex].title.replace(/\n/g, " ") : "")}
-        >
-          <span class="bfs__btn-inner" data-text={ctaLabel}>
-            <span class="bfs__btn-text">{ctaLabel}</span>
-          </span>
-        </a>
+      <div class="bfs__captions" aria-live="polite">
+        {#each slides as slide, i}
+          <div
+            class="bfs__caption"
+            class:is-active={activeIndex === i}
+            aria-hidden={activeIndex !== i ? "true" : undefined}
+          >
+            {#each (slide.description ?? "").split("\n").filter(Boolean) as line, li}
+              <span class="bfs__caption-line" style="--li:{li}">
+                <span>{line}</span>
+              </span>
+            {/each}
+            {#if slide.href}
+              <a
+                href={slide.href}
+                class="bfs__btn"
+                tabindex={activeIndex === i ? 0 : -1}
+                data-cursor="button"
+                on:mousemove={handleBtnMove}
+                aria-label={ctaLabel + (slide.title ? " — " + slide.title.replace(/\n/g, " ") : "")}
+              >
+                <span class="bfs__btn-inner" data-text={ctaLabel}>
+                  <span class="bfs__btn-text">{ctaLabel}</span>
+                </span>
+              </a>
+            {/if}
+          </div>
+        {/each}
       </div>
     </div>
 
@@ -412,19 +401,17 @@
       rgba(0,0,0,.55) 0%, rgba(0,0,0,.10) 30%, rgba(0,0,0,0) 55%);
   }
 
-  /* ── Head (top): title + description + arrow ─────────────────────────── */
-  .bfs__heads {
+  /* ── Titles (top) ───────────────────────────────────────────────────── */
+  .bfs__titles {
     position: absolute; z-index: 2;
     top: 0; left: 0; right: 0;
+    padding: clamp(6rem, 10vw, 9rem) clamp(1.5rem, 5.5vw, 5.5rem) 0;
     pointer-events: none;
   }
-  .bfs__head {
+  .bfs__title {
     position: absolute;
     top: clamp(6rem, 10vw, 9rem);
     left: clamp(1.5rem, 5.5vw, 5.5rem);
-    right: clamp(1.5rem, 5.5vw, 5.5rem);
-  }
-  .bfs__title {
     margin: 0;
     font-family: var(--site-font, "Inter", sans-serif);
     font-weight: 600;
@@ -445,69 +432,55 @@
       transform .85s cubic-bezier(.22,.61,.36,1);
     backface-visibility: hidden;
   }
-  .bfs__head.is-active .bfs__title {
+  .bfs__title.is-active {
     opacity: 1;
     filter: blur(0);
     transform: translate3d(0, 0, 0);
   }
 
-  /* Small description + arrow, sitting right under the title. */
-  .bfs__sub {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: clamp(1rem, 1.8vw, 1.5rem);
-    margin-top: clamp(1.4rem, 2.4vw, 2.2rem);
-  }
-
-  /* ── Bottom: glass dock ─────────────────────────────────────────────── */
+  /* ── Bottom bar ─────────────────────────────────────────────────────── */
   .bfs__bottom {
     position: absolute; bottom: 0; left: 0; right: 0;
-    height: calc(clamp(11rem, 28vh, 20rem) + var(--bar-inset));
+    height: calc(clamp(17rem, 42vh, 32rem) + var(--bar-inset));
     z-index: 2;
     pointer-events: none;
-    display: flex;
-    align-items: flex-end;
-    justify-content: center;
   }
-  /* Light vignette only — the glass dock floats over the live image. */
+  /* Smoothly-eased gradient (many stops) so there's no visible banding/edge. */
   .bfs__bottom-grad {
     position: absolute; inset: 0;
-    pointer-events: none;
     background: linear-gradient(to bottom,
       rgba(0,0,0,0)    0%,
-      rgba(0,0,0,.04) 45%,
-      rgba(0,0,0,.12) 74%,
-      rgba(0,0,0,.2)  100%);
+      rgba(0,0,0,.03) 20%,
+      rgba(0,0,0,.10) 36%,
+      rgba(0,0,0,.21) 50%,
+      rgba(0,0,0,.36) 63%,
+      rgba(0,0,0,.53) 75%,
+      rgba(0,0,0,.70) 86%,
+      rgba(0,0,0,.85) 95%,
+      rgba(0,0,0,.9)  100%);
   }
-
-  .bfs__dock {
-    position: relative;
-    pointer-events: auto;
-    display: flex;
-    justify-content: center;
-    width: min(540px, calc(100vw - 2 * clamp(1.5rem, 5.5vw, 5.5rem)));
-    padding: clamp(1.3rem, 2.4vw, 2rem) clamp(1.5rem, 3vw, 2.6rem);
-    /* rounded top only — flush with the sticky bottom edge */
-    border-radius: clamp(24px, 3vw, 36px) clamp(24px, 3vw, 36px) 0 0;
-    background: rgba(255,255,255,.05);
-    backdrop-filter: blur(24px) saturate(150%);
-    -webkit-backdrop-filter: blur(24px) saturate(150%);
-    /* very very thin white contour — a hairline, no line at the bottom */
-    border: .5px solid rgba(255,255,255,.2);
-    border-bottom: none;
-    box-shadow:
-      inset 0 0 60px rgba(255,255,255,.14),
-      inset 0 1px 1px rgba(255,255,255,.28),
-      0 24px 60px rgba(0,0,0,.4);
+  .bfs__captions {
+    position: absolute;
+    bottom: calc(var(--bar-inset) + clamp(2.5rem, 5vw, 4rem));
+    left: clamp(1.5rem, 5.5vw, 5.5rem);
+    z-index: 1;
+    min-height: 8rem;
   }
+  /* Explicit width (not just max-width): the captions wrapper has no in-flow
+     content — every caption is absolutely positioned — so it collapses to 0
+     and a max-width alone would shrink the text to its longest word. A real
+     width, viewport-based and minus the side gutters, lets the text breathe. */
   .bfs__caption {
-    max-width: min(40rem, 100%);
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: min(72rem, calc(100vw - clamp(1.5rem, 5.5vw, 5.5rem) - clamp(3.5rem, 8vw, 8rem)));
   }
-  /* Desktop: cap the description to a small stacked block. */
+  /* Desktop: cap the caption to ~3 lines so short descriptions read as a small
+     stacked block rather than one very long line. Mobile keeps its own width. */
   @media (min-width: 901px) {
     .bfs__caption {
-      max-width: 34ch;
+      width: min(34ch, calc(100vw - clamp(1.5rem, 5.5vw, 5.5rem) - clamp(3.5rem, 8vw, 8rem)));
     }
   }
   .bfs__caption-line { display: block; }
@@ -529,35 +502,42 @@
     transition-delay: 0s;
     backface-visibility: hidden;
   }
-  .bfs__head.is-active .bfs__caption-line > span {
+  .bfs__caption.is-active .bfs__caption-line > span {
     opacity: 1;
     filter: blur(0);
     transform: translate3d(0, 0, 0);
     transition-delay: calc(var(--li, 0) * .07s);
   }
 
-  /* ── Button (sits on the glass dock) ────────────────────────────────── */
+  /* ── Button ─────────────────────────────────────────────────────────── */
   .bfs__btn {
-    position: relative;
     display: inline-flex;
-    flex: 1;
-    max-width: 360px;
     align-items: center;
-    justify-content: center;
-    height: clamp(3rem, 3.6vw, 3.5rem);
-    padding: 0 1.6rem;
+    height: 38px;
+    margin-top: 1.1rem;
+    padding: 0 1.4rem;
     font-family: var(--site-font, "Inter", sans-serif);
-    font-weight: 500;
-    font-size: clamp(.95rem, 1.05vw, 1.05rem);
-    color: #14110c;
+    font-weight: 400;
+    font-size: .88rem;
+    color: #f5f1e8;
     text-decoration: none;
-    background: #f4f0e7;
-    border-radius: clamp(12px, 1.6vw, 18px);
-    box-shadow: 0 2px 10px rgba(0,0,0,.18);
+    background: rgba(255,255,255,.12);
+    backdrop-filter: blur(18px) saturate(150%);
+    -webkit-backdrop-filter: blur(18px) saturate(150%);
+    border-radius: 10px;
     white-space: nowrap;
-    transition: background .35s ease, transform .35s ease;
+    pointer-events: none;
+    opacity: 0;
+    transform: translate3d(0, 18px, 0) scale(.96);
+    transition: transform .6s cubic-bezier(.22,.61,.36,1), opacity .45s ease;
+    backface-visibility: hidden;
   }
-  .bfs__btn:hover { background: #fffdf8; transform: translateY(-1px); }
+  .bfs__caption.is-active .bfs__btn {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
+    transition-delay: .18s;
+    pointer-events: auto;
+  }
   .bfs__btn:focus-visible {
     outline: 2px solid rgba(245,241,232,.9);
     outline-offset: 3px;
@@ -574,30 +554,65 @@
     transform: translateY(100%);
     transition: transform .42s cubic-bezier(.22,.61,.36,1);
     white-space: nowrap;
-    color: inherit;
   }
   .bfs__btn:hover .bfs__btn-text { transform: translateY(-100%); }
   .bfs__btn:hover .bfs__btn-inner::after { transform: translateY(0); }
 
-  /* ── Scroll arrow (under the title) ─────────────────────────────────── */
-  .bfs__arrow-cue {
+  /* Glowing border on hover — same system as the rest of the site's buttons. */
+  .bfs__btn::before,
+  .bfs__btn::after {
+    content: "";
+    position: absolute;
+    inset: -1px;
+    border-radius: inherit;
+    padding: 1px;
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
     pointer-events: none;
+    opacity: 0;
+  }
+  .bfs__btn::before {
+    background: radial-gradient(
+      128px circle at var(--mx, 50%) var(--my, 50%),
+      var(--site-glow-strong) 0%,
+      var(--site-glow-mid) 26%,
+      var(--site-glow-soft) 52%,
+      var(--site-glow-fade) 70%,
+      transparent 86%
+    );
+    transition: opacity 0.25s ease;
+  }
+  .bfs__btn::after {
+    background: radial-gradient(
+      156px circle at var(--mx, 50%) var(--my, 50%),
+      var(--site-glow-ambient) 0%,
+      var(--site-glow-outer) 48%,
+      transparent 82%
+    );
+    filter: blur(3px);
+    transition: opacity 0.25s ease;
+  }
+  .bfs__btn:hover::before,
+  .bfs__btn:hover::after { opacity: 1; }
+
+  /* ── Scroll arrow ───────────────────────────────────────────────────── */
+  .bfs__arrow-cue {
+    position: absolute;
+    right: clamp(1.5rem, 5.5vw, 5.5rem);
+    bottom: calc(var(--bar-inset) + clamp(2.5rem, 5vw, 4rem));
+    z-index: 3;
+    pointer-events: auto;
     display: inline-flex; align-items: center; justify-content: center;
-    padding: .6rem; margin: -.6rem;       /* bigger hit area, glyph stays put */
+    padding: .7rem; margin: -.7rem;       /* bigger hit area, glyph stays put */
     background: none; border: 0;
     color: #fff; cursor: pointer;
     -webkit-tap-highlight-color: transparent;
-    opacity: 0;
-    transition: transform .35s cubic-bezier(.22,.61,.36,1), opacity .4s ease;
-  }
-  .bfs__head.is-active .bfs__arrow-cue {
-    opacity: 1;
-    pointer-events: auto;
-    transition-delay: .12s;
+    transition: transform .35s cubic-bezier(.22,.61,.36,1), opacity .3s ease;
   }
   .bfs__arrow-cue:hover { transform: translateY(4px); }
   .bfs__arrow-cue:active { transform: translateY(2px); }
-  .bfs__arrow-cue:focus-visible { outline: 2px solid rgba(245,241,232,.9); outline-offset: 4px; }
+  .bfs__arrow-cue:focus-visible { outline: 2px solid rgba(245,241,232,.9); outline-offset: 4px; border-radius: 8px; }
   .bfs__arrow-symbol {
     display: block;
     font-family: var(--site-font, "Inter", sans-serif);
@@ -617,19 +632,15 @@
       height: calc((var(--slide-count) - 1) * 150vh);
       height: calc((var(--slide-count) - 1) * 150lvh);
     }
-    .bfs__head {
-      top: clamp(5rem, 14vh, 7rem); left: 1.25rem; right: 1.25rem;
-    }
+    .bfs__titles { padding: clamp(5rem, 14vh, 7rem) 1.25rem 0; }
     .bfs__title {
+      top: clamp(5rem, 14vh, 7rem); left: 1.25rem;
       font-size: clamp(2.6rem, 12vw, 4.6rem); max-width: 100%;
     }
+    .bfs__captions { bottom: calc(var(--bar-inset) + clamp(3.5rem, 9vh, 5.5rem)); left: 1.25rem; }
     .bfs__caption-line > span { font-size: clamp(.95rem, 3.8vw, 1.1rem); }
-    .bfs__dock {
-      width: calc(100vw - 2.5rem);
-      /* keep the blur flush to the bottom but lift the button higher */
-      padding: clamp(1.2rem, 4vw, 1.6rem) 1.2rem clamp(3.4rem, 11vw, 4.8rem);
-    }
-    .bfs__btn { flex: 1; max-width: none; }
+    .bfs__btn { height: 36px; font-size: .84rem; padding: 0 1.2rem; }
+    .bfs__arrow-cue { right: 1.25rem; bottom: calc(var(--bar-inset) + clamp(3.5rem, 9vh, 5.5rem)); }
   }
 
   @media (max-width: 480px) {
@@ -638,9 +649,8 @@
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .bfs__title, .bfs__caption-line > span { transition: opacity .25s ease; transform: none; filter: none; }
-    .bfs__head.is-active .bfs__title,
-    .bfs__head.is-active .bfs__caption-line > span,
-    .bfs__head.is-active .bfs__arrow-cue { opacity: 1; transform: none; filter: none; }
+    .bfs__title, .bfs__caption-line > span, .bfs__btn { transition: opacity .25s ease; transform: none; filter: none; }
+    .bfs__title.is-active, .bfs__caption.is-active .bfs__caption-line > span,
+    .bfs__caption.is-active .bfs__btn { opacity: 1; transform: none; filter: none; }
   }
 </style>

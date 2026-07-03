@@ -1,5 +1,5 @@
 <script>
-  import BlurFocusSlider from "$lib/components/slider/BlurFocusSlider.svelte";
+  import BlurFocusSlider from "$lib/components/slider/AboutBlurSlider.svelte";
 
   const slides = [
     {

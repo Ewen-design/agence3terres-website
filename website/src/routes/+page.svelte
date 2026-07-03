@@ -14,19 +14,19 @@
     {
       title: "Moovy",
       description: "Recommandation de films\nselon ses envies.",
-      image: "/images/moovy2.webp",
+      image: "/images/tel_moovy2.webp",
       href: "/projet3"
     },
     {
       title: "JustX",
       description: "Marque sport, programmes\net gamme textile.",
-      image: "/images/justx.webp",
+      image: "/images/justx_textile.webp",
       href: "/projet5"
     },
     {
       title: "JustX\nFitness",
       description: "Planifier séances, suivre\neffort et progression.",
-      image: "/images/justx_fitness.webp",
+      image: "/images/justx_app.webp",
       href: "/projet7"
     },
     {
@@ -50,7 +50,7 @@
     {
       title: "Votre\nprojet ?",
       description: "Approche sur mesure,\nsingularité et impact.",
-      image: "/images/tel_moovy2.webp",
+      image: "/images/agence.webp",
       href: "/contact"
     }
   ];
