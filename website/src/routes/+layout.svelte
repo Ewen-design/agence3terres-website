@@ -415,7 +415,18 @@
         enforceGlobalScrollLockIntegrity();
         syncScrollState();
       };
-      onPageShow = () => {
+      onPageShow = (event) => {
+        // iOS/Safari can restore a backgrounded page from the bfcache with its
+        // <link> stylesheets dropped → the "unstyled" state the user sees on
+        // resume (white background, images at full natural size). A page
+        // restored in that state never repaints correctly on its own, so force
+        // one clean reload. `persisted` is true ONLY for bfcache restores, so
+        // normal loads and in-app navigations are never reloaded. A reload is a
+        // fresh load (persisted === false), so this can't loop.
+        if (event?.persisted) {
+          window.location.reload();
+          return;
+        }
         settleGlobalScrollLocks();
         enforceGlobalScrollLockIntegrity();
         syncScrollState();
