@@ -291,6 +291,8 @@
           bind:this={heroMediaImgEl}
           src="/images/justx.webp"
           alt=""
+          fetchpriority="high"
+          decoding="async"
         />
         <div class="hero-dark-layer" bind:this={heroDarkLayerEl}></div>
       </div>

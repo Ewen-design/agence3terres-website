@@ -43,7 +43,7 @@
       number: "05",
       title: "Ludosphères",
       rest: "Un site vitrine imagine pour presenter les oeuvres peintes par Ludovic avec plus d'air, de matiere et de clarte.",
-      image: "/images/carte-copie.jpg",
+      image: "/images/carte-copie.webp",
       page: "projet4",
       button: "Voir le projet"
     },

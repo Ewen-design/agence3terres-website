@@ -382,6 +382,11 @@
     overflow-x: clip;
     overflow-y: visible;
     color: var(--section-text);
+    /* Overlap the hero by 1px and paint over it: kills the subpixel seam at the
+       section join (fractional vh/svh heights) that briefly reveals the pinned
+       hero image as a thin line on mobile. Being later in the DOM, this section
+       paints on top of the hero at the overlap. */
+    margin-top: -1px;
   }
 
   .gallery-track {

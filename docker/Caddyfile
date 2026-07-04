@@ -11,7 +11,10 @@
 	# Serving the exact prerendered file (instead of always the root shell)
 	# keeps each page's <head>/meta correct and avoids relying on a directory
 	# redirect that would append a trailing slash.
-	try_files {path} {path}/index.html {path}.html /index.html
+	# Serve the exact prerendered page for known routes; for anything unknown,
+	# fall back to the SPA shell (200.html) so the client router can render the
+	# 404 / error page (+error.svelte) instead of the home page.
+	try_files {path} {path}/index.html {path}.html /200.html
 	file_server
 
 	# ── Security headers ────────────────────────────────────────

@@ -8,7 +8,7 @@
 
   // ── Progressive-blur ladder (sharp → strong). Adjacent levels are close,
   //    so crossfading between them reads as a true, continuous blur (no ghost).
-  const BLUR_LEVELS = [0, 7, 16, 28]; // px
+  const BLUR_LEVELS = [0, 12, 28, 48]; // px
   const K = BLUR_LEVELS.length;
   const BASE_BLUR = BLUR_LEVELS[K - 1];
   const ANIM = [];
@@ -20,45 +20,38 @@
   const layerRefs = slides.map(() => new Array(K - 1).fill(null));
 
   // ── Geometry ──────────────────────────────────────────────────────────
-  const SEGMENT_FRAC = 1.5;   // scroll-per-slide (viewport heights). Match the CSS spacer.
   let sectionTop = 0;
-  let _stickyH   = browser ? window.innerHeight : 1;
-  let _segH      = _stickyH * SEGMENT_FRAC;
+  let _segH      = browser ? window.innerHeight : 1;
 
   // ── State ─────────────────────────────────────────────────────────────
-  let activeIndex = 0;
-  let _prog   = 0;     // heavily smoothed scroll progress in [0, N-1]
-  let _raf    = 0;
-  let _lastTs = 0;
+  // Plain NATIVE scroll — no preventDefault, no scrollTo — so this can never
+  // trap or break page scrolling, and there's no scroll-jump to flash. The
+  // scroll position picks the slide via a latched hysteresis (stable, one at a
+  // time), and a time-eased `_view` plays the blur crossfade.
+  let activeIndex = 0;   // committed slide → drives DOM (title / caption / dock) + blur
+  let _anchor = 0;       // the slide the scroll is currently based on
+  let _view   = 0;       // time-eased visual index driving the blur crossfade
+  let _animFrom = 0;     // eased-tween start value
+  let _animStart = -1e9; // eased-tween start timestamp
+  let _isCoarse = false; // touch device? → skip the desktop snap (avoid any mobile flash)
+  let _raf = 0;
   let _lastScroll = -1e9;
-  let _lastInput  = -1e9;
-  let _lastY = 0, _vel = 0, _velSmooth = 0;
-  let _isCoarse = false;
-
-  // Magnetic pull onto a sharp slide (a velocity-aware spring).
-  let _settling = false, _sTarget = 0, _sVel = 0;
-  let _anchor = 0;   // slide we last rested on (for directional completion)
 
   // ── Tunables ──────────────────────────────────────────────────────────
-  const TAU         = 0.18;   // s: smoothing time-constant (high → very fluid)
-  const CROSS_START = 0.5;    // segment fraction where the image swap begins
-  const CROSS_END   = 0.82;   // ... and ends (fairly quick handoff)
-  const SHARP_HOLD  = 0.18;   // fraction kept perfectly sharp around each slide
-  const ADV_THRESH  = 0.12;   // move past this (from the anchor) → complete to the next slide
-  const BLUR_END    = 0.62;   // fraction at which the outgoing image is fully blurred
-  const INPUT_IDLE  = 70;     // ms after the last user input before the magnet engages
-  const VEL_ENGAGE_WHEEL = 24; // px/frame: engage while still gently decelerating (desktop)
-  const VEL_ENGAGE_TOUCH = 6;  // px/frame: wait for native momentum to fade (mobile)
-  const SPRING_K    = 110;    // magnet stiffness (higher → snappier attraction)
-  const SPRING_DAMP = 2.2 * Math.sqrt(110); // ~1.1 ratio → smooth, no overshoot
-  const KEEPALIVE   = 220;    // ms: keep rendering after the last scroll tick
-  const Q           = 1 / 256;
+  const VIEW_DUR     = 560;   // ms: blur-transition duration, eased in-out → soft, not dry
+  const COMMIT_FRAC  = 0.30;  // scroll this fraction of a segment → latch to the next slide (reactive)
+  const REVERT_FRAC  = 0.15;  // ... only fall back below this (hysteresis dead-band → stable, no flicker)
+  const SHARP_HOLD   = 0.13;  // within this of a slide → treat it as rested there
+  const SNAP_IDLE    = 90;    // ms after you stop scrolling → smooth-snap onto the committed slide
+  const KEEPALIVE    = 240;   // ms: keep the loop alive after the last scroll (must exceed SNAP_IDLE)
+  const Q            = 1 / 256;
 
   const _bgPrev  = new Float32Array(N).fill(-1);
   const _layPrev = slides.map(() => new Float32Array(K - 1).fill(-1));
 
   const clamp = (v, lo, hi) => (v < lo ? lo : v > hi ? hi : v);
   const smoothstep = (a, b, x) => { const t = clamp((x - a) / (b - a), 0, 1); return t * t * (3 - 2 * t); };
+  const easeInOut = (t) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
   const maxProg = () => Math.max(0, N - 1);
   const now = () => (typeof performance !== "undefined" ? performance.now() : Date.now());
   const maxScroll = () => Math.max(0, document.documentElement.scrollHeight - window.innerHeight);
@@ -67,10 +60,7 @@
   function measure() {
     if (!sectionEl || !browser) return;
     sectionTop = sectionEl.getBoundingClientRect().top + (window.scrollY || 0);
-    _stickyH   = stickyEl ? stickyEl.offsetHeight : window.innerHeight;
-    // Derive the scroll-per-slide from the REAL spacer height → JS always
-    // matches the CSS (which sets a longer segment on desktop).
-    const seg  = spacerEl && N > 1 ? spacerEl.offsetHeight / (N - 1) : _stickyH * SEGMENT_FRAC;
+    const seg  = spacerEl && N > 1 ? spacerEl.offsetHeight / (N - 1) : window.innerHeight;
     _segH      = Math.max(1, seg);
   }
 
@@ -82,129 +72,121 @@
 
   function render() {
     const maxP  = maxProg();
-    const lo    = clamp(Math.floor(_prog), 0, maxP);
+    const lo    = clamp(Math.floor(_view), 0, maxP);
     const hi    = Math.min(lo + 1, maxP);
-    const f     = lo === hi ? 0 : _prog - lo;
-    const c     = smoothstep(CROSS_START, CROSS_END, f);   // 0 → lo, 1 → hi
+    const f     = lo === hi ? 0 : _view - lo;
+    // Focus-pull BLUR with NO cross-dissolve dip: the bottom frame (lo) stays
+    // FULLY OPAQUE the whole time, so the dark section background can never show
+    // through at the 50/50 point → no brightness "flash" (which the dock's
+    // backdrop-filter otherwise amplified at the bottom). The top frame (hi)
+    // just fades in over it. Both blur heavily through the middle → a pure blur
+    // morph. Symmetric in f, so it's identical in both scroll directions.
     const steps = K - 1;
 
     for (let i = 0; i < N; i++) {
-      let op = 0, bf = 0;
-      if (i === lo)              { op = 1 - c; bf = smoothstep(SHARP_HOLD, BLUR_END, f); }
-      if (i === hi && hi !== lo) { op = c;     bf = smoothstep(SHARP_HOLD, BLUR_END, 1 - f); }
+      let op = -1, bf = 0;
+      if (i === lo)                   { op = 1;                      bf = smoothstep(0, 0.55, f); }
+      else if (i === hi && hi !== lo) { op = smoothstep(0.08, 1, f); bf = smoothstep(0, 0.55, 1 - f); }
 
+      if (op < 0) { setOp(bgRefs[i], _bgPrev, i, 0); continue; }
       setOp(bgRefs[i], _bgPrev, i, op);
 
       const pos  = bf * steps;
       const refs = layerRefs[i], prev = _layPrev[i];
       for (let k = 0; k < steps; k++) setOp(refs[k], prev, k, 1 - clamp(pos - k, 0, 1));
     }
-
-    const next = clamp(f >= (CROSS_START + CROSS_END) / 2 ? hi : lo, 0, maxP);
-    if (next !== activeIndex) {
-      activeIndex = next;
-      // The window shifts → newly-mounted layers need their opacity re-applied.
-      _bgPrev.fill(-1);
-      for (const p of _layPrev) p.fill(-1);
-    }
   }
 
-  // ── Smooth pull of the real scroll onto a target (sharp slide) ────────
-  function startSettle(target, vel0) {
-    _sTarget = clamp(target, 0, maxScroll());
-    _sVel = vel0 || 0;           // px/s — carries the in-flight scroll velocity
-    _settling = true;
-    wake();
-  }
-  function slideScroll(i) {
-    sectionTop = sectionEl.getBoundingClientRect().top + (window.scrollY || 0);
-    return clamp(sectionTop + clamp(i, 0, maxProg()) * _segH, 0, maxScroll());
-  }
+  // ── Advance one slide (arrow button) — native smooth scroll, no hijack ─
   function goNext() {
-    if (!sectionEl) return;
-    startSettle(slideScroll(clamp(activeIndex + 1, 0, maxProg())));
+    if (!sectionEl || !browser) return;
+    measure();
+    const target = clamp(activeIndex + 1, 0, maxProg());
+    window.scrollTo({ top: clamp(sectionTop + target * _segH, 0, maxScroll()), behavior: "smooth" });
   }
 
-  // ── Loop ──────────────────────────────────────────────────────────────
+  // ── Loop (self-stopping; runs only while easing, or briefly after scroll) ─
   function wake() { if (!_raf && browser) _raf = requestAnimationFrame(frame); }
 
   function frame(ts) {
     _raf = 0;
     if (!browser || N === 0 || !sectionEl) return;
 
-    const dt = clamp((ts - _lastTs) || 16, 8, 50);
-    _lastTs = ts;
-    const dt_s = dt / 1000;
+    const rect    = sectionEl.getBoundingClientRect();
+    const vh      = window.innerHeight;
+    const maxP    = maxProg();
+    sectionTop    = rect.top + (window.scrollY || 0);
+    const rawProg = _segH > 0 ? clamp(-rect.top / _segH, 0, maxP) : 0;
 
-    let y = window.scrollY || 0;
-
-    // Velocity-aware spring: carries the in-flight scroll velocity and pulls
-    // smoothly onto the target sharp slide → feels like the scroll is attracted
-    // there, in one continuous motion (no separate "snap").
-    if (_settling) {
-      const acc = -SPRING_K * (y - _sTarget) - SPRING_DAMP * _sVel;
-      _sVel += acc * dt_s;
-      y += _sVel * dt_s;
-      window.scrollTo(0, y);
-      if (Math.abs(y - _sTarget) < 0.5 && Math.abs(_sVel) < 12) {
-        window.scrollTo(0, _sTarget); y = _sTarget; _sVel = 0; _settling = false;
+    // Latched, one-slide-at-a-time commit. `_anchor` is the slide we rest on; we
+    // only latch to a neighbour past COMMIT_FRAC and only fall back below
+    // REVERT_FRAC → the wide dead-band makes scroll jitter unable to flip it.
+    const nearest = clamp(Math.round(rawProg), 0, maxP);
+    const onNet   = Math.abs(rawProg - nearest) <= SHARP_HOLD;
+    let nextActive = activeIndex;
+    if (onNet) {
+      _anchor = nearest;
+      nextActive = nearest;
+    } else {
+      const from = rawProg - _anchor;
+      if (activeIndex === _anchor) {
+        if (from > COMMIT_FRAC)       nextActive = clamp(_anchor + 1, 0, maxP);
+        else if (-from > COMMIT_FRAC) nextActive = clamp(_anchor - 1, 0, maxP);
+      } else if (activeIndex === _anchor + 1 && from < REVERT_FRAC) {
+        nextActive = _anchor;
+      } else if (activeIndex === _anchor - 1 && -from < REVERT_FRAC) {
+        nextActive = _anchor;
       }
     }
+    if (nextActive !== activeIndex) {
+      // A hard flick can jump > 1: start the crossfade from the adjacent frame.
+      if (Math.abs(nextActive - _view) > 1) _view = nextActive - Math.sign(nextActive - _view);
+      _animFrom = _view;
+      _animStart = ts;
+      activeIndex = nextActive;
+      _bgPrev.fill(-1);
+      for (const p of _layPrev) p.fill(-1);
+    }
 
-    const rectTop = sectionEl.getBoundingClientRect().top;
-    sectionTop = rectTop + y;
-    const maxP  = maxProg();
-    const range = maxP * _segH;
-    const relY  = -rectTop;
-    const rawProg = _segH > 0 ? clamp(relY / _segH, 0, maxP) : 0;
-    _vel = y - _lastY; _lastY = y;
-    _velSmooth += (_vel - _velSmooth) * 0.3;   // smoothed → clean, stable spring hand-off
-
-    // Frame-rate independent smoothing → identical, silky feel at 60/120 Hz.
-    const a = 1 - Math.exp(-dt / (TAU * 1000));
-    const d = rawProg - _prog;
-    if (Math.abs(d) > 0.0004) _prog += d * a;
-    else                      _prog = rawProg;
+    // Eased, fixed-duration blur transition toward the committed slide → soft in
+    // and out (not dry), a touch longer so the focus-pull blur reads well.
+    const t = clamp((ts - _animStart) / VIEW_DUR, 0, 1);
+    _view = _animFrom + (activeIndex - _animFrom) * easeInOut(t);
 
     render();
 
-    // Engage the magnet while the scroll is still gently decelerating, shortly
-    // after you stop driving — so it flows out of the gesture toward the net.
-    const pinned  = range > 0 && relY > -1 && relY < range + 1;
-    const nearest = clamp(Math.round(rawProg), 0, maxP);
-    const onNet   = Math.abs(rawProg - nearest) <= SHARP_HOLD;
-    if (!_settling && onNet) _anchor = nearest;          // remember where we rest
-    const velEngage = _isCoarse ? VEL_ENGAGE_TOUCH : VEL_ENGAGE_WHEEL;
-    if (!_settling && pinned && !onNet && Math.abs(_vel) < velEngage
-        && (ts - _lastInput) >= INPUT_IDLE) {
-      // Directional: a small move toward the next slide completes to it instead
-      // of snapping back, so a short scroll never returns to where you were.
-      const from = rawProg - _anchor;
-      let tgt;
-      if (Math.abs(from) <= 1) tgt = from > ADV_THRESH ? _anchor + 1 : from < -ADV_THRESH ? _anchor - 1 : _anchor;
-      else                     tgt = nearest;
-      tgt = clamp(tgt, 0, maxP);
-      if (!_isCoarse) window.dispatchEvent(new Event("app:wheel-damping-stop")); // cut coast
-      startSettle(clamp(sectionTop + tgt * _segH, 0, maxScroll()), _velSmooth * 1000 / dt);
+    // Gentle NATIVE snap (desktop only): once you stop scrolling within the
+    // pinned slider and you're not sitting on a slide, smooth-scroll onto the
+    // committed one. A single native scrollTo (no preventDefault, no per-step
+    // jump) → the reactive "rest on one slide" feel, without ever trapping the
+    // page scroll or flashing. Skipped on touch to be 100% safe against the
+    // mobile flash.
+    const idle = ts - _lastScroll;
+    if (!_isCoarse && rect.top <= 1 && rect.bottom >= vh - 1
+        && idle > SNAP_IDLE && idle < KEEPALIVE
+        && Math.abs(rawProg - activeIndex) > 0.03) {
+      window.dispatchEvent(new Event("app:wheel-damping-stop"));
+      window.scrollTo({ top: clamp(sectionTop + activeIndex * _segH, 0, maxScroll()), behavior: "smooth" });
     }
 
-    const moving = Math.abs(rawProg - _prog) > 0.0004;
-    if (_settling || moving || (ts - _lastScroll) < KEEPALIVE) wake();
+    const animating = t < 1;
+    if (animating || idle < KEEPALIVE) wake();
   }
 
-  // ── Wiring (all passive — can never block or jank the page scroll) ────
   function onScroll() { _lastScroll = now(); wake(); }
-  function onInput()  { _settling = false; _lastInput = now(); _lastScroll = now(); wake(); }
 
   let _resizeRaf = 0;
   function onResize() {
     if (_resizeRaf) cancelAnimationFrame(_resizeRaf);
     _resizeRaf = requestAnimationFrame(() => {
       _resizeRaf = 0;
-      _settling = false;
       measure();
       const maxP = maxProg();
-      _prog = _segH > 0 ? clamp(-(sectionEl.getBoundingClientRect().top) / _segH, 0, maxP) : 0;
+      const prog = _segH > 0 ? clamp(-(sectionEl.getBoundingClientRect().top) / _segH, 0, maxP) : 0;
+      activeIndex = clamp(Math.round(prog), 0, maxP);
+      _anchor = activeIndex;
+      _view = activeIndex;
+      _animFrom = activeIndex; _animStart = -1e9;
       _bgPrev.fill(-1);
       for (const p of _layPrev) p.fill(-1);
       render();
@@ -222,9 +204,8 @@
     requestAnimationFrame(() => requestAnimationFrame(() => { onResize(); }));
 
     window.addEventListener("scroll",            onScroll, { passive: true });
-    window.addEventListener("wheel",             onInput,  { passive: true });
-    window.addEventListener("touchstart",        onInput,  { passive: true });
-    window.addEventListener("keydown",           onInput,  { passive: true });
+    window.addEventListener("wheel",             onScroll, { passive: true });
+    window.addEventListener("touchmove",         onScroll, { passive: true });
     window.addEventListener("resize",            onResize, { passive: true });
     window.addEventListener("orientationchange", onResize, { passive: true });
     window.addEventListener("load",              measure,  { passive: true });
@@ -254,9 +235,8 @@
     if (_raf) cancelAnimationFrame(_raf);
     if (_resizeRaf) cancelAnimationFrame(_resizeRaf);
     window.removeEventListener("scroll",            onScroll);
-    window.removeEventListener("wheel",             onInput);
-    window.removeEventListener("touchstart",        onInput);
-    window.removeEventListener("keydown",           onInput);
+    window.removeEventListener("wheel",             onScroll);
+    window.removeEventListener("touchmove",         onScroll);
     window.removeEventListener("resize",            onResize);
     window.removeEventListener("orientationchange", onResize);
     window.removeEventListener("load",              measure);
@@ -384,8 +364,8 @@
      viewport heights) — mobile keeps the shorter, perfect length. The JS reads
      this real height, so the two never go out of sync. */
   .bfs__spacer {
-    height: calc((var(--slide-count) - 1) * 215vh);
-    height: calc((var(--slide-count) - 1) * 215lvh);
+    height: calc((var(--slide-count) - 1) * 110vh);
+    height: calc((var(--slide-count) - 1) * 110lvh);
   }
 
   /* ── Backgrounds ────────────────────────────────────────────────────── */
@@ -614,8 +594,8 @@
 
   @media (max-width: 900px) {
     .bfs__spacer {
-      height: calc((var(--slide-count) - 1) * 150vh);
-      height: calc((var(--slide-count) - 1) * 150lvh);
+      height: calc((var(--slide-count) - 1) * 95vh);
+      height: calc((var(--slide-count) - 1) * 95lvh);
     }
     .bfs__head {
       top: clamp(5rem, 14vh, 7rem); left: 1.25rem; right: 1.25rem;

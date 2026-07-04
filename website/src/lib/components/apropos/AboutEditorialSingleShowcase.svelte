@@ -31,8 +31,15 @@
     style={`--about-editorial-single-showcase-media-min-height:${mediaMinHeight};`}
   >
     <img src={image} alt={alt} loading="lazy" />
-    <div class="about-editorial-single-showcase__gradient" aria-hidden="true"></div>
+    <div class="about-editorial-single-showcase__gradient" aria-hidden="true" use:reveal></div>
   </figure>
+
+  <!-- Static solid backstop that OVERSHOOTS the media's bottom edge. The
+       fullscreen media is absolutely positioned; on iOS Safari its clipped
+       bottom edge (and the transformed gradient layer above it) can leave a 1px
+       seam that flashes the image as a thin line. A non-transformed strip that
+       straddles that edge removes any exact-edge alignment → no seam. -->
+  <div class="about-editorial-single-showcase__floor" aria-hidden="true"></div>
 
   <div class="about-editorial-single-showcase__content">
     {#if showCue}
@@ -85,7 +92,10 @@
     height: 150vh;
     margin: 0;
     overflow: hidden;
-    background: #050505;
+    /* Match the section/page background exactly (was #050505, a hair lighter):
+       the media is absolutely positioned, so a 1px sliver of its background can
+       show at its bottom edge as a thin line — matching it makes that invisible. */
+    background: var(--ase-bg, #000);
   }
 
   .about-editorial-single-showcase__media img {
@@ -105,6 +115,47 @@
       var(--ase-bg, #000) 30%,
       transparent 100%
     );
+    pointer-events: none;
+  }
+
+  /* The bottom gradient slides up + fades in as it enters view — a beat before
+     the text (it sits higher, so its reveal fires first). Overrides the global
+     `.reveal` motion: no blur on a gradient, and a longer upward move. */
+  .about-editorial-single-showcase__gradient.reveal {
+    opacity: 0;
+    filter: none;
+    transform: translate3d(0, 64px, 0);
+    transition:
+      opacity 0.8s ease,
+      transform 1s cubic-bezier(0.22, 0.61, 0.36, 1);
+    transition-delay: var(--reveal-delay, 0ms);
+    will-change: opacity, transform;
+  }
+
+  .about-editorial-single-showcase__gradient.reveal.is-revealed {
+    opacity: 1;
+    /* `none` (not translate3d(0,0,0)) so no composited layer lingers at rest —
+       that layer's edge is a classic source of a 1px seam on iOS Safari. */
+    transform: none;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .about-editorial-single-showcase__gradient.reveal {
+      opacity: 1;
+      transform: none;
+      transition: none;
+    }
+  }
+
+  .about-editorial-single-showcase__floor {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 150vh;              /* the media bottom (desktop) */
+    height: 8vh;
+    margin-top: -4vh;        /* straddle the edge: 4vh above → 4vh below */
+    background: var(--ase-bg, #000);
+    z-index: 0;              /* over the media, under the content */
     pointer-events: none;
   }
 
@@ -353,6 +404,10 @@
 
     .about-editorial-single-showcase__media {
       height: 138vh;
+    }
+
+    .about-editorial-single-showcase__floor {
+      top: 138vh;
     }
 
     .about-editorial-single-showcase__gradient {

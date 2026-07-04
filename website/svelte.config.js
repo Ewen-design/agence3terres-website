@@ -8,6 +8,11 @@ export default {
     adapter: adapter({
       pages: 'dist',
       assets: 'dist',
+      // SPA fallback shell for any route that isn't prerendered — this is what
+      // lets unknown URLs resolve client-side to +error.svelte (the 404 page)
+      // instead of being served the prerendered home. Caddy serves /200.html
+      // as its final try_files fallback.
+      fallback: '200.html',
     }),
     // Root-absolute asset URLs (/_app/…) instead of relative (../_app/…).
     // The site is always served from the domain root, and Caddy's SPA fallback

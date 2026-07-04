@@ -235,7 +235,8 @@
   }
 
   $: pathname = $page.url.pathname.replace(/\/+$/, "") || "/";
-  $: hideFooter = ["/projet1", "/projet3", "/projet4", "/projet5", "/projet6", "/projet7", "/contact"].includes(pathname);
+  $: hideFooter = ["/projet1", "/projet3", "/projet4", "/projet5", "/projet6", "/projet7", "/contact"].includes(pathname)
+    || ($page.status ?? 200) >= 400;   // no footer on the error / 404 page
   $: isTravailPage = pathname === "/travail";
   $: isProjectLightTheme = projectTheme === "light";
   $: currentMeta = PAGE_META[pathname] ?? PAGE_META["/"];
@@ -291,7 +292,9 @@
     if (!pageWrapper) return Promise.resolve(false);
 
     const opacity = (1 - amount).toFixed(3);
-    const blur = amount * (isMobile ? 8 : 12);
+    // Blurring the full viewport is costly on phones — keep it very light there
+    // (the opacity fade carries the transition); full focus-pull on desktop.
+    const blur = amount * (isMobile ? 3 : 12);
     const setTarget = () => {
       pageWrapper.style.opacity = opacity;
       // Always a blur() value (incl. blur(0px)) so it can interpolate; the final
@@ -659,16 +662,23 @@
   }
 
   @media (hover: none) and (pointer: coarse) {
+    /* Solid black cap over the top safe-area (status bar / dynamic island).
+       On the widened-notch iPhones the browser exposes this strip over the
+       page when the toolbar collapses, and full-bleed animations don't paint
+       into it → a visible gap. This bar always fills it. The `+8px` bleed (like
+       the bottom mask) kills any subpixel seam during scroll/animation.
+       z-index sits ABOVE page content but BELOW the header (600000) so the
+       mobile menu control stays visible and tappable over the bar. */
     .ios-top-mask {
       position: fixed;
       left: 0;
       right: 0;
       top: 0;
       display: block;
-      height: env(safe-area-inset-top, 0px);
+      height: calc(env(safe-area-inset-top, 0px) + 8px);
       background: #000;
       pointer-events: none;
-      z-index: 999999;
+      z-index: 500000;
     }
 
     .ios-bottom-mask {

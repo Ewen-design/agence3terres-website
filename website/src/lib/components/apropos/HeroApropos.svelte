@@ -265,6 +265,8 @@
           bind:this={heroMediaImgEl}
           src="/images/moovy2.webp"
           alt=""
+          fetchpriority="high"
+          decoding="async"
         />
         <div class="hero-dark-layer" bind:this={heroDarkLayerEl}></div>
       </div>

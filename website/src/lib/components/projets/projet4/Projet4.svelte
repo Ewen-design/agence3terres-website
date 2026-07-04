@@ -8,7 +8,7 @@
 <ProjectThemePage>
   <ProjectHeroProjetsStyle
     title="Ludosphères"
-    image="/images/carte-copie.jpg"
+    image="/images/carte-copie.webp"
     metaBlocks={[
       { label: "Date", value: "2025 - Present" },
       { label: "Localisation", value: "France" },
@@ -33,7 +33,7 @@
   />
 
   <ProjectInProgress
-    image="/images/carte.png"
+    image="/images/carte.webp"
     alt="Univers visuel du projet Ludosphères"
   />
 </ProjectThemePage>

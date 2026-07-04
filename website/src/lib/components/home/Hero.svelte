@@ -284,8 +284,11 @@
           bind:this={heroMediaImgEl}
           src="/images/tel_moovy2.webp"
           alt=""
+          fetchpriority="high"
+          decoding="async"
         />
         <div class="hero-dark-layer" bind:this={heroDarkLayerEl}></div>
+        <div class="hero-bottom-veil" aria-hidden="true"></div>
       </div>
     </div>
 
@@ -418,6 +421,11 @@
     will-change: opacity;
   }
 
+  /* Only used on mobile (see the max-width: 640px block). */
+  .hero-bottom-veil {
+    display: none;
+  }
+
   .hero-stage-content {
     position: relative;
     min-height: 100svh;
@@ -532,6 +540,31 @@
     .hero-dark-layer {
       background: none;
       opacity: 0 !important;
+    }
+
+    /* Solid-black bottom veil for the home hero on mobile. The shared hero
+       gradients only half-cover the lower edge here (leaving the pinned image
+       faintly visible as a line/strip in the svh↔lvh overscan zone); this veil
+       guarantees a clean black base that fades up, killing that seam. It spans
+       down past the image's -12svh extension so no strip is ever exposed. */
+    .hero-bottom-veil {
+      display: block;
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: -12svh;
+      height: 48svh;
+      background: linear-gradient(
+        to top,
+        #000 0%,
+        #000 28%,
+        rgba(0, 0, 0, 0.92) 44%,
+        rgba(0, 0, 0, 0.6) 62%,
+        rgba(0, 0, 0, 0.28) 80%,
+        rgba(0, 0, 0, 0) 100%
+      );
+      z-index: 1;
+      pointer-events: none;
     }
 
     .hero-scroll-cue {

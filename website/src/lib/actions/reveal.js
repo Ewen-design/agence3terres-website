@@ -23,8 +23,15 @@ function ensureObserver() {
     (entries) => {
       for (const entry of entries) {
         if (!entry.isIntersecting) continue;
-        entry.target.classList.add(REVEAL_CLASS);
-        observer.unobserve(entry.target);
+        const node = entry.target;
+        node.classList.add(REVEAL_CLASS);
+        observer.unobserve(node);
+        // Release the GPU layer once the arrival transition has finished.
+        // Keeping `will-change` on every revealed node (dozens per page)
+        // permanently promotes layers and taxes mobile compositing — drop it.
+        window.setTimeout(() => {
+          node.style.willChange = "auto";
+        }, 1300);
       }
     },
     { rootMargin: "0px 0px -10% 0px", threshold: 0.12 }

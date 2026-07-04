@@ -51,7 +51,7 @@ export const projectPages = {
       ]
     },
     fullscreen: {
-      image: "/images/ordinateur.png",
+      image: "/images/ordinateur.webp",
       alt: "Vue immersive Serein Design",
       title: "Peu d'effets.",
       text: "Juste les bons rapports."
@@ -218,7 +218,7 @@ export const projectPages = {
     category: "Site d'artiste",
     year: "2025",
     hero: {
-      image: "/images/carte-copie.jpg",
+      image: "/images/carte-copie.webp",
       alt: "Hero Ludovic",
       summaryMain: "Un site plus calme, plus matiere, plus ouvert.",
       summaryMuted: "Pense pour presenter les oeuvres peintes de Ludovic avec plus d'espace, de rythme et de sensibilite.",
@@ -236,7 +236,7 @@ export const projectPages = {
           label: "Direction artistique",
           title: "Epurer",
           text: "Moins d'effets. Plus de respiration.",
-          image: "/images/carte-copie.jpg"
+          image: "/images/carte-copie.webp"
         },
         {
           number: "02",
@@ -259,7 +259,7 @@ export const projectPages = {
       text: "Les formats, les marges et la matiere servent d'abord les oeuvres et leur lecture.",
       images: [
         { src: "/images/photo.webp", alt: "Vue large Ludovic", layout: "panorama" },
-        { src: "/images/carte-copie.jpg", alt: "Detail oeuvre Ludovic", layout: "square" },
+        { src: "/images/carte-copie.webp", alt: "Detail oeuvre Ludovic", layout: "square" },
         { src: "/images/livre.png", alt: "Composition editoriale Ludovic", layout: "square" }
       ]
     },
@@ -278,7 +278,7 @@ export const projectPages = {
       text: "Le projet garde la meme retenue sur les plans larges, les details et les surfaces plus compactes.",
       images: [
         { src: "/images/livre.png", alt: "Vue editoriale Ludovic", layout: "wide" },
-        { src: "/images/carte-copie.jpg", alt: "Vue verticale Ludovic", layout: "portrait" },
+        { src: "/images/carte-copie.webp", alt: "Vue verticale Ludovic", layout: "portrait" },
         { src: "/images/photo.webp", alt: "Visuel hero Ludovic", layout: "full" }
       ]
     }
