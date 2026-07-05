@@ -4,18 +4,27 @@
 	# Serve static files from /srv
 	root * /srv
 
-	# Routing: serve the real prerendered page for each route
-	#   /services   → /services/index.html
-	#   /projet7    → /projet7/index.html
-	# then fall back to the root shell for any unknown client-side route.
-	# Serving the exact prerendered file (instead of always the root shell)
-	# keeps each page's <head>/meta correct and avoids relying on a directory
-	# redirect that would append a trailing slash.
-	# Serve the exact prerendered page for known routes; for anything unknown,
-	# fall back to the SPA shell (200.html) so the client router can render the
-	# 404 / error page (+error.svelte) instead of the home page.
-	try_files {path} {path}/index.html {path}.html /200.html
+	# Routing — known routes: serve the exact prerendered page.
+	#   /services/  → /services/index.html
+	#   /projet7/   → /projet7/index.html
+	# Serving the exact file (instead of the shell) keeps each page's <head>/meta
+	# correct. Note: NO /200.html fallback here on purpose — if a path matches no
+	# prerendered file, file_server raises a 404 that handle_errors catches below.
+	try_files {path} {path}/index.html {path}.html
 	file_server
+
+	# Routing — unknown routes: serve the SPA shell (200.html) so the client router
+	# renders the +error.svelte 404 page instead of the home page. file_server
+	# inside handle_errors keeps the ORIGINAL 404 status while serving the shell
+	# body, so browsers and crawlers get a real 404 (not a soft-200). This is what
+	# lets any unknown URL land on the error page cleanly.
+	handle_errors {
+		@404 expression {http.error.status_code} == 404
+		handle @404 {
+			rewrite * /200.html
+			file_server
+		}
+	}
 
 	# ── Security headers ────────────────────────────────────────
 	header {
@@ -49,8 +58,10 @@
 	}
 
 	# ── Caching ─────────────────────────────────────────────────
-	# Hashed assets (JS/CSS bundles from Vite) — immutable, long cache
-	@hashed path /assets/*
+	# Content-hashed assets (JS/CSS bundles from Vite) — immutable, long cache.
+	# SvelteKit + Vite emit these under /_app/immutable/* (filenames carry a hash,
+	# so a changed file gets a new URL — safe to cache forever).
+	@hashed path /_app/immutable/*
 	header @hashed Cache-Control "public, max-age=31536000, immutable"
 
 	# Images — served by stable filename (not content-hashed), so they can be
