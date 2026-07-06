@@ -223,8 +223,9 @@
     display: block;
     transform: scale(1.05);
     transition: transform 1.2s cubic-bezier(0.22, 0.61, 0.36, 1);
-    will-change: transform;
   }
+  /* Dé-zoom d'arrivée en un seul coup : pas de will-change permanent (sinon une
+     couche GPU par image reste promue en permanence, hors écran compris). */
   .ms-media:global(.is-revealed) img { transform: scale(1); }
 
   /* Texte EN DESSOUS de l'image */

@@ -69,7 +69,7 @@
     {/if}
 
     <figure class="about-editorial-single-showcase__accent" use:reveal>
-      <img src={accentImage} alt={accentAlt} loading="lazy" />
+      <img src={accentImage} alt={accentAlt} loading="lazy" decoding="async" />
     </figure>
 
     <div class="about-editorial-single-showcase__text-block">

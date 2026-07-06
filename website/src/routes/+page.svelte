@@ -60,7 +60,7 @@
 <Hero />
 <GalleryColonnes />
 <ParallaxGallery2
-  introLead="De l'identité visuelle au site web, nous façonnons l'expérience complète d'une marque, du premier symbole jusqu'aux interfaces."
+  introLead="Trois pôles spécialisés réunis sous une même direction artistique pour construire chaque marque de bout en bout."
 />
 
 <IntroSlider />

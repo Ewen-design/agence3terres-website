@@ -96,7 +96,6 @@
     display: block;
     transform: scale(1.05);
     transition: transform 1.2s cubic-bezier(0.22, 0.61, 0.36, 1);
-    will-change: transform;
   }
   .ef-main:global(.is-revealed) img { transform: scale(1); }
 

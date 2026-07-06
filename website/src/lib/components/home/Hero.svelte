@@ -47,7 +47,7 @@
   };
 
   const finalText =
-    "Nous créons des marques fortes, pensées pour durer, avec une identité claire qui garde la même présence sur chaque support.";
+    "Nous sommes 3 Terres, l'agence dans l'ombre des projets qui durent. De l'identité au digital, nous façonnons des marques fortes, pensées pour traverser le temps.";
 
   const clamp = (v, min = 0, max = 1) => Math.max(min, Math.min(max, v));
   const lerp = (a, b, t) => a + (b - a) * t;

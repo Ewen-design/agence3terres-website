@@ -552,6 +552,8 @@ body {
   --project-showcase-card-bg: #080808;
   --project-hero-after-ink: #121212;
   --project-hero-after-muted: rgba(18, 18, 18, 0.58);
+  /* Dégradé des grands titres de pôle : teinte visible en haut → couleur du fond en bas. */
+  --pole-title-top: #a2abbf;
 }
 
 .project-theme-page.theme-night,
@@ -569,6 +571,7 @@ body {
   --project-showcase-card-bg: #0e1019;
   --project-hero-after-ink: #fff;
   --project-hero-after-muted: rgba(255, 255, 255, 0.7);
+  --pole-title-top: #4c5573;
 }
 
 .project-theme-page.theme-dark,
@@ -585,4 +588,5 @@ body {
   --project-showcase-card-bg: #080808;
   --project-hero-after-ink: #fff;
   --project-hero-after-muted: rgba(255, 255, 255, 0.7);
+  --pole-title-top: #4a4a4a;
 }

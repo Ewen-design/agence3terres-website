@@ -9,18 +9,18 @@
   import AboutEditorialSingleShowcase from "$lib/components/apropos/AboutEditorialSingleShowcase.svelte";
 
   const digitalCards = [
-    { image: "/images/tel_moovy.webp", alt: "Plateforme Moovy", title: "Moovy", subtitle: "Plateforme web", href: "projet3" },
-    { image: "/images/justx_fitness.webp", alt: "Application JustX Fitness", title: "JustX Fitness", subtitle: "Application mobile", href: "projet7" }
+    { image: "/images/tel_moovy.webp", alt: "Plateforme Moovy", title: "Moovy", subtitle: "Plateforme web", href: "projet3", tags: ["Site web", "Design d'interface", "Développement"] },
+    { image: "/images/justx_fitness.webp", alt: "Application JustX Fitness", title: "JustX Fitness", subtitle: "Application mobile", href: "projet7", tags: ["Application mobile", "Design d'interface", "Développement"] }
   ];
 
   const conseilCards = [
-    { image: "/images/serein_design.webp", alt: "Projet Serein Design", title: "Serein Design", subtitle: "Identité produit", href: "projet1" },
-    { image: "/images/justx.webp", alt: "Projet JustX", title: "JustX", subtitle: "Identité de marque", href: "projet5" }
+    { image: "/images/serein_design.webp", alt: "Projet Serein Design", title: "Serein Design", subtitle: "Identité produit", href: "projet1", tags: ["Identité visuelle", "Direction artistique"] },
+    { image: "/images/justx.webp", alt: "Projet JustX", title: "JustX", subtitle: "Identité de marque", href: "projet5", tags: ["Logo & charte", "Naming", "Stratégie"] }
   ];
 
   const studioCards = [
-    { image: "/images/missionX5.webp", alt: "Projet Mission X", title: "Mission X", subtitle: "Univers & 3D", href: "projet6" },
-    { image: "/images/apple_justx.webp", alt: "Projet Ludosphères", title: "Ludosphères", subtitle: "Site d'artiste", href: "projet4" }
+    { image: "/images/missionX5.webp", alt: "Projet Mission X", title: "Mission X", subtitle: "Univers & 3D", href: "projet6", tags: ["Univers 3D", "Direction artistique"] },
+    { image: "/images/apple_justx.webp", alt: "Projet Ludosphères", title: "Ludosphères", subtitle: "Site d'artiste", href: "projet4", tags: ["Site d'artiste", "Direction artistique"] }
   ];
 
   // Digital — sites web & applications : parcours, interface, responsive, dev.
@@ -64,11 +64,11 @@
 <ProjectThemePage>
   <!-- ───────── Pôle 01 — Digital (fond noir) ───────── -->
   <div class="project-theme-band">
+    <SectionLead lead="3 Terres Digital" />
+    <ShowcaseCards cards={digitalCards} />
     <SectionLead
-      lead="3 Terres Digital"
       text="Notre pôle digital conçoit des sites web et des applications sur mesure. De l'architecture de l'information au design d'interface jusqu'au développement, chaque projet est pensé pour être rapide, clair et désirable — et pour durer dans le temps."
     />
-    <ShowcaseCards cards={digitalCards} />
     <AboutEditorialSingleShowcase
       showCue={false}
       background="#040404"
@@ -85,13 +85,12 @@
   <ProjectThemeTrigger theme="light" />
 
   <div class="project-theme-band">
+    <SectionLead lead="3 Terres Conseil" />
+    <ShowcaseCards cards={conseilCards} />
     <SectionLead
-      lead="3 Terres Conseil"
       text="Notre pôle conseil construit la marque, de sa création à son pilotage. Identité visuelle, charte graphique, logo et naming posent des fondations solides ; puis nous accompagnons dans le temps avec une stratégie de communication, un suivi détaillé et des reportings réguliers."
     />
-    <ShowcaseCards cards={conseilCards} />
     <EditorialFeature
-      intro="Logo, couleurs et typographies réunis dans une charte claire, déclinée sur tous les supports."
       image="/images/creation_logo_desktop.webp"
       alt="Création de logo et d'identité"
       secondaryImage="/images/carte_visite_desktop.webp"
@@ -106,14 +105,13 @@
   <ProjectThemeTrigger theme="night" />
 
   <div class="project-theme-band">
+    <SectionLead lead="3 Terres Studio" />
+    <ShowcaseCards cards={studioCards} />
     <SectionLead
-      lead="3 Terres Studio"
       text="Notre studio produit et orchestre toute l'image de la marque : captation photo et vidéo, couverture d'événements, création et gestion des réseaux sociaux, montage et création de contenu. Le tout au service d'une direction artistique claire et constante."
     />
-    <ShowcaseCards cards={studioCards} />
     <EditorialFeature
       reverse={true}
-      intro="Captation, montage et diffusion — une image nette à chaque prise de parole."
       image="/images/appareil_photo.webp"
       alt="Captation photo et vidéo en studio"
       secondaryImage="/images/justx.webp"
@@ -124,3 +122,23 @@
     <MediaSlider slides={studioSlides} />
   </div>
 </ProjectThemePage>
+
+<style>
+  /* Espacements propres à la page services (scopés : les composants partagés
+     avec les pages projet ne sont pas affectés). */
+
+  /* Plus de respiration entre les pôles : gros espace en tête des pôles 2 et 3. */
+  .project-theme-band:not(:first-of-type) {
+    padding-top: clamp(5rem, 9vw, 11rem);
+  }
+
+  /* Un peu plus d'air sous le grand titre du pôle, avant les deux cartes. */
+  .project-theme-band :global(.sl:not(.sl--text-only)) {
+    padding-bottom: clamp(3.5rem, 6vw, 6rem);
+  }
+
+  /* Un peu plus d'air sous le paragraphe d'intro, avant le bloc suivant. */
+  .project-theme-band :global(.sl--text-only) {
+    padding-bottom: clamp(3rem, 5vw, 5rem);
+  }
+</style>
