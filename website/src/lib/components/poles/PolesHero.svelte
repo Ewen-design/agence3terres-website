@@ -457,11 +457,22 @@
 
   .hero-scroll-label {
     font-family: "Inter", sans-serif;
-    font-size: clamp(5.8rem, 5vw, 18rem);
+    font-size: clamp(7rem, 9vw, 20rem);
     font-weight: 500;
     line-height: 1;
     letter-spacing: var(--site-display-letter-spacing);
     text-align: left;
+    /* Dégradé de transparence de haut en bas sur le titre. */
+    background: linear-gradient(
+      to bottom,
+      #ffffff 0%,
+      #ffffff 40%,
+      rgba(255, 255, 255, 0.28) 100%
+    );
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    -webkit-text-fill-color: transparent;
     opacity: 0;
     filter: blur(14px);
     transform: translate3d(0, 14px, 0);
@@ -587,7 +598,7 @@
     .hero-scroll-cue-mobile {
       position: absolute;
       left: 1rem;
-      top: calc(100svh - max(4.8rem, calc(var(--safe-bottom-offset) + 4rem)));
+      top: calc(100svh - max(7.5rem, calc(var(--safe-bottom-offset) + 6.5rem)));
       display: flex;
       flex-direction: column;
       align-items: flex-start;
@@ -599,7 +610,7 @@
     }
 
     .hero-scroll-label {
-      font-size: 3rem;
+      font-size: 3.7rem;
       letter-spacing: var(--site-display-letter-spacing);
     }
 
