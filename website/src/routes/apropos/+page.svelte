@@ -20,6 +20,6 @@
   alt="Direction artistique Agence 3 Terres"
   mediaMinHeight="38rem"
   ctaLabel="Découvrir"
-  ctaHref="poles"
+  ctaHref="services"
 />
 <AboutEditorialPrinciples />

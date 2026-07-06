@@ -4,50 +4,40 @@
   import { navigate } from "$lib/navigate.js";
   import { reveal } from "$lib/actions/reveal.js";
 
-  // Reusable: the home page uses the defaults; project pages pass their own
-  // `items`, `href`, `ctaLabel` and intro copy while keeping the exact same UI.
+  // Reusable: the home page presents the 3 poles with the defaults; project
+  // pages pass their own `items`, `href`, `ctaLabel` and intro copy while
+  // keeping the exact same card UI (name bottom-left, service chips top-right,
+  // hover/arrival de-zoom + "+" reveal + wipe-flip of the title into ctaLabel).
   export let href = "/services";
-  export let ctaLabel = "Decouvrir";
-  export let ariaLabelPrefix = "Voir le service";
-  export let introMain = "De l'identité";
-  export let introMuted = "à l'expérience complète.";
+  export let ctaLabel = "Découvrir";
+  export let ariaLabelPrefix = "Voir le pôle";
+  export let introMain = "Trois pôles,";
+  export let introMuted = "une même exigence.";
   // Si fourni, l'intro s'affiche comme un texte de page projet (style ProjectBrief :
   // paragraphe léger aligné à gauche) au lieu du couple main/muted à puce bleue.
   export let introLead = "";
 
-  // items: {title, image, mobileImage?, href?, cta?, ariaLabel?, subtitle?}[]
+  // items: {title, subtitle?, tags?[], image, mobileImage?, href?, cta?, ariaLabel?}[]
   export let items = [
     {
-      title: "Identite de marque",
-      subtitle: "Du systeme visuel a l'identite complete, pensee pour durer.",
-      image: "/images/carte_visite_desktop.webp",
-      mobileImage: "/images/carte_visite_mobile.webp"
+      title: "3 Terres Digital",
+      subtitle: "Sites web & applications sur mesure",
+      tags: ["Sites web", "Applications", "Développement"],
+      image: "/images/moovy_mac.webp",
+      mobileImage: "/images/tel_moovy2.webp"
     },
     {
-      title: "Site web",
-      subtitle: "Des interfaces fluides, desirables et precises.",
-      image: "/images/tel_moovy2.webp"
-    },
-    {
-      title: "Logo",
-      subtitle: "Des sigles memorables qui incarnent une vision.",
+      title: "3 Terres Conseil",
+      subtitle: "Identité & stratégie de marque",
+      tags: ["Identité visuelle", "Logo & charte", "Stratégie"],
       image: "/images/creation_logo_desktop.webp",
       mobileImage: "/images/creation_logo_mobile.webp"
     },
     {
-      title: "Reseaux sociaux",
-      subtitle: "Une presence visuelle forte sur toutes les plateformes.",
-      image: "/images/moovy2.webp"
-    },
-    {
-      title: "Photo & evenements",
-      subtitle: "Couverture photo de qualite pour vos evenements.",
-      image: "/images/justx.webp"
-    },
-    {
-      title: "Accompagnement",
-      subtitle: "Iterations precises et execution soignee a chaque etape.",
-      image: "/images/justx_fitness.webp"
+      title: "3 Terres Studio",
+      subtitle: "Photo, vidéo & contenu",
+      tags: ["Photo & vidéo", "Réseaux sociaux", "Événements"],
+      image: "/images/tel_moovy3.webp"
     }
   ];
 
@@ -92,8 +82,9 @@
     updateMobileActive();
   }
 
+  // Glow de la molecule "+" qui suit le curseur, comme les boutons du site.
   function handleCardMove(event) {
-    const btn = event.currentTarget.querySelector(".dc-btn");
+    const btn = event.currentTarget.querySelector(".pc-plus");
     if (!btn) return;
     const rect = btn.getBoundingClientRect();
     btn.style.setProperty("--mx", `${event.clientX - rect.left}px`);
@@ -231,7 +222,7 @@
     if (!isInView || isMobile || !desktopRailEl || prefersReduced || items.length < 2) return;
 
     desktopAutoAdvanceTimer = setInterval(() => {
-      const nextIndex = activeDesktopIndex + 2 >= items.length ? 0 : activeDesktopIndex + 2;
+      const nextIndex = (activeDesktopIndex + 1) % items.length;
       scrollToDesktopCard(nextIndex, "smooth");
     }, 5000);
   }
@@ -262,13 +253,6 @@
     mobileAutoResumeTimer = setTimeout(() => {
       startMobileAutoAdvance();
     }, 7000);
-  }
-
-  function handleButtonMove(event) {
-    const button = event.currentTarget;
-    const rect = button.getBoundingClientRect();
-    button.style.setProperty("--mx", `${event.clientX - rect.left}px`);
-    button.style.setProperty("--my", `${event.clientY - rect.top}px`);
   }
 
   function handleResize() {
@@ -397,8 +381,7 @@
       <div class="desktop-rail" bind:this={desktopRailEl} data-native-wheel="true">
         {#each items as item, index}
           <a
-            class="desktop-card"
-            class:is-active={activeDesktopIndex === index || activeDesktopIndex + 1 === index}
+            class="pole-card desktop-card"
             bind:this={desktopCardEls[index]}
             href={item.href ?? href}
             data-cursor="view"
@@ -406,7 +389,7 @@
             draggable="false"
             onmousemove={handleCardMove}
           >
-            <div class="desktop-card-img">
+            <div class="pc-img">
               <picture>
                 {#if item.mobileImage}
                   <source media="(max-width: 900px)" srcset={item.mobileImage} />
@@ -421,31 +404,43 @@
                 />
               </picture>
             </div>
-            <div class="desktop-card-shade" aria-hidden="true"></div>
+            <div class="pc-shade" aria-hidden="true"></div>
 
-            <div class="desktop-card-content">
-              <div class="desktop-card-title-wrap" aria-hidden="true">
-                <span class="desktop-card-title">{item.title}</span>
+            {#if item.tags?.length}
+              <div class="pc-tags" aria-hidden="true">
+                {#each item.tags.slice(0, 3) as tag}
+                  <span class="pc-tag">{tag}</span>
+                {/each}
               </div>
-              <span class="dc-btn">
-                <span class="dc-btn-flip" data-text={item.cta ?? ctaLabel}>
-                  <span class="dc-btn-text">{item.cta ?? ctaLabel}</span>
-                </span>
+            {/if}
+
+            <div class="pc-foot">
+              <span class="pc-title-flip" data-text={item.cta ?? ctaLabel} aria-hidden="true">
+                <span class="pc-title-text">{item.title}</span>
               </span>
+              {#if item.subtitle}
+                <span class="pc-subtitle">{item.subtitle}</span>
+              {/if}
             </div>
+
+            <span class="pc-plus" aria-hidden="true">
+              <svg viewBox="0 0 24 24" width="15" height="15" fill="none">
+                <path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" />
+              </svg>
+            </span>
           </a>
         {/each}
       </div>
 
-      <div class="desktop-nav-shell" aria-label="Navigation services desktop">
+      <div class="desktop-nav-shell" aria-label="Navigation pôles desktop">
         <button
           class="desktop-nav-btn desktop-nav-prev"
           class:is-hidden={activeDesktopIndex === 0}
           type="button"
-          aria-label="Service precedent"
+          aria-label="Pôle précédent"
           onclick={() => {
             pauseAndResumeDesktopAutoAdvance();
-            scrollToDesktopCard(Math.max(activeDesktopIndex - 2, 0), prefersReduced ? "auto" : "smooth");
+            scrollToDesktopCard(Math.max(activeDesktopIndex - 1, 0), prefersReduced ? "auto" : "smooth");
           }}
         >
           <span class="desktop-nav-chevron" aria-hidden="true"></span>
@@ -453,12 +448,12 @@
 
         <button
           class="desktop-nav-btn desktop-nav-next"
-          class:is-hidden={activeDesktopIndex >= items.length - 2}
+          class:is-hidden={activeDesktopIndex >= items.length - 1}
           type="button"
-          aria-label="Service suivant"
+          aria-label="Pôle suivant"
           onclick={() => {
             pauseAndResumeDesktopAutoAdvance();
-            scrollToDesktopCard(Math.min(activeDesktopIndex + 2, items.length - 1), prefersReduced ? "auto" : "smooth");
+            scrollToDesktopCard(Math.min(activeDesktopIndex + 1, items.length - 1), prefersReduced ? "auto" : "smooth");
           }}
         >
           <span class="desktop-nav-chevron" aria-hidden="true"></span>
@@ -470,7 +465,7 @@
       <div class="mobile-rail" bind:this={mobileRailEl} data-native-wheel="true">
         {#each items as item, index}
           <a
-            class="mobile-card"
+            class="pole-card mobile-card"
             class:is-active={activeMobileIndex === index}
             bind:this={mobileCardEls[index]}
             href={item.href ?? href}
@@ -478,7 +473,7 @@
             aria-label={item.ariaLabel ?? `${ariaLabelPrefix} ${item.title}`}
             draggable="false"
           >
-            <div class="mobile-image">
+            <div class="pc-img">
               <picture>
                 {#if item.mobileImage}
                   <source media="(max-width: 900px)" srcset={item.mobileImage} />
@@ -493,28 +488,40 @@
                 />
               </picture>
             </div>
-            <div class="mobile-card-shade" aria-hidden="true"></div>
+            <div class="pc-shade" aria-hidden="true"></div>
 
-            <div class="mobile-card-content">
-              <div class="mobile-card-title-wrap" aria-hidden="true">
-                <span class="mobile-card-title">{item.title}</span>
+            {#if item.tags?.length}
+              <div class="pc-tags" aria-hidden="true">
+                {#each item.tags.slice(0, 3) as tag}
+                  <span class="pc-tag">{tag}</span>
+                {/each}
               </div>
-              <span class="mc-btn">
-                <span class="mc-btn-flip" data-text={item.cta ?? ctaLabel}>
-                  <span class="mc-btn-text">{item.cta ?? ctaLabel}</span>
-                </span>
+            {/if}
+
+            <div class="pc-foot">
+              <span class="pc-title-flip" data-text={item.cta ?? ctaLabel} aria-hidden="true">
+                <span class="pc-title-text">{item.title}</span>
               </span>
+              {#if item.subtitle}
+                <span class="pc-subtitle">{item.subtitle}</span>
+              {/if}
             </div>
+
+            <span class="pc-plus" aria-hidden="true">
+              <svg viewBox="0 0 24 24" width="15" height="15" fill="none">
+                <path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" />
+              </svg>
+            </span>
           </a>
         {/each}
       </div>
 
-      <div class="mobile-nav-shell" aria-label="Navigation services mobile">
+      <div class="mobile-nav-shell" aria-label="Navigation pôles mobile">
         <button
           class="mobile-nav-btn mobile-nav-prev"
           class:is-hidden={activeMobileIndex === 0}
           type="button"
-          aria-label="Service precedent"
+          aria-label="Pôle précédent"
           onclick={() => {
             pauseAndResumeMobileAutoAdvance();
             scrollToMobileCard(Math.max(activeMobileIndex - 1, 0), prefersReduced ? "auto" : "smooth");
@@ -527,7 +534,7 @@
           class="mobile-nav-btn mobile-nav-next"
           class:is-hidden={activeMobileIndex === items.length - 1}
           type="button"
-          aria-label="Service suivant"
+          aria-label="Pôle suivant"
           onclick={() => {
             pauseAndResumeMobileAutoAdvance();
             scrollToMobileCard(Math.min(activeMobileIndex + 1, items.length - 1), prefersReduced ? "auto" : "smooth");
@@ -547,7 +554,6 @@
     --intro-body: rgba(255,255,255,.64);
     --intro-main: #fff;
     --intro-muted: rgba(255,255,255,.70);
-    --desktop-title-color: rgba(255,255,255,.96);
     position: relative;
     z-index: 0;
     width: 100%;
@@ -628,7 +634,7 @@
     display: block;
     width: 100%;
     margin: 0 auto;
-    padding: clamp(5.8rem, 9vh, 7rem) 0 clamp(2.2rem, 5vh, 3.4rem);
+    padding: clamp(1.5rem, 3vh, 3rem) 0 clamp(2rem, 4vh, 3rem);
     position: relative;
   }
 
@@ -636,14 +642,14 @@
     width: 100%;
     margin: 0;
     display: flex;
-    gap: 2px;
+    gap: clamp(0.7rem, 1vw, 1.1rem);
     overflow-x: auto;
     overflow-y: visible;
-    padding: 0 9vw 2rem;
+    padding: 0 2.5vw 1.5rem;
     scroll-snap-type: x mandatory;
     scroll-snap-stop: always;
-    scroll-padding-left: 9vw;
-    scroll-padding-right: 9vw;
+    scroll-padding-left: 2.5vw;
+    scroll-padding-right: 2.5vw;
     -webkit-overflow-scrolling: touch;
     touch-action: pan-x pan-y pinch-zoom;
     overscroll-behavior-x: contain;
@@ -654,133 +660,182 @@
     display: none;
   }
 
-  .desktop-card {
+  /* ─────────── Carte pôle (base partagée desktop + mobile) ─────────── */
+  .pole-card {
     position: relative;
-    flex: 0 0 calc(41vw - 0.5rem);
-    width: calc(41vw - 0.5rem);
-    aspect-ratio: 1 / 1;
     display: block;
-    scroll-snap-align: start;
-    scroll-snap-stop: always;
-    border-radius: 14px;
     text-decoration: none;
     color: inherit;
     -webkit-tap-highlight-color: transparent;
     overflow: hidden;
+    border-radius: 22px;
     background: #080808;
   }
 
-  .desktop-card-img {
+  .desktop-card {
+    flex: 0 0 46vw;
+    width: 46vw;
+    height: min(86vh, 920px);
+    scroll-snap-align: start;
+    scroll-snap-stop: always;
+  }
+
+  .pc-img {
     position: absolute;
     inset: 0;
     z-index: 0;
     overflow: hidden;
-    border-radius: 14px;
+    border-radius: inherit;
     background: #080808;
   }
 
-  .desktop-card-img picture,
-  .mobile-image picture {
+  .pc-img picture {
     width: 100%;
     height: 100%;
     display: block;
   }
 
-  .desktop-card-img img,
-  .mobile-image img {
+  .pc-img img {
     width: 100%;
     height: 100%;
     object-fit: cover;
-    transform: translateZ(0);
-    transition: transform .56s cubic-bezier(.22,.61,.36,1);
+    /* Image légèrement zoomée au repos → dézoom doux au survol / à l'arrivée. */
+    transform: scale(1.08) translateZ(0);
+    transition: transform 1s cubic-bezier(.22,.61,.36,1);
     will-change: transform;
   }
 
-  .desktop-card-shade {
+  .pc-shade {
     position: absolute;
     inset: 0;
     z-index: 1;
-    background: linear-gradient(
-      to bottom,
-      rgba(0, 0, 0, 0.76) 0%,
-      rgba(0, 0, 0, 0.32) 50%,
-      rgba(0, 0, 0, 0.16) 100%
-    );
+    background:
+      linear-gradient(to top, rgba(0,0,0,.78) 0%, rgba(0,0,0,.30) 32%, rgba(0,0,0,0) 62%),
+      linear-gradient(to bottom, rgba(0,0,0,.42) 0%, rgba(0,0,0,0) 26%);
     pointer-events: none;
-    border-radius: 14px;
+    border-radius: inherit;
   }
 
-  .desktop-card-content {
+  /* Chips services : en haut à droite */
+  .pc-tags {
     position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
+    top: clamp(1rem, 1.6vw, 1.5rem);
+    right: clamp(1rem, 1.6vw, 1.5rem);
     z-index: 2;
     display: flex;
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
-    padding: clamp(1.4rem, 2.8vw, 2.6rem) clamp(1rem, 2vw, 2rem);
-    gap: 0;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: .5rem;
+    max-width: 80%;
     pointer-events: none;
   }
 
-  .desktop-card-title-wrap,
-  .mobile-card-title-wrap {
-    overflow: hidden;
-  }
-
-  .desktop-card-title {
-    display: block;
-    font-family: "Inter", sans-serif;
-    font-size: clamp(1.3rem, 2.8vw, 2.8rem);
-    font-weight: 500;
-    line-height: 1.05;
-    max-width: 14ch;
-    color: var(--desktop-title-color);
-    text-shadow: 0 1px 12px rgba(0,0,0,.38);
-    opacity: 0;
-    filter: blur(14px);
-    transform: translate3d(0, -115%, 0);
-    transition:
-      transform .42s cubic-bezier(.22,.61,.36,1),
-      filter .57s cubic-bezier(.22,.61,.36,1),
-      opacity .32s ease;
-  }
-
-  .desktop-card.is-active .desktop-card-title {
-    opacity: 1;
-    filter: blur(0);
-    transform: translate3d(0, 0, 0);
-  }
-
-  .dc-btn {
-    position: relative;
+  .pc-tag {
     display: inline-flex;
     align-items: center;
-    justify-content: center;
-    margin-top: 1.1rem;
-    height: 36px;
-    padding: 0 1.2rem;
-    font-size: 0.82rem;
-    font-weight: 400;
+    height: clamp(36px, 3vw, 42px);
+    padding: 0 1.15rem;
+    font-family: "Inter", sans-serif;
+    font-size: clamp(.85rem, .95vw, .96rem);
+    font-weight: 500;
+    letter-spacing: -0.01em;
     white-space: nowrap;
-    color: #fff;
+    color: #f7f2e8;
     background: rgba(255, 255, 255, 0.11);
     backdrop-filter: blur(20px) saturate(160%) brightness(0.82);
     -webkit-backdrop-filter: blur(20px) saturate(160%) brightness(0.82);
     border-radius: 10px;
-    box-shadow: 0 6px 8px rgba(0, 0, 0, 0.08);
-    opacity: 0;
-    transform: translate3d(0, 4px, 0);
-    transition:
-      transform .52s cubic-bezier(.22,.61,.36,1),
-      opacity .38s ease,
-      background .3s ease;
+    box-shadow: 0 6px 8px rgba(0, 0, 0, 0.04);
   }
 
-  .dc-btn::before,
-  .dc-btn::after {
+  /* Titre + sous-titre : en bas à gauche */
+  .pc-foot {
+    position: absolute;
+    left: clamp(1.3rem, 2vw, 2.2rem);
+    right: clamp(1.3rem, 2vw, 2.2rem);
+    bottom: clamp(1.3rem, 2vw, 2.2rem);
+    z-index: 2;
+    pointer-events: none;
+  }
+
+  /* Wipe-flip du titre → ctaLabel : même mécanique que les boutons du site
+     (conteneur overflow:hidden a hauteur fixe, texte qui glisse). */
+  .pc-title-flip {
+    position: relative;
+    display: block;
+    overflow: hidden;
+    height: 1.2em;
+    line-height: 1.2em;
+    font-family: "Inter", sans-serif;
+    font-size: clamp(2rem, 2.9vw, 3.1rem);
+    font-weight: 500;
+    letter-spacing: -0.03em;
+    color: #fff;
+    text-shadow: 0 1px 14px rgba(0,0,0,.42);
+  }
+
+  .pc-title-text {
+    display: block;
+    white-space: nowrap;
+    transform: translateY(0%);
+    transition: transform .45s cubic-bezier(.22,.61,.36,1);
+  }
+
+  .pc-title-flip::after {
+    content: attr(data-text);
+    position: absolute;
+    left: 0;
+    top: 0;
+    line-height: 1.2em;
+    white-space: nowrap;
+    color: inherit;
+    transform: translateY(100%);
+    transition: transform .45s cubic-bezier(.22,.61,.36,1);
+  }
+
+  /* Sous-titre : fixe, ne bouge pas au survol / à l'arrivée. */
+  .pc-subtitle {
+    display: block;
+    margin-top: .55rem;
+    font-family: "Inter", sans-serif;
+    font-size: clamp(.92rem, 1vw, 1.06rem);
+    font-weight: 400;
+    letter-spacing: -0.01em;
+    color: rgba(255,255,255,.6);
+    text-shadow: 0 1px 12px rgba(0,0,0,.4);
+  }
+
+  /* Bouton "+" : en bas à droite, arrive au survol / à l'arrivée */
+  .pc-plus {
+    position: absolute;
+    right: clamp(1.3rem, 2vw, 2.2rem);
+    bottom: clamp(1.3rem, 2vw, 2.2rem);
+    z-index: 3;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: clamp(44px, 3.4vw, 54px);
+    height: clamp(44px, 3.4vw, 54px);
+    color: #f7f2e8;
+    background: rgba(255, 255, 255, 0.11);
+    backdrop-filter: blur(20px) saturate(160%) brightness(0.82);
+    -webkit-backdrop-filter: blur(20px) saturate(160%) brightness(0.82);
+    border: 0;
+    border-radius: 999px;
+    box-shadow: 0 6px 8px rgba(0, 0, 0, 0.04);
+    opacity: 0;
+    transform: translateY(10px) scale(.85);
+    transition:
+      opacity .4s ease,
+      transform .5s cubic-bezier(.22,.61,.36,1);
+    pointer-events: none;
+  }
+
+  .pc-plus svg { display: block; }
+
+  /* Glow qui suit le curseur, comme les boutons du site. */
+  .pc-plus::before,
+  .pc-plus::after {
     content: "";
     position: absolute;
     inset: -1px;
@@ -793,9 +848,9 @@
     opacity: 0;
   }
 
-  .dc-btn::before {
+  .pc-plus::before {
     background: radial-gradient(
-      96px circle at var(--mx, 50%) var(--my, 50%),
+      70px circle at var(--mx, 50%) var(--my, 50%),
       var(--site-glow-strong) 0%,
       var(--site-glow-mid) 26%,
       var(--site-glow-soft) 52%,
@@ -805,9 +860,9 @@
     transition: opacity .25s ease;
   }
 
-  .dc-btn::after {
+  .pc-plus::after {
     background: radial-gradient(
-      120px circle at var(--mx, 50%) var(--my, 50%),
+      90px circle at var(--mx, 50%) var(--my, 50%),
       var(--site-glow-ambient) 0%,
       var(--site-glow-outer) 48%,
       transparent 82%
@@ -816,64 +871,41 @@
     transition: opacity .25s ease;
   }
 
-  .desktop-card.is-active:hover .dc-btn::before,
-  .desktop-card.is-active:hover .dc-btn::after {
-    opacity: 1;
+  /* ─────────── État actif : survol (desktop) / arrivée (mobile) ─────────── */
+  .desktop-card:hover .pc-img img,
+  .mobile-card.is-active .pc-img img {
+    transform: scale(1) translateZ(0);
   }
 
-  .dc-btn-flip {
-    position: relative;
-    display: block;
-    overflow: hidden;
-    height: 1.2em;
-    line-height: 1.2em;
+  /* Desktop : wipe-flip du titre → ctaLabel au survol. */
+  .desktop-card:hover .pc-title-text {
+    transform: translateY(-100%);
   }
 
-  .dc-btn-text {
-    display: block;
+  .desktop-card:hover .pc-title-flip::after {
     transform: translateY(0%);
-    transition: transform .42s cubic-bezier(.22,.61,.36,1);
   }
 
-  .dc-btn-flip::after {
-    content: attr(data-text);
-    position: absolute;
-    left: 0;
-    top: 0;
-    line-height: 1.2em;
-    transform: translateY(100%);
-    transition: transform .42s cubic-bezier(.22,.61,.36,1);
-    white-space: nowrap;
-    color: inherit;
-  }
-
-  .desktop-card.is-active .dc-btn {
+  .desktop-card:hover .pc-plus,
+  .mobile-card.is-active .pc-plus {
     opacity: 1;
-    transform: translate3d(0, 0, 0);
-    transition-delay: .08s;
+    transform: translateY(0) scale(1);
   }
 
-  .desktop-card.is-active .dc-btn:hover { background: rgba(255, 255, 255, 0.18); }
-  .desktop-card.is-active:hover .dc-btn-text { transform: translateY(-100%); }
-  .desktop-card.is-active:hover .dc-btn-flip::after { transform: translateY(0%); }
+  .desktop-card:hover .pc-plus { background: rgba(255,255,255,.2); }
 
-  .desktop-card.is-active .desktop-card-img img,
-  .mobile-card.is-active .mobile-image img {
-    transform: scale(1.045) translateZ(0);
-  }
-
-  .mobile-card.is-active .mobile-card-title {
+  .desktop-card:hover .pc-plus::before,
+  .desktop-card:hover .pc-plus::after {
     opacity: 1;
-    filter: blur(0);
-    transform: translate3d(0, 0, 0);
   }
 
+  /* ─────────── Navigation flèches ─────────── */
   .desktop-nav-shell {
     position: absolute;
-    top: clamp(5.8rem, 9vh, 7rem);
+    top: clamp(1.5rem, 3vh, 3rem);
     left: 0;
     right: 0;
-    height: clamp(280px, 41vw, 680px);
+    height: min(86vh, 920px);
     pointer-events: none;
   }
 
@@ -961,18 +993,18 @@
 
     .mobile-rail {
       width: 100%;
-      margin: 2.8rem 0 0;
+      margin: 2.4rem 0 0;
       display: flex;
-      gap: .95rem;
+      gap: .9rem;
       overflow-x: auto;
       overflow-y: visible;
-      padding-bottom: 2.6rem;
-      padding-left: calc((100vw - clamp(258px,74vw,324px)) / 2);
-      padding-right: calc((100vw - clamp(258px,74vw,324px)) / 2);
+      padding-bottom: 2.4rem;
+      padding-left: calc((100vw - clamp(300px,88vw,440px)) / 2);
+      padding-right: calc((100vw - clamp(300px,88vw,440px)) / 2);
       scroll-snap-type: x mandatory;
       scroll-snap-stop: always;
-      scroll-padding-left: calc((100vw - clamp(258px,74vw,324px)) / 2);
-      scroll-padding-right: calc((100vw - clamp(258px,74vw,324px)) / 2);
+      scroll-padding-left: calc((100vw - clamp(300px,88vw,440px)) / 2);
+      scroll-padding-right: calc((100vw - clamp(300px,88vw,440px)) / 2);
       -webkit-overflow-scrolling: touch;
       touch-action: pan-x pan-y pinch-zoom;
       overscroll-behavior-x: contain;
@@ -983,126 +1015,43 @@
       display: none;
     }
 
+    /* Carte quasi plein écran : hauteur pilotée par la fenêtre (plus d'aspect-ratio
+       qui débordait), largeur qui laisse un léger aperçu de la carte suivante. */
     .mobile-card {
-      position: relative;
-      flex: 0 0 clamp(258px,74vw,324px);
-      width: clamp(258px,74vw,324px);
-      display: block;
+      flex: 0 0 clamp(300px,88vw,440px);
+      width: clamp(300px,88vw,440px);
+      height: min(72vh, 660px);
       scroll-snap-align: center;
       scroll-snap-stop: always;
-      text-decoration: none;
-      color: inherit;
-      -webkit-tap-highlight-color: transparent;
-      overflow: hidden;
-      border-radius: 14px;
     }
 
-    .mobile-image {
-      position: relative;
-      aspect-ratio: .82 / 1.52;
-      overflow: hidden;
-      background: #080808;
-      border-radius: 14px;
+    /* Titre sur une ligne + chips compactes : pas de chevauchement sur carte étroite. */
+    .pc-title-flip { font-size: clamp(1.5rem, 6.2vw, 2.1rem); }
+    .pc-subtitle { font-size: clamp(.92rem, 3.6vw, 1.05rem); }
+
+    /* Mobile : pas de flip vers "Découvrir" — simple wipe d'arrivée du nom du pôle
+       quand la carte devient active. Le "Découvrir" (::after) reste masqué. */
+    .pc-title-text { transform: translateY(105%); }
+    .mobile-card.is-active .pc-title-text { transform: translateY(0%); }
+    .pc-title-flip::after { display: none; }
+
+    .pc-tags {
+      max-width: 86%;
+      gap: .45rem;
     }
 
-    .mobile-card-shade {
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      height: 70%;
-      z-index: 1;
-      background: linear-gradient(
-        to bottom,
-        rgba(0, 0, 0, 0.76) 0%,
-        rgba(0, 0, 0, 0.32) 60%,
-        rgba(0, 0, 0, 0) 100%
-      );
-      pointer-events: none;
-      border-radius: 14px 14px 0 0;
-    }
-
-    .mobile-card-content {
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      z-index: 2;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      text-align: center;
-      padding: 1.25rem 1rem 0;
-      pointer-events: none;
-    }
-
-    .mobile-card-title-wrap {
-      overflow: hidden;
-    }
-
-    .mobile-card-title {
-      display: block;
-      font-family: "Inter", sans-serif;
-      font-size: clamp(1.3rem, 6.8vw, 2.7rem);
-      font-weight: 500;
-      line-height: 1.1;
-      color: rgba(255,255,255,.98);
-      text-shadow: 0 1px 10px rgba(0,0,0,.34);
-      opacity: 0;
-      filter: blur(14px);
-      transform: translate3d(0, -115%, 0);
-      transition:
-        transform .42s cubic-bezier(.22,.61,.36,1),
-        filter .57s cubic-bezier(.22,.61,.36,1),
-        opacity .32s ease;
-    }
-
-    .mc-btn {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      margin-top: 0.9rem;
-      height: 34px;
-      padding: 0 1rem;
-      font-size: 0.78rem;
-      font-weight: 400;
-      white-space: nowrap;
-      color: #fff;
-      background: rgba(255, 255, 255, 0.11);
-      backdrop-filter: blur(12px) saturate(130%);
-      -webkit-backdrop-filter: blur(12px) saturate(130%);
-      border-radius: 10px;
-      opacity: 0;
-      transform: translate3d(0, 4px, 0);
-      transition:
-        transform .5s cubic-bezier(.22,.61,.36,1),
-        opacity .36s ease;
-    }
-
-    .mc-btn-flip {
-      position: relative;
-      display: block;
-      overflow: hidden;
-      height: 1.2em;
-      line-height: 1.2em;
-    }
-
-    .mc-btn-text {
-      display: block;
-    }
-
-    .mobile-card.is-active .mc-btn {
-      opacity: 1;
-      transform: translate3d(0, 0, 0);
-      transition-delay: .12s;
+    .pc-tag {
+      height: clamp(32px, 8.2vw, 38px);
+      padding: 0 .95rem;
+      font-size: clamp(.8rem, 3.4vw, .9rem);
     }
 
     .mobile-nav-shell {
       position: absolute;
-      top: 2.8rem;
+      top: 2.4rem;
       left: 0;
       right: 0;
-      height: calc(clamp(258px,74vw,324px) * 1.52 / 0.82);
+      height: min(72vh, 660px);
       pointer-events: none;
     }
 
@@ -1140,20 +1089,23 @@
     }
 
     .mobile-rail {
-      gap: .8rem;
-      padding-left: calc((100vw - clamp(244px,78vw,300px)) / 2);
-      padding-right: calc((100vw - clamp(244px,78vw,300px)) / 2);
-      scroll-padding-left: calc((100vw - clamp(244px,78vw,300px)) / 2);
-      scroll-padding-right: calc((100vw - clamp(244px,78vw,300px)) / 2);
+      gap: .7rem;
+      padding-left: calc((100vw - clamp(270px,90vw,380px)) / 2);
+      padding-right: calc((100vw - clamp(270px,90vw,380px)) / 2);
+      scroll-padding-left: calc((100vw - clamp(270px,90vw,380px)) / 2);
+      scroll-padding-right: calc((100vw - clamp(270px,90vw,380px)) / 2);
     }
 
     .mobile-card {
-      flex-basis: clamp(244px,78vw,300px);
-      width: clamp(244px,78vw,300px);
+      flex-basis: clamp(270px,90vw,380px);
+      width: clamp(270px,90vw,380px);
+      height: min(74vh, 620px);
     }
 
+    .pc-title-flip { font-size: clamp(1.5rem, 7vw, 2.05rem); }
+
     .mobile-nav-shell {
-      height: calc(clamp(244px,78vw,300px) * 1.52 / 0.82);
+      height: min(74vh, 620px);
     }
 
     .mobile-nav-btn {
@@ -1171,12 +1123,10 @@
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .desktop-card-img img,
-    .mobile-image img,
-    .desktop-card-title,
-    .mobile-card-title,
-    .dc-btn-text,
-    .dc-btn-flip::after {
+    .pc-img img,
+    .pc-title-text,
+    .pc-title-flip::after,
+    .pc-plus {
       transition: none;
     }
   }

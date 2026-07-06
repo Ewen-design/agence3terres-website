@@ -23,31 +23,41 @@
     { image: "/images/apple_justx.webp", alt: "Projet Ludosphères", title: "Ludosphères", subtitle: "Site d'artiste", href: "projet4" }
   ];
 
+  // Digital — sites web & applications : parcours, interface, responsive, dev.
   const digitalSlides = [
-    { image: "/images/moovy_mac.webp", alt: "Vue desktop", label: "Vues desktop", caption: "Des interfaces larges, lisibles et soignées." },
-    { image: "/images/tel_moovy2.webp", alt: "Vue mobile", label: "Expérience mobile", caption: "La même fluidité, jusque dans les vues les plus rapprochées." },
-    { image: "/images/moovy.webp", alt: "Parcours produit", label: "Parcours produit", caption: "Une recommandation claire, qui arrive sans surcharge." },
-    { image: "/images/justx_fitness.webp", alt: "Application fitness", label: "Application", caption: "Programmes, suivi et progression dans une app directe." }
+    { image: "/images/moovy_mac.webp", alt: "Site web desktop", label: "Site web", caption: "Des expériences digitales lisibles et sensibles, pensées comme un parcours fluide qui guide vers l'essentiel." },
+    { image: "/images/moovy_page.webp", alt: "Design d'interface", label: "Design d'interface", caption: "Chaque écran est composé pour hiérarchiser l'information et guider le regard sans effort." },
+    { image: "/images/tel_moovy2.webp", alt: "Vue mobile responsive", label: "Responsive & mobile", caption: "La même clarté et la même fluidité, du grand écran jusqu'aux vues les plus rapprochées." },
+    { image: "/images/moovy_recherche.webp", alt: "Parcours et recherche", label: "Parcours & recherche", caption: "Une navigation directe : on trouve l'essentiel sans se perdre dans les menus." },
+    { image: "/images/justx_fitness.webp", alt: "Application mobile", label: "Application mobile", caption: "Programmes, suivi et progression réunis dans une application claire et directe." },
+    { image: "/images/moovy.webp", alt: "Recommandation produit", label: "Recommandation produit", caption: "Un moteur de recommandation qui arrive au bon moment, sans surcharge." }
   ];
 
+  // Conseil — la marque, de sa création à son pilotage : identité, logo, naming, suivi.
   const conseilSlides = [
-    { image: "/images/creation_logo_desktop.webp", alt: "Système de marque", label: "Système de marque", caption: "Un symbole simple et mémorable, décliné partout." },
-    { image: "/images/carte_visite_desktop.webp", alt: "Papeterie", label: "Papeterie & supports", caption: "Du digital à l'imprimé, une même signature visuelle." },
-    { image: "/images/serein_design.webp", alt: "Univers premium", label: "Univers premium", caption: "Une identité calme, cohérente et fonctionnelle." }
+    { image: "/images/creation_logo_desktop.webp", alt: "Logo et signe", label: "Logo & signe", caption: "Des signes simples et durables, pensés pour installer une présence immédiate et mémorable." },
+    { image: "/images/justx_couleurs.webp", alt: "Identité visuelle", label: "Identité visuelle", caption: "Un territoire visuel complet — couleurs, typographies, compositions — pour une marque cohérente et reconnaissable." },
+    { image: "/images/carte_visite_desktop.webp", alt: "Charte et papeterie", label: "Charte & papeterie", caption: "Du digital à l'imprimé, une même signature visuelle déclinée sur tous les supports." },
+    { image: "/images/serein_design.webp", alt: "Univers de marque", label: "Univers de marque", caption: "Une identité calme, cohérente et fonctionnelle, pensée pour durer." },
+    { image: "/images/logo_justx.webp", alt: "Naming et fondations", label: "Naming & fondations", caption: "Un nom, un ton et des repères clairs qui posent des bases solides pour la marque." },
+    { image: "/images/parfum_ordinateur.webp", alt: "Suivi stratégique", label: "Suivi & stratégie", caption: "Un accompagnement dans la durée — stratégie, suivi détaillé et reportings — pour faire évoluer la marque avec cohérence." }
   ];
 
+  // Studio — toute l'image de la marque : captation, DA, réseaux, contenu, 3D.
   const studioSlides = [
-    { image: "/images/justx.webp", alt: "Direction artistique", label: "Direction artistique", caption: "Une image forte, parfaitement cohérente." },
-    { image: "/images/justx_textile.webp", alt: "Contenu de marque", label: "Contenu de marque", caption: "Des contenus réguliers, pensés pour engager." },
-    { image: "/images/appareil_photo.webp", alt: "Captation", label: "Captation", caption: "Photo et vidéo soignées pour le web et les réseaux." },
-    { image: "/images/missionX5.webp", alt: "Univers 3D", label: "Univers · 3D", caption: "Des univers immersifs déclinés en 3D." }
+    { image: "/images/appareil_photo.webp", alt: "Captation photo et vidéo", label: "Captation & événements", caption: "Des images et des récits captés avec justesse pour prolonger l'intensité d'un moment." },
+    { image: "/images/justx.webp", alt: "Direction artistique", label: "Direction artistique", caption: "Une image forte et parfaitement cohérente, au service de la marque." },
+    { image: "/images/telephone_main.webp", alt: "Réseaux sociaux", label: "Réseaux sociaux", caption: "Une ligne éditoriale claire et des formats reconnaissables pour faire vivre la marque au quotidien." },
+    { image: "/images/justx_textile.webp", alt: "Contenu et montage", label: "Contenu & montage", caption: "Des contenus réguliers, montés et diffusés pour engager la communauté." },
+    { image: "/images/missionX5.webp", alt: "Univers 3D", label: "Univers · 3D", caption: "Des univers immersifs déclinés en 3D pour marquer les esprits." },
+    { image: "/images/apple_justx.webp", alt: "Photo produit", label: "Photo produit", caption: "Des visuels soignés qui subliment produits et supports." }
   ];
 </script>
 
-<h1 class="seo-page-title">Nos pôles - Agence 3 Terres</h1>
+<h1 class="seo-page-title">Nos services - Agence 3 Terres</h1>
 
 <PolesHero
-  label="Pôles"
+  label="Services"
   finalText="Conseil, création digitale et studio : trois territoires complémentaires, réunis sous une même direction artistique."
 />
 
@@ -63,7 +73,7 @@
       showCue={false}
       background="#040404"
       text="Du premier écran jusqu'aux vues les plus rapprochées, la même clarté et la même fluidité, sur desktop comme sur mobile."
-      image="/images/moovy_mac.webp"
+      image="/images/justx_app.webp"
       alt="Vue desktop Moovy"
       accentImage="/images/tel_moovy3.webp"
       accentAlt="Vue mobile Moovy"

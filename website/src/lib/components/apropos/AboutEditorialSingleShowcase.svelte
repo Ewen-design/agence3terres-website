@@ -31,7 +31,7 @@
     style={`--about-editorial-single-showcase-media-min-height:${mediaMinHeight};`}
   >
     <img src={image} alt={alt} loading="lazy" />
-    <div class="about-editorial-single-showcase__gradient" aria-hidden="true" use:reveal></div>
+    <div class="about-editorial-single-showcase__gradient" aria-hidden="true"></div>
   </figure>
 
   <!-- Static solid backstop that OVERSHOOTS the media's bottom edge. The
@@ -116,35 +116,6 @@
       transparent 100%
     );
     pointer-events: none;
-  }
-
-  /* The bottom gradient slides up + fades in as it enters view — a beat before
-     the text (it sits higher, so its reveal fires first). Overrides the global
-     `.reveal` motion: no blur on a gradient, and a longer upward move. */
-  .about-editorial-single-showcase__gradient.reveal {
-    opacity: 0;
-    filter: none;
-    transform: translate3d(0, 64px, 0);
-    transition:
-      opacity 0.8s ease,
-      transform 1s cubic-bezier(0.22, 0.61, 0.36, 1);
-    transition-delay: var(--reveal-delay, 0ms);
-    will-change: opacity, transform;
-  }
-
-  .about-editorial-single-showcase__gradient.reveal.is-revealed {
-    opacity: 1;
-    /* `none` (not translate3d(0,0,0)) so no composited layer lingers at rest —
-       that layer's edge is a classic source of a 1px seam on iOS Safari. */
-    transform: none;
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    .about-editorial-single-showcase__gradient.reveal {
-      opacity: 1;
-      transform: none;
-      transition: none;
-    }
   }
 
   .about-editorial-single-showcase__floor {

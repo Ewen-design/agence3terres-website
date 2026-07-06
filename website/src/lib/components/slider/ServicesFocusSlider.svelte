@@ -49,4 +49,4 @@
   ];
 </script>
 
-<BlurFocusSlider slides={slides.map((s) => ({ ...s, href: "/poles" }))} ctaLabel="Découvrir" />
+<BlurFocusSlider slides={slides.map((s) => ({ ...s, href: "/services" }))} ctaLabel="Découvrir" />
