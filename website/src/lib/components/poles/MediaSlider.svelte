@@ -1,4 +1,6 @@
 <script>
+  import { reveal } from "$lib/actions/reveal.js";
+
   // Slider horizontal : grandes images, le texte EN DESSOUS de chaque image,
   // commandes rondes (← / →). Défilement par scroll-snap.
   export let title = "";
@@ -30,7 +32,7 @@
 
 {#if slides.length}
 <section class="ms">
-  <div class="ms-head">
+  <div class="ms-head" use:reveal>
     {#if title}<h3 class="ms-title">{title}</h3>{/if}
     {#if slides.length > 1}
       <div class="ms-ctrl">
@@ -47,10 +49,10 @@
   <div class="ms-track" bind:this={track}>
     {#each slides as slide, i}
       <article class="ms-panel">
-        <div class="ms-media">
+        <div class="ms-media" use:reveal>
           <img src={slide.image} alt={slide.alt ?? slide.label ?? ""} loading={i < 2 ? "eager" : "lazy"} decoding="async" draggable="false" />
         </div>
-        <div class="ms-cap">
+        <div class="ms-cap" use:reveal={{ delay: 120 }}>
           {#if slide.label}<span class="ms-cap__label">{slide.label}</span>{/if}
           {#if slide.caption}<p class="ms-cap__text">{slide.caption}</p>{/if}
         </div>
@@ -178,6 +180,12 @@
     grid-auto-columns: min(60%, 56rem);
     gap: clamp(1rem, 1.8vw, 1.6rem);
     overflow-x: auto;
+    /* Lock the track to horizontal scrolling only. Without an explicit
+       overflow-y, `overflow-x: auto` forces overflow-y to compute to `auto`
+       too (CSS spec), letting the track drift vertically. `hidden` removes that
+       vertical scroll; touch-action is left at its default so the browser still
+       routes vertical swipes to the page and horizontal swipes to the track. */
+    overflow-y: hidden;
     scroll-snap-type: x mandatory;
     scroll-padding-left: max((100vw - min(1400px, 92%)) / 2, 4vw);
     padding: 0 max((100vw - min(1400px, 92%)) / 2, 4vw) 0.5rem;
@@ -197,7 +205,15 @@
     border-radius: 16px;
     overflow: hidden;
     background: var(--project-surface-card, #121212);
-    transition: background-color var(--project-theme-transition, 920ms cubic-bezier(0.16, 1, 0.3, 1));
+    /* Reassert the full reveal transition alongside the theme colour fade — a
+       scoped `transition: background-color` alone would out-specify the global
+       `.reveal` rule and cancel the arrival animation. */
+    transition:
+      opacity 0.6s ease,
+      filter 0.85s cubic-bezier(0.22, 0.61, 0.36, 1),
+      transform 0.85s cubic-bezier(0.22, 0.61, 0.36, 1),
+      background-color var(--project-theme-transition, 920ms cubic-bezier(0.16, 1, 0.3, 1));
+    transition-delay: var(--reveal-delay, 0ms);
   }
 
   .ms-media img {
@@ -205,7 +221,11 @@
     height: 100%;
     object-fit: cover;
     display: block;
+    transform: scale(1.05);
+    transition: transform 1.2s cubic-bezier(0.22, 0.61, 0.36, 1);
+    will-change: transform;
   }
+  .ms-media:global(.is-revealed) img { transform: scale(1); }
 
   /* Texte EN DESSOUS de l'image */
   .ms-cap {
@@ -240,6 +260,30 @@
     }
     .ms-media {
       aspect-ratio: 4 / 3;
+    }
+  }
+
+  /* Mobile: drop the blur from the arrival (matches the global reveal rule,
+     which our scoped transition above would otherwise re-enable). */
+  @media (hover: none) and (pointer: coarse) {
+    .ms-media.reveal {
+      filter: none;
+      transition:
+        opacity 0.5s ease,
+        transform 0.6s cubic-bezier(0.22, 0.61, 0.36, 1),
+        background-color var(--project-theme-transition, 920ms cubic-bezier(0.16, 1, 0.3, 1));
+      transition-delay: var(--reveal-delay, 0ms);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .ms-media.reveal {
+      transition: background-color var(--project-theme-transition, 920ms cubic-bezier(0.16, 1, 0.3, 1));
+    }
+    .ms-media img,
+    .ms-media:global(.is-revealed) img {
+      transition: none;
+      transform: none;
     }
   }
 </style>

@@ -1,4 +1,5 @@
 <script>
+  import { onMount } from "svelte";
   import { reveal } from "$lib/actions/reveal.js";
   import { navigate } from "$lib/navigate.js";
 
@@ -17,6 +18,17 @@
   export let ink = "#f4efe6";
   export let inkMuted = "rgba(245, 241, 232, 0.62)";
 
+  // Fade the full-bleed media in once it has actually decoded, so a lazy image
+  // deep in the page never pops in on top of the section background. Guard for
+  // cached images that finished loading before hydration (the `load` event has
+  // already fired and won't fire again).
+  let mediaImgEl;
+  let mediaLoaded = false;
+
+  onMount(() => {
+    if (mediaImgEl?.complete) mediaLoaded = true;
+  });
+
   function handleButtonMove(event) {
     const button = event.currentTarget;
     const rect = button.getBoundingClientRect();
@@ -30,7 +42,15 @@
     class="about-editorial-single-showcase__media"
     style={`--about-editorial-single-showcase-media-min-height:${mediaMinHeight};`}
   >
-    <img src={image} alt={alt} loading="lazy" />
+    <img
+      bind:this={mediaImgEl}
+      src={image}
+      alt={alt}
+      loading="lazy"
+      decoding="async"
+      class:is-loaded={mediaLoaded}
+      on:load={() => (mediaLoaded = true)}
+    />
     <div class="about-editorial-single-showcase__gradient" aria-hidden="true"></div>
   </figure>
 
@@ -103,6 +123,24 @@
     height: 100%;
     object-fit: cover;
     display: block;
+    opacity: 0;
+    transform: scale(1.04);
+    transition:
+      opacity 0.9s ease,
+      transform 1.4s cubic-bezier(0.22, 0.61, 0.36, 1);
+  }
+
+  .about-editorial-single-showcase__media img.is-loaded {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .about-editorial-single-showcase__media img {
+      opacity: 1;
+      transform: none;
+      transition: none;
+    }
   }
 
   .about-editorial-single-showcase__gradient {

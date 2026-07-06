@@ -74,7 +74,7 @@
       background="#040404"
       text="Du premier écran jusqu'aux vues les plus rapprochées, la même clarté et la même fluidité, sur desktop comme sur mobile."
       image="/images/justx_app.webp"
-      alt="Vue desktop Moovy"
+      alt="Application JustX Fitness"
       accentImage="/images/tel_moovy3.webp"
       accentAlt="Vue mobile Moovy"
     />
