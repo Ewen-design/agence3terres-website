@@ -30,7 +30,7 @@
   const footerImages = {
     "/": "/images/justx.webp",
     "/services": "/images/creation_logo_desktop2.webp",
-    "/travail": "/images/moovy2.webp",
+    "/travail": "/images/cartes-visites.webp",
     "/apropos": "/images/moovy.webp",
     "/contact": "/images/justx.webp",
     "/projet1": "/images/parfum4.webp",

@@ -12,7 +12,7 @@
 
   export let label = "Pôles";
   export let finalText =
-    "Conseil, création digitale et studio : trois territoires complémentaires, réunis sous une même direction artistique.";
+    "Design, création digitale et studio : trois territoires complémentaires, réunis sous une même direction artistique.";
   export let image = "/images/agence.webp";
   export let afterImage = "/images/agence2.webp";
 
@@ -464,7 +464,7 @@
     text-align: left;
     /* Dégradé de transparence de haut en bas sur le titre. */
     background: linear-gradient(
-      to bottom,
+      to top,
       #ffffff 0%,
       #ffffff 40%,
       rgba(255, 255, 255, 0.28) 100%

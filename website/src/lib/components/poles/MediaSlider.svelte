@@ -36,10 +36,10 @@
     {#if title}<h3 class="ms-title">{title}</h3>{/if}
     {#if slides.length > 1}
       <div class="ms-ctrl">
-        <button type="button" class="ms-round ms-round--prev" on:click={() => move(-1)} on:mousemove={handleMove} aria-label="Précédent">
+        <button type="button" class="ms-round ms-round--prev" data-no-wipe on:click={() => move(-1)} on:mousemove={handleMove} aria-label="Précédent">
           <svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="20" y1="12" x2="4" y2="12"/><polyline points="11 5 4 12 11 19"/></svg>
         </button>
-        <button type="button" class="ms-round ms-round--next" on:click={() => move(1)} on:mousemove={handleMove} aria-label="Suivant">
+        <button type="button" class="ms-round ms-round--next" data-no-wipe on:click={() => move(1)} on:mousemove={handleMove} aria-label="Suivant">
           <svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="4" y1="12" x2="20" y2="12"/><polyline points="13 5 20 12 13 19"/></svg>
         </button>
       </div>

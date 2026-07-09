@@ -3,6 +3,10 @@
   import { reveal } from "$lib/actions/reveal.js";
 
   export let excludePages = [];
+  // Si fourni, n'affiche QUE ces pages (utilisé pour sortir la carte « Votre projet »).
+  export let onlyPages = null;
+  // Carte(s) en pleine largeur (bannière) plutôt qu'en grille 2 colonnes.
+  export let full = false;
 
   const baseProjects = [
     {
@@ -41,7 +45,7 @@
       title: "Ludosphères",
       category: "Site d'artiste",
       lead: "Un site sobre pour laisser respirer les œuvres.",
-      image: "/images/apple_justx.webp",
+      image: "/images/ludo.webp",
       page: "projet4",
       button: "Voir le projet"
     },
@@ -63,7 +67,9 @@
     }
   ];
 
-  $: filteredProjects = baseProjects.filter((p) => !excludePages.includes(p.page));
+  $: filteredProjects = baseProjects.filter(
+    (p) => (onlyPages ? onlyPages.includes(p.page) : true) && !excludePages.includes(p.page)
+  );
 
   function handleMove(event) {
     const btn = event.currentTarget.querySelector(".p-btn");
@@ -74,7 +80,7 @@
   }
 </script>
 
-<section class="projects-grid">
+<section class="projects-grid" class:is-full={full}>
   <div class="grid-inner">
     {#each filteredProjects as p, i}
       <button
@@ -306,6 +312,27 @@
     width: calc(50% - 1px);
   }
 
+  /* Bannière pleine largeur (ex. bloc « Votre projet »). */
+  .projects-grid.is-full .grid-inner {
+    grid-template-columns: 1fr;
+  }
+
+  .projects-grid.is-full .p-card,
+  .projects-grid.is-full .p-card:last-child:nth-child(odd) {
+    grid-column: 1 / -1;
+    justify-self: stretch;
+    width: 100%;
+    /* Pleine largeur en conservant la hauteur d'origine : la carte faisait 50 %
+       de large en carré (1/1) → hauteur = 50 % de la largeur. En pleine largeur,
+       un ratio 2/1 donne exactement la même hauteur. */
+    aspect-ratio: 2 / 1;
+  }
+
+  /* Pas de vide sous le bloc pleine largeur. */
+  .projects-grid.is-full {
+    padding-bottom: 0;
+  }
+
   @media (max-width: 768px) {
     .grid-inner {
       grid-template-columns: 1fr;
@@ -320,6 +347,11 @@
       grid-column: auto;
       justify-self: auto;
       width: auto;
+    }
+
+    .projects-grid.is-full .p-card,
+    .projects-grid.is-full .p-card:last-child:nth-child(odd) {
+      aspect-ratio: 3 / 4;
     }
 
     .p-btn {

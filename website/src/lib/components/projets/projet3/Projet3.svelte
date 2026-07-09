@@ -15,7 +15,7 @@
     { title: "JustX", image: "/images/justx.webp", href: "/projet5" },
     { title: "JustX Fitness", image: "/images/justx_app.webp", href: "/projet7" },
     { title: "Mission X", image: "/images/missionX5.webp", href: "/projet6" },
-    { title: "Ludosphères", image: "/images/apple_justx.webp", href: "/projet4" },
+    { title: "Ludosphères", image: "/images/ludo.webp", href: "/projet4" },
     { title: "Serein Design", image: "/images/serein_design.webp", href: "/projet1" },
     { title: "Votre projet ?", image: "/images/agence.webp", href: "/contact", cta: "Nous contacter" }
   ];
@@ -104,10 +104,10 @@
   <div class="project-theme-band">
     <ProjectEditorialMosaic
       text="Un premier plan large pour ouvrir l'univers, puis deux vues resserrees qui gardent la meme clarte."
-      feature={{ src: "/images/moovy_recherche.webp", alt: "Grand visuel desktop de Moovy" }}
+      feature={{ src: "/images/affiche-moovy.webp", alt: "Grand visuel desktop de Moovy" }}
       items={[
         { src: "/images/moovy_mobile.webp", alt: "Vue mobile du projet Moovy" },
-        { src: "/images/moovy.webp", alt: "Vue catalogue du projet Moovy" }
+        { src: "/images/moovy-ordi.webp", alt: "Vue catalogue du projet Moovy" }
       ]}
     />
 

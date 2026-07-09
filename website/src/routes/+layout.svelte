@@ -17,6 +17,7 @@
   } from "$lib/scrollEngine.js";
 
   import { installDesktopWheelDamping } from "$lib/desktopWheelDamping.js";
+  import { installBlurButtonWipe } from "$lib/blurButtonWipe.js";
   import {
     activatePendingSilentNavigation,
     clearSilentNavigation,
@@ -35,6 +36,7 @@
   let cancelTransitionAnimation;
   let scrollLockObserver;
   let removeTouchFlipListener;
+  let removeBlurButtonWipe;
   let projectTheme = null;
   let removeProjectThemeListener;
   let pipDockVisible = false;
@@ -400,6 +402,7 @@
       initScrollEngine();
       updateScrollEngineViewport();
       removeTouchFlipListener = installTouchFlipAnimation();
+      removeBlurButtonWipe = installBlurButtonWipe();
 
       window.lenis = null;
 
@@ -496,6 +499,7 @@
       if (onPageShow) window.removeEventListener("pageshow", onPageShow);
       if (onVisibilityChange) document.removeEventListener("visibilitychange", onVisibilityChange);
       removeTouchFlipListener?.();
+      removeBlurButtonWipe?.();
       removeProjectThemeListener?.();
       projectTheme = null;
 

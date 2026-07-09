@@ -54,7 +54,7 @@
 
   const finalText =
     "Stratégie, esthétique, exécution. Des projets où chaque décision a du sens.";
-  const activeAfterImage = "/images/justx.webp";
+  const activeAfterImage = "/images/apple_justx.webp";
 
   const clamp = (v, min = 0, max = 1) => Math.max(min, Math.min(max, v));
   const lerp = (a, b, t) => a + (b - a) * t;
@@ -289,7 +289,7 @@
       <div class="hero-media" class:media-visible={heroMediaVisible} bind:this={heroStage}>
         <img
           bind:this={heroMediaImgEl}
-          src="/images/justx_fitness.webp"
+          src="/images/cartes-visites.webp"
           alt=""
           fetchpriority="high"
           decoding="async"
@@ -463,9 +463,9 @@
     line-height: 1;
     letter-spacing: var(--site-display-letter-spacing);
     text-align: left;
-    /* Dégradé de transparence de haut en bas sur le titre. */
+    /* Dégradé de transparence sur le titre (sens inversé : bas → haut). */
     background: linear-gradient(
-      to bottom,
+      to top,
       #ffffff 0%,
       #ffffff 40%,
       rgba(255, 255, 255, 0.28) 100%

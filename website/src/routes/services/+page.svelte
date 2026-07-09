@@ -10,11 +10,11 @@
 
   const digitalCards = [
     { image: "/images/tel_moovy.webp", alt: "Plateforme Moovy", title: "Moovy", subtitle: "Plateforme web", href: "projet3", tags: ["Site web", "Design d'interface", "Développement"] },
-    { image: "/images/justx_fitness.webp", alt: "Application JustX Fitness", title: "JustX Fitness", subtitle: "Application mobile", href: "projet7", tags: ["Application mobile", "Design d'interface", "Développement"] }
+    { image: "/images/app-justx.webp", alt: "Application JustX Fitness", title: "JustX Fitness", subtitle: "Application mobile", href: "projet7", tags: ["Application mobile", "Design d'interface", "Développement"] }
   ];
 
-  const conseilCards = [
-    { image: "/images/serein_design.webp", alt: "Projet Serein Design", title: "Serein Design", subtitle: "Identité produit", href: "projet1", tags: ["Identité visuelle", "Direction artistique"] },
+  const designCards = [
+    { image: "/images/serein_design.webp", alt: "Projet Serein Design", title: "Serein Design", subtitle: "Identité & charte", href: "projet1", tags: ["Logo & charte", "Direction artistique"] },
     { image: "/images/justx.webp", alt: "Projet JustX", title: "JustX", subtitle: "Identité de marque", href: "projet5", tags: ["Logo & charte", "Naming", "Stratégie"] }
   ];
 
@@ -33,8 +33,8 @@
     { image: "/images/moovy.webp", alt: "Recommandation produit", label: "Recommandation produit", caption: "Un moteur de recommandation qui arrive au bon moment, sans surcharge." }
   ];
 
-  // Conseil — la marque, de sa création à son pilotage : identité, logo, naming, suivi.
-  const conseilSlides = [
+  // Design — identité visuelle : logo, charte, typographie, système cohérent (+ naming & stratégie).
+  const designSlides = [
     { image: "/images/creation_logo_desktop.webp", alt: "Logo et signe", label: "Logo & signe", caption: "Des signes simples et durables, pensés pour installer une présence immédiate et mémorable." },
     { image: "/images/justx_couleurs.webp", alt: "Identité visuelle", label: "Identité visuelle", caption: "Un territoire visuel complet — couleurs, typographies, compositions — pour une marque cohérente et reconnaissable." },
     { image: "/images/carte_visite_desktop.webp", alt: "Charte et papeterie", label: "Charte & papeterie", caption: "Du digital à l'imprimé, une même signature visuelle déclinée sur tous les supports." },
@@ -58,7 +58,7 @@
 
 <PolesHero
   label="Services"
-  finalText="Conseil, création digitale et studio : trois territoires complémentaires, réunis sous une même direction artistique."
+  finalText="Design, création digitale et studio : trois territoires complémentaires, réunis sous une même direction artistique."
 />
 
 <ProjectThemePage>
@@ -81,24 +81,24 @@
     <MediaSlider slides={digitalSlides} />
   </div>
 
-  <!-- ───────── Pôle 02 — Conseil (fond blanc) ───────── -->
+  <!-- ───────── Pôle 02 — Design (fond blanc) ───────── -->
   <ProjectThemeTrigger theme="light" />
 
   <div class="project-theme-band">
-    <SectionLead lead="3 Terres Conseil" />
-    <ShowcaseCards cards={conseilCards} />
+    <SectionLead lead="3 Terres Design" />
+    <ShowcaseCards cards={designCards} />
     <SectionLead
-      text="Notre pôle conseil construit la marque, de sa création à son pilotage. Identité visuelle, charte graphique, logo et naming posent des fondations solides ; puis nous accompagnons dans le temps avec une stratégie de communication, un suivi détaillé et des reportings réguliers."
+      text="Notre pôle design façonne l'identité visuelle de la marque : logo, charte graphique, typographie et système visuel cohérent, du premier signe jusqu'à chacune de ses déclinaisons. Une démarche à la fois créative et stratégique — nous conseillons et accompagnons chaque marque, du naming au pilotage, pour lui donner une présence claire et durable."
     />
     <EditorialFeature
       image="/images/creation_logo_desktop.webp"
       alt="Création de logo et d'identité"
       secondaryImage="/images/carte_visite_desktop.webp"
       secondaryAlt="Papeterie et supports de marque"
-      label="Identité & charte graphique"
-      text="Un système visuel complet — palette, typographie, logo — qui donne à la marque une présence immédiatement reconnaissable, du digital à l'imprimé."
+      label="Logo, charte & typographie"
+      text="Un système visuel complet — logo, palette, typographie — qui donne à la marque une présence cohérente et immédiatement reconnaissable, du digital à l'imprimé."
     />
-    <MediaSlider slides={conseilSlides} />
+    <MediaSlider slides={designSlides} />
   </div>
 
   <!-- ───────── Pôle 03 — Studio (fond bleu) ───────── -->

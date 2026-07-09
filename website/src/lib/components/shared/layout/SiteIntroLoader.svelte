@@ -19,10 +19,10 @@
   let handleHeaderIntroDone;
   let contentRevealDispatched = false;
 
-  // Focus-pull intro: the logo blurs INTO focus, holds, then blurs OUT —
-  // the same arrival language used by the site's sliders / text reveals.
-  const LOGO_IN_DELAY = 220;        // before the logo starts to focus in
-  const LOGO_HOLD_DURATION = 1500;  // time the logo stays sharp before clearing
+  // Intro : la phrase « Né pour créer. » arrive mot par mot (blur → net), tient,
+  // puis tous les mots disparaissent EN MÊME TEMPS en blur.
+  const LOGO_IN_DELAY = 220;        // avant que les mots commencent à arriver
+  const LOGO_HOLD_DURATION = 2000;  // temps d'affichage avant la disparition
   const HEADER_REVEAL_DELAY = 240;  // after the logo starts clearing → reveal header
   const BACKGROUND_FADE_DURATION = 560;
   let backgroundFadeDuration = BACKGROUND_FADE_DURATION;
@@ -140,16 +140,15 @@
     aria-hidden="true"
   >
     <div class="intro-logo-scene">
-      <svg
-        class="site-intro-loader__logo"
+      <p
+        class="intro-phrase"
         class:is-visible={logoVisible}
         class:is-clearing={logoClearing}
-        viewBox="0 0 969 969"
-        focusable="false"
       >
-        <path d="M175.33,886.39L514.99,37c-34.84,220.59-70.34,441.09-105.93,661.57l-3.59,4.41-230.16,183.41Z" />
-        <path d="M798,933l-620.99-45,6.07-4.42,222.26-137.39,74.3,37.67c90.86,42.77,182.96,82.91,273.39,126.61l23.97,10.52-1.27-8.22L514.94,55.52l2.07-19.52,280.99,897Z" />
-      </svg>
+        <span class="intro-word">Né</span>
+        <span class="intro-word">pour</span>
+        <span class="intro-word">créer.</span>
+      </p>
     </div>
   </div>
 {/if}
@@ -187,56 +186,73 @@
     display: grid;
     place-items: center;
     color: #f6f4ef;
+    padding: 1.5rem;
   }
 
-  /* Focus-pull arrival: blur → sharp, slight rise + settle. */
-  .site-intro-loader__logo {
-    display: block;
-    width: clamp(64px, 8vw, 104px);
-    height: auto;
-    fill: currentColor;
+  .intro-phrase {
+    margin: 0;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.32em;
+    font-family: "Inter", sans-serif;
+    font-weight: 400;
+    font-size: clamp(1.5rem, 3.4vw, 2.6rem);
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+    text-align: center;
+    color: #f6f4ef;
+  }
+
+  /* Chaque mot arrive en blur doux (focus-pull). */
+  .intro-word {
+    display: inline-block;
     opacity: 0;
-    filter: blur(16px);
-    transform: translate3d(0, 22px, 0) scale(0.94);
+    filter: blur(14px);
+    transform: translate3d(0, 0.22em, 0);
     transition:
-      opacity 600ms ease,
-      filter 900ms cubic-bezier(0.22, 0.61, 0.36, 1),
-      transform 900ms cubic-bezier(0.22, 0.61, 0.36, 1);
+      opacity 0.7s ease,
+      filter 0.9s cubic-bezier(0.22, 0.61, 0.36, 1),
+      transform 0.9s cubic-bezier(0.22, 0.61, 0.36, 1);
     will-change: opacity, filter, transform;
     backface-visibility: hidden;
     -webkit-backface-visibility: hidden;
   }
 
-  .site-intro-loader__logo.is-visible {
+  /* Arrivée mot par mot (décalée). */
+  .intro-phrase.is-visible .intro-word {
     opacity: 1;
     filter: blur(0);
-    transform: translate3d(0, 0, 0) scale(1);
+    transform: translate3d(0, 0, 0);
   }
+  .intro-phrase.is-visible .intro-word:nth-child(1) { transition-delay: 0ms; }
+  .intro-phrase.is-visible .intro-word:nth-child(2) { transition-delay: 240ms; }
+  .intro-phrase.is-visible .intro-word:nth-child(3) { transition-delay: 480ms; }
 
-  /* Focus-pull exit: blurs back out, lifts and grows slightly as it clears. */
-  .site-intro-loader__logo.is-clearing {
+  /* Sortie : tous les mots disparaissent EN MÊME TEMPS, en blur. */
+  .intro-phrase.is-clearing .intro-word {
     opacity: 0;
-    filter: blur(22px);
-    transform: translate3d(0, -16px, 0) scale(1.07);
+    filter: blur(18px);
+    transform: translate3d(0, -0.12em, 0);
     transition:
-      opacity 560ms ease,
-      filter 720ms cubic-bezier(0.22, 0.61, 0.36, 1),
-      transform 720ms cubic-bezier(0.22, 0.61, 0.36, 1);
+      opacity 0.55s ease,
+      filter 0.75s cubic-bezier(0.22, 0.61, 0.36, 1),
+      transform 0.75s cubic-bezier(0.22, 0.61, 0.36, 1);
+    transition-delay: 0ms !important;
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .site-intro-loader,
-    .site-intro-loader__logo {
+    .site-intro-loader {
       transition-duration: 160ms;
-      animation: none !important;
     }
 
-    .site-intro-loader__logo {
+    .intro-word {
       filter: none;
       transform: none;
+      transition-duration: 160ms;
     }
 
-    .site-intro-loader__logo.is-clearing {
+    .intro-phrase.is-clearing .intro-word {
       filter: none;
       transform: none;
     }

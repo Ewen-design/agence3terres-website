@@ -1,52 +1,54 @@
 <script>
-  import { onDestroy, onMount } from "svelte";
+  import { onMount } from "svelte";
+  import { browser } from "$app/environment";
+  import { reveal } from "$lib/actions/reveal.js";
 
-  let name = "";
-  let email = "";
-  let message = "";
+  const mail = "contact@agence3terres.fr";
 
-  const mail = "contact@agence3terres.com";
+  // Arrivée de l'image de fond (fondu + léger dézoom) — comme les hero du site.
+  let bgVisible = false;
+  let fallbackTimer;
+
+  onMount(() => {
+    if (!browser) return;
+
+    const reduce = window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches;
+    if (reduce) {
+      bgVisible = true;
+      return;
+    }
+
+    const start = () => {
+      requestAnimationFrame(() => requestAnimationFrame(() => (bgVisible = true)));
+    };
+
+    // Sur le premier chargement, on attend que le preloader révèle le contenu ;
+    // sinon (navigation interne) on lance directement.
+    const onReveal = () => {
+      clearTimeout(fallbackTimer);
+      start();
+    };
+
+    if (document.getElementById("site-intro-loader")) {
+      window.addEventListener("preloader:content-reveal", onReveal, { once: true });
+      window.addEventListener("preloader:done", onReveal, { once: true });
+      fallbackTimer = setTimeout(start, 8000);
+    } else {
+      start();
+    }
+
+    return () => {
+      clearTimeout(fallbackTimer);
+      window.removeEventListener("preloader:content-reveal", onReveal);
+      window.removeEventListener("preloader:done", onReveal);
+    };
+  });
 
   const socialLinks = [
-    {
-      href: "/",
-      label: "Instagram",
-      icon: "/images/instagram.png",
-      className: "icon-instagram"
-    },
-    {
-      href: "/",
-      label: "Facebook",
-      icon: "/images/facebook.png",
-      className: "icon-facebook"
-    },
-    {
-      href: "/",
-      label: "X",
-      icon: "/images/X.png",
-      className: "icon-x"
-    }
+    { href: "/", label: "Instagram", icon: "/images/instagram.png", className: "icon-instagram" },
+    { href: "/", label: "Facebook", icon: "/images/facebook.png", className: "icon-facebook" },
+    { href: "/", label: "X", icon: "/images/X.png", className: "icon-x" }
   ];
-
-  let activeTab = "inquiries";
-  let outgoingTab = null;
-  let outgoingKey = 0;
-  let copied = false;
-  let cleanupTimer;
-  let copyTimer;
-  let introBlockTimer;
-  let introContentTimer;
-  let introFallbackTimer;
-  let introImageVisible = false;
-  let introBlockVisible = false;
-  let introContentVisible = false;
-  let introStarted = false;
-
-  function handleSubmit(event) {
-    event.preventDefault();
-    console.log({ name, email, message });
-    alert("Message envoyé");
-  }
 
   function handleButtonMove(event) {
     const btn = event.currentTarget;
@@ -54,659 +56,169 @@
     btn.style.setProperty("--mx", `${event.clientX - rect.left}px`);
     btn.style.setProperty("--my", `${event.clientY - rect.top}px`);
   }
-
-  function setTab(tab) {
-    if (tab === activeTab) return;
-    clearTimeout(cleanupTimer);
-
-    outgoingTab = activeTab;
-    outgoingKey += 1;
-    activeTab = tab;
-
-    cleanupTimer = setTimeout(() => {
-      outgoingTab = null;
-    }, 750);
-  }
-
-  async function copyEmail() {
-    try {
-      await navigator.clipboard.writeText(mail);
-      copied = true;
-      clearTimeout(copyTimer);
-      copyTimer = setTimeout(() => {
-        copied = false;
-      }, 1800);
-    } catch (error) {
-      console.error(error);
-    }
-  }
-
-  function startIntro() {
-    if (introStarted) return;
-    introStarted = true;
-
-    requestAnimationFrame(() => {
-      requestAnimationFrame(() => {
-        introImageVisible = true;
-      });
-    });
-
-    introBlockTimer = setTimeout(() => {
-      introBlockVisible = true;
-    }, 440);
-
-    introContentTimer = setTimeout(() => {
-      introContentVisible = true;
-    }, 1340);
-  }
-
-  onMount(() => {
-    const handlePreloaderDone = () => {
-      clearTimeout(introFallbackTimer);
-      startIntro();
-    };
-
-    const hasActivePreloader = !!document.getElementById("site-intro-loader");
-
-    if (hasActivePreloader) {
-      window.addEventListener("preloader:done", handlePreloaderDone, { once: true });
-      introFallbackTimer = setTimeout(startIntro, 8000);
-    } else {
-      startIntro();
-    }
-
-    return () => {
-      window.removeEventListener("preloader:done", handlePreloaderDone);
-    };
-  });
-
-  onDestroy(() => {
-    clearTimeout(cleanupTimer);
-    clearTimeout(copyTimer);
-    clearTimeout(introBlockTimer);
-    clearTimeout(introContentTimer);
-    clearTimeout(introFallbackTimer);
-  });
 </script>
 
-<section
-  class="contact"
-  class:intro-image-visible={introImageVisible}
-  class:intro-block-visible={introBlockVisible}
-  class:intro-content-visible={introContentVisible}
->
-  <div class="background">
-    <img src="/images/agence.webp" alt="" />
-    <div class="overlay"></div>
-  </div>
+<h1 class="seo-page-title">Contact - Agence 3 Terres</h1>
 
-  <div class="container">
-    <div class="right">
-      <div class="hero">
-        <h1>
-          Parlons<br />
-          de&nbsp;votre&nbsp;projet.
-        </h1>
-      </div>
+<section class="contact">
+  <div
+    class="contact-bg"
+    class:is-visible={bgVisible}
+    style="background-image: url('/images/agence.webp')"
+  ></div>
+  <div class="contact-overlay"></div>
 
-      <div class="form-shell">
-        <form id="contact-form" class="form" on:submit={handleSubmit}>
-          <div class="field">
-            <input id="contact-name" type="text" bind:value={name} required placeholder=" " />
-            <label for="contact-name">Votre nom</label>
-          </div>
+  <div class="contact-content">
+    <div class="contact-shell" use:reveal>
+      <div class="hero-copy">
+        <h2>Parlons <span class="muted">de votre projet.</span></h2>
 
-          <div class="field">
-            <input id="contact-email" type="email" bind:value={email} required placeholder=" " />
-            <label for="contact-email">Email</label>
-          </div>
-
-          <div class="field">
-            <textarea id="contact-message" rows="5" bind:value={message} required placeholder=" "></textarea>
-            <label for="contact-message">Votre message</label>
-          </div>
-        </form>
-
-        <button
-          type="submit"
-          form="contact-form"
-          class="nav-btn submit-btn"
-          data-cursor="button"
+        <a
+          class="nav-btn contact-button"
+          href={`mailto:${mail}`}
           on:mousemove={handleButtonMove}
         >
-          <span class="nav-btn-flip" data-text="Envoyer">
-            <span class="nav-btn-text">Envoyer</span>
+          <span class="nav-btn-flip" data-text="Écrire un message">
+            <span class="nav-btn-text">{mail}</span>
           </span>
-        </button>
-      </div>
-    </div>
+        </a>
 
-    <div class="contact-info">
-      <div class="tabs" role="tablist" aria-label="Informations de contact">
-        {#each [
-          { key: "inquiries", text: "Contact" },
-          { key: "socials", text: "Nous suivre" },
-          { key: "location", text: "Nous trouver" }
-        ] as tab}
-          <button
-            class="nav-btn tab-btn"
-            class:is-active={activeTab === tab.key}
-            type="button"
-            role="tab"
-            aria-selected={activeTab === tab.key}
-            aria-controls={`panel-${tab.key}`}
-            id={`tab-${tab.key}`}
-            data-cursor="button"
-            on:mousemove={handleButtonMove}
-            on:click={() => setTab(tab.key)}
-          >
-            <span class="nav-btn-flip" data-text={tab.text}>
-              <span class="nav-btn-text">{tab.text}</span>
-            </span>
-          </button>
-        {/each}
-      </div>
-
-      <div class="content-stage">
-        {#if outgoingTab}
-          {#key outgoingKey}
-            <div
-              class="panel panel-out"
-              role="tabpanel"
-              id={`panel-out-${outgoingTab}`}
-              aria-hidden="true"
+        <div class="socials">
+          {#each socialLinks as social}
+            <a
+              class="social"
+              href={social.href}
+              aria-label={social.label}
+              data-cursor="button"
+              on:mousemove={handleButtonMove}
+              on:click|preventDefault
             >
-              {#if outgoingTab === "inquiries"}
-                <div class="email-panel">
-                  <a class="headline-link" href={`mailto:${mail}`}>{mail}</a>
-                  <button
-                    type="button"
-                    class="nav-btn copy-btn"
-                    class:has-label={copied}
-                    aria-label="Copier l'adresse email"
-                    data-cursor="button"
-                    tabindex="-1"
-                  >
-                    <span class="copy-icon" aria-hidden="true">
-                      <svg viewBox="0 0 24 24" focusable="false">
-                        <path
-                          d="M9 4h10v10H9zM5 8h10v10H5z"
-                          fill="none"
-                          stroke="currentColor"
-                          stroke-width="1.75"
-                          stroke-linejoin="round"
-                        />
-                      </svg>
-                    </span>
-                  </button>
-                </div>
-              {:else if outgoingTab === "socials"}
-                <div class="socials-group">
-                  {#each socialLinks as social}
-                    <a
-                      class="social-link"
-                      href={social.href}
-                      aria-label={social.label}
-                      tabindex="-1"
-                    >
-                      <img src={social.icon} alt="" class={`icon ${social.className}`} />
-                    </a>
-                  {/each}
-                </div>
-              {:else}
-                <p class="headline">Paris, France</p>
-              {/if}
-            </div>
-          {/key}
-        {/if}
+              <img src={social.icon} alt={social.label} class={`icon ${social.className}`} />
+            </a>
+          {/each}
+        </div>
+      </div>
 
-        {#key activeTab}
-          <div
-            class="panel panel-in"
-            role="tabpanel"
-            id={`panel-${activeTab}`}
-            aria-labelledby={`tab-${activeTab}`}
-          >
-            {#if activeTab === "inquiries"}
-              <div class="email-panel">
-                <a class="headline-link" href={`mailto:${mail}`}>{mail}</a>
-                <button
-                  type="button"
-                  class="nav-btn copy-btn"
-                  class:has-label={copied}
-                  aria-label={copied ? "Email copié" : "Copier l'adresse email"}
-                  data-cursor="button"
-                  on:mousemove={handleButtonMove}
-                  on:click={copyEmail}
-                >
-                  {#if copied}
-                    <span class="nav-btn-flip" data-text="Copié">
-                      <span class="nav-btn-text">Copié</span>
-                    </span>
-                  {:else}
-                    <span class="copy-icon" aria-hidden="true">
-                      <svg viewBox="0 0 24 24" focusable="false">
-                        <path
-                          d="M9 4h10v10H9zM5 8h10v10H5z"
-                          fill="none"
-                          stroke="currentColor"
-                          stroke-width="1.75"
-                          stroke-linejoin="round"
-                        />
-                      </svg>
-                    </span>
-                  {/if}
-                </button>
-              </div>
-            {:else if activeTab === "socials"}
-              <div class="socials-group">
-                {#each socialLinks as social}
-                  <a
-                    class="social-link"
-                    href={social.href}
-                    aria-label={social.label}
-                    data-cursor="button"
-                    on:mousemove={handleButtonMove}
-                    on:click|preventDefault
-                  >
-                    <img src={social.icon} alt={social.label} class={`icon ${social.className}`} />
-                  </a>
-                {/each}
-              </div>
-            {:else}
-              <p class="headline">Paris, France</p>
-            {/if}
-          </div>
-        {/key}
+      <div class="footer-bar">
+        <p class="legal">2026 Agence 3 Terres</p>
+        <a class="legal legal-link legal-right" href="/mentions-legales" data-sveltekit-preload-data="hover">
+          Mentions légales
+        </a>
       </div>
     </div>
   </div>
-
-  <p class="contact-legal">
-    Agence 3 Terres — Tous droits réservés — Mentions légales
-  </p>
 </section>
 
 <style>
   .contact {
-    --contact-left-pad: clamp(1.5rem, 6vw, 8vw);
-    --contact-right-pad: clamp(0.75rem, 1.8vw, 1.6rem);
-    --contact-bottom-pad: clamp(1.6rem, 3vw, 2.4rem);
-    --contact-top-pad: clamp(5.5rem, 8vh, 7rem);
-    --contact-panel-width: min(45vw, 660px);
-    --contact-panel-gap: var(--contact-right-pad);
     position: relative;
     min-height: 100svh;
     overflow: hidden;
-    color: white;
-    background: #050505;
+    background: #070707;
+    isolation: isolate;
   }
 
-  /* Black info backdrop arrives as a progressive blur-fade (focus-pull). */
-  .contact::before {
-    content: "";
-    position: absolute;
-    inset: 0 auto 0 0;
-    width: var(--contact-panel-width);
-    background: #050505;
-    z-index: 1;
-    opacity: 0;
-    filter: blur(30px);
-    transition:
-      opacity 860ms cubic-bezier(0.22, 1, 0.36, 1),
-      filter 980ms cubic-bezier(0.22, 1, 0.36, 1);
-    will-change: opacity, filter;
-  }
-
-  .contact.intro-block-visible::before {
-    opacity: 1;
-    filter: blur(0);
-  }
-
-  .contact-legal {
-    display: none;
-  }
-
-  .background {
+  .contact-bg,
+  .contact-overlay {
     position: absolute;
     inset: 0;
-    z-index: 0;
-    opacity: 0;
-    transform: scale(1.05);
-    transition:
-      opacity 720ms cubic-bezier(0.22, 1, 0.36, 1),
-      transform 980ms cubic-bezier(0.22, 1, 0.36, 1);
-    will-change: opacity, transform;
-  }
-
-  .intro-image-visible .background {
-    opacity: 1;
-    transform: scale(1);
-  }
-
-  .background img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-  }
-
-  .overlay {
-    position: absolute;
-    inset: 0;
-    background: none;
     pointer-events: none;
   }
 
-  .container {
+  .contact-bg {
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-position: center center;
+    filter: brightness(0.74) contrast(1.02) saturate(0.94);
+    /* Arrivée : fondu + léger dézoom (comme les hero du site). */
+    opacity: 0;
+    transform: scale(1.08);
+    transition:
+      opacity 900ms cubic-bezier(0.22, 1, 0.36, 1),
+      transform 1900ms cubic-bezier(0.22, 1, 0.36, 1);
+    will-change: opacity, transform;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+  }
+
+  .contact-bg.is-visible {
+    opacity: 1;
+    transform: scale(1.03);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .contact-bg {
+      transition: none;
+      opacity: 1;
+      transform: scale(1.03);
+    }
+  }
+
+  .contact-overlay {
+    background: linear-gradient(
+      to bottom,
+      rgba(2, 4, 6, 0.52) 0%,
+      rgba(4, 6, 9, 0.18) 34%,
+      rgba(4, 6, 9, 0.1) 58%,
+      rgba(2, 4, 6, 0.64) 100%
+    );
+  }
+
+  .contact-content {
     position: relative;
     z-index: 2;
     min-height: 100svh;
-    box-sizing: border-box;
-    padding: var(--contact-top-pad) var(--contact-right-pad) var(--contact-bottom-pad) var(--contact-left-pad);
-    display: grid;
-    grid-template-columns:
-      minmax(0, calc(var(--contact-panel-width) - var(--contact-left-pad) - var(--contact-right-pad)))
-      minmax(20rem, 34rem);
-    justify-content: start;
-    column-gap: var(--contact-panel-gap);
-  }
-
-  /* Each block focus-pulls in (blur → sharp, slight rise), staggered. */
-  .hero,
-  .form-shell,
-  .contact-info {
-    opacity: 0;
-    filter: blur(14px);
-    transform: translate3d(0, 20px, 0);
-    transition:
-      opacity 0.6s ease,
-      filter 0.85s cubic-bezier(0.22, 0.61, 0.36, 1),
-      transform 0.85s cubic-bezier(0.22, 0.61, 0.36, 1);
-    will-change: opacity, filter, transform;
-    backface-visibility: hidden;
-  }
-
-  .intro-content-visible .hero { transition-delay: 0ms; }
-  .intro-content-visible .form-shell { transition-delay: 130ms; }
-  .intro-content-visible .contact-info { transition-delay: 240ms; }
-
-  .intro-content-visible .hero,
-  .intro-content-visible .form-shell,
-  .intro-content-visible .contact-info {
-    opacity: 1;
-    filter: blur(0);
-    transform: translate3d(0, 0, 0);
-  }
-
-  .right {
-    width: 100%;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: flex-start;
-  }
-
-  .hero {
-    margin-bottom: 2rem;
-  }
-
-  .form-shell {
-    --contact-surface: rgba(255, 255, 255, 0.055);
-    --contact-surface-hover: rgba(255, 255, 255, 0.075);
-    width: min(100%, 30rem);
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-  }
-
-  .hero h1 {
-    font-family: "Inter", sans-serif;
-    font-size: clamp(2.8rem, 4.8vw, 4.6rem);
-    line-height: 0.95;
-    font-weight: 500;
-    letter-spacing: var(--site-display-letter-spacing);
-    color: rgba(245, 241, 232, 0.35);
-  }
-
-  .hero h1::before {
-    content: "";
-    display: block;
-    width: 24px;
-    height: 1px;
-    background: #5768ff;
-    margin-bottom: 1.2rem;
-  }
-
-  .form {
-    background: var(--contact-surface);
-    padding: clamp(1.3rem, 2.4vw, 2.35rem);
-    border-radius: 2px;
-    box-shadow: none;
-    border: 0px solid rgba(255, 255, 255, 0.12);
-    width: 100%;
-  }
-
-  .field {
-    position: relative;
-    margin-bottom: 1.55rem;
-  }
-
-  input,
-  textarea {
-    width: 100%;
-    border: none;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.38);
-    background: transparent;
-    padding: 0.85rem 0;
-    font-family: "Inter", sans-serif;
-    font-size: 1rem;
-    outline: none;
-    color: white;
-  }
-
-  textarea {
-    resize: vertical;
-    min-height: 6.8rem;
-  }
-
-  label {
-    position: absolute;
-    left: 0;
-    top: 0.85rem;
-    font-family: "Inter", sans-serif;
-    font-size: 0.9rem;
-    color: rgba(255, 255, 255, 0.58);
-    transition: all 0.3s ease;
-    pointer-events: none;
-  }
-
-  input:focus + label,
-  input:not(:placeholder-shown) + label,
-  textarea:focus + label,
-  textarea:not(:placeholder-shown) + label {
-    top: -0.9rem;
-    font-size: 0.72rem;
-    color: rgba(255, 255, 255, 0.86);
-  }
-
-  .contact-info {
-    flex: 0 0 auto;
     display: flex;
     flex-direction: column;
     justify-content: flex-end;
+    padding: clamp(1.2rem, 2vw, 2rem);
+  }
+
+  .contact-shell {
+    display: flex;
+    flex-direction: column;
+    gap: clamp(2rem, 5vw, 4rem);
+    padding-bottom: max(clamp(1rem, 2vw, 1.8rem), var(--safe-bottom-offset));
+  }
+
+  .hero-copy {
+    display: flex;
+    flex-direction: column;
     align-items: flex-start;
-    padding-bottom: clamp(0rem, 3vh, 1rem);
-    padding-left: 3rem;
-    min-width: 0;
-    max-width: none;
+    gap: clamp(1.6rem, 3vw, 2.6rem);
+    min-height: min(66lvh, 760px);
+    justify-content: flex-end;
+    max-width: min(52rem, 90vw);
+    padding-bottom: clamp(1rem, 2.4vw, 2.2rem);
   }
 
-  .tabs {
-    display: flex;
-    align-items: center;
-    gap: 0.8rem;
-    flex-wrap: wrap;
-    margin-bottom: 0.15rem;
-  }
-
-  .content-stage {
-    position: relative;
-    min-height: clamp(6.6rem, 9vw, 8.2rem);
-    width: 100%;
-    overflow: visible;
-  }
-
-  @keyframes panel-enter {
-    from { transform: translateY(90%); opacity: 0; filter: blur(10px); }
-    to   { transform: translateY(0);   opacity: 1; filter: blur(0);    }
-  }
-
-  @keyframes panel-exit {
-    from { transform: translateY(0);    opacity: 1; filter: blur(0);    }
-    to   { transform: translateY(-60%); opacity: 0; filter: blur(10px); }
-  }
-
-  .panel {
-    min-height: inherit;
-    display: flex;
-    align-items: flex-end;
-    width: max-content;
-    max-width: none;
-    will-change: transform, opacity;
-  }
-
-  .panel-in {
-    position: relative;
-    animation: panel-enter 0.72s cubic-bezier(.16,.84,.2,1) both;
-  }
-
-  .panel-out {
-    position: absolute;
-    inset: 0;
-    animation: panel-exit 0.6s cubic-bezier(.16,.84,.2,1) both;
-    pointer-events: none;
-  }
-
-  .email-panel {
-    display: grid;
-    grid-template-columns: max-content auto;
-    align-items: center;
-    justify-content: flex-start;
-    column-gap: 0.8rem;
-    width: max-content;
-    max-width: none;
-    min-width: max-content;
-  }
-
-  .headline,
-  .headline-link {
+  .hero-copy h2 {
     margin: 0;
+    max-width: 10ch;
     font-family: "Inter", sans-serif;
-    font-size: clamp(1.55rem, 3.65vw, 3.9rem);
     font-weight: 500;
-    line-height: 0.94;
-    letter-spacing: -0.045em;
-    color: rgba(245, 241, 232, 0.6);
-    text-decoration: none;
-    white-space: nowrap;
-  }
-
-  .headline-link {
-    max-width: none;
-    min-width: auto;
-  }
-
-  .email-panel .headline-link {
-    font-size: clamp(1.55rem, 3.35vw, 3.55rem);
+    font-size: clamp(2.2rem, 5.5vw, 4.8rem);
     line-height: 0.96;
-    white-space: nowrap;
+    letter-spacing: -0.04em;
+    color: #fff;
+    text-wrap: balance;
   }
 
-  .socials-group {
-    display: flex;
-    align-items: center;
-    gap: clamp(0.9rem, 1.5vw, 1.2rem);
+  .muted {
+    color: rgba(255, 255, 255, 0.42);
   }
 
-  .social-link {
-    position: relative;
-    width: clamp(3.6rem, 5vw, 4.8rem);
-    height: clamp(3.6rem, 5vw, 4.8rem);
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    border: 0px solid rgba(255, 255, 255, 0.14);
-    background: rgba(255, 255, 255, 0.11);
-    backdrop-filter: blur(20px) saturate(160%) brightness(0.82);
-    -webkit-backdrop-filter: blur(20px) saturate(160%) brightness(0.82);
-    border-radius: 10px;
-    transition:
-      transform 0.35s cubic-bezier(.22,.61,.36,1),
-      background 0.35s ease,
-      border-color 0.35s ease,
-      box-shadow 0.35s ease;
-  }
-
-  .social-link:hover {
-    transform: translateY(-4px);
-    background: rgba(255, 255, 255, 0.17);
-    border-color: rgba(255, 255, 255, 0.24);
-  }
-
-  .social-link::before,
-  .social-link::after {
-    content: "";
-    position: absolute;
-    inset: -1px;
-    border-radius: inherit;
-    padding: 1px;
-    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-    -webkit-mask-composite: xor;
-    mask-composite: exclude;
-    pointer-events: none;
-    opacity: 0;
-  }
-
-  .social-link::before {
-    background: radial-gradient(
-      68px circle at var(--mx, 50%) var(--my, 50%),
-      var(--site-glow-strong) 0%,
-      var(--site-glow-mid) 22%,
-      var(--site-glow-soft) 45%,
-      var(--site-glow-fade) 62%,
-      transparent 78%
-    );
-    transition: opacity 0.25s ease;
-  }
-
-  .social-link::after {
-    background: radial-gradient(
-      78px circle at var(--mx, 50%) var(--my, 50%),
-      var(--site-glow-ambient) 0%,
-      var(--site-glow-outer) 42%,
-      transparent 72%
-    );
-    filter: blur(2px);
-    transition: opacity 0.25s ease;
-  }
-
-  .social-link:hover::before,
-  .social-link:hover::after {
-    opacity: 1;
-  }
-
+  /* Bouton verre + glow + flip — identique au footer. */
   .nav-btn {
     font-family: "Inter", sans-serif;
+    font-weight: 400;
     position: relative;
-    height: 40px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    padding: 0 1.5rem;
-    font-size: 0.9rem;
     white-space: nowrap;
-    color: inherit;
-    border: 0px solid rgba(255, 255, 255, 0.15);
+    color: #fff;
+    text-decoration: none;
     cursor: pointer;
     background: rgba(255, 255, 255, 0.11);
     backdrop-filter: blur(20px) saturate(160%) brightness(0.82);
@@ -714,59 +226,22 @@
     border-radius: 10px;
     box-shadow: 0 6px 8px rgba(0, 0, 0, 0.04);
     transition:
+      color 220ms ease,
       transform 1.2s cubic-bezier(.22,.61,.36,1),
       box-shadow 1.2s cubic-bezier(.22,.61,.36,1),
-      background 1.2s cubic-bezier(.22,.61,.36,1),
-      color 0.45s cubic-bezier(.22,.61,.36,1),
-      border-color 0.45s cubic-bezier(.22,.61,.36,1);
+      background 1.2s cubic-bezier(.22,.61,.36,1);
   }
 
-  .tab-btn.is-active {
-    background: #f2f0ec;
-    color: #0d0d0d;
-    border-color: rgba(255, 255, 255, 0.5);
+  .contact-button {
+    min-height: clamp(60px, 6.8vw, 78px);
+    padding: 0 clamp(1.4rem, 2.4vw, 2.2rem);
+    font-size: clamp(1.05rem, 1.5vw, 1.28rem);
+    font-weight: 300;
   }
 
-  .submit-btn {
-    margin-top: 1rem;
-    padding: 0 1.5rem;
-    background: var(--contact-surface);
-  }
-
-  .submit-btn:hover {
-    background: var(--contact-surface-hover);
-  }
-
-  .copy-btn {
-    flex: 0 0 auto;
-    min-width: 36px;
-    width: 36px;
-    padding: 0;
-    margin-bottom: 0;
-    position: relative;
-    z-index: 1;
-  }
-
-  .copy-btn.has-label {
-    min-width: 5.1rem;
-    padding: 0 0.85rem;
-  }
-
-  .copy-icon {
-    width: 1.15rem;
-    height: 1.15rem;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-  }
-
-  .copy-icon svg {
-    width: 100%;
-    height: 100%;
-    display: block;
-    overflow: visible;
-    stroke: currentColor;
-    vector-effect: non-scaling-stroke;
+  .contact-button:hover {
+    transform: translateY(-3px);
+    background: rgba(255, 255, 255, 0.17);
   }
 
   .nav-btn-flip {
@@ -780,9 +255,7 @@
   .nav-btn-text {
     display: block;
     transform: translateY(0%);
-    transition:
-      transform 0.45s cubic-bezier(.22,.61,.36,1),
-      opacity 0.28s ease;
+    transition: transform 0.45s cubic-bezier(.22,.61,.36,1);
   }
 
   .nav-btn-flip::after {
@@ -792,22 +265,13 @@
     top: 0;
     line-height: 1.2em;
     transform: translateY(100%);
-    transition:
-      transform 0.45s cubic-bezier(.22,.61,.36,1),
-      opacity 0.28s ease;
+    transition: transform 0.45s cubic-bezier(.22,.61,.36,1);
     white-space: nowrap;
     color: inherit;
   }
 
-  .nav-btn:hover .nav-btn-text,
-  .tab-btn.is-active .nav-btn-text {
-    transform: translateY(-100%);
-  }
-
-  .nav-btn:hover .nav-btn-flip::after,
-  .tab-btn.is-active .nav-btn-flip::after {
-    transform: translateY(0%);
-  }
+  .nav-btn:hover .nav-btn-text { transform: translateY(-100%); }
+  .nav-btn:hover .nav-btn-flip::after { transform: translateY(0%); }
 
   .nav-btn::before,
   .nav-btn::after {
@@ -821,9 +285,70 @@
     mask-composite: exclude;
     pointer-events: none;
     opacity: 0;
+    transition: opacity 0.25s ease;
   }
 
   .nav-btn::before {
+    background: radial-gradient(
+      128px circle at var(--mx, 50%) var(--my, 50%),
+      var(--site-glow-strong) 0%,
+      var(--site-glow-mid) 26%,
+      var(--site-glow-soft) 52%,
+      var(--site-glow-fade) 70%,
+      transparent 86%
+    );
+  }
+
+  .nav-btn::after {
+    background: radial-gradient(
+      156px circle at var(--mx, 50%) var(--my, 50%),
+      var(--site-glow-ambient) 0%,
+      var(--site-glow-outer) 48%,
+      transparent 82%
+    );
+    filter: blur(3px);
+  }
+
+  .nav-btn:hover::before,
+  .nav-btn:hover::after { opacity: 1; }
+
+  /* Réseaux sociaux — petits, discrets. */
+  .socials {
+    display: flex;
+    align-items: center;
+    gap: clamp(0.6rem, 1vw, 0.9rem);
+  }
+
+  .social {
+    position: relative;
+    width: clamp(2.8rem, 3.2vw, 3.3rem);
+    height: clamp(2.8rem, 3.2vw, 3.3rem);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.11);
+    backdrop-filter: blur(20px) saturate(160%) brightness(0.82);
+    -webkit-backdrop-filter: blur(20px) saturate(160%) brightness(0.82);
+    border-radius: 10px;
+    box-shadow: 0 6px 8px rgba(0, 0, 0, 0.04);
+  }
+
+  /* Glow qui s'illumine sur le contour au survol — comme les autres boutons. */
+  .social::before,
+  .social::after {
+    content: "";
+    position: absolute;
+    inset: -1px;
+    border-radius: inherit;
+    padding: 1px;
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.25s ease;
+  }
+  .social::before {
     background: radial-gradient(
       68px circle at var(--mx, 50%) var(--my, 50%),
       var(--site-glow-strong) 0%,
@@ -832,10 +357,8 @@
       var(--site-glow-fade) 62%,
       transparent 78%
     );
-    transition: opacity 0.25s ease;
   }
-
-  .nav-btn::after {
+  .social::after {
     background: radial-gradient(
       78px circle at var(--mx, 50%) var(--my, 50%),
       var(--site-glow-ambient) 0%,
@@ -843,339 +366,55 @@
       transparent 72%
     );
     filter: blur(2px);
-    transition: opacity 0.25s ease;
   }
-
-  .nav-btn:hover::before,
-  .nav-btn:hover::after,
-  .tab-btn.is-active::before,
-  .tab-btn.is-active::after {
-    opacity: 1;
-  }
-
+  .social:hover::before,
+  .social:hover::after { opacity: 1; }
   .icon {
     display: block;
     object-fit: contain;
     filter: brightness(0) invert(1);
   }
+  .icon-instagram { width: clamp(1.25rem, 1.6vw, 1.5rem); height: clamp(1.25rem, 1.6vw, 1.5rem); }
+  .icon-facebook { width: clamp(1.15rem, 1.5vw, 1.4rem); height: clamp(1.15rem, 1.5vw, 1.4rem); }
+  .icon-x { width: clamp(1.1rem, 1.45vw, 1.35rem); height: clamp(1.1rem, 1.45vw, 1.35rem); }
 
-  .icon-instagram {
-    width: clamp(1.55rem, 2vw, 2rem);
-    height: clamp(1.55rem, 2vw, 2rem);
+  /* Barre légale — identique au footer. */
+  .footer-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding-top: 1.1rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.12);
   }
 
-  .icon-facebook {
-    width: clamp(1.35rem, 1.8vw, 1.8rem);
-    height: clamp(1.35rem, 1.8vw, 1.8rem);
+  .legal {
+    margin: 0;
+    font-family: "Inter", sans-serif;
+    font-weight: 300;
+    font-size: 0.76rem;
+    color: rgba(255, 255, 255, 0.44);
+    line-height: 1.4;
+    text-decoration: none;
   }
-
-  .icon-x {
-    width: clamp(1.4rem, 1.9vw, 1.85rem);
-    height: clamp(1.4rem, 1.9vw, 1.85rem);
-  }
-
-  @media (max-width: 1000px) {
-    .contact::before {
-      width: min(50vw, 580px);
-    }
-
-    .contact,
-    .container {
-      height: auto;
-      min-height: 100vh;
-    }
-
-    .container {
-      display: flex;
-      flex-direction: column;
-      gap: 3rem;
-      justify-content: flex-start;
-    }
-
-    .right,
-    .contact-info {
-      width: 100%;
-    }
-
-    .contact-info {
-      padding-bottom: 0;
-      padding-left: 0;
-      max-width: none;
-    }
-
-    .content-stage {
-      min-height: clamp(9rem, 24vw, 12rem);
-    }
-  }
+  .legal-right { text-align: right; }
+  .legal-link { transition: color 220ms ease; }
+  .legal-link:hover { color: rgba(255, 255, 255, 0.78); }
 
   @media (max-width: 768px) {
-    .social-link,
-    .nav-btn {
+    .nav-btn,
+    .social {
       backdrop-filter: blur(12px) saturate(130%);
       -webkit-backdrop-filter: blur(12px) saturate(130%);
     }
 
-    .contact {
-      min-height: 200svh;
-      overflow: clip;
-    }
-
-    .contact::before {
-      inset: 80svh 0 0;
-      width: auto;
-      background: #050505;
-      transform: none;
-      backface-visibility: hidden;
-      -webkit-backface-visibility: hidden;
-    }
-
-    .background {
-      position: fixed;
-      inset: 0;
-      height: 100svh;
-    }
-
-    .overlay {
-      background: none;
-    }
-
-    .container {
-      min-height: 200svh;
-    }
-
-    .container {
-      display: flex;
-      flex-direction: column;
-      padding:
-        0
-        1.05rem
-        calc(env(safe-area-inset-bottom, 0px) + 1.4rem);
-      align-items: stretch;
-      gap: 0;
-    }
-
-    .right {
-      display: contents;
-    }
-
-    .hero,
-    .contact-info,
-    .form-shell {
-      width: min(100%, 32rem);
-      position: relative;
-      z-index: 3;
-    }
-
-    .hero {
-      order: 1;
-      min-height: 116svh;
-      margin: 0;
-      padding:
-        calc(env(safe-area-inset-top, 0px) + 80vh)
-        0
-        1.4rem;
-      display: flex;
-      flex-direction: column;
-      justify-content: flex-start;
-      align-items: flex-start;
-      gap: clamp(4rem, 8svh, 6.5rem);
-      text-align: left;
-      background: transparent;
-    }
-
-    .contact-info {
-      order: 2;
-      margin: -1.5rem 0 2rem auto;
-      justify-content: flex-start;
-      align-items: flex-end;
-      text-align: right;
-      margin-top: 2rem;
-      padding-bottom: 0;
-      padding-left: 0;
-      background: transparent;
-    }
-
-    .form-shell {
-      order: 3;
-      margin: 1rem auto 0 0;
-      align-items: stretch;
-      background: transparent;
-    }
-
-    .hero h1 {
-      font-size: clamp(2.95rem, 10.8vw, 3.75rem);
+    .hero-copy h2 {
       max-width: 9ch;
+      font-size: clamp(1.9rem, 9.5vw, 3.2rem);
     }
 
-    .form {
-      padding: 1rem 1rem 0.8rem;
-      background: transparent;
-      border-color: rgba(255, 255, 255, 0.14);
-    }
-
-    .field {
-      margin-bottom: 1rem;
-    }
-
-    input,
-    textarea {
-      padding: 0.72rem 0;
-      font-size: 0.95rem;
-    }
-
-    textarea {
-      min-height: 4.8rem;
-    }
-
-    label {
-      top: 0.72rem;
-      font-size: 0.84rem;
-    }
-
-    .nav-btn {
-      padding: 0 1.15rem;
-      font-size: 0.84rem;
-    }
-
-    .submit-btn {
-      margin-top: 0.8rem;
-      align-self: flex-start;
-    }
-
-    .headline,
-    .headline-link {
-      font-size: clamp(1.2rem, 6.1vw, 2.3rem);
-      line-height: 0.98;
-    }
-
-    .email-panel {
-      width: 100%;
-      justify-content: flex-end;
-      align-items: center;
-      column-gap: 0.45rem;
-    }
-
-    .email-panel .headline-link {
-      font-size: clamp(1.2rem, 6.1vw, 2.3rem);
-      text-align: right;
-    }
-
-    .content-stage {
-      min-height: 5.1rem;
-      display: flex;
-      justify-content: flex-end;
-      overflow: hidden;
-    }
-
-    .panel {
-      width: 100%;
-      max-width: 100%;
-      justify-content: flex-end;
-    }
-
-    .tabs,
-    .socials-group {
-      justify-content: flex-end;
-    }
-
-    .socials-group {
-      width: 100%;
-    }
-
-    .headline {
-      width: 100%;
-      text-align: right;
-    }
-
-    .tabs {
-      gap: 0.55rem;
-      margin-bottom: 1.4rem;
-      justify-content: flex-end;
-    }
-
-    .copy-btn {
-      width: 40px;
-      min-width: 40px;
-      height: 40px;
-    }
-
-    .copy-icon {
-      width: 1.2rem;
-      height: 1.2rem;
-      flex: 0 0 auto;
-    }
-
-    .form {
-      text-align: left;
-    }
-
-    .contact-legal {
-      display: block;
-      position: absolute;
-      left: 50%;
-      bottom: calc(env(safe-area-inset-bottom, 0px) + 1rem);
-      transform: translateX(-50%);
-      width: min(100% - 2.1rem, 30rem);
-      margin: 0;
-      z-index: 4;
-      font-family: "Inter", sans-serif;
-      font-size: 0.76rem;
-      color: rgba(255, 255, 255, 0.42);
-      text-align: center;
-      line-height: 1.4;
-      opacity: 0;
-      filter: blur(8px);
-      transition:
-        opacity 620ms cubic-bezier(0.22, 1, 0.36, 1),
-        filter 800ms cubic-bezier(0.22, 1, 0.36, 1);
-    }
-
-    .intro-content-visible .contact-legal {
-      opacity: 1;
-      filter: blur(0);
-    }
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    .panel-in {
-      animation: none;
-      opacity: 1;
-      transform: none;
-      filter: none;
-    }
-
-    .panel-out {
-      animation: none;
-      opacity: 0;
-    }
-
-    .nav-btn,
-    .nav-btn-text,
-    .nav-btn-flip::after,
-    .nav-btn::before,
-    .nav-btn::after,
-    .social-link,
-    label,
-    .background,
-    .container,
-    .hero,
-    .form-shell,
-    .contact-info,
-    .contact::before,
-    .contact-legal {
-      transition: none;
-    }
-
-    .background,
-    .container,
-    .hero,
-    .form-shell,
-    .contact-info,
-    .contact::before,
-    .contact-legal {
-      opacity: 1;
-      filter: none;
-      transform: none;
+    .contact-button {
+      width: min(100%, 320px);
     }
   }
 </style>

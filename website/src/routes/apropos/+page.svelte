@@ -23,3 +23,4 @@
   ctaHref="services"
 />
 <AboutEditorialPrinciples />
+<VisionSlider />

@@ -517,7 +517,7 @@
     text-align: left;
     /* Dégradé de transparence de haut en bas sur le titre. */
     background: linear-gradient(
-      to bottom,
+      to top,
       #ffffff 0%,
       #ffffff 40%,
       rgba(255, 255, 255, 0.28) 100%

@@ -27,9 +27,9 @@
       mobileImage: "/images/tel_moovy2.webp"
     },
     {
-      title: "3 Terres Conseil",
-      subtitle: "Identité & stratégie de marque",
-      tags: ["Identité visuelle", "Logo & charte", "Stratégie"],
+      title: "3 Terres Design",
+      subtitle: "Logo, charte & identité visuelle",
+      tags: ["Logo & charte", "Typographie", "Stratégie"],
       image: "/images/creation_logo_desktop.webp",
       mobileImage: "/images/creation_logo_mobile.webp"
     },
