@@ -51,7 +51,8 @@
       title: "Votre\nprojet ?",
       description: "Approche sur mesure,\nsingularité et impact.",
       image: "/images/agence.webp",
-      href: "/contact"
+      href: "/contact",
+      cta: "Nous contacter"
     }
   ];
 </script>

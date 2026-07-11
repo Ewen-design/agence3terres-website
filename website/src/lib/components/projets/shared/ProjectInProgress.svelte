@@ -35,6 +35,14 @@
   export let title = "Projet en cours\nde création";
   export let ctaLabel = "Voir tous les projets";
   export let ctaHref = "/travail";
+
+  // Glow qui suit le curseur — même effet que les autres boutons du site.
+  function handleGlowMove(event) {
+    const btn = event.currentTarget;
+    const rect = btn.getBoundingClientRect();
+    btn.style.setProperty("--mx", `${event.clientX - rect.left}px`);
+    btn.style.setProperty("--my", `${event.clientY - rect.top}px`);
+  }
 </script>
 
 <section class="pip" {id}>
@@ -52,8 +60,8 @@
     <h2 class="pip__title" use:reveal>{title}</h2>
 
     {#if ctaHref}
-      <div class="pip__dock" bind:this={dockEl}>
-        <a class="pip__cta" href={ctaHref} data-cursor="button">
+      <div class="pip__cta-wrap" bind:this={dockEl}>
+        <a class="pip__cta" href={ctaHref} data-cursor="button" on:mousemove={handleGlowMove}>
           <span class="pip__cta-flip" data-text={ctaLabel}>
             <span class="pip__cta-text">{ctaLabel}</span>
           </span>
@@ -139,7 +147,7 @@
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    padding: clamp(3.2rem, 8vh, 6rem) 0 0;
+    padding: clamp(3.2rem, 8vh, 6rem) 0 max(clamp(1.6rem, 3.5vw, 2.6rem), var(--safe-bottom-offset));
     color: #f5f1e8;
   }
 
@@ -157,57 +165,75 @@
     text-shadow: 0 8px 40px rgba(0, 0, 0, 0.32);
   }
 
-  /* Glass dock behind the button: blurred surface, faint inner white glow and
-     a hairline white border — the button sits on top of it. */
-  .pip__dock {
-    position: relative;
+  /* Le bouton se place simplement en bas à gauche. */
+  .pip__cta-wrap {
     display: flex;
-    justify-content: center;
-    width: 100%;
-    max-width: 540px;
-    margin-inline: auto;
-    padding: clamp(1.5rem, 2.6vw, 2.4rem) clamp(1.6rem, 3vw, 3rem);
-    /* rounded top only — the bottom is flush with the section edge */
-    border-radius: clamp(26px, 3vw, 40px) clamp(26px, 3vw, 40px) 0 0;
-    background: rgba(255, 255, 255, 0.05);
-    backdrop-filter: blur(24px) saturate(150%);
-    -webkit-backdrop-filter: blur(24px) saturate(150%);
-    /* very very thin white contour — a hairline, no line at the bottom */
-    border: 0.5px solid rgba(255, 255, 255, 0.2);
-    border-bottom: none;
-    box-shadow:
-      /* internal white glow */
-      inset 0 0 60px rgba(255, 255, 255, 0.14),
-      inset 0 1px 1px rgba(255, 255, 255, 0.28),
-      0 24px 60px rgba(0, 0, 0, 0.4);
+    justify-content: flex-start;
   }
 
+  /* Simple bouton verre — comme les autres boutons du site. */
   .pip__cta {
     position: relative;
     display: inline-flex;
-    flex: 1;
-    max-width: 640px;
     align-items: center;
     justify-content: center;
-    height: clamp(3.1rem, 3.8vw, 3.7rem);
-    padding: 0 1.6rem;
+    height: 40px;
+    padding: 0 1.5rem;
     font-family: "Inter", sans-serif;
-    font-weight: 500;
-    font-size: clamp(0.98rem, 1.1vw, 1.12rem);
-    color: #14110c;
+    font-weight: 400;
+    font-size: 0.9rem;
+    color: #fff;
     text-decoration: none;
     white-space: nowrap;
     cursor: pointer;
-    background: #f4f0e7;
-    border-radius: clamp(14px, 1.8vw, 22px);
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.18);
-    transition: background 0.35s ease, transform 0.35s ease;
+    background: rgba(255, 255, 255, 0.11);
+    backdrop-filter: blur(20px) saturate(160%) brightness(0.82);
+    -webkit-backdrop-filter: blur(20px) saturate(160%) brightness(0.82);
+    border-radius: 10px;
+    box-shadow: 0 6px 8px rgba(0, 0, 0, 0.08);
+    transition:
+      background 0.3s ease,
+      transform 0.4s cubic-bezier(0.22, 0.61, 0.36, 1);
   }
 
-  .pip__cta:hover {
-    background: #fffdf8;
-    transform: translateY(-1px);
+  .pip__cta:hover { background: rgba(255, 255, 255, 0.18); }
+
+  /* Glow qui s'illumine et suit le curseur — identique aux boutons du site. */
+  .pip__cta::before,
+  .pip__cta::after {
+    content: "";
+    position: absolute;
+    inset: -1px;
+    border-radius: inherit;
+    padding: 1px;
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.25s ease;
   }
+  .pip__cta::before {
+    background: radial-gradient(
+      96px circle at var(--mx, 50%) var(--my, 50%),
+      var(--site-glow-strong) 0%,
+      var(--site-glow-mid) 26%,
+      var(--site-glow-soft) 52%,
+      var(--site-glow-fade) 70%,
+      transparent 86%
+    );
+  }
+  .pip__cta::after {
+    background: radial-gradient(
+      120px circle at var(--mx, 50%) var(--my, 50%),
+      var(--site-glow-ambient) 0%,
+      var(--site-glow-outer) 48%,
+      transparent 82%
+    );
+    filter: blur(3px);
+  }
+  .pip__cta:hover::before,
+  .pip__cta:hover::after { opacity: 1; }
 
   .pip__cta-flip {
     position: relative;
@@ -258,15 +284,6 @@
     .pip__title {
       font-size: clamp(2.5rem, 11.5vw, 4.2rem);
       max-width: 11ch;
-    }
-
-    .pip__dock {
-      /* keep the blur flush to the bottom edge but lift the button higher */
-      padding: clamp(1.4rem, 4vw, 1.8rem) 1.2rem clamp(3.8rem, 12vw, 5rem);
-    }
-
-    .pip__cta {
-      width: 100%;
     }
   }
 </style>

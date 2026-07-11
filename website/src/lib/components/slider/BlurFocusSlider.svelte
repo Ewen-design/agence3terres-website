@@ -6,6 +6,17 @@
   export let ctaLabel = "Voir le projet";
   const N = slides.length;
 
+  // Glow qui suit le curseur — même effet que les autres boutons du site.
+  function handleGlowMove(event) {
+    const btn = event.currentTarget;
+    const rect = btn.getBoundingClientRect();
+    btn.style.setProperty("--mx", `${event.clientX - rect.left}px`);
+    btn.style.setProperty("--my", `${event.clientY - rect.top}px`);
+  }
+
+  // Libellé du bouton, spécifique à la slide active si elle définit `cta`.
+  $: activeCta = slides[activeIndex]?.cta ?? ctaLabel;
+
   // ── Progressive-blur ladder (sharp → strong). Adjacent levels are close,
   //    so crossfading between them reads as a true, continuous blur (no ghost).
   const BLUR_LEVELS = [0, 12, 28, 48]; // px
@@ -315,21 +326,20 @@
       {/each}
     </div>
 
-    <!-- Bottom: glass dock with the CTA button (href follows the active slide) -->
+    <!-- Bottom-left: simple bouton verre (href suit la slide active) -->
     <div class="bfs__bottom" bind:this={bottomEl}>
       <div class="bfs__bottom-grad" aria-hidden="true"></div>
-      <div class="bfs__dock">
-        <a
-          href={slides[activeIndex]?.href}
-          class="bfs__btn"
-          data-cursor="button"
-          aria-label={ctaLabel + (slides[activeIndex]?.title ? " — " + slides[activeIndex].title.replace(/\n/g, " ") : "")}
-        >
-          <span class="bfs__btn-inner" data-text={ctaLabel}>
-            <span class="bfs__btn-text">{ctaLabel}</span>
-          </span>
-        </a>
-      </div>
+      <a
+        href={slides[activeIndex]?.href}
+        class="bfs__btn"
+        data-cursor="button"
+        on:mousemove={handleGlowMove}
+        aria-label={activeCta + (slides[activeIndex]?.title ? " — " + slides[activeIndex].title.replace(/\n/g, " ") : "")}
+      >
+        <span class="bfs__btn-inner" data-text={activeCta}>
+          <span class="bfs__btn-text">{activeCta}</span>
+        </span>
+      </a>
     </div>
 
   </div>
@@ -448,7 +458,13 @@
     pointer-events: none;
     display: flex;
     align-items: flex-end;
-    justify-content: center;
+    justify-content: flex-start;
+    padding:
+      0
+      clamp(1rem, 2vw, 2rem)
+      max(clamp(1rem, 2.2vw, 1.6rem), var(--safe-bottom-offset))
+      clamp(1rem, 2vw, 1.8rem);
+    box-sizing: border-box;
   }
   /* Light vignette only — the glass dock floats over the live image. */
   .bfs__bottom-grad {
@@ -461,26 +477,6 @@
       rgba(0,0,0,.2)  100%);
   }
 
-  .bfs__dock {
-    position: relative;
-    pointer-events: auto;
-    display: flex;
-    justify-content: center;
-    width: min(540px, calc(100vw - 2 * clamp(1.5rem, 5.5vw, 5.5rem)));
-    padding: clamp(1.3rem, 2.4vw, 2rem) clamp(1.5rem, 3vw, 2.6rem);
-    /* rounded top only — flush with the sticky bottom edge */
-    border-radius: clamp(24px, 3vw, 36px) clamp(24px, 3vw, 36px) 0 0;
-    background: rgba(255,255,255,.05);
-    backdrop-filter: blur(24px) saturate(150%);
-    -webkit-backdrop-filter: blur(24px) saturate(150%);
-    /* very very thin white contour — a hairline, no line at the bottom */
-    border: .5px solid rgba(255,255,255,.2);
-    border-bottom: none;
-    box-shadow:
-      inset 0 0 60px rgba(255,255,255,.14),
-      inset 0 1px 1px rgba(255,255,255,.28),
-      0 24px 60px rgba(0,0,0,.4);
-  }
   .bfs__caption {
     max-width: min(40rem, 100%);
   }
@@ -516,32 +512,72 @@
     transition-delay: calc(var(--li, 0) * .07s);
   }
 
-  /* ── Button (sits on the glass dock) ────────────────────────────────── */
+  /* ── Simple bouton verre (comme les autres boutons du site) ──────────── */
   .bfs__btn {
     position: relative;
+    pointer-events: auto;
     display: inline-flex;
-    flex: 1;
-    max-width: 360px;
     align-items: center;
     justify-content: center;
-    height: clamp(3rem, 3.6vw, 3.5rem);
-    padding: 0 1.6rem;
-    font-family: var(--site-font, "Inter", sans-serif);
-    font-weight: 500;
-    font-size: clamp(.95rem, 1.05vw, 1.05rem);
-    color: #14110c;
+    height: 40px;
+    padding: 0 1.5rem;
+    font-family: "Inter", sans-serif;
+    font-weight: 400;
+    font-size: 0.9rem;
+    color: #fff;
     text-decoration: none;
-    background: #f4f0e7;
-    border-radius: clamp(12px, 1.6vw, 18px);
-    box-shadow: 0 2px 10px rgba(0,0,0,.18);
     white-space: nowrap;
-    transition: background .35s ease, transform .35s ease;
+    background: rgba(255, 255, 255, 0.11);
+    backdrop-filter: blur(20px) saturate(160%) brightness(0.82);
+    -webkit-backdrop-filter: blur(20px) saturate(160%) brightness(0.82);
+    border-radius: 10px;
+    box-shadow: 0 6px 8px rgba(0, 0, 0, 0.08);
+    transition:
+      background 0.3s ease,
+      transform 0.4s cubic-bezier(0.22, 0.61, 0.36, 1);
   }
-  .bfs__btn:hover { background: #fffdf8; transform: translateY(-1px); }
+  .bfs__btn:hover { background: rgba(255, 255, 255, 0.18); }
   .bfs__btn:focus-visible {
-    outline: 2px solid rgba(245,241,232,.9);
+    outline: 2px solid var(--lead-blue, #5768ff);
     outline-offset: 3px;
   }
+
+  /* Glow qui s'illumine et suit le curseur — identique aux boutons du site. */
+  .bfs__btn::before,
+  .bfs__btn::after {
+    content: "";
+    position: absolute;
+    inset: -1px;
+    border-radius: inherit;
+    padding: 1px;
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.25s ease;
+  }
+  .bfs__btn::before {
+    background: radial-gradient(
+      96px circle at var(--mx, 50%) var(--my, 50%),
+      var(--site-glow-strong) 0%,
+      var(--site-glow-mid) 26%,
+      var(--site-glow-soft) 52%,
+      var(--site-glow-fade) 70%,
+      transparent 86%
+    );
+  }
+  .bfs__btn::after {
+    background: radial-gradient(
+      120px circle at var(--mx, 50%) var(--my, 50%),
+      var(--site-glow-ambient) 0%,
+      var(--site-glow-outer) 48%,
+      transparent 82%
+    );
+    filter: blur(3px);
+  }
+  .bfs__btn:hover::before,
+  .bfs__btn:hover::after { opacity: 1; }
   .bfs__btn-inner {
     position: relative; display: block; overflow: hidden;
     height: 1.2em; line-height: 1.2em;
@@ -604,12 +640,12 @@
       font-size: clamp(2.6rem, 12vw, 4.6rem); max-width: 100%;
     }
     .bfs__caption-line > span { font-size: clamp(.95rem, 3.8vw, 1.1rem); }
-    .bfs__dock {
-      width: calc(100vw - 2.5rem);
-      /* keep the blur flush to the bottom but lift the button higher */
-      padding: clamp(1.2rem, 4vw, 1.6rem) 1.2rem clamp(3.4rem, 11vw, 4.8rem);
+    .bfs__bottom {
+      padding-left: 1.25rem;
+      padding-right: 1.25rem;
+      /* Bouton remonté sur mobile. */
+      padding-bottom: max(clamp(3.6rem, 12vw, 5.4rem), calc(var(--safe-bottom-offset) + 2.6rem));
     }
-    .bfs__btn { flex: 1; max-width: none; }
   }
 
   @media (max-width: 480px) {

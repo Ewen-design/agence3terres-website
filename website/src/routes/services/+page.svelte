@@ -14,42 +14,38 @@
   ];
 
   const designCards = [
-    { image: "/images/serein_design.webp", alt: "Projet Serein Design", title: "Serein Design", subtitle: "Identité & charte", href: "projet1", tags: ["Logo & charte", "Direction artistique"] },
-    { image: "/images/justx.webp", alt: "Projet JustX", title: "JustX", subtitle: "Identité de marque", href: "projet5", tags: ["Logo & charte", "Naming", "Stratégie"] }
+    { image: "/images/ludo.webp", alt: "Projet Ludosphères", title: "Ludosphères", subtitle: "Identité & charte", href: "projet4", tags: ["Logo & charte", "Direction artistique", "Naming"] },
+    { image: "/images/justx_textile.webp", alt: "Projet JustX", title: "JustX", subtitle: "Identité de marque", href: "projet5", tags: ["Logo & charte", "Naming", "Stratégie"] }
   ];
 
   const studioCards = [
-    { image: "/images/missionX5.webp", alt: "Projet Mission X", title: "Mission X", subtitle: "Univers & 3D", href: "projet6", tags: ["Univers 3D", "Direction artistique"] },
-    { image: "/images/apple_justx.webp", alt: "Projet Ludosphères", title: "Ludosphères", subtitle: "Site d'artiste", href: "projet4", tags: ["Site d'artiste", "Direction artistique"] }
+    { image: "/images/justx_app.webp", alt: "Projet JustX", title: "JustX", subtitle: "Gestion des réseaux sociaux", href: "projet5", tags: ["Réseaux sociaux", "Contenu & montage"] },
+    { image: "/images/ludo.webp", alt: "Projet Ludosphères", title: "Ludosphères", subtitle: "Gestion des réseaux sociaux et montage vidéo", href: "projet4", tags: ["Événementiel", "Réseaux sociaux"] }
   ];
 
   // Digital — sites web & applications : parcours, interface, responsive, dev.
   const digitalSlides = [
-    { image: "/images/moovy_mac.webp", alt: "Site web desktop", label: "Site web", caption: "Des expériences digitales lisibles et sensibles, pensées comme un parcours fluide qui guide vers l'essentiel." },
+    { image: "/images/moovy-ordi.webp", alt: "Site web desktop", label: "Site web", caption: "Des expériences digitales modernes, pensées comme un parcours fluide qui guide vers l'essentiel." },
     { image: "/images/moovy_page.webp", alt: "Design d'interface", label: "Design d'interface", caption: "Chaque écran est composé pour hiérarchiser l'information et guider le regard sans effort." },
-    { image: "/images/tel_moovy2.webp", alt: "Vue mobile responsive", label: "Responsive & mobile", caption: "La même clarté et la même fluidité, du grand écran jusqu'aux vues les plus rapprochées." },
-    { image: "/images/moovy_recherche.webp", alt: "Parcours et recherche", label: "Parcours & recherche", caption: "Une navigation directe : on trouve l'essentiel sans se perdre dans les menus." },
-    { image: "/images/justx_fitness.webp", alt: "Application mobile", label: "Application mobile", caption: "Programmes, suivi et progression réunis dans une application claire et directe." },
-    { image: "/images/moovy.webp", alt: "Recommandation produit", label: "Recommandation produit", caption: "Un moteur de recommandation qui arrive au bon moment, sans surcharge." }
+    { image: "/images/justx-tel.webp", alt: "Vue mobile responsive", label: "Responsive & mobile", caption: "La même clarté et la même fluidité, du grand écran adapté à tous les supports." },
+    { image: "/images/moovy_recherche.webp", alt: "Parcours et recherche", label: "Parcours & recherche", caption: "Des parcours stratégiques pensés pour guider l'utilisateur vers ses objectifs." },
+    { image: "/images/app-justx.webp", alt: "Application mobile", label: "Application mobile", caption: "Des expériences d'application mobiles fluides et intuitives, pensées pour marquer et capter l'attention de l'utilisateur." },
   ];
 
   // Design — identité visuelle : logo, charte, typographie, système cohérent (+ naming & stratégie).
   const designSlides = [
-    { image: "/images/creation_logo_desktop.webp", alt: "Logo et signe", label: "Logo & signe", caption: "Des signes simples et durables, pensés pour installer une présence immédiate et mémorable." },
-    { image: "/images/justx_couleurs.webp", alt: "Identité visuelle", label: "Identité visuelle", caption: "Un territoire visuel complet — couleurs, typographies, compositions — pour une marque cohérente et reconnaissable." },
-    { image: "/images/carte_visite_desktop.webp", alt: "Charte et papeterie", label: "Charte & papeterie", caption: "Du digital à l'imprimé, une même signature visuelle déclinée sur tous les supports." },
-    { image: "/images/serein_design.webp", alt: "Univers de marque", label: "Univers de marque", caption: "Une identité calme, cohérente et fonctionnelle, pensée pour durer." },
-    { image: "/images/logo_justx.webp", alt: "Naming et fondations", label: "Naming & fondations", caption: "Un nom, un ton et des repères clairs qui posent des bases solides pour la marque." },
-    { image: "/images/parfum_ordinateur.webp", alt: "Suivi stratégique", label: "Suivi & stratégie", caption: "Un accompagnement dans la durée — stratégie, suivi détaillé et reportings — pour faire évoluer la marque avec cohérence." }
+     { image: "/images/naming.webp", alt: "Naming et fondations", label: "Naming & fondations", caption: "Un nom, un ton et des repères qui posent des bases solides pour la marque." },
+    { image: "/images/logo-creation.webp", alt: "Logo", label: "Logo", caption: "Création de logo cohérent et déclinable, pensé pour installer une présence immédiate et mémorable." },
+    { image: "/images/justx_couleurs.webp", alt: "Identité visuelle", label: "Identité visuelle", caption: "De la palette de couleurs, aux typographies, nous concevons un univers visuel cohérent, répondant aux valeurs de la marque." },
+    { image: "/images/charte-typo.webp", alt: "Présentation de la typographie", label: "Charte éditoriale", caption: "Une nouvelle manière de communiquer en adaptant le ton et l'expérience." },
+    { image: "/images/parfum_ordinateur.webp", alt: "Suivi stratégique", label: "Suivi & stratégie", caption: "Un accompagnement dans la durée mêlant stratégie, suivi détaillé et reportings, pour faire évoluer la marque avec cohérence." }
   ];
 
   // Studio — toute l'image de la marque : captation, DA, réseaux, contenu, 3D.
   const studioSlides = [
-    { image: "/images/appareil_photo.webp", alt: "Captation photo et vidéo", label: "Captation & événements", caption: "Des images et des récits captés avec justesse pour prolonger l'intensité d'un moment." },
-    { image: "/images/justx.webp", alt: "Direction artistique", label: "Direction artistique", caption: "Une image forte et parfaitement cohérente, au service de la marque." },
-    { image: "/images/telephone_main.webp", alt: "Réseaux sociaux", label: "Réseaux sociaux", caption: "Une ligne éditoriale claire et des formats reconnaissables pour faire vivre la marque au quotidien." },
-    { image: "/images/justx_textile.webp", alt: "Contenu et montage", label: "Contenu & montage", caption: "Des contenus réguliers, montés et diffusés pour engager la communauté." },
-    { image: "/images/missionX5.webp", alt: "Univers 3D", label: "Univers · 3D", caption: "Des univers immersifs déclinés en 3D pour marquer les esprits." },
+    { image: "/images/appareil_photo.webp", alt: "Captation photo et vidéo", label: "Captation & événements", caption: "Une présence événementielle plus forte afin de faire durer un moment inoubliable." },
+    { image: "/images/justx-rs.webp", alt: "Réseaux sociaux", label: "Réseaux sociaux", caption: "Une présence sur les réseaux sociaux posant un univers en faisant connaître la marque." },
+    { image: "/images/justx_textile.webp", alt: "Contenu et montage", label: "Contenu & montage", caption: "Nous créons des contenus vidéos et photos adaptables à chaque marque et à chaque cible." },
     { image: "/images/apple_justx.webp", alt: "Photo produit", label: "Photo produit", caption: "Des visuels soignés qui subliment produits et supports." }
   ];
 </script>
@@ -58,7 +54,7 @@
 
 <PolesHero
   label="Services"
-  finalText="Design, création digitale et studio : trois territoires complémentaires, réunis sous une même direction artistique."
+  finalText="Nos trois pôles, digital, design et studio, permettent d'offrir un accompagnement complet et spécialisé à nos clients."
 />
 
 <ProjectThemePage>
@@ -67,12 +63,12 @@
     <SectionLead lead="3 Terres Digital" />
     <ShowcaseCards cards={digitalCards} />
     <SectionLead
-      text="Notre pôle digital conçoit des sites web et des applications sur mesure. De l'architecture de l'information au design d'interface jusqu'au développement, chaque projet est pensé pour être rapide, clair et désirable — et pour durer dans le temps."
+      text="Notre pôle digital conçoit des sites web et des applications sur mesure. De l'architecture de l'information au design d'interface jusqu'au développement, chaque projet est pensé pour toucher durablement une cible précise."
     />
     <AboutEditorialSingleShowcase
       showCue={false}
       background="#040404"
-      text="Du premier écran jusqu'aux vues les plus rapprochées, la même clarté et la même fluidité, sur desktop comme sur mobile."
+      text="Nos projets sont pensés pour s'adapter sur tous les supports, de manière à répondre aux besoins de nos clients."
       image="/images/justx_app.webp"
       alt="Application JustX Fitness"
       accentImage="/images/tel_moovy3.webp"
@@ -88,15 +84,15 @@
     <SectionLead lead="3 Terres Design" />
     <ShowcaseCards cards={designCards} />
     <SectionLead
-      text="Notre pôle design façonne l'identité visuelle de la marque : logo, charte graphique, typographie et système visuel cohérent, du premier signe jusqu'à chacune de ses déclinaisons. Une démarche à la fois créative et stratégique — nous conseillons et accompagnons chaque marque, du naming au pilotage, pour lui donner une présence claire et durable."
+      text="Notre pôle design façonne l'identité visuelle de la marque : logo, charte graphique, typographie et système visuel cohérent. Une démarche à la fois créative et stratégique. Nous conseillons et accompagnons chaque marque, du naming au pilotage, pour lui donner une présence claire et durable."
     />
     <EditorialFeature
       image="/images/creation_logo_desktop.webp"
       alt="Création de logo et d'identité"
       secondaryImage="/images/carte_visite_desktop.webp"
       secondaryAlt="Papeterie et supports de marque"
-      label="Logo, charte & typographie"
-      text="Un système visuel complet — logo, palette, typographie — qui donne à la marque une présence cohérente et immédiatement reconnaissable, du digital à l'imprimé."
+      label="Système visuel complet"
+      text="Nous concevons des systèmes visuels complets, pensés pour représenter la marque dans un univers global cohérent et moderne."
     />
     <MediaSlider slides={designSlides} />
   </div>
@@ -108,7 +104,7 @@
     <SectionLead lead="3 Terres Studio" />
     <ShowcaseCards cards={studioCards} />
     <SectionLead
-      text="Notre studio produit et orchestre toute l'image de la marque : captation photo et vidéo, couverture d'événements, création et gestion des réseaux sociaux, montage et création de contenu. Le tout au service d'une direction artistique claire et constante."
+      text="Notre studio produit et orchestre toute l'image de la marque : captation photo et vidéo, couverture d'événements, création et gestion des réseaux sociaux, montage et création de contenu. Le tout au service d'une direction artistique claire et durable."
     />
     <EditorialFeature
       reverse={true}
@@ -116,8 +112,8 @@
       alt="Captation photo et vidéo en studio"
       secondaryImage="/images/justx.webp"
       secondaryAlt="Direction artistique de contenu"
-      label="Photo & vidéo"
-      text="On produit et on orchestre tout le contenu d'une marque, du tournage au montage, jusqu'à la diffusion sur les réseaux sociaux."
+      label="Production de contenu"
+      text="Une nouvelle manière de toucher un public ciblé, en produisant des contenus qui prolongent l'expérience de la marque, et intensifient une présence événementielle."
     />
     <MediaSlider slides={studioSlides} />
   </div>

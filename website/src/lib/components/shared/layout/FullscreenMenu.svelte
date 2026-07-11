@@ -30,10 +30,10 @@
   ];
 
   const links = [
-    { label: "Accueil", page: "home", image: "/images/moovy2.webp" },
-    { label: "Services", page: "services", image: "/images/justx.webp" },
-    { label: "Projets", page: "travail", image: "/images/justx_fitness.webp" },
-    { label: "A propos", page: "apropos", image: "/images/missionX5.webp" },
+    { label: "Accueil", page: "home", image: "/images/tel_moovy2.webp" },
+    { label: "Services", page: "services", image: "/images/moovy_mac.webp" },
+    { label: "Projets", page: "travail", image: "/images/cartes-visites.webp" },
+    { label: "A propos", page: "apropos", image: "/images/affiche-moovy.webp" },
     { label: "Contact", page: "contact", image: "/images/agence.webp" }
   ];
 
@@ -42,7 +42,7 @@
       page: "projet3",
       title: projectPages.projet3.title,
       meta: "Projet sélectionné",
-      image: "/images/moovy2.webp",
+      image: "/images/moovy_ipad.webp",
       alt: projectPages.projet3.hero.alt,
       text: projectPages.projet3.hero.summaryMain,
       large: true
@@ -50,7 +50,7 @@
     {
       page: "projet5",
       title: projectPages.projet5.title,
-      image: "/images/justx.webp",
+      image: "/images/justx-tel.webp",
       alt: projectPages.projet5.hero.alt,
       text: projectPages.projet5.hero.summaryMain,
       large: false
@@ -58,7 +58,7 @@
     {
       page: "projet7",
       title: projectPages.projet7.title,
-      image: "/images/apple_justx.webp",
+      image: "/images/justx_app.webp",
       alt: projectPages.projet7.hero.alt,
       text: projectPages.projet7.hero.summaryMain,
       large: false
@@ -74,7 +74,7 @@
     {
       page: "projet4",
       title: projectPages.projet4.title,
-      image: "/images/justx_fitness.webp",
+      image: "/images/ludo.webp",
       alt: projectPages.projet4.hero.alt,
       text: projectPages.projet4.hero.summaryMain,
       large: false
@@ -90,7 +90,7 @@
     {
       page: "services",
       title: "Conception de site web",
-      image: "/images/creation_logo_desktop2.webp",
+      image: "/images/moovy_page.webp",
       alt: "Aperçu service conception de site web",
       text: "Des sites pensés comme des expériences fluides, désirables et précisées dans le détail.",
       large: false
@@ -98,7 +98,7 @@
     {
       page: "contact",
       title: "Contact",
-      image: "/images/contact.webp",
+      image: "/images/agence.webp",
       alt: "Aperçu page contact",
       text: "Un point d'entrée direct pour cadrer votre projet avec clarté et exigence.",
       large: false

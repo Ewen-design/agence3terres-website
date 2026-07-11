@@ -6,7 +6,7 @@
       number: "01",
       title: "Un reflet",
       description: "Nous reflétons l'identité de nos clients avec précision afin de leur proposer les solutions les plus adaptées.",
-      image: "/images/telephone2.webp"
+      image: "/images/test.webp"
     },
     {
       number: "02",
