@@ -300,12 +300,15 @@
     position: relative;
     display: block;
     overflow: hidden;
-    height: 1.2em;
-    line-height: 1.2em;
+    /* Plus de hauteur de ligne : laisse la place à l'accent du « É » (Écrire)
+       qui était rogné en haut par le masque du flip. */
+    height: 1.5em;
+    line-height: 1.5em;
   }
 
   .nav-btn-text {
     display: block;
+    line-height: 1.5em;
     transform: translateY(0%);
     transition: transform 0.45s cubic-bezier(.22,.61,.36,1);
   }
@@ -315,7 +318,7 @@
     position: absolute;
     left: 0;
     top: 0;
-    line-height: 1.2em;
+    line-height: 1.5em;
     transform: translateY(100%);
     transition: transform 0.45s cubic-bezier(.22,.61,.36,1);
     white-space: nowrap;

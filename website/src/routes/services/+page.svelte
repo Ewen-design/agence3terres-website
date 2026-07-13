@@ -5,7 +5,6 @@
   import SectionLead from "$lib/components/poles/SectionLead.svelte";
   import ShowcaseCards from "$lib/components/poles/ShowcaseCards.svelte";
   import MediaSlider from "$lib/components/poles/MediaSlider.svelte";
-  import EditorialFeature from "$lib/components/poles/EditorialFeature.svelte";
   import AboutEditorialSingleShowcase from "$lib/components/apropos/AboutEditorialSingleShowcase.svelte";
 
   const digitalCards = [
@@ -19,7 +18,7 @@
   ];
 
   const studioCards = [
-    { image: "/images/justx_app.webp", alt: "Projet JustX", title: "JustX", subtitle: "Gestion des réseaux sociaux", href: "projet5", tags: ["Réseaux sociaux", "Contenu & montage"] },
+    { image: "/images/justx-pub2.webp", alt: "Projet JustX", title: "JustX", subtitle: "Gestion des réseaux sociaux", href: "projet5", tags: ["Réseaux sociaux", "Contenu & montage"] },
     { image: "/images/ludo.webp", alt: "Projet Ludosphères", title: "Ludosphères", subtitle: "Gestion des réseaux sociaux et montage vidéo", href: "projet4", tags: ["Événementiel", "Réseaux sociaux"] }
   ];
 
@@ -61,19 +60,20 @@
   <!-- ───────── Pôle 01 — Digital (fond noir) ───────── -->
   <div class="project-theme-band">
     <SectionLead lead="3 Terres Digital" />
-    <ShowcaseCards cards={digitalCards} />
+    <ShowcaseCards cards={digitalCards} showSubtitle={false} />
     <SectionLead
-      text="Notre pôle digital conçoit des sites web et des applications sur mesure. De l'architecture de l'information au design d'interface jusqu'au développement, chaque projet est pensé pour toucher durablement une cible précise."
+      text="Des sites web et des applications sur mesure, du design d'interface au développement, pensés pour toucher durablement votre cible."
     />
-    <AboutEditorialSingleShowcase
-      showCue={false}
-      background="#040404"
-      text="Nos projets sont pensés pour s'adapter sur tous les supports, de manière à répondre aux besoins de nos clients."
-      image="/images/justx_app.webp"
-      alt="Application JustX Fitness"
-      accentImage="/images/tel_moovy3.webp"
-      accentAlt="Vue mobile Moovy"
-    />
+    <div class="digital-showcase">
+      <AboutEditorialSingleShowcase
+        showCue={false}
+        showAccent={false}
+        background="#040404"
+        text="Nos projets sont pensés pour s'adapter sur tous les supports, de manière à répondre aux besoins de nos clients."
+        image="/images/apple_justx.webp"
+        alt="Application JustX Fitness"
+      />
+    </div>
     <MediaSlider slides={digitalSlides} />
   </div>
 
@@ -82,39 +82,48 @@
 
   <div class="project-theme-band">
     <SectionLead lead="3 Terres Design" />
-    <ShowcaseCards cards={designCards} />
+    <ShowcaseCards cards={designCards} showSubtitle={false} />
     <SectionLead
-      text="Notre pôle design façonne l'identité visuelle de la marque : logo, charte graphique, typographie et système visuel cohérent. Une démarche à la fois créative et stratégique. Nous conseillons et accompagnons chaque marque, du naming au pilotage, pour lui donner une présence claire et durable."
+      text="Nous façonnons l'identité visuelle de la marque, du logo à la charte et la typographie, pour lui donner une présence claire et durable."
     />
-    <EditorialFeature
-      image="/images/creation_logo_desktop.webp"
-      alt="Création de logo et d'identité"
-      secondaryImage="/images/carte_visite_desktop.webp"
-      secondaryAlt="Papeterie et supports de marque"
-      label="Système visuel complet"
-      text="Nous concevons des systèmes visuels complets, pensés pour représenter la marque dans un univers global cohérent et moderne."
-    />
+    <div class="design-showcase">
+      <AboutEditorialSingleShowcase
+        showCue={false}
+        showGradient={false}
+        showAccent={false}
+        background="#f4f6fc"
+        ink="#121212"
+        inkMuted="rgba(18, 18, 18, 0.66)"
+        text="Nous concevons des systèmes visuels complets, pensés pour représenter la marque dans un univers global cohérent et moderne."
+        image="/images/main-justx.webp"
+        imageDesktop="/images/main-justx-desktop.webp"
+        alt="Création de logo et d'identité"
+      />
+    </div>
     <MediaSlider slides={designSlides} />
   </div>
 
-  <!-- ───────── Pôle 03 — Studio (fond bleu) ───────── -->
-  <ProjectThemeTrigger theme="night" />
+  <!-- ───────── Pôle 03 — Studio (reprend la 1ʳᵉ config : fond noir/dark) ───────── -->
+  <ProjectThemeTrigger theme="dark" />
 
   <div class="project-theme-band">
     <SectionLead lead="3 Terres Studio" />
-    <ShowcaseCards cards={studioCards} />
+    <ShowcaseCards cards={studioCards} showSubtitle={false} />
     <SectionLead
-      text="Notre studio produit et orchestre toute l'image de la marque : captation photo et vidéo, couverture d'événements, création et gestion des réseaux sociaux, montage et création de contenu. Le tout au service d'une direction artistique claire et durable."
+      text="Nous produisons toute l'image de la marque : captation, réseaux sociaux, montage et contenu, au service d'une direction artistique durable."
     />
-    <EditorialFeature
-      reverse={true}
-      image="/images/appareil_photo.webp"
-      alt="Captation photo et vidéo en studio"
-      secondaryImage="/images/justx.webp"
-      secondaryAlt="Direction artistique de contenu"
-      label="Production de contenu"
-      text="Une nouvelle manière de toucher un public ciblé, en produisant des contenus qui prolongent l'expérience de la marque, et intensifient une présence événementielle."
-    />
+    <div class="studio-showcase">
+      <AboutEditorialSingleShowcase
+        showCue={false}
+        showAccent={false}
+        background="#040404"
+        imageFit="contain"
+        imagePosition="right top"
+        text="Chaque contenu est produit avec le même soin, pour prolonger l'expérience de la marque et renforcer sa présence, de l'événement aux réseaux."
+        image="/images/main-justx.webp"
+        alt="Contenu et réseaux sociaux JustX"
+      />
+    </div>
     <MediaSlider slides={studioSlides} />
   </div>
 </ProjectThemePage>
@@ -136,5 +145,102 @@
   /* Un peu plus d'air sous le paragraphe d'intro, avant le bloc suivant. */
   .project-theme-band :global(.sl--text-only) {
     padding-bottom: clamp(3rem, 5vw, 5rem);
+  }
+
+  /* ── Showcase du pôle Studio (image portrait affichée en entier) ──────────
+     Desktop : on agrandit le cadre média pour que l'image portrait (collée à
+     gauche via imagePosition) soit plus grande. */
+  @media (min-width: 901px) {
+    .studio-showcase :global(.about-editorial-single-showcase__media) {
+      height: 168vh;
+    }
+    .studio-showcase :global(.about-editorial-single-showcase__floor) {
+      top: 168vh;
+    }
+    /* Image bien collée au bord droit. */
+    .studio-showcase :global(.about-editorial-single-showcase__media img) {
+      object-position: right center;
+    }
+    /* Texte à gauche mais décalé vers la droite (dans la bande noire), un peu
+       plus bas. On l'étale sur 2 colonnes et on élargit sa largeur max. */
+    .studio-showcase :global(.about-editorial-single-showcase__text-block) {
+      grid-column: 1 / 3;
+      justify-self: start;
+      margin-left: clamp(3rem, 8vw, 9rem);
+      padding-top: clamp(16rem, 26vh, 24rem);
+    }
+    .studio-showcase :global(.about-editorial-single-showcase__text) {
+      max-width: 27ch;
+    }
+  }
+
+  /* Mobile : l'image (contain) est pleine largeur mais plus courte → on remonte
+     le bloc de texte pour qu'il rechevauche la photo. */
+  @media (max-width: 900px) {
+    .studio-showcase :global(.about-editorial-single-showcase__text-block) {
+      margin-top: -30vh;
+    }
+    /* Texte du showcase design légèrement descendu sur mobile. */
+    .design-showcase :global(.about-editorial-single-showcase__text-block) {
+      margin-top: 5vh;
+    }
+    /* Photo du showcase digital décalée un peu vers la droite sur mobile. */
+    .digital-showcase :global(.about-editorial-single-showcase__media img) {
+      object-position: 35% center;
+    }
+  }
+
+  /* Même espace vide sous les trois textes de showcase : chaque section se cale
+     sur son contenu avec la même rangée basse (16vh). */
+  .digital-showcase :global(.about-editorial-single-showcase),
+  .design-showcase :global(.about-editorial-single-showcase),
+  .studio-showcase :global(.about-editorial-single-showcase) {
+    min-height: 0;
+  }
+  .digital-showcase :global(.about-editorial-single-showcase__content),
+  .design-showcase :global(.about-editorial-single-showcase__content),
+  .studio-showcase :global(.about-editorial-single-showcase__content) {
+    grid-template-rows: 100vh auto 16vh;
+    min-height: 0;
+  }
+
+  /* ── Showcase du pôle Digital (desktop) : texte plutôt à gauche, largeur
+     inchangée (on étale le bloc pour ne pas le rogner à la colonne 1). ─────── */
+  @media (min-width: 901px) {
+    .digital-showcase :global(.about-editorial-single-showcase__text-block) {
+      grid-column: 1 / -1;
+      justify-self: start;
+      margin-left: clamp(1.5rem, 5.5vw, 5.5rem);
+    }
+  }
+
+  /* ── Showcase du pôle Design (desktop) : la photo (200vh, cadrage inchangé)
+     occupe toute la 1ʳᵉ rangée ; le texte passe juste en dessous, à gauche,
+     sans chevauchement. ──────────────────────────────────────────────────── */
+  @media (min-width: 901px) {
+    .design-showcase :global(.about-editorial-single-showcase__media) {
+      height: 200vh;
+    }
+    .design-showcase :global(.about-editorial-single-showcase__floor) {
+      top: 200vh;
+    }
+    .design-showcase :global(.about-editorial-single-showcase__content) {
+      grid-template-rows: 200vh auto 16vh;
+    }
+    .design-showcase :global(.about-editorial-single-showcase__text-block) {
+      /* On étale le bloc sur toute la largeur pour que le `max-width` du texte
+         (ci-dessous) pilote réellement sa largeur (sinon il reste bloqué à la
+         largeur de la colonne 1). */
+      grid-column: 1 / -1;
+      justify-self: start;
+      margin-left: clamp(1.5rem, 5.5vw, 5.5rem);
+      /* Texte remonté : superposition sur le bas de la photo. */
+      padding-top: 0;
+      margin-top: -38vh;
+    }
+    /* Texte plus large (desktop uniquement). */
+    .design-showcase :global(.about-editorial-single-showcase__text) {
+      max-width: 32ch;
+    }
   }
 </style>

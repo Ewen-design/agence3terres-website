@@ -9,7 +9,7 @@
 
   const leftImages = [
     {
-      src: "images/moovy_recherche.webp",
+      src: "images/tel_moovy2.webp",
       alt: "",
       ratio: "portrait",
       height: 38
@@ -30,13 +30,13 @@
 
   const centerImages = [
     {
-      src: "images/tel_moovy2.webp",
+      src: "images/main-justx-desktop.webp",
       alt: "",
       ratio: "landscape",
       height: 28
     },
     {
-      src: "images/justx_app.webp",
+      src: "images/justx-pub2.webp",
       alt: "",
       ratio: "portrait",
       height: 42

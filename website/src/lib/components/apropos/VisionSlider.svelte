@@ -208,7 +208,7 @@
 
   <div class="vision-header">
     <h2 use:reveal>Notre vision</h2>
-    <p use:reveal={{ delay: 120 }}>Une collection de principes qui guident chacune de nos créations.</p>
+    <p use:reveal={{ delay: 120 }}>Une collection de principes qui guident <br class="br-m" />chacune de nos créations.</p>
   </div>
 
   <div bind:this={section}></div>
@@ -227,9 +227,9 @@
           on:mousemove={handleMove}
         >
           <div class="quote">
-            <span class="mark top">"</span>
+            <span class="mark top" aria-hidden="true">“</span>
             <p>{quote.text}</p>
-            <span class="mark bottom">"</span>
+            <span class="mark bottom" aria-hidden="true">”</span>
           </div>
           <div class="author">{quote.author}</div>
         </div>
@@ -402,23 +402,35 @@
     line-height: 1.6;
   }
 
+  /* Guillemets typographiques, version un peu plus stylisée : serif italique,
+     plus grands, teinte douce. */
   .mark {
     position: absolute;
-    font-family: "Inter", sans-serif;
-    font-size: 3rem;
-    font-weight: 400;
-    opacity: 0.35;
-    color: white;
+    font-family: Georgia, "Times New Roman", "Times", serif;
+    font-style: italic;
+    font-size: 5.4rem;
+    font-weight: 500;
+    line-height: 1;
+    opacity: 0.3;
+    color: #fff;
+    pointer-events: none;
+    user-select: none;
   }
 
   .mark.top {
-    top: -30px;
-    left: -20px;
+    top: -46px;
+    left: -26px;
   }
 
   .mark.bottom {
-    bottom: -40px;
-    right: -20px;
+    /* Le glyphe ” se dessine en haut de sa case : on l'ancre plus bas. */
+    bottom: -74px;
+    right: -22px;
+  }
+
+  /* Saut de ligne du sous-titre : uniquement sur mobile. */
+  .br-m {
+    display: none;
   }
 
   .author {
@@ -455,6 +467,17 @@
 
     .quote p {
       font-size: 1.25rem;
+    }
+
+    .mark {
+      font-size: 4.2rem;
+    }
+    .mark.top { top: -36px; left: -14px; }
+    .mark.bottom { bottom: -60px; right: -12px; }
+
+    /* Sous-titre forcé sur deux lignes en mobile. */
+    .br-m {
+      display: inline;
     }
 
     .card::before {

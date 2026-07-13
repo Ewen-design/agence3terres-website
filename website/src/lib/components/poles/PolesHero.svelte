@@ -15,6 +15,7 @@
     "Design, création digitale et studio : trois territoires complémentaires, réunis sous une même direction artistique.";
   export let image = "/images/agence.webp";
   export let afterImage = "/images/agence2.webp";
+  export let showAfterImage = true;
 
   let heroSection;
   let heroStage;
@@ -306,7 +307,7 @@
   </section>
 
   <section class="after-section">
-    <div class="after-grid">
+    <div class="after-grid" class:after-grid--no-image={!showAfterImage}>
       <div class="after-text" bind:this={afterTextEl}>
         <h2 use:reveal>{finalText}</h2>
       </div>
@@ -511,6 +512,14 @@
     grid-template-columns: minmax(0, 1.08fr) minmax(320px, 0.78fr);
     gap: clamp(1.4rem, 4vw, 4.5rem);
     align-items: start;
+  }
+
+  /* Hero de la page services : petite image retirée → texte seul, pleine largeur. */
+  .after-grid--no-image {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .after-grid--no-image .after-image {
+    display: none;
   }
 
   .after-text {

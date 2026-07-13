@@ -7,13 +7,21 @@
   export let text = "";
   export let mutedText = "";
   export let image = "";
+  // Image spécifique desktop (≥901px) ; si vide, on garde `image` partout.
+  export let imageDesktop = "";
   export let alt = "";
+  // "cover" (défaut, plein cadre rogné) ou "contain" (image entière visible).
+  export let imageFit = "cover";
+  // Position de l'image quand elle ne remplit pas tout le cadre (utile en contain).
+  export let imagePosition = "center";
   export let accentImage = "/images/moovy2.webp";
   export let accentAlt = "Visuel 3 Terres";
+  export let showAccent = true;
   export let mediaMinHeight = "32rem";
   export let ctaLabel = "";
   export let ctaHref = "";
   export let showCue = true;
+  export let showGradient = true;
   export let background = "#000";
   export let ink = "#f4efe6";
   export let inkMuted = "rgba(245, 241, 232, 0.62)";
@@ -37,21 +45,28 @@
   }
 </script>
 
-<section class="about-editorial-single-showcase" style={`--ase-bg:${background}; --ase-ink:${ink}; --ase-muted:${inkMuted};`}>
+<section class="about-editorial-single-showcase" style={`--ase-bg:${background}; --ase-ink:${ink}; --ase-muted:${inkMuted}; --ase-media-fit:${imageFit}; --ase-media-pos:${imagePosition};`}>
   <figure
     class="about-editorial-single-showcase__media"
     style={`--about-editorial-single-showcase-media-min-height:${mediaMinHeight};`}
   >
-    <img
-      bind:this={mediaImgEl}
-      src={image}
-      alt={alt}
-      loading="lazy"
-      decoding="async"
-      class:is-loaded={mediaLoaded}
-      on:load={() => (mediaLoaded = true)}
-    />
-    <div class="about-editorial-single-showcase__gradient" aria-hidden="true"></div>
+    <picture>
+      {#if imageDesktop}
+        <source media="(min-width: 901px)" srcset={imageDesktop} />
+      {/if}
+      <img
+        bind:this={mediaImgEl}
+        src={image}
+        alt={alt}
+        loading="lazy"
+        decoding="async"
+        class:is-loaded={mediaLoaded}
+        on:load={() => (mediaLoaded = true)}
+      />
+    </picture>
+    {#if showGradient}
+      <div class="about-editorial-single-showcase__gradient" aria-hidden="true"></div>
+    {/if}
   </figure>
 
   <!-- Static solid backstop that OVERSHOOTS the media's bottom edge. The
@@ -68,9 +83,11 @@
       </div>
     {/if}
 
-    <figure class="about-editorial-single-showcase__accent" use:reveal>
-      <img src={accentImage} alt={accentAlt} loading="lazy" decoding="async" />
-    </figure>
+    {#if showAccent}
+      <figure class="about-editorial-single-showcase__accent" use:reveal>
+        <img src={accentImage} alt={accentAlt} loading="lazy" decoding="async" />
+      </figure>
+    {/if}
 
     <div class="about-editorial-single-showcase__text-block">
       {#if label}
@@ -118,10 +135,15 @@
     background: var(--ase-bg, #000);
   }
 
+  .about-editorial-single-showcase__media picture {
+    display: contents;
+  }
+
   .about-editorial-single-showcase__media img {
     width: 100%;
     height: 100%;
-    object-fit: cover;
+    object-fit: var(--ase-media-fit, cover);
+    object-position: var(--ase-media-pos, center);
     display: block;
     opacity: 0;
     transform: scale(1.04);

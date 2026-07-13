@@ -7,6 +7,7 @@
   // survol, bouton "+" avec glow, dézoom doux. Pas de slider, pas de texte au-dessus.
   export let cards = [];
   export let ctaLabel = "Découvrir";
+  export let showSubtitle = true;
 
   function open(href) {
     if (href) navigate(href);
@@ -58,7 +59,7 @@
           <span class="pc-title-flip" data-text={card.cta ?? ctaLabel} aria-hidden="true">
             <span class="pc-title-text">{card.title}</span>
           </span>
-          {#if card.subtitle}<span class="pc-subtitle">{card.subtitle}</span>{/if}
+          {#if showSubtitle && card.subtitle}<span class="pc-subtitle">{card.subtitle}</span>{/if}
         </div>
 
         <span class="pc-plus" aria-hidden="true">
