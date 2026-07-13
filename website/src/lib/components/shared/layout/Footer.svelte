@@ -179,12 +179,9 @@
     flex-direction: column;
     gap: clamp(2rem, 5vw, 4rem);
     padding-bottom: max(clamp(1rem, 2vw, 1.8rem), var(--safe-bottom-offset));
-    opacity: 0;
-    transform: translate3d(0, 18px, 0);
-    transition:
-      opacity 0.95s cubic-bezier(.22,.61,.36,1) 0.08s,
-      transform 0.95s cubic-bezier(.22,.61,.36,1) 0.08s;
-    will-change: opacity, transform;
+    /* Pas de will-change/opacity/transform ici : ils feraient de .footer-shell
+       un "backdrop root" qui exclut .footer-bg → le backdrop-filter du bouton
+       n'aurait rien à flouter. Le fondu du footer est porté par .footer opacity. */
   }
 
   .hero-block {
@@ -394,7 +391,7 @@
 
   .footer-shell {
     opacity: 1;
-    transform: translate3d(0, 0, 0);
+    transform: none;
   }
 
   @media (max-width: 768px) {

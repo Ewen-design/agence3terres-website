@@ -9,8 +9,16 @@
   let bgVisible = false;
   let fallbackTimer;
 
+  // Préchauffage du backdrop-filter (même approche que le header) : évite que le
+  // blur des boutons "charge" mal / apparaisse en retard au premier rendu.
+  let blurWarm = false;
+  let blurWarmTimer;
+
   onMount(() => {
     if (!browser) return;
+
+    requestAnimationFrame(() => requestAnimationFrame(() => (blurWarm = true)));
+    blurWarmTimer = setTimeout(() => (blurWarm = false), 9000);
 
     const reduce = window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches;
     if (reduce) {
@@ -39,6 +47,7 @@
 
     return () => {
       clearTimeout(fallbackTimer);
+      clearTimeout(blurWarmTimer);
       window.removeEventListener("preloader:content-reveal", onReveal);
       window.removeEventListener("preloader:done", onReveal);
     };
@@ -60,6 +69,13 @@
 
 <h1 class="seo-page-title">Contact - Agence 3 Terres</h1>
 
+{#if blurWarm}
+  <div class="contact-blur-prewarm" aria-hidden="true">
+    <span></span>
+    <span></span>
+  </div>
+{/if}
+
 <section class="contact">
   <div
     class="contact-bg"
@@ -69,9 +85,9 @@
   <div class="contact-overlay"></div>
 
   <div class="contact-content">
-    <div class="contact-shell" use:reveal>
+    <div class="contact-shell">
       <div class="hero-copy">
-        <h2>Parlons <span class="muted">de votre projet.</span></h2>
+        <h2 use:reveal>Parlons <span class="muted">de votre projet.</span></h2>
 
         <a
           class="nav-btn contact-button"
@@ -208,6 +224,37 @@
     color: rgba(255, 255, 255, 0.42);
   }
 
+  /* Préchauffage hors-écran du backdrop-filter (même technique que le header). */
+  .contact-blur-prewarm {
+    position: fixed;
+    top: -200px;
+    left: -200px;
+    z-index: -1;
+    display: flex;
+    gap: 0.6rem;
+    opacity: 0;
+    pointer-events: none;
+  }
+  .contact-blur-prewarm span {
+    display: block;
+    height: 60px;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.11);
+    backdrop-filter: blur(20px) saturate(160%) brightness(0.82);
+    -webkit-backdrop-filter: blur(20px) saturate(160%) brightness(0.82);
+    transform: translateZ(0);
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+  }
+  .contact-blur-prewarm span:nth-child(1) { width: 200px; }
+  .contact-blur-prewarm span:nth-child(2) { width: 56px; }
+  @media (max-width: 768px) {
+    .contact-blur-prewarm span {
+      backdrop-filter: blur(12px) saturate(130%);
+      -webkit-backdrop-filter: blur(12px) saturate(130%);
+    }
+  }
+
   /* Bouton verre + glow + flip — identique au footer. */
   .nav-btn {
     font-family: "Inter", sans-serif;
@@ -223,6 +270,11 @@
     background: rgba(255, 255, 255, 0.11);
     backdrop-filter: blur(20px) saturate(160%) brightness(0.82);
     -webkit-backdrop-filter: blur(20px) saturate(160%) brightness(0.82);
+    /* Mêmes hints GPU que le bouton header/footer (init propre du backdrop-filter) */
+    will-change: transform, opacity;
+    transform: translateZ(0);
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
     border-radius: 10px;
     box-shadow: 0 6px 8px rgba(0, 0, 0, 0.04);
     transition:
