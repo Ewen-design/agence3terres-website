@@ -28,17 +28,10 @@
   }
 
   const footerImages = {
-    "/": "/images/justx.webp",
+    "/": "/images/justx-pub2.webp",
     "/services": "/images/creation_logo_desktop2.webp",
     "/travail": "/images/cartes-visites.webp",
     "/apropos": "/images/moovy.webp",
-    "/contact": "/images/justx.webp",
-    "/projet1": "/images/parfum4.webp",
-    "/projet3": "/images/telephone_main.webp",
-    "/projet4": "/images/carte-copie.webp",
-    "/projet5": "/images/logo_justx.webp",
-    "/projet6": "/images/missionx-hero-agency.jpg",
-    "/projet7": "/images/telephone3.webp"
   };
 
   $: pathname = $page.url.pathname.replace(/\/+$/, "") || "/";

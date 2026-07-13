@@ -8,49 +8,44 @@
   import Hero from "$lib/components/home/Hero.svelte";
   import IntroSlider from "$lib/components/home/IntroSlider.svelte";
   import FaqAccordion from "$lib/components/home/FaqAccordion.svelte";
-  import BlurFocusSlider from "$lib/components/slider/BlurFocusSlider.svelte";
+  import ProjectScrollShowcase from "$lib/components/home/ProjectScrollShowcase.svelte";
 
   const hsliderSlides = [
     {
       title: "Moovy",
       description: "Recommandation de films\nselon ses envies.",
-      image: "/images/tel_moovy2.webp",
+      images: ["/images/moovy_mac.webp", "/images/tel_moovy2.webp", "/images/moovy_recherche.webp"],
       href: "/projet3"
     },
     {
       title: "JustX",
       description: "Marque sport, programmes\net gamme textile.",
-      image: "/images/justx_textile.webp",
+      images: ["/images/justx-pub2.webp", "/images/apple_justx.webp", "/images/tel_justx.webp"],
       href: "/projet5"
     },
     {
       title: "JustX\nFitness",
       description: "Planifier séances, suivre\neffort et progression.",
-      image: "/images/justx_app.webp",
+      images: ["/images/justx_app.webp", "/images/justx-tel.webp", "/images/justx_couleurs.webp"],
       href: "/projet7"
     },
     {
       title: "Mission X",
       description: "Jeu mobile, détectives\ncontre voleurs.",
-      image: "/images/jeu_mockup.webp",
+      images: ["/images/jeu_mockup.webp", "/images/missionX5.webp", "/images/missionx1.webp"],
       href: "/projet6"
     },
     {
       title: "Ludosphères",
       description: "Site d'artiste pour\noeuvres peintes.",
-      image: "/images/apple_justx.webp",
+      images: ["/images/ludo.webp", "/images/ludo.webp", "/images/ludo.webp"],
       href: "/projet4"
-    },
-    {
-      title: "Serein\nDesign",
-      description: "Univers premium, identité\nclaire et sensible.",
-      image: "/images/serein_design.webp",
-      href: "/projet1"
     },
     {
       title: "Votre\nprojet ?",
       description: "Approche sur mesure,\nsingularité et impact.",
-      image: "/images/agence.webp",
+      images: ["/images/agence.webp"],
+      full: true,
       href: "/contact",
       cta: "Nous contacter"
     }
@@ -65,5 +60,5 @@
 />
 
 <IntroSlider />
-<BlurFocusSlider slides={hsliderSlides} />
+<ProjectScrollShowcase slides={hsliderSlides} />
 <FaqAccordion />

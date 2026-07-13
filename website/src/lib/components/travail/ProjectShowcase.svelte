@@ -21,7 +21,7 @@
       title: "JustX",
       category: "Marque de sport",
       lead: "Un univers sportif plus direct, plus fort et plus personnel.",
-      image: "/images/justx.webp",
+      image: "/images/justx-pub2.webp",
       page: "projet5",
       button: "Voir le projet"
     },
