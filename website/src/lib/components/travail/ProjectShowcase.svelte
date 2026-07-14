@@ -339,6 +339,14 @@
       gap: 2px;
     }
 
+    /* Moins de vide entre le dernier projet et la partie contact sur mobile. */
+    .projects-grid:not(.is-full) {
+      padding-bottom: clamp(1.4rem, 4vw, 2.5rem);
+    }
+    .projects-grid.is-full {
+      padding-top: clamp(1.4rem, 4vw, 2.5rem);
+    }
+
     .p-card {
       aspect-ratio: 3 / 4;
     }

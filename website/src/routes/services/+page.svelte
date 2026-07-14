@@ -1,6 +1,5 @@
 <script>
   import ProjectThemePage from "$lib/components/projets/shared/ProjectThemePage.svelte";
-  import ProjectThemeTrigger from "$lib/components/projets/shared/ProjectThemeTrigger.svelte";
   import PolesHero from "$lib/components/poles/PolesHero.svelte";
   import SectionLead from "$lib/components/poles/SectionLead.svelte";
   import ShowcaseCards from "$lib/components/poles/ShowcaseCards.svelte";
@@ -58,7 +57,7 @@
 
 <ProjectThemePage>
   <!-- ───────── Pôle 01 — Digital (fond noir) ───────── -->
-  <div class="project-theme-band band-nuance-dark">
+  <div class="project-theme-band band-nuance-dark theme-dark">
     <SectionLead lead="3 Terres Digital" />
     <ShowcaseCards cards={digitalCards} showSubtitle={false} />
     <SectionLead
@@ -78,9 +77,7 @@
   </div>
 
   <!-- ───────── Pôle 02 — Design (fond blanc) ───────── -->
-  <ProjectThemeTrigger theme="light" />
-
-  <div class="project-theme-band band-nuance-light">
+  <div class="project-theme-band band-nuance-light theme-light">
     <SectionLead lead="3 Terres Design" />
     <ShowcaseCards cards={designCards} showSubtitle={false} />
     <SectionLead
@@ -104,9 +101,7 @@
   </div>
 
   <!-- ───────── Pôle 03 — Studio (reprend la 1ʳᵉ config : fond noir/dark) ───────── -->
-  <ProjectThemeTrigger theme="dark" />
-
-  <div class="project-theme-band band-nuance-dark">
+  <div class="project-theme-band band-nuance-dark theme-dark">
     <SectionLead lead="3 Terres Studio" />
     <ShowcaseCards cards={studioCards} showSubtitle={false} />
     <SectionLead
@@ -120,7 +115,7 @@
         imageFit="contain"
         imagePosition="right top"
         text="Chaque contenu est produit avec le même soin, pour prolonger l'expérience de la marque et renforcer sa présence, de l'événement aux réseaux."
-        image="/images/main-justx.webp"
+        image="/images/justx-ipads.webp"
         alt="Contenu et réseaux sociaux JustX"
       />
     </div>
@@ -193,8 +188,10 @@
   /* Mobile : l'image (contain) est pleine largeur mais plus courte → on remonte
      le bloc de texte pour qu'il rechevauche la photo. */
   @media (max-width: 900px) {
+    /* L'image (contain, ratio paysage) n'occupe que ~30vh en haut du cadre média :
+       on remonte davantage le texte pour supprimer le grand vide sous la photo. */
     .studio-showcase :global(.about-editorial-single-showcase__text-block) {
-      margin-top: -30vh;
+      margin-top: -56vh;
     }
     /* Texte du showcase design légèrement descendu sur mobile. */
     .design-showcase :global(.about-editorial-single-showcase__text-block) {

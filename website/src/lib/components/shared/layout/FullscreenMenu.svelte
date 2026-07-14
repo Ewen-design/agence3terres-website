@@ -279,12 +279,24 @@
 
     navigating = true;
 
+    // Mark the navigation "silent": the full-screen menu already covers the page
+    // swap, so the layout's page-level fade transition is redundant here — it only
+    // added latency (goto used to wait on the ~300ms enter fade playing behind the
+    // opaque menu, then a ~520ms exit fade after). Silent nav skips both, so the
+    // route changes near-instantly, client-side.
     try {
-      await navigate(path === "/" ? "home" : path.replace(/^\//, ""));
-    } finally {
-      open = false;
-      finishClose();
+      await navigate(path === "/" ? "home" : path.replace(/^\//, ""), { silent: true });
+    } catch {
+      // navigate() logs its own errors.
     }
+
+    // The destination is now rendered underneath the (still-covering) menu, so the
+    // user never sees the previous page. Only now play the smooth close animation,
+    // which wipes the menu away to reveal the new page. Silent nav keeps the wait
+    // above short, so this stays fast and reactive.
+    navigating = false;
+    open = false;
+    startClose();
   }
 
   async function handleClick(link) {

@@ -14,6 +14,14 @@
   const panelEls = [];
   let raf = 0;
 
+  // Desktop : seul le dock est sticky (position: sticky; bottom → il flotte puis
+  // se pose). Mobile : image plus courte (pour ne pas être trop haute), donc le
+  // sticky-bottom ne pourrait pas flotter → on épingle le dock au bas de l'écran
+  // (overlay 100lvh de SliderDock), qui fonctionne quelle que soit la hauteur.
+  let isMobile = false;
+  let mqMobile;
+  const onMq = (e) => (isMobile = e.matches);
+
   const padLeft = () => (track ? parseFloat(getComputedStyle(track).scrollPaddingLeft) || 0 : 0);
 
   function updateActive() {
@@ -63,12 +71,19 @@
   }
 
   onMount(() => {
-    if (!browser || !track) return;
-    track.addEventListener("scroll", onScroll, { passive: true });
-    requestAnimationFrame(updateActive);
+    if (!browser) return;
+    mqMobile = window.matchMedia("(max-width: 768px)");
+    isMobile = mqMobile.matches;
+    mqMobile.addEventListener?.("change", onMq);
+    if (track) {
+      track.addEventListener("scroll", onScroll, { passive: true });
+      requestAnimationFrame(updateActive);
+    }
   });
   onDestroy(() => {
-    if (browser && track) track.removeEventListener("scroll", onScroll);
+    if (!browser) return;
+    mqMobile?.removeEventListener?.("change", onMq);
+    if (track) track.removeEventListener("scroll", onScroll);
     if (raf) cancelAnimationFrame(raf);
     if (scrollRaf) cancelAnimationFrame(scrollRaf);
   });
@@ -96,20 +111,66 @@
     {/each}
   </div>
 
-  <SliderDock
-    count={slides.length}
-    {active}
-    interval={5200}
-    label="visuels du pôle"
-    on:goto={(e) => goTo(e.detail)}
-  />
+  {#if isMobile}
+    <!-- Mobile : dock épinglé au bas de l'écran (overlay), fonctionne avec une
+         image de hauteur normale. -->
+    <SliderDock
+      count={slides.length}
+      {active}
+      interval={5200}
+      label="visuels du pôle"
+      on:goto={(e) => goTo(e.detail)}
+    />
+  {:else}
+    <!-- Desktop : seul le dock est sticky (`position: sticky; bottom`) → il flotte
+         en bas du viewport pendant qu'on scrolle le composant, puis se pose à sa
+         position naturelle (sous les légendes). Le contenu défile normalement. -->
+    <div class="ms-dock">
+      <SliderDock
+        count={slides.length}
+        {active}
+        interval={5200}
+        label="visuels du pôle"
+        sticky={false}
+        on:goto={(e) => goTo(e.detail)}
+      />
+    </div>
+  {/if}
 </section>
 {/if}
 
 <style>
   .ms {
+    position: relative;
     background: transparent;
     padding: clamp(2rem, 4vw, 4rem) 0 clamp(3rem, 6vw, 6rem);
+  }
+
+  /* SEUL le dock est sticky (desktop ET mobile) : `position: sticky; bottom` → le
+     dock flotte au bas du viewport pendant qu'on scrolle le composant, puis se
+     pose à sa position naturelle (sous les légendes) au bas du composant. Le
+     contenu (rail + légendes) défile normalement. */
+  .ms-dock {
+    position: sticky;
+    bottom: max(clamp(1.1rem, 3vh, 2rem), var(--safe-bottom-offset, 1rem));
+    z-index: 5;
+  }
+
+  /* Desktop : image haute (le dock flotte par-dessus le média), section plus
+     haute que le viewport (course du flottement), et `margin-top` pour rétablir
+     l'espace au-dessus du slider entre les sections. */
+  @media (min-width: 769px) {
+    .ms {
+      min-height: calc(100lvh + 24vh);
+      margin-top: clamp(4rem, 9vh, 8rem);
+    }
+    .ms-track {
+      grid-auto-columns: min(84%, 78rem);
+    }
+    .ms-media {
+      aspect-ratio: auto;
+      height: min(72vh, 760px);
+    }
   }
 
   .ms-head {
@@ -136,7 +197,8 @@
     display: grid;
     grid-auto-flow: column;
     grid-auto-columns: min(60%, 56rem);
-    gap: clamp(1rem, 1.8vw, 1.6rem);
+    /* Plus d'espace entre les images du slider. */
+    gap: clamp(1.5rem, 3.5vw, 3.5rem);
     overflow-x: auto;
     /* Lock the track to horizontal scrolling only. Without an explicit
        overflow-y, `overflow-x: auto` forces overflow-y to compute to `auto`
@@ -213,12 +275,32 @@
     transition: color var(--project-theme-transition, 920ms cubic-bezier(0.16, 1, 0.3, 1));
   }
 
+  /* Mobile : image de hauteur normale (pas trop haute) et contenu centré ; le
+     dock est épinglé au bas de l'écran (overlay, cf. markup) tant qu'on parcourt
+     le composant. La section est un peu plus haute que le viewport pour laisser
+     l'épinglage jouer. */
   @media (max-width: 768px) {
+    .ms {
+      min-height: calc(100lvh + 14vh);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
     .ms-track {
       grid-auto-columns: 86%;
     }
     .ms-media {
-      aspect-ratio: 4 / 3;
+      aspect-ratio: auto;
+      height: min(48vh, 420px);
+    }
+    /* Réglage du dock épinglé SANS toucher au contenu (l'overlay est en `absolute`,
+       hors flux) :
+       - `top` négatif → l'épinglage démarre plus tôt / plus haut dans le scroll ;
+       - `bottom` positif → l'overlay se termine plus haut, donc le dock se pose plus
+         près du bas des slides (moins de vide en fin de course). */
+    .ms :global(.sd-overlay) {
+      top: -42vh;
+      bottom: 8vh;
     }
   }
 

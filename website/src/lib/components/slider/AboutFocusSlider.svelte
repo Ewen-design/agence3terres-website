@@ -23,4 +23,4 @@
   ];
 </script>
 
-<ProjectScrollShowcase {slides} />
+<ProjectScrollShowcase {slides} mobileCaptionBottom />

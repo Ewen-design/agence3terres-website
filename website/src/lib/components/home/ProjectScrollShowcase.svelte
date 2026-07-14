@@ -7,6 +7,9 @@
   // slides: [{ title, description, href, cta?, images: [hero, half1, half2] }]
   export let slides = [];
   export let ctaLabel = "Voir le projet";
+  // Variante mobile : titre en haut, mais le petit texte descend dans la partie
+  // basse (utilisé uniquement par le grand slider de la page « à propos »).
+  export let mobileCaptionBottom = false;
   const N = slides.length;
 
   // Glow qui suit le curseur — même effet que les autres boutons du site.
@@ -183,7 +186,7 @@
 </script>
 
 {#if N > 0}
-<section class="ps" bind:this={sectionEl} aria-label="Sélection de projets">
+<section class="ps" class:ps--mcap-bottom={mobileCaptionBottom} bind:this={sectionEl} aria-label="Sélection de projets">
   <!-- Pile d'images qui défile normalement (aucun sticky sur les images) -->
   <div class="ps__stack">
     {#each slides as slide, i}
@@ -262,18 +265,18 @@
         {/each}
       </div>
 
-      <!-- Dock de pagination (points + lecture auto), fixé en bas de l'UI. -->
-      <div class="ps__dock">
-        <SliderDock
-          count={N}
-          active={activeIndex}
-          interval={5200}
-          label="projets"
-          on:goto={(e) => goTo(e.detail)}
-        />
-      </div>
     </div>
   </div>
+
+  <!-- Dock de pagination (points + lecture auto). Il gère lui-même son
+       épinglage (overlay sticky par le haut) et sa stabilité vs barre Safari. -->
+  <SliderDock
+    count={N}
+    active={activeIndex}
+    interval={5200}
+    label="projets"
+    on:goto={(e) => goTo(e.detail)}
+  />
 </section>
 {/if}
 
@@ -608,24 +611,6 @@
   .ps__btn:hover .ps__btn-text { transform: translateY(-100%); }
   .ps__btn:hover .ps__btn-inner::after { transform: translateY(0); }
 
-  /* ── Dock de pagination (fixé en bas de l'UI épinglée) ──────────────────── */
-  .ps__dock {
-    position: absolute;
-    left: 0;
-    right: 0;
-    bottom: max(clamp(1rem, 3vh, 1.9rem), var(--safe-bottom-offset));
-    z-index: 6;
-    display: flex;
-    justify-content: center;
-    pointer-events: none;
-  }
-  /* L'UI est déjà épinglée : on annule le sticky interne du dock. */
-  .ps__dock :global(.sd-wrap) {
-    position: static;
-    margin-top: 0;
-    pointer-events: none;
-  }
-
   /* ── Responsive ─────────────────────────────────────────────────────────── */
   @media (max-width: 1024px) {
     .ps__title { font-size: clamp(3.2rem, 8vw, 6rem); }
@@ -636,33 +621,56 @@
        juste au-dessus du petit texte. */
     .ps__titles { display: none; }
 
-    /* Assombrissement radial léger dans le coin bas-gauche pour mieux lire
-       le titre + texte + bouton. */
+    /* Infos en HAUT sur mobile → assombrissement radial dans le coin HAUT-gauche
+       pour mieux lire le titre + texte + bouton. */
     .ps__grad-corner {
       display: block;
       position: absolute;
       inset: 0;
       pointer-events: none;
       background: radial-gradient(
-        128% 108% at 0% 100%,
-        rgba(0, 0, 0, 0.52) 0%,
-        rgba(0, 0, 0, 0.32) 24%,
-        rgba(0, 0, 0, 0.14) 48%,
-        rgba(0, 0, 0, 0) 72%
+        128% 108% at 0% 0%,
+        rgba(0, 0, 0, 0.54) 0%,
+        rgba(0, 0, 0, 0.34) 26%,
+        rgba(0, 0, 0, 0.14) 50%,
+        rgba(0, 0, 0, 0) 74%
       );
     }
 
+    /* Bloc d'infos (titre + texte + bouton) placé dans la partie HAUTE.
+       `.ps__bottom` doit couvrir toute la hauteur pour que le `top` de
+       `.ps__info` parte bien du haut (et non du bas). */
+    .ps__bottom {
+      top: 0;
+    }
     .ps__info {
       left: 1.25rem;
       right: 1.25rem;
+      top: clamp(6rem, 16vh, 8.5rem);
+      bottom: auto;
     }
     .ps__caption { max-width: 26rem; }
     .ps__cap-line { font-size: clamp(0.95rem, 3.8vw, 1.1rem); }
 
+    /* Variante « à propos » : le titre reste en haut mais le petit texte
+       (+ bouton éventuel) descend dans la partie basse. Le bloc d'infos couvre
+       toute la hauteur ; `margin-top:auto` pousse le texte vers le bas. */
+    .ps--mcap-bottom .ps__info {
+      /* Remonté davantage pour ne pas passer sous le dock de changement de slide
+         (points + lecture) épinglé en bas de l'écran. */
+      bottom: calc(max(clamp(5.5rem, 16vw, 8rem), var(--safe-bottom-offset)) + var(--bar-inset));
+      display: flex;
+      flex-direction: column;
+    }
+    .ps--mcap-bottom .ps__caption {
+      margin-top: auto;
+      max-width: 20rem;
+    }
+
     .ps__mtitle {
       display: block;
-      /* Titre remonté : plus d'espace sous lui (le texte/bouton ne bougent pas) */
-      margin: 0 0 clamp(3rem, 11vw, 5.5rem);
+      /* Titre au-dessus du texte, écart resserré (bloc compact en haut). */
+      margin: 0 0 clamp(1rem, 3.5vw, 1.8rem);
       font-family: var(--site-font, "Inter", sans-serif);
       font-weight: 600;
       font-size: clamp(2.6rem, 12vw, 4.6rem);

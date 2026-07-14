@@ -22,22 +22,19 @@
   export let items = [
     {
       title: "3 Terres Digital",
-      subtitle: "Sites web & applications sur mesure",
-      tags: ["Sites web", "Applications", "Développement"],
+      subtitle: "Sites web, applications & développement sur mesure",
       image: "/images/moovy_mac.webp",
       mobileImage: "/images/tel_moovy2.webp"
     },
     {
       title: "3 Terres Design",
-      subtitle: "Logo, charte & identité visuelle",
-      tags: ["Logo & charte", "Typographie", "Stratégie"],
+      subtitle: "Logo, charte, typographie & stratégie de marque",
       image: "/images/creation_logo_desktop.webp",
       mobileImage: "/images/creation_logo_mobile.webp"
     },
     {
       title: "3 Terres Studio",
-      subtitle: "Photo, vidéo & contenu",
-      tags: ["Photo & vidéo", "Réseaux sociaux", "Événements"],
+      subtitle: "Photo, vidéo, réseaux sociaux & événements",
       image: "/images/tel_moovy3.webp"
     }
   ];
@@ -521,7 +518,7 @@
     z-index: 0;
     width: 100%;
     background: var(--nuance-dark, var(--section-bg));
-    padding: 0 0 10rem 0;
+    padding: 0 0 clamp(3rem, 5vw, 5rem) 0;
     overflow: clip;
     isolation: isolate;
   }
@@ -597,7 +594,8 @@
     display: block;
     width: 100%;
     margin: 0 auto;
-    padding: clamp(1.5rem, 3vh, 3rem) 0 clamp(2rem, 4vh, 3rem);
+    /* Plus d'air au-dessus et en dessous du module de slide (cartes + dock). */
+    padding: clamp(3rem, 6vh, 6rem) 0 clamp(5rem, 8vh, 8rem);
     position: relative;
   }
 
@@ -937,7 +935,12 @@
 
     /* Titre sur une ligne + chips compactes : pas de chevauchement sur carte étroite. */
     .pc-title-flip { font-size: clamp(1.5rem, 6.2vw, 2.1rem); }
-    .pc-subtitle { font-size: clamp(.92rem, 3.6vw, 1.05rem); }
+    /* Sous-titre moins large : laisse la place au bouton "+" (bas droite) pour
+       éviter la superposition sur les cartes étroites. */
+    .pc-subtitle {
+      font-size: clamp(.92rem, 3.6vw, 1.05rem);
+      padding-right: clamp(3.2rem, 14vw, 4rem);
+    }
 
     /* Mobile : pas de flip vers "Découvrir" — simple wipe d'arrivée du nom du pôle
        quand la carte devient active. Le "Découvrir" (::after) reste masqué. */

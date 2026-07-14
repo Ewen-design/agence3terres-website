@@ -11,6 +11,12 @@
   export let interval = 4200;   // durée par slide en lecture auto (ms)
   export let loop = false;      // boucler ou s'arrêter (→ bouton « rejouer »)
   export let label = "diapositives";
+  // true : dock épinglé (grandes sections). false : dock en flux, simplement
+  // sous le slider (sections courtes → évite le conteneur 100lvh trop haut).
+  export let sticky = true;
+  // Force le mode « flux » sur mobile (où une section pleine hauteur laisserait
+  // trop de vide), tout en gardant l'épinglage sur desktop.
+  export let flowOnMobile = false;
 
   const dispatch = createEventDispatcher();
 
@@ -68,8 +74,10 @@
 </script>
 
 {#if count > 1}
-<div class="sd-wrap">
-  <div class="sd" class:is-in={visible} bind:this={dockEl} role="group" aria-label="Navigation {label}">
+<div class="sd-overlay" class:sd-overlay--flow={!sticky} class:sd-overlay--flow-mobile={flowOnMobile} aria-hidden="false">
+  <div class="sd-sticky">
+    <div class="sd-anchor">
+      <div class="sd" class:is-in={visible} bind:this={dockEl} role="group" aria-label="Navigation {label}">
     <span class="sd__blob" aria-hidden="true"></span>
     <div class="sd__pill" role="tablist" aria-label={label}>
       {#each Array(count) as _, i}
@@ -100,19 +108,73 @@
         <svg viewBox="0 0 24 24" width="1em" height="1em" aria-hidden="true"><path d="M8 5.5v13l11-6.5z" fill="currentColor"/></svg>
       {/if}
     </button>
+      </div>
+    </div>
   </div>
 </div>
 {/if}
 
 <style>
-  .sd-wrap {
-    position: sticky;
-    bottom: max(clamp(1.1rem, 3vh, 2rem), var(--safe-bottom-offset, 1rem));
+  /* Le dock est ancré au bas d'un conteneur ÉPINGLÉ PAR LE HAUT (sticky top:0,
+     hauteur 100lvh) : c'est stable (le haut du viewport ne bouge pas quand la
+     barre Safari du bas se rétracte), contrairement à `sticky bottom`. L'overlay
+     absolu couvre la section (qui doit être `position: relative`) sans affecter
+     sa mise en page. */
+  .sd-overlay {
+    position: absolute;
+    inset: 0;
     z-index: 30;
+    pointer-events: none;
+  }
+  .sd-sticky {
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    height: 100lvh;
+    pointer-events: none;
+  }
+  .sd-anchor {
+    position: absolute;
+    left: 0;
+    right: 0;
+    /* Décalage constant (--bar-inset) → reste au-dessus de la barre, sans unité
+       qui varie avec sa rétractation. */
+    bottom: calc(max(clamp(1.1rem, 4vw, 2rem), var(--safe-bottom-offset, 1rem)) + var(--bar-inset, 0px));
     display: flex;
     justify-content: center;
-    pointer-events: none;
-    margin-top: clamp(2rem, 5vw, 4rem);
+  }
+
+  /* Mode « en flux » (sections courtes, ex. MediaSlider) : dock simplement posé
+     sous le slider, centré, sans épinglage 100lvh → stable vs barre Safari. */
+  .sd-overlay--flow {
+    position: static;
+    z-index: auto;
+  }
+  .sd-overlay--flow .sd-sticky {
+    position: static;
+    height: auto;
+  }
+  .sd-overlay--flow .sd-anchor {
+    position: static;
+    bottom: auto;
+    margin: clamp(2rem, 5vw, 4rem) 0 clamp(0.5rem, 2vw, 1.4rem);
+  }
+
+  /* Mode flux forcé sur mobile (garde l'épinglage sur desktop). */
+  @media (max-width: 768px) {
+    .sd-overlay--flow-mobile {
+      position: static;
+      z-index: auto;
+    }
+    .sd-overlay--flow-mobile .sd-sticky {
+      position: static;
+      height: auto;
+    }
+    .sd-overlay--flow-mobile .sd-anchor {
+      position: static;
+      bottom: auto;
+      margin: clamp(1.6rem, 5vw, 3rem) 0 clamp(0.4rem, 2vw, 1.2rem);
+    }
   }
 
   .sd {

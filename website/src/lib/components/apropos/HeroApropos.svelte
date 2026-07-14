@@ -363,12 +363,15 @@
     width: 100%;
     height: 100%;
     object-fit: cover;
+    /* opacity / transform / brightness sont pilotés image par image par le
+       moteur de scroll (voir applyFrame). Aucune transition CSS ici volontairement :
+       une transition traînerait derrière le scroll et, pendant le dézoom d'arrivée
+       du parent .hero-media, produirait un « zoom→dézoom » composite instable.
+       Le dézoom d'arrivée est géré uniquement par le parent (one-shot) ; l'image
+       se contente de suivre le scroll de façon nette. */
     opacity: 1;
     transform: scale(1.05);
     filter: brightness(1);
-    transition:
-      opacity 1.2s cubic-bezier(0.22, 1, 0.36, 1),
-      transform 1.2s cubic-bezier(0.22, 1, 0.36, 1);
     backface-visibility: hidden;
     -webkit-backface-visibility: hidden;
   }
