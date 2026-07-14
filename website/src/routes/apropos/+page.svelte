@@ -2,8 +2,11 @@
   import AboutStoryIntro from "$lib/components/apropos/AboutStoryIntro.svelte";
   import AboutFocusSlider from "$lib/components/slider/AboutFocusSlider.svelte";
   import VisionSlider from "$lib/components/apropos/VisionSlider.svelte";
+  // AboutEditorialPrinciples retiré des composants actifs (fichier conservé)
+  // au profit d'AboutValues (3 parties éditoriales sans slider).
+  // import AboutEditorialPrinciples from "$lib/components/apropos/AboutEditorialPrinciples.svelte";
+  import AboutValues from "$lib/components/apropos/AboutValues.svelte";
   import HeroApropos from "$lib/components/apropos/HeroApropos.svelte";
-  import AboutEditorialPrinciples from "$lib/components/apropos/AboutEditorialPrinciples.svelte";
   import AboutEditorialSingleShowcase from "$lib/components/apropos/AboutEditorialSingleShowcase.svelte";
 </script>
 
@@ -22,5 +25,5 @@
   ctaLabel="Découvrir"
   ctaHref="services"
 />
-<AboutEditorialPrinciples />
+<AboutValues />
 <VisionSlider />
