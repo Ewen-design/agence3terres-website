@@ -1,54 +1,90 @@
 <script>
   import { reveal } from "$lib/actions/reveal.js";
+  import { onMount, onDestroy } from "svelte";
+  import { browser } from "$app/environment";
+  import SliderDock from "$lib/components/shared/SliderDock.svelte";
 
-  // Slider horizontal : grandes images, le texte EN DESSOUS de chaque image,
-  // commandes rondes (← / →). Défilement par scroll-snap.
+  // Slider horizontal : grandes images, le texte EN DESSOUS de chaque image.
+  // Navigation via le dock de pagination (points + lecture auto).
   export let title = "";
   export let slides = [];
 
   let track;
+  let active = 0;
+  const panelEls = [];
+  let raf = 0;
 
-  function panelStep() {
-    if (!track) return 0;
-    const panel = track.querySelector(".ms-panel");
-    const styles = getComputedStyle(track);
-    const gap = parseFloat(styles.columnGap || styles.gap || "0") || 0;
-    return panel ? panel.getBoundingClientRect().width + gap : track.clientWidth * 0.6;
-  }
+  const padLeft = () => (track ? parseFloat(getComputedStyle(track).scrollPaddingLeft) || 0 : 0);
 
-  function move(dir) {
+  function updateActive() {
+    raf = 0;
     if (!track) return;
-    track.scrollBy({ left: dir * panelStep(), behavior: "smooth" });
+    const anchor = track.getBoundingClientRect().left + padLeft();
+    let best = 0, bestD = Infinity;
+    for (let i = 0; i < panelEls.length; i++) {
+      if (!panelEls[i]) continue;
+      const d = Math.abs(panelEls[i].getBoundingClientRect().left - anchor);
+      if (d < bestD) { bestD = d; best = i; }
+    }
+    active = best;
   }
 
-  // Glow qui suit la souris — même effet que les autres boutons du site.
-  function handleMove(event) {
-    const btn = event.currentTarget;
-    const rect = btn.getBoundingClientRect();
-    btn.style.setProperty("--mx", `${event.clientX - rect.left}px`);
-    btn.style.setProperty("--my", `${event.clientY - rect.top}px`);
+  function onScroll() {
+    if (!raf) raf = requestAnimationFrame(updateActive);
   }
+
+  // Scroll horizontal animé maison : mouvement lent, doux et premium (le smooth
+  // natif est trop rapide/sec). On coupe le scroll-snap le temps de l'anim.
+  let scrollRaf = 0;
+  const easeInOut = (t) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
+
+  function animateScrollTo(toLeft, duration = 1150) {
+    if (!track) return;
+    cancelAnimationFrame(scrollRaf);
+    const from = track.scrollLeft;
+    const dist = toLeft - from;
+    if (Math.abs(dist) < 1) return;
+    track.style.scrollSnapType = "none";
+    const t0 = performance.now();
+    const step = (now) => {
+      const p = Math.min((now - t0) / duration, 1);
+      track.scrollLeft = from + dist * easeInOut(p);
+      if (p < 1) scrollRaf = requestAnimationFrame(step);
+      else track.style.scrollSnapType = "";
+    };
+    scrollRaf = requestAnimationFrame(step);
+  }
+
+  function goTo(i) {
+    if (!track || !panelEls[i]) return;
+    const anchor = track.getBoundingClientRect().left + padLeft();
+    const delta = panelEls[i].getBoundingClientRect().left - anchor;
+    animateScrollTo(track.scrollLeft + delta);
+  }
+
+  onMount(() => {
+    if (!browser || !track) return;
+    track.addEventListener("scroll", onScroll, { passive: true });
+    requestAnimationFrame(updateActive);
+  });
+  onDestroy(() => {
+    if (browser && track) track.removeEventListener("scroll", onScroll);
+    if (raf) cancelAnimationFrame(raf);
+    if (scrollRaf) cancelAnimationFrame(scrollRaf);
+  });
 </script>
 
 {#if slides.length}
 <section class="ms">
-  <div class="ms-head" use:reveal>
-    {#if title}<h3 class="ms-title">{title}</h3>{/if}
-    {#if slides.length > 1}
-      <div class="ms-ctrl">
-        <button type="button" class="ms-round ms-round--prev" data-no-wipe on:click={() => move(-1)} on:mousemove={handleMove} aria-label="Précédent">
-          <svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="20" y1="12" x2="4" y2="12"/><polyline points="11 5 4 12 11 19"/></svg>
-        </button>
-        <button type="button" class="ms-round ms-round--next" data-no-wipe on:click={() => move(1)} on:mousemove={handleMove} aria-label="Suivant">
-          <svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="4" y1="12" x2="20" y2="12"/><polyline points="13 5 20 12 13 19"/></svg>
-        </button>
-      </div>
-    {/if}
-  </div>
+  {#if title}
+    <div class="ms-head" use:reveal>
+      <h3 class="ms-title">{title}</h3>
+    </div>
+  {/if}
 
   <div class="ms-track" bind:this={track}>
     {#each slides as slide, i}
-      <article class="ms-panel">
+      <article class="ms-panel" bind:this={panelEls[i]}>
         <div class="ms-media" use:reveal>
           <img src={slide.image} alt={slide.alt ?? slide.label ?? ""} loading={i < 2 ? "eager" : "lazy"} decoding="async" draggable="false" />
         </div>
@@ -59,6 +95,14 @@
       </article>
     {/each}
   </div>
+
+  <SliderDock
+    count={slides.length}
+    {active}
+    interval={5200}
+    label="visuels du pôle"
+    on:goto={(e) => goTo(e.detail)}
+  />
 </section>
 {/if}
 
@@ -85,92 +129,6 @@
     letter-spacing: -0.025em;
     color: var(--project-surface-ink, #f4efe6);
     transition: color var(--project-theme-transition, 920ms cubic-bezier(0.16, 1, 0.3, 1));
-  }
-
-  .ms-ctrl {
-    display: flex;
-    gap: 0.6rem;
-    flex: 0 0 auto;
-  }
-
-  /* Mêmes boutons que le reste du site : verre dépoli + bordure qui s'illumine. */
-  .ms-round {
-    position: relative;
-    width: clamp(2.8rem, 3.6vw, 3.3rem);
-    height: clamp(2.8rem, 3.6vw, 3.3rem);
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.15rem;
-    border: 0;
-    border-radius: 999px;
-    color: #f4efe6;
-    background: rgba(255, 255, 255, 0.11);
-    backdrop-filter: blur(20px) saturate(160%) brightness(0.82);
-    -webkit-backdrop-filter: blur(20px) saturate(160%) brightness(0.82);
-    box-shadow: 0 6px 8px rgba(0, 0, 0, 0.08);
-    cursor: pointer;
-    transition:
-      background 0.3s ease,
-      color var(--project-theme-transition, 920ms cubic-bezier(0.16, 1, 0.3, 1)),
-      transform 0.4s cubic-bezier(0.22, 0.61, 0.36, 1);
-  }
-  .ms-round:hover { background: rgba(255, 255, 255, 0.18); }
-  .ms-round--prev:hover { transform: translateX(-2px); }
-  .ms-round--next:hover { transform: translateX(2px); }
-  .ms-round:focus-visible { outline: 2px solid var(--lead-blue, #5768ff); outline-offset: 3px; }
-
-  /* Glow border (mask) qui suit la souris — identique aux boutons du site. */
-  .ms-round::before,
-  .ms-round::after {
-    content: "";
-    position: absolute;
-    inset: -1px;
-    border-radius: inherit;
-    padding: 1px;
-    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-    -webkit-mask-composite: xor;
-    mask-composite: exclude;
-    pointer-events: none;
-    opacity: 0;
-    transition: opacity 0.25s ease;
-  }
-  .ms-round::before {
-    background: radial-gradient(
-      64px circle at var(--mx, 50%) var(--my, 50%),
-      var(--site-glow-strong) 0%,
-      var(--site-glow-mid) 22%,
-      var(--site-glow-soft) 45%,
-      var(--site-glow-fade) 62%,
-      transparent 78%
-    );
-  }
-  .ms-round::after {
-    background: radial-gradient(
-      74px circle at var(--mx, 50%) var(--my, 50%),
-      var(--site-glow-ambient) 0%,
-      var(--site-glow-outer) 42%,
-      transparent 72%
-    );
-    filter: blur(2px);
-  }
-  .ms-round:hover::before,
-  .ms-round:hover::after { opacity: 1; }
-
-  /* Sur fond blanc (pôle Conseil) : verre teinté sombre pour rester lisible. */
-  :global(.project-theme-page.theme-light) .ms-round {
-    color: #14151a;
-    background: rgba(20, 21, 26, 0.06);
-  }
-  :global(.project-theme-page.theme-light) .ms-round:hover {
-    background: rgba(20, 21, 26, 0.1);
-  }
-
-  @media (max-width: 768px) {
-    .ms-round {
-      backdrop-filter: blur(12px) saturate(130%);
-      -webkit-backdrop-filter: blur(12px) saturate(130%);
-    }
   }
 
   /* ── Track ── */

@@ -2,6 +2,7 @@
   import { onMount, onDestroy } from "svelte";
   import { browser } from "$app/environment";
   import { registerParallax, unregisterParallax } from "$lib/scrollEngine.js";
+  import SliderDock from "$lib/components/shared/SliderDock.svelte";
 
   // slides: [{ title, description, href, cta?, images: [hero, half1, half2] }]
   export let slides = [];
@@ -119,15 +120,15 @@
     paintLetters(a, p);
   }
 
-  // ── Flèche → projet suivant (scroll natif fluide, aucun hijack) ────────────
-  function goNext() {
+  // ── Aller à un projet (scroll natif fluide, aucun hijack) — piloté par le
+  //    dock de pagination (points + lecture auto).
+  function goTo(i) {
     if (!browser) return;
     measure();
-    const target = clamp(activeIndex + 1, 0, N - 1);
-    // Amène le HAUT du projet suivant en haut de l'écran (+1px pour franchir
-    // proprement le seuil et activer ce projet).
-    const top = projTop[target] + 1;
-    window.scrollTo({ top: Math.max(0, top), behavior: "smooth" });
+    const target = clamp(i, 0, N - 1);
+    // Amène le HAUT du projet en haut de l'écran (+1px pour franchir proprement
+    // le seuil et activer ce projet).
+    window.scrollTo({ top: Math.max(0, projTop[target] + 1), behavior: "smooth" });
   }
 
   let resizeTimer;
@@ -256,24 +257,20 @@
                   </span>
                 </a>
               {/if}
-
-              {#if i < N - 1}
-                <button
-                  class="ps__arrow"
-                  type="button"
-                  data-cursor="button"
-                  on:mousemove={handleGlowMove}
-                  on:mousedown|preventDefault
-                  on:click={goNext}
-                  tabindex={activeIndex === i ? 0 : -1}
-                  aria-label="Projet suivant"
-                >
-                  <span class="ps__arrow-symbol" aria-hidden="true">↓</span>
-                </button>
-              {/if}
             </div>
           </div>
         {/each}
+      </div>
+
+      <!-- Dock de pagination (points + lecture auto), fixé en bas de l'UI. -->
+      <div class="ps__dock">
+        <SliderDock
+          count={N}
+          active={activeIndex}
+          interval={5200}
+          label="projets"
+          on:goto={(e) => goTo(e.detail)}
+        />
       </div>
     </div>
   </div>
@@ -611,73 +608,22 @@
   .ps__btn:hover .ps__btn-text { transform: translateY(-100%); }
   .ps__btn:hover .ps__btn-inner::after { transform: translateY(0); }
 
-  /* ── Flèche (projet suivant) ────────────────────────────────────────────── */
-  .ps__arrow {
-    position: relative;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 40px;
-    height: 40px;
-    padding: 0;
-    background: rgba(255, 255, 255, 0.11);
-    backdrop-filter: blur(20px) saturate(160%) brightness(0.82);
-    -webkit-backdrop-filter: blur(20px) saturate(160%) brightness(0.82);
-    border: 0;
-    border-radius: 10px;
-    box-shadow: 0 6px 8px rgba(0, 0, 0, 0.08);
-    color: #fff;
-    cursor: pointer;
-    -webkit-tap-highlight-color: transparent;
-    transition: background 0.3s ease, transform 0.4s cubic-bezier(0.22, 0.61, 0.36, 1);
-  }
-  .ps__arrow:hover { background: rgba(255, 255, 255, 0.18); }
-  .ps__arrow:focus-visible {
-    outline: 2px solid var(--lead-blue, #5768ff);
-    outline-offset: 3px;
-  }
-  /* Glow qui s'illumine et suit le curseur — identique au bouton "Voir le projet" */
-  .ps__arrow::before,
-  .ps__arrow::after {
-    content: "";
+  /* ── Dock de pagination (fixé en bas de l'UI épinglée) ──────────────────── */
+  .ps__dock {
     position: absolute;
-    inset: -1px;
-    border-radius: inherit;
-    padding: 1px;
-    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-    -webkit-mask-composite: xor;
-    mask-composite: exclude;
+    left: 0;
+    right: 0;
+    bottom: max(clamp(1rem, 3vh, 1.9rem), var(--safe-bottom-offset));
+    z-index: 6;
+    display: flex;
+    justify-content: center;
     pointer-events: none;
-    opacity: 0;
-    transition: opacity 0.25s ease;
   }
-  .ps__arrow::before {
-    background: radial-gradient(
-      96px circle at var(--mx, 50%) var(--my, 50%),
-      var(--site-glow-strong) 0%,
-      var(--site-glow-mid) 26%,
-      var(--site-glow-soft) 52%,
-      var(--site-glow-fade) 70%,
-      transparent 86%
-    );
-  }
-  .ps__arrow::after {
-    background: radial-gradient(
-      120px circle at var(--mx, 50%) var(--my, 50%),
-      var(--site-glow-ambient) 0%,
-      var(--site-glow-outer) 48%,
-      transparent 82%
-    );
-    filter: blur(3px);
-  }
-  .ps__arrow:hover::before,
-  .ps__arrow:hover::after { opacity: 1; }
-  .ps__arrow-symbol {
-    display: block;
-    font-family: var(--site-font, "Inter", sans-serif);
-    font-size: clamp(1.05rem, 1.1vw, 1.2rem);
-    font-weight: 300;
-    line-height: 1;
+  /* L'UI est déjà épinglée : on annule le sticky interne du dock. */
+  .ps__dock :global(.sd-wrap) {
+    position: static;
+    margin-top: 0;
+    pointer-events: none;
   }
 
   /* ── Responsive ─────────────────────────────────────────────────────────── */

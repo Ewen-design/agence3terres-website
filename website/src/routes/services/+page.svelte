@@ -58,7 +58,7 @@
 
 <ProjectThemePage>
   <!-- ───────── Pôle 01 — Digital (fond noir) ───────── -->
-  <div class="project-theme-band">
+  <div class="project-theme-band band-nuance-dark">
     <SectionLead lead="3 Terres Digital" />
     <ShowcaseCards cards={digitalCards} showSubtitle={false} />
     <SectionLead
@@ -80,7 +80,7 @@
   <!-- ───────── Pôle 02 — Design (fond blanc) ───────── -->
   <ProjectThemeTrigger theme="light" />
 
-  <div class="project-theme-band">
+  <div class="project-theme-band band-nuance-light">
     <SectionLead lead="3 Terres Design" />
     <ShowcaseCards cards={designCards} showSubtitle={false} />
     <SectionLead
@@ -106,7 +106,7 @@
   <!-- ───────── Pôle 03 — Studio (reprend la 1ʳᵉ config : fond noir/dark) ───────── -->
   <ProjectThemeTrigger theme="dark" />
 
-  <div class="project-theme-band">
+  <div class="project-theme-band band-nuance-dark">
     <SectionLead lead="3 Terres Studio" />
     <ShowcaseCards cards={studioCards} showSubtitle={false} />
     <SectionLead
@@ -131,6 +131,22 @@
 <style>
   /* Espacements propres à la page services (scopés : les composants partagés
      avec les pages projet ne sont pas affectés). */
+
+  /* Nuances de fond (façon Apple) : les pôles sombres reçoivent un noir non-plat,
+     le pôle clair une variante de blanc. On l'applique aussi aux petits sliders
+     (MediaSlider) qui, transparents, prennent leur propre nuance. */
+  .band-nuance-dark {
+    background: var(--nuance-dark);
+  }
+  .band-nuance-light {
+    background: var(--nuance-light);
+  }
+  .band-nuance-dark :global(.ms) {
+    background: var(--nuance-dark);
+  }
+  .band-nuance-light :global(.ms) {
+    background: var(--nuance-light);
+  }
 
   /* Plus de respiration entre les pôles : gros espace en tête des pôles 2 et 3. */
   .project-theme-band:not(:first-of-type) {

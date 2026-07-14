@@ -3,6 +3,7 @@
   import { browser } from "$app/environment";
   import { navigate } from "$lib/navigate.js";
   import { reveal } from "$lib/actions/reveal.js";
+  import SliderDock from "$lib/components/shared/SliderDock.svelte";
 
   // Reusable: the home page presents the 3 poles with the defaults; project
   // pages pass their own `items`, `href`, `ctaLabel` and intro copy while
@@ -56,6 +57,14 @@
 
   let activeDesktopIndex = 0;
   let activeMobileIndex = 0;
+  // L'auto-défilement interne est désactivé : c'est le dock (points + play/pause)
+  // qui pilote le défilement.
+  let autoPlay = false;
+  $: dockActive = isMobile ? activeMobileIndex : activeDesktopIndex;
+  function dockGoto(i) {
+    if (isMobile) scrollToMobileCard(i);
+    else scrollToDesktopCard(i);
+  }
   let desktopScrollRaf = null;
   let mobileScrollRaf = null;
   let desktopAutoAdvanceTimer = null;
@@ -219,7 +228,7 @@
 
   function startDesktopAutoAdvance() {
     clearDesktopAutoTimers();
-    if (!isInView || isMobile || !desktopRailEl || prefersReduced || items.length < 2) return;
+    if (!autoPlay || !isInView || isMobile || !desktopRailEl || prefersReduced || items.length < 2) return;
 
     desktopAutoAdvanceTimer = setInterval(() => {
       const nextIndex = (activeDesktopIndex + 1) % items.length;
@@ -238,7 +247,7 @@
 
   function startMobileAutoAdvance() {
     clearMobileAutoTimers();
-    if (!isInView || !isMobile || !mobileRailEl || prefersReduced || items.length < 2) return;
+    if (!autoPlay || !isInView || !isMobile || !mobileRailEl || prefersReduced || items.length < 2) return;
 
     mobileAutoAdvanceTimer = setInterval(() => {
       const nextIndex = (activeMobileIndex + 1) % items.length;
@@ -432,33 +441,6 @@
         {/each}
       </div>
 
-      <div class="desktop-nav-shell" aria-label="Navigation pôles desktop">
-        <button
-          class="desktop-nav-btn desktop-nav-prev"
-          class:is-hidden={activeDesktopIndex === 0}
-          type="button"
-          aria-label="Pôle précédent"
-          onclick={() => {
-            pauseAndResumeDesktopAutoAdvance();
-            scrollToDesktopCard(Math.max(activeDesktopIndex - 1, 0), prefersReduced ? "auto" : "smooth");
-          }}
-        >
-          <span class="desktop-nav-chevron" aria-hidden="true"></span>
-        </button>
-
-        <button
-          class="desktop-nav-btn desktop-nav-next"
-          class:is-hidden={activeDesktopIndex >= items.length - 1}
-          type="button"
-          aria-label="Pôle suivant"
-          onclick={() => {
-            pauseAndResumeDesktopAutoAdvance();
-            scrollToDesktopCard(Math.min(activeDesktopIndex + 1, items.length - 1), prefersReduced ? "auto" : "smooth");
-          }}
-        >
-          <span class="desktop-nav-chevron" aria-hidden="true"></span>
-        </button>
-      </div>
     </div>
 
     <div class="mobile-stack">
@@ -516,36 +498,17 @@
         {/each}
       </div>
 
-      <div class="mobile-nav-shell" aria-label="Navigation pôles mobile">
-        <button
-          class="mobile-nav-btn mobile-nav-prev"
-          class:is-hidden={activeMobileIndex === 0}
-          type="button"
-          aria-label="Pôle précédent"
-          onclick={() => {
-            pauseAndResumeMobileAutoAdvance();
-            scrollToMobileCard(Math.max(activeMobileIndex - 1, 0), prefersReduced ? "auto" : "smooth");
-          }}
-        >
-          <span class="mobile-nav-chevron" aria-hidden="true"></span>
-        </button>
-
-        <button
-          class="mobile-nav-btn mobile-nav-next"
-          class:is-hidden={activeMobileIndex === items.length - 1}
-          type="button"
-          aria-label="Pôle suivant"
-          onclick={() => {
-            pauseAndResumeMobileAutoAdvance();
-            scrollToMobileCard(Math.min(activeMobileIndex + 1, items.length - 1), prefersReduced ? "auto" : "smooth");
-          }}
-        >
-          <span class="mobile-nav-chevron" aria-hidden="true"></span>
-        </button>
-      </div>
     </div>
 
   </div>
+
+  <SliderDock
+    count={items.length}
+    active={dockActive}
+    interval={5200}
+    label="pôles"
+    on:goto={(e) => dockGoto(e.detail)}
+  />
 </section>
 
 <style>
@@ -557,7 +520,7 @@
     position: relative;
     z-index: 0;
     width: 100%;
-    background: var(--section-bg);
+    background: var(--nuance-dark, var(--section-bg));
     padding: 0 0 10rem 0;
     overflow: clip;
     isolation: isolate;
@@ -899,59 +862,6 @@
     opacity: 1;
   }
 
-  /* ─────────── Navigation flèches ─────────── */
-  .desktop-nav-shell {
-    position: absolute;
-    top: clamp(1.5rem, 3vh, 3rem);
-    left: 0;
-    right: 0;
-    height: min(86vh, 920px);
-    pointer-events: none;
-  }
-
-  .desktop-nav-btn {
-    position: absolute;
-    top: 50%;
-    width: 3.8rem;
-    height: 3.8rem;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    transform: translateY(-50%);
-    border: 0;
-    background: transparent;
-    color: #fff;
-    cursor: pointer;
-    z-index: 10;
-    pointer-events: auto;
-    padding: 0;
-    transition: opacity .35s ease;
-  }
-
-  .desktop-nav-prev { left: 1rem; }
-  .desktop-nav-next { right: 1rem; }
-
-  .desktop-nav-chevron,
-  .mobile-nav-chevron {
-    display: block;
-    width: 1.6rem;
-    height: 1.6rem;
-    border-top: 1.5px solid currentColor;
-    border-right: 1.5px solid currentColor;
-    filter: drop-shadow(0 1px 8px rgba(0,0,0,.34));
-  }
-
-  .desktop-nav-prev .desktop-nav-chevron,
-  .mobile-nav-prev .mobile-nav-chevron { transform: rotate(-135deg); }
-  .desktop-nav-next .desktop-nav-chevron,
-  .mobile-nav-next .mobile-nav-chevron { transform: rotate(45deg); }
-
-  .desktop-nav-btn.is-hidden,
-  .mobile-nav-btn.is-hidden {
-    opacity: 0;
-    pointer-events: none;
-  }
-
   .mobile-stack {
     display: none;
   }
@@ -1046,36 +956,6 @@
       font-size: clamp(.8rem, 3.4vw, .9rem);
     }
 
-    .mobile-nav-shell {
-      position: absolute;
-      top: 2.4rem;
-      left: 0;
-      right: 0;
-      height: min(72vh, 660px);
-      pointer-events: none;
-    }
-
-    .mobile-nav-btn {
-      position: absolute;
-      top: 50%;
-      transform: translateY(-50%);
-      width: 3rem;
-      height: 3rem;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      z-index: 10;
-      border: 0;
-      background: transparent;
-      padding: 0;
-      color: #fff;
-      cursor: pointer;
-      pointer-events: auto;
-    }
-
-    .mobile-nav-prev { left: .4rem; }
-    .mobile-nav-next { right: .4rem; }
-
   }
 
   @media (max-width: 640px) {
@@ -1103,23 +983,6 @@
     }
 
     .pc-title-flip { font-size: clamp(1.5rem, 7vw, 2.05rem); }
-
-    .mobile-nav-shell {
-      height: min(74vh, 620px);
-    }
-
-    .mobile-nav-btn {
-      width: 2.65rem;
-      height: 2.65rem;
-    }
-
-    .mobile-nav-chevron {
-      width: 1.18rem;
-      height: 1.18rem;
-      border-top-width: 1.4px;
-      border-right-width: 1.4px;
-    }
-
   }
 
   @media (prefers-reduced-motion: reduce) {

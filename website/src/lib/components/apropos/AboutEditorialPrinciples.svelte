@@ -243,7 +243,7 @@
 <style>
   .about-editorial-principles {
     position: relative;
-    background: #000;
+    background: var(--nuance-dark, #000);
     color: #f5f1e8;
     padding: clamp(2.4rem, 4vw, 4.2rem) 0;
     overflow: clip;
