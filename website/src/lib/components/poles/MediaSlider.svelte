@@ -3,6 +3,7 @@
   import { onMount, onDestroy } from "svelte";
   import { browser } from "$app/environment";
   import SliderDock from "$lib/components/shared/SliderDock.svelte";
+  import { animateScrollLeft } from "$lib/scroll/smoothScrollLeft.js";
 
   // Slider horizontal : grandes images, le texte EN DESSOUS de chaque image.
   // Navigation via le dock de pagination (points + lecture auto).
@@ -27,6 +28,14 @@
   function updateActive() {
     raf = 0;
     if (!track) return;
+    // Dernier cran : la dernière image ne peut pas s'aligner complètement à gauche
+    // (course de scroll insuffisante) → sans ce garde-fou le dock n'atteindrait
+    // jamais le dernier point. Dès qu'on est en butée de scroll, on force le
+    // dernier index.
+    if (track.scrollLeft + track.clientWidth >= track.scrollWidth - 2) {
+      active = panelEls.length - 1;
+      return;
+    }
     const anchor = track.getBoundingClientRect().left + padLeft();
     let best = 0, bestD = Infinity;
     for (let i = 0; i < panelEls.length; i++) {
@@ -41,33 +50,15 @@
     if (!raf) raf = requestAnimationFrame(updateActive);
   }
 
-  // Scroll horizontal animé maison : mouvement lent, doux et premium (le smooth
-  // natif est trop rapide/sec). On coupe le scroll-snap le temps de l'anim.
-  let scrollRaf = 0;
-  const easeInOut = (t) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
-
-  function animateScrollTo(toLeft, duration = 1150) {
-    if (!track) return;
-    cancelAnimationFrame(scrollRaf);
-    const from = track.scrollLeft;
-    const dist = toLeft - from;
-    if (Math.abs(dist) < 1) return;
-    track.style.scrollSnapType = "none";
-    const t0 = performance.now();
-    const step = (now) => {
-      const p = Math.min((now - t0) / duration, 1);
-      track.scrollLeft = from + dist * easeInOut(p);
-      if (p < 1) scrollRaf = requestAnimationFrame(step);
-      else track.style.scrollSnapType = "";
-    };
-    scrollRaf = requestAnimationFrame(step);
-  }
+  // Défilement horizontal premium partagé (courbe douce, snap géré, stable).
+  let scrollCtrl = null;
 
   function goTo(i) {
     if (!track || !panelEls[i]) return;
     const anchor = track.getBoundingClientRect().left + padLeft();
     const delta = panelEls[i].getBoundingClientRect().left - anchor;
-    animateScrollTo(track.scrollLeft + delta);
+    scrollCtrl?.cancel();
+    scrollCtrl = animateScrollLeft(track, track.scrollLeft + delta);
   }
 
   onMount(() => {
@@ -85,7 +76,7 @@
     mqMobile?.removeEventListener?.("change", onMq);
     if (track) track.removeEventListener("scroll", onScroll);
     if (raf) cancelAnimationFrame(raf);
-    if (scrollRaf) cancelAnimationFrame(scrollRaf);
+    scrollCtrl?.cancel();
   });
 </script>
 

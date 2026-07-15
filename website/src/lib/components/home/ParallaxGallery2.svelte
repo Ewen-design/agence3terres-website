@@ -4,6 +4,7 @@
   import { navigate } from "$lib/navigate.js";
   import { reveal } from "$lib/actions/reveal.js";
   import SliderDock from "$lib/components/shared/SliderDock.svelte";
+  import { animateScrollLeft } from "$lib/scroll/smoothScrollLeft.js";
 
   // Reusable: the home page presents the 3 poles with the defaults; project
   // pages pass their own `items`, `href`, `ctaLabel` and intro copy while
@@ -52,18 +53,28 @@
   let desktopCardEls = [];
   let mobileCardEls = [];
 
-  let activeDesktopIndex = 0;
   let activeMobileIndex = 0;
+  // Desktop : les cartes font 46vw → deux sont visibles à la fois. La dernière ne
+  // peut donc jamais s'aligner à gauche (butée de scroll) : il n'y a en réalité
+  // que N-1 « crans » atteignables. On raisonne en PAGES (positions de scroll
+  // atteignables, dédupliquées) plutôt qu'en cartes → le dock affiche exactement
+  // le bon nombre de points et marque bien le dernier cran.
+  let desktopPageTargets = [];   // positions scrollLeft atteignables (croissantes)
+  let activeDesktopPage = 0;
   // L'auto-défilement interne est désactivé : c'est le dock (points + play/pause)
   // qui pilote le défilement.
   let autoPlay = false;
-  $: dockActive = isMobile ? activeMobileIndex : activeDesktopIndex;
+  // Desktop : nombre de crans mesuré (2 pour 3 cartes). Filet de sécurité :
+  // tant que la mesure n'a pas tourné (tableau vide), on retombe sur items.length
+  // pour NE JAMAIS masquer le dock.
+  $: dockCount = isMobile ? items.length : (desktopPageTargets.length || items.length);
+  $: dockActive = isMobile ? activeMobileIndex : activeDesktopPage;
   function dockGoto(i) {
     if (isMobile) scrollToMobileCard(i);
-    else scrollToDesktopCard(i);
+    else scrollToDesktopPage(i);
   }
-  let desktopScrollRaf = null;
-  let mobileScrollRaf = null;
+  let desktopScrollCtrl = null;
+  let mobileScrollCtrl = null;
   let desktopAutoAdvanceTimer = null;
   let desktopAutoResumeTimer = null;
   let mobileAutoAdvanceTimer = null;
@@ -102,27 +113,44 @@
     isMobile = window.innerWidth <= 900;
   }
 
-  function updateDesktopActive() {
-    if (!desktopRailEl) return;
-
-    const cards = desktopRailEl.querySelectorAll(".desktop-card");
-    if (!cards.length) return;
-
-    // Find the card whose left edge is snapped to the scroll-padding position
+  // Positions de scroll réellement atteignables (une par « cran »). Les cartes
+  // dont l'alignement dépasse la butée de scroll retombent toutes sur la même
+  // position finale → on les fusionne : le nombre de pages = nombre de points.
+  function computeDesktopPages() {
+    if (!desktopRailEl || !desktopCardEls.length) {
+      desktopPageTargets = [0];
+      return;
+    }
+    const maxScroll = Math.max(0, Math.round(desktopRailEl.scrollWidth - desktopRailEl.clientWidth));
     const scrollPad = desktopCardEls[0] ? desktopCardEls[0].offsetLeft : 0;
-    const targetLeft = desktopRailEl.scrollLeft + scrollPad;
+    const targets = [];
+    desktopCardEls.forEach((card) => {
+      if (!card) return;
+      const t = Math.min(Math.max(0, Math.round(card.offsetLeft - scrollPad)), maxScroll);
+      // croissant → il suffit de comparer à la dernière retenue pour dédupliquer
+      // (cartes qui butent toutes sur maxScroll → un seul cran).
+      if (targets.length && Math.abs(t - targets[targets.length - 1]) < 8) return;
+      targets.push(t);
+    });
+    desktopPageTargets = targets.length ? targets : [0];
+    if (activeDesktopPage > desktopPageTargets.length - 1) {
+      activeDesktopPage = desktopPageTargets.length - 1;
+    }
+  }
+
+  function updateDesktopActive() {
+    if (!desktopRailEl || !desktopPageTargets.length) return;
+    const sl = desktopRailEl.scrollLeft;
     let nearest = 0;
     let nearestDistance = Infinity;
-
-    cards.forEach((card, index) => {
-      const distance = Math.abs(card.offsetLeft - targetLeft);
+    desktopPageTargets.forEach((t, i) => {
+      const distance = Math.abs(t - sl);
       if (distance < nearestDistance) {
         nearestDistance = distance;
-        nearest = index;
+        nearest = i;
       }
     });
-
-    activeDesktopIndex = nearest;
+    if (nearest !== activeDesktopPage) activeDesktopPage = nearest;
   }
 
   function updateMobileActive() {
@@ -143,70 +171,82 @@
       }
     });
 
-    activeMobileIndex = nearest;
+    if (nearest !== activeMobileIndex) activeMobileIndex = nearest;
   }
+
+  let desktopActiveRaf = null;
+  let mobileActiveRaf = null;
 
   function handleDesktopRailScroll() {
     if (isAutoScrollingDesktop) return;
     pauseAndResumeDesktopAutoAdvance();
-    if (desktopScrollRaf) cancelAnimationFrame(desktopScrollRaf);
-    desktopScrollRaf = requestAnimationFrame(() => {
+    if (desktopActiveRaf) cancelAnimationFrame(desktopActiveRaf);
+    desktopActiveRaf = requestAnimationFrame(() => {
       updateDesktopActive();
-      desktopScrollRaf = null;
+      desktopActiveRaf = null;
     });
   }
 
   function handleMobileRailScroll() {
     if (isAutoScrollingMobile) return;
     pauseAndResumeMobileAutoAdvance();
-    if (mobileScrollRaf) cancelAnimationFrame(mobileScrollRaf);
-    mobileScrollRaf = requestAnimationFrame(() => {
+    if (mobileActiveRaf) cancelAnimationFrame(mobileActiveRaf);
+    mobileActiveRaf = requestAnimationFrame(() => {
       updateMobileActive();
-      mobileScrollRaf = null;
+      mobileActiveRaf = null;
     });
   }
 
-  function scrollToDesktopCard(index, behavior = "smooth") {
-    const card = desktopCardEls[index];
-    if (!desktopRailEl || !card) return;
+  function scrollToDesktopPage(index, animate = true) {
+    if (!desktopRailEl || !desktopPageTargets.length) return;
+    const clamped = Math.max(0, Math.min(index, desktopPageTargets.length - 1));
+    const targetLeft = desktopPageTargets[clamped];
 
-    const scrollPad = desktopCardEls[0] ? desktopCardEls[0].offsetLeft : 0;
-    const targetLeft = card.offsetLeft - scrollPad;
+    activeDesktopPage = clamped;
 
-    activeDesktopIndex = index;
-
-    if (behavior === "smooth") {
-      isAutoScrollingDesktop = true;
-      desktopRailEl.scrollTo({ left: Math.max(0, targetLeft), behavior: "smooth" });
-      if (!supportsScrollEnd) {
-        clearTimeout(desktopScrollEndFallback);
-        desktopScrollEndFallback = window.setTimeout(handleDesktopScrollEnd, 950);
-      }
-    } else {
-      desktopRailEl.scrollTo({ left: Math.max(0, targetLeft), behavior: "instant" });
+    desktopScrollCtrl?.cancel();
+    if (!animate || prefersReduced) {
+      isAutoScrollingDesktop = false;
+      desktopRailEl.style.scrollSnapType = "";   // au cas où une anim a été coupée
+      desktopRailEl.scrollTo({ left: targetLeft, behavior: "auto" });
       updateDesktopActive();
+      return;
     }
+    isAutoScrollingDesktop = true;
+    desktopScrollCtrl = animateScrollLeft(desktopRailEl, targetLeft, {
+      onDone: () => {
+        isAutoScrollingDesktop = false;
+        updateDesktopActive();
+      }
+    });
   }
 
-  function scrollToMobileCard(index, behavior = "smooth") {
+  function scrollToMobileCard(index, animate = true) {
     const card = mobileCardEls[index];
     if (!mobileRailEl || !card) return;
 
-    const targetLeft = card.offsetLeft - (mobileRailEl.clientWidth - card.offsetWidth) * 0.5;
+    const targetLeft = Math.max(
+      0,
+      card.offsetLeft - (mobileRailEl.clientWidth - card.offsetWidth) * 0.5
+    );
 
     activeMobileIndex = index;
 
-    if (behavior === "smooth") {
-      isAutoScrollingMobile = true;
-      mobileRailEl.scrollTo({ left: Math.max(0, targetLeft), behavior: "smooth" });
-      if (!supportsScrollEnd) {
-        clearTimeout(mobileScrollEndFallback);
-        mobileScrollEndFallback = window.setTimeout(handleMobileScrollEnd, 950);
-      }
-    } else {
-      mobileRailEl.scrollTo({ left: Math.max(0, targetLeft), behavior: "instant" });
+    mobileScrollCtrl?.cancel();
+    if (!animate || prefersReduced) {
+      isAutoScrollingMobile = false;
+      mobileRailEl.style.scrollSnapType = "";   // au cas où une anim a été coupée
+      mobileRailEl.scrollTo({ left: targetLeft, behavior: "auto" });
       updateMobileActive();
+      return;
     }
+    isAutoScrollingMobile = true;
+    mobileScrollCtrl = animateScrollLeft(mobileRailEl, targetLeft, {
+      onDone: () => {
+        isAutoScrollingMobile = false;
+        updateMobileActive();
+      }
+    });
   }
 
   function clearDesktopAutoTimers() {
@@ -228,8 +268,8 @@
     if (!autoPlay || !isInView || isMobile || !desktopRailEl || prefersReduced || items.length < 2) return;
 
     desktopAutoAdvanceTimer = setInterval(() => {
-      const nextIndex = (activeDesktopIndex + 1) % items.length;
-      scrollToDesktopCard(nextIndex, "smooth");
+      const nextIndex = (activeDesktopPage + 1) % desktopPageTargets.length;
+      scrollToDesktopPage(nextIndex, true);
     }, 5000);
   }
 
@@ -248,7 +288,7 @@
 
     mobileAutoAdvanceTimer = setInterval(() => {
       const nextIndex = (activeMobileIndex + 1) % items.length;
-      scrollToMobileCard(nextIndex, "smooth");
+      scrollToMobileCard(nextIndex, true);
     }, 5000);
   }
 
@@ -265,8 +305,9 @@
     clearTimeout(resizeTimer);
     resizeTimer = setTimeout(() => {
       measure();
-      scrollToDesktopCard(activeDesktopIndex, "instant");
-      scrollToMobileCard(activeMobileIndex, "instant");
+      computeDesktopPages();
+      scrollToDesktopPage(activeDesktopPage, false);
+      scrollToMobileCard(activeMobileIndex, false);
       startDesktopAutoAdvance();
       startMobileAutoAdvance();
     }, 80);
@@ -297,6 +338,7 @@
     requestAnimationFrame(() => {
       requestAnimationFrame(() => {
         measure();
+        computeDesktopPages();
         updateDesktopActive();
         updateMobileActive();
         startDesktopAutoAdvance();
@@ -309,6 +351,8 @@
         isInView = !!entry?.isIntersecting;
 
         if (isInView) {
+          // Mesure fraîche des crans desktop juste avant que le dock soit vu.
+          computeDesktopPages();
           startDesktopAutoAdvance();
           startMobileAutoAdvance();
           return;
@@ -362,8 +406,10 @@
     mobileRailEl?.removeEventListener("scroll", handleMobileRailScroll);
     desktopRailEl?.removeEventListener("scrollend", handleDesktopScrollEnd);
     mobileRailEl?.removeEventListener("scrollend", handleMobileScrollEnd);
-    if (desktopScrollRaf) cancelAnimationFrame(desktopScrollRaf);
-    if (mobileScrollRaf) cancelAnimationFrame(mobileScrollRaf);
+    desktopScrollCtrl?.cancel();
+    mobileScrollCtrl?.cancel();
+    if (desktopActiveRaf) cancelAnimationFrame(desktopActiveRaf);
+    if (mobileActiveRaf) cancelAnimationFrame(mobileActiveRaf);
   });
 </script>
 
@@ -500,7 +546,7 @@
   </div>
 
   <SliderDock
-    count={items.length}
+    count={dockCount}
     active={dockActive}
     interval={5200}
     label="pôles"

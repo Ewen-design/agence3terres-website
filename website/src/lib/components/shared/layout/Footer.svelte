@@ -29,7 +29,7 @@
 
   const footerImages = {
     "/": "/images/justx-pub2.webp",
-    "/services": "/images/creation_logo_desktop2.webp",
+    "/services": "/images/montre-justx.webp",
     "/travail": "/images/cartes-visites.webp",
     "/apropos": "/images/moovy.webp",
   };
