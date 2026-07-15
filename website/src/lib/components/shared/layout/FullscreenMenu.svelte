@@ -3,7 +3,6 @@
   import { browser } from "$app/environment";
   import { page } from "$app/stores";
   import { navigate } from "$lib/navigate.js";
-  import { projectPages } from "$lib/data/projectPages.js";
 
   export let open = false;
   export let origin = { x: 0, y: 0, width: 44, height: 40 };
@@ -29,85 +28,15 @@
     }
   ];
 
+  // Une image par page (change au survol du nom de page). `placement` pilote le
+  // cadrage / l'ancrage plein écran de chaque image (voir .placement-* en CSS).
   const links = [
-    { label: "Accueil", page: "home", image: "/images/tel_moovy2.webp" },
-    { label: "Services", page: "services", image: "/images/moovy_mac.webp" },
-    { label: "Projets", page: "travail", image: "/images/cartes-visites.webp" },
-    { label: "A propos", page: "apropos", image: "/images/affiche-moovy.webp" },
-    { label: "Contact", page: "contact", image: "/images/agence.webp" }
+    { label: "Accueil", page: "home", image: "/images/ipad-creation.webp", placement: "home" },
+    { label: "Services", page: "services", image: "/images/montre-justx.webp", placement: "services" },
+    { label: "Projets", page: "travail", image: "/images/justx-ipads.webp", placement: "projets" },
+    { label: "A propos", page: "apropos", image: "/images/visage.webp", placement: "apropos" },
+    { label: "Contact", page: "contact", image: "/images/mobile-photo.webp", placement: "contact" }
   ];
-
-  const projectPreviewCards = [
-    {
-      page: "projet3",
-      title: projectPages.projet3.title,
-      meta: "Projet sélectionné",
-      image: "/images/moovy_ipad.webp",
-      alt: projectPages.projet3.hero.alt,
-      text: projectPages.projet3.hero.summaryMain,
-      large: true
-    },
-    {
-      page: "projet5",
-      title: projectPages.projet5.title,
-      image: "/images/justx-tel.webp",
-      alt: projectPages.projet5.hero.alt,
-      text: projectPages.projet5.hero.summaryMain,
-      large: false
-    },
-    {
-      page: "projet7",
-      title: projectPages.projet7.title,
-      image: "/images/justx_app.webp",
-      alt: projectPages.projet7.hero.alt,
-      text: projectPages.projet7.hero.summaryMain,
-      large: false
-    },
-    {
-      page: "projet6",
-      title: projectPages.projet6.title,
-      image: "/images/missionx4.webp",
-      alt: projectPages.projet6.hero.alt,
-      text: projectPages.projet6.hero.summaryMain,
-      large: false
-    },
-    {
-      page: "projet4",
-      title: projectPages.projet4.title,
-      image: "/images/ludo.webp",
-      alt: projectPages.projet4.hero.alt,
-      text: projectPages.projet4.hero.summaryMain,
-      large: false
-    },
-    {
-      page: "projet1",
-      title: projectPages.projet1.title,
-      image: projectPages.projet1.hero.image,
-      alt: projectPages.projet1.hero.alt,
-      text: projectPages.projet1.hero.summaryMain,
-      large: false
-    },
-    {
-      page: "services",
-      title: "Conception de site web",
-      image: "/images/moovy_page.webp",
-      alt: "Aperçu service conception de site web",
-      text: "Des sites pensés comme des expériences fluides, désirables et précisées dans le détail.",
-      large: false
-    },
-    {
-      page: "contact",
-      title: "Contact",
-      image: "/images/agence.webp",
-      alt: "Aperçu page contact",
-      text: "Un point d'entrée direct pour cadrer votre projet avec clarté et exigence.",
-      large: false
-    }
-  ];
-
-  const desktopProjectPreviewCards = projectPreviewCards.filter((card) =>
-    ["projet3", "projet5", "services"].includes(card.page)
-  );
 
   let visible = false;
   let expanded = false;
@@ -165,8 +94,6 @@
     clearTimeout(closePanelTimer);
     clearTimeout(finishTimer);
   }
-
-  function setMenuTransitionSuppressed() {}
 
   function finishClose() {
     visible = false;
@@ -256,7 +183,6 @@
     clearAsync();
     window.removeEventListener("resize", resizeHandler);
     document.body.classList.remove("menu-open");
-    setMenuTransitionSuppressed(false);
   });
 
   async function close() {
@@ -355,6 +281,26 @@
   <div class="menu-shell">
     <div class="menu-panel"></div>
 
+    <!-- Grande image par page : ancrée à gauche / en bas, en très grand et
+         pleinement visible (object-fit: contain), un peu en retrait dans le fond.
+         Change au survol du nom de page (previewIndex). -->
+    <div class="menu-media" aria-hidden="true">
+      <div class="menu-media-stack">
+        {#each links as link, i}
+          <img
+            class="menu-media-image placement-{link.placement}"
+            class:is-active={previewIndex === i}
+            src={link.image}
+            alt=""
+            loading="lazy"
+            decoding="async"
+            draggable="false"
+          />
+        {/each}
+      </div>
+      <div class="menu-media-scrim"></div>
+    </div>
+
     <div class="mobile-topbar ui-content">
       <button
         class="mobile-square-btn mobile-close-btn"
@@ -396,7 +342,6 @@
               </a>
             {/each}
           </div>
-
         </div>
       </div>
     </div>
@@ -421,62 +366,6 @@
           </button>
         {/each}
       </nav>
-
-      <aside class="project-previews" aria-label="Aperçus projets">
-        {#each desktopProjectPreviewCards as card}
-          <button
-            class="project-card"
-            class:large={card.large}
-            type="button"
-            on:click={() => handlePath(`/${card.page}`)}
-          >
-            {#if card.large}
-              <div class="project-card-copy">
-                <span class="project-card-title">{card.title}</span>
-              </div>
-              <img class="project-card-image" src={card.image} alt={card.alt} loading="lazy" />
-            {:else}
-              <div class="project-card-copy compact">
-                <span class="project-card-title compact-title">{card.title}</span>
-              </div>
-              <div class="project-card-row">
-                <img class="project-card-image compact-image" src={card.image} alt={card.alt} loading="lazy" />
-                <p class="project-card-text">{card.text}</p>
-              </div>
-            {/if}
-          </button>
-        {/each}
-      </aside>
-    </div>
-
-    <div class="menu-media-shell ui-content" aria-hidden="true">
-      <div class="menu-media-reveal">
-        <div class="menu-media-stack">
-          {#each links as link, i}
-            <img
-              class="menu-media-image"
-              class:is-active={previewIndex === i}
-              src={link.image}
-              alt=""
-              loading="lazy"
-            />
-          {/each}
-          <div class="menu-media-overlay"></div>
-        </div>
-      </div>
-
-      <button
-        class="nav-btn close-block"
-        type="button"
-        aria-label="Fermer le menu"
-        on:mousemove={handleGlowMove}
-        on:click|stopPropagation={close}
-      >
-        <svg class="close-icon" viewBox="0 0 24 24" aria-hidden="true">
-          <path d="M6 6L18 18" />
-          <path d="M18 6L6 18" />
-        </svg>
-      </button>
     </div>
 
     <div class="bottom-strip ui-bottom">
@@ -496,27 +385,6 @@
             </a>
           {/each}
         </div>
-      </div>
-    </div>
-
-    <div class="mobile-preview-rail ui-bottom" aria-label="Aperçus secondaires">
-    <div class="mobile-preview-scroll" data-native-wheel="true">
-        {#each projectPreviewCards as card}
-          <button
-            class="mobile-preview-card"
-            type="button"
-            on:click={() => handlePath(`/${card.page}`)}
-          >
-            <div class="mobile-preview-copy">
-              <span class="mobile-preview-title">{card.title}</span>
-              <p class="mobile-preview-text">{card.text}</p>
-            </div>
-
-            <div class="mobile-preview-row">
-              <img class="mobile-preview-image" src={card.image} alt={card.alt} loading="lazy" />
-            </div>
-          </button>
-        {/each}
       </div>
     </div>
   </div>
@@ -544,11 +412,10 @@
     --menu-panel-duration: 920ms;
     --menu-content-duration: 800ms;
     --menu-footer-duration: 760ms;
-    --menu-media-duration: 920ms;
+    --menu-media-duration: 1100ms;
     --menu-scrim-duration: 920ms;
     --menu-blur-strength: 13px;
     --menu-ease: cubic-bezier(.22, 1, .36, 1);
-    --menu-card-surface: rgba(24, 24, 24, 0.88);
     --menu-muted-gray: rgb(157, 156, 156);
   }
 
@@ -565,8 +432,7 @@
     background: transparent;
   }
 
-  .mobile-topbar,
-  .mobile-preview-rail {
+  .mobile-topbar {
     display: none;
   }
 
@@ -599,21 +465,17 @@
     position: absolute;
     inset: 0;
     z-index: 4;
-    display: grid;
-    grid-template-rows: minmax(0, 1fr) minmax(220px, 30vh);
   }
 
-  /* Black background materialises as a progressive blur-fade (no wipe). */
+  /* Fond noir : simple assombrissement progressif très doux (opacité seule, pas de
+     blur plein écran → léger et fluide, n'entrave plus l'anim du bouton header). */
   .menu-panel {
     position: absolute;
     inset: 0;
     background: #010101;
     opacity: 0;
-    filter: blur(26px);
-    will-change: opacity, filter;
-    transition:
-      opacity var(--menu-panel-duration) var(--menu-ease),
-      filter var(--menu-panel-duration) var(--menu-ease);
+    will-change: opacity;
+    transition: opacity var(--menu-panel-duration) var(--menu-ease);
   }
 
   .ui-content {
@@ -626,43 +488,105 @@
       transform var(--menu-content-duration) var(--menu-ease);
   }
 
+  /* ─────────────── Grande image par page (fond gauche) ─────────────── */
+  /* L'image apparaît en simple fondu d'opacité (léger, GPU) — PAS de blur/translate
+     plein écran (trop lourd → saccadait l'ouverture). */
+  .menu-media {
+    position: absolute;
+    inset: 0;
+    z-index: 5;
+    pointer-events: none;
+    overflow: hidden;
+    opacity: 0;
+    transition: opacity var(--menu-content-duration) var(--menu-ease);
+  }
+
+  .fs-menu.content-visible .menu-media {
+    opacity: 1;
+  }
+
+  .fs-menu.is-closing .menu-media {
+    opacity: 0;
+  }
+
+  .menu-media-stack {
+    position: absolute;
+    inset: 0;
+  }
+
+  /* Apparition : fondu + léger dézoom (scale 1.06 → 1). Aucun `filter` sur l'image
+     (5 filtres plein écran = coûteux, saccadait l'ouverture) — l'effet « dans le
+     fond » vient du voile .menu-media-scrim. */
+  .menu-media-image {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    /* Pleinement visible : l'image entière tient dans l'écran, jamais rognée. */
+    object-fit: contain;
+    object-position: left bottom;
+    opacity: 0;
+    transform: scale(1.06);
+    transition:
+      opacity var(--menu-media-duration) var(--menu-ease),
+      transform var(--menu-media-duration) var(--menu-ease);
+  }
+
+  .menu-media-image.is-active {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  /* Cadrage par page — ancrages demandés. */
+  .placement-home    { object-position: left bottom; }   /* ipad-creation : bas-gauche */
+  .placement-services { object-position: left center; }  /* montre-justx : milieu, collé gauche */
+  .placement-projets { object-position: center center; } /* justx-ipads : pleine largeur, centre */
+  .placement-apropos { object-position: left bottom; }   /* visage : bas-gauche */
+  .placement-contact { object-position: left center; }   /* mobile-photo : pleine hauteur, gauche */
+
+  /* Projets sur desktop : pleine LARGEUR au centre. L'image (ratio ~1.43) est plus
+     « carrée » que l'écran, donc `contain` la mettait en pleine hauteur (pas pleine
+     largeur) → on remplit la largeur en `cover` (léger recadrage haut/bas). */
+  @media (min-width: 901px) {
+    .placement-projets {
+      object-fit: cover;
+      object-position: center center;
+    }
+  }
+
+  /* Voile de lisibilité : assombrit la DROITE (où sont les noms de pages) et le
+     bas (réseaux), en laissant la gauche/le centre bien exposés → l'image se voit
+     pleinement, le texte reste lisible. */
+  .menu-media-scrim {
+    position: absolute;
+    inset: 0;
+    background:
+      linear-gradient(270deg, rgba(1, 1, 1, 0.86) 0%, rgba(1, 1, 1, 0.6) 20%, rgba(1, 1, 1, 0.22) 44%, rgba(1, 1, 1, 0) 66%),
+      linear-gradient(0deg, rgba(1, 1, 1, 0.5) 0%, rgba(1, 1, 1, 0) 30%),
+      linear-gradient(180deg, rgba(1, 1, 1, 0.34) 0%, rgba(1, 1, 1, 0) 22%),
+      /* voile plat léger → image un peu « dans le fond » (remplace le filtre). */
+      rgba(1, 1, 1, 0.24);
+  }
+
+  /* ─────────────── Navigation (noms de pages, à droite) ─────────────── */
   .menu-upper {
     position: relative;
     z-index: 8;
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) auto;
-    align-items: center;
-    min-height: 0;
-    padding: clamp(1.25rem, 2vw, 1.75rem) clamp(1rem, 2vw, 2rem);
-  }
-
-  .menu-top-logo {
-    position: absolute;
-    top: calc(clamp(1.25rem, 2vw, 1.75rem) + 0.2rem);
-    left: 50%;
-    z-index: 12;
-    transform: translateX(-50%);
+    height: 100%;
     display: flex;
-    justify-content: center;
+    align-items: center;
+    justify-content: flex-end;
+    padding: clamp(1.25rem, 2vw, 1.75rem) clamp(1.75rem, 5vw, 6rem);
     pointer-events: none;
   }
 
-  .menu-top-logo img {
-    display: block;
-    width: clamp(2.15rem, 3.35vw, 3rem);
-    height: auto;
-    object-fit: contain;
-  }
-
   .menu-nav {
-    grid-column: 1;
-    justify-self: start;
-    width: min(100%, 620px);
     display: flex;
     flex-direction: column;
-    align-items: flex-start;
+    align-items: flex-end;
     gap: clamp(0.6rem, 1.2vh, 1.2rem);
-    padding-top: 0;
+    text-align: right;
+    pointer-events: auto;
   }
 
   .menu-link {
@@ -672,7 +596,7 @@
     border: 0;
     background: transparent;
     color: #fff;
-    text-align: left;
+    text-align: right;
     cursor: pointer;
   }
 
@@ -685,8 +609,6 @@
     opacity: 0;
     filter: blur(16px);
     transform: translate3d(0, 26px, 0);
-    /* Slider signature: opacity resolves a touch faster than the blur/translate
-       so the text "comes into focus" rather than just sliding in. */
     transition:
       opacity 0.55s ease,
       filter 0.85s var(--menu-ease),
@@ -700,11 +622,12 @@
     font-family: "Inter", sans-serif;
     font-weight: 300;
     font-style: normal;
-    font-size: clamp(2.95rem, 4.15vw, 4.8rem);
+    font-size: clamp(2.95rem, 4.6vw, 5.4rem);
     line-height: 0.94;
     letter-spacing: -0.025em;
     color: var(--menu-muted-gray);
-    padding-right: 0.08em;
+    padding-right: 0.02em;
+    text-shadow: 0 2px 16px rgba(0, 0, 0, 0.38);
     transition:
       color 620ms ease,
       filter 720ms ease;
@@ -714,7 +637,7 @@
   .menu-link:hover .menu-link-text,
   .menu-link:focus-visible .menu-link-text {
     color: #fff;
-    filter: drop-shadow(0 0 18px rgba(255, 255, 255, 0.08));
+    filter: drop-shadow(0 0 18px rgba(255, 255, 255, 0.1));
   }
 
   .menu-nav .menu-link:nth-child(1) .menu-link-line { transition-delay: 90ms; }
@@ -727,294 +650,11 @@
     transition-delay: 0ms;
   }
 
-  .project-previews {
-    position: relative;
-    z-index: 9;
-    grid-column: 2;
-    justify-self: end;
-    display: flex;
-    flex-direction: column;
-    gap: 0.75rem;
-    width: min(22vw, 290px);
-    padding-top: clamp(4.9rem, 8.9vh, 6.9rem);
-  }
-
-  .mobile-preview-card,
-  .mobile-square-btn {
-    border: 0;
-    color: inherit;
-  }
-
-  .mobile-square-btn {
-    position: relative;
-    overflow: hidden;
-    border-radius: 10px;
-  }
-
-  .project-card {
-    position: relative;
-    overflow: hidden;
-    display: grid;
-    grid-template-columns: minmax(0, 1fr);
-    gap: 0.75rem;
-    padding: 0.95rem;
-    border: 0;
-    border-radius: 14px;
-    background: var(--menu-card-surface);
-    color: #fff;
-    text-align: left;
-    cursor: pointer;
-  }
-
-  .project-card.large {
-    gap: 0.9rem;
-    background: var(--menu-card-surface);
-  }
-
-  /* Each preview card focus-pulls in on its own (blur → sharp, slight rise). */
-  .project-card {
-    opacity: 0;
-    filter: blur(16px);
-    transform: translate3d(0, 26px, 0);
-    transition:
-      opacity 0.55s ease,
-      filter 0.85s var(--menu-ease),
-      transform 0.85s var(--menu-ease);
-    will-change: opacity, filter, transform;
-    backface-visibility: hidden;
-  }
-
-  .project-previews .project-card:nth-child(1) { transition-delay: 200ms; }
-  .project-previews .project-card:nth-child(2) { transition-delay: 265ms; }
-  .project-previews .project-card:nth-child(3) { transition-delay: 320ms; }
-
-  .nav-btn::before,
-  .nav-btn::after,
-  .social-link::before,
-  .social-link::after {
-    content: "";
-    position: absolute;
-    inset: -1px;
-    border-radius: inherit;
-    padding: 1px;
-    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-    -webkit-mask-composite: xor;
-    mask-composite: exclude;
-    pointer-events: none;
-    opacity: 0;
-  }
-
-  .nav-btn::before,
-  .social-link::before {
-    background: radial-gradient(
-      68px circle at var(--mx, 50%) var(--my, 50%),
-      var(--site-glow-strong) 0%,
-      var(--site-glow-mid) 22%,
-      var(--site-glow-soft) 45%,
-      var(--site-glow-fade) 62%,
-      transparent 78%
-    );
-    transition: opacity 0.25s ease;
-  }
-
-  .nav-btn::after,
-  .social-link::after {
-    background: radial-gradient(
-      78px circle at var(--mx, 50%) var(--my, 50%),
-      var(--site-glow-ambient) 0%,
-      var(--site-glow-outer) 42%,
-      transparent 72%
-    );
-    filter: blur(2px);
-    transition: opacity 0.25s ease;
-  }
-
-  .nav-btn:hover::before,
-  .nav-btn:hover::after,
-  .social-link:hover::before,
-  .social-link:hover::after {
-    opacity: 1;
-  }
-
-  .project-card-copy {
-    display: flex;
-    flex-direction: column;
-    gap: 0.22rem;
-  }
-
-  .project-card-copy.compact {
-    gap: 0.3rem;
-  }
-
-  .project-card-title {
-    font-family: "Inter", sans-serif;
-    font-size: 1rem;
-    line-height: 1.1;
-    letter-spacing: -0.03em;
-    font-weight: 500;
-  }
-
-  .project-card.large .project-card-title {
-    font-size: 1.18rem;
-  }
-
-  .compact-title {
-    max-width: 16ch;
-  }
-
-  .project-card-meta {
-    font-family: "Inter", sans-serif;
-    font-size: 0.72rem;
-    line-height: 1.2;
-    color: rgba(255, 255, 255, 0.5);
-  }
-
-  .project-card-row {
-    display: grid;
-    grid-template-columns: 64px minmax(0, 1fr);
-    align-items: start;
-    gap: 0.8rem;
-  }
-
-  .project-card-image {
-    width: 100%;
-    height: clamp(82px, 8vw, 102px);
-    border-radius: 10px;
-    object-fit: cover;
-    filter: brightness(0.88) saturate(0.9);
-  }
-
-  .project-card.large .project-card-image {
-    height: clamp(120px, 10vw, 148px);
-  }
-
-  .compact-image {
-    width: 64px;
-    height: 64px;
-  }
-
-  .project-card-text {
-    margin: 0;
-    font-family: "Inter", sans-serif;
-    font-size: 0.76rem;
-    line-height: 1.25;
-    color: rgba(255, 255, 255, 0.72);
-  }
-
-  .menu-media-shell {
-    position: relative;
-    z-index: 7;
-    min-height: 0;
-    display: flex;
-    align-items: flex-end;
-    justify-content: center;
-    padding-bottom: 13vh;
-  }
-
-  /* The media frame rides its parent (.menu-media-shell.ui-content) blur-fade —
-     no separate wipe, so it arrives / leaves like every other element. */
-  .menu-media-reveal {
-    position: relative;
-    width: min(28vw, 34rem);
-    height: min(74vh, 52rem);
-    overflow: hidden;
-    pointer-events: none;
-    border-radius: 14px;
-  }
-
-  .menu-media-stack {
-    position: absolute;
-    inset: 0;
-    background: #050505;
-  }
-
-  .menu-media-image {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    opacity: 0;
-    transform: scale(1.04);
-    filter: brightness(0.72) saturate(0.9) contrast(1.02);
-    transition:
-      opacity 760ms var(--menu-ease),
-      transform var(--menu-media-duration) var(--menu-ease),
-      filter 760ms var(--menu-ease);
-  }
-
-  .menu-media-image.is-active {
-    opacity: 1;
-    transform: scale(1);
-    filter: brightness(0.86) saturate(0.98) contrast(1.03);
-  }
-
-  .menu-media-overlay {
-    position: absolute;
-    inset: 0;
-    background:
-      linear-gradient(180deg, rgba(0, 0, 0, 0.08) 0%, rgba(0, 0, 0, 0.24) 100%),
-      linear-gradient(0deg, rgba(0, 0, 0, 0.34) 0%, rgba(0, 0, 0, 0) 30%);
-  }
-
-  .nav-btn {
-    position: relative;
-    height: 40px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    padding: 0 1.5rem;
-    font-size: 0.9rem;
-    font-family: inherit;
-    white-space: nowrap;
-    color: inherit;
-    border: 0px solid rgba(255, 255, 255, 0.14);
-    background: rgba(255, 255, 255, 0.11);
-    backdrop-filter: blur(20px) saturate(160%) brightness(0.82);
-    -webkit-backdrop-filter: blur(20px) saturate(160%) brightness(0.82);
-    will-change: transform, opacity;
-    border-radius: 10px;
-    cursor: pointer;
-    transition:
-      transform 1s cubic-bezier(.22,.61,.36,1),
-      background 1s cubic-bezier(.22,.61,.36,1),
-      border-color 0.35s ease;
-  }
-
-  /* The header trigger now serves as the close (X) control → hide the in-menu
-     close button (both desktop & mobile rely on the header X now). */
-  .close-block {
-    display: none;
-    position: absolute;
-    left: 50%;
-    bottom: clamp(1rem, 2.2vh, 1.75rem);
-    z-index: 30;
-    width: min(320px, calc(100% - 2rem));
-    min-width: 44px;
-    padding: 0;
-    transform: translateX(-50%);
-    color: inherit;
-    pointer-events: auto;
-  }
-
-  .close-icon {
-    width: 18px;
-    height: 18px;
-    stroke: currentColor;
-    stroke-width: 1.8;
-    fill: none;
-    transition: transform 0.5s ease;
-    pointer-events: none;
-  }
-
-  .close-block:hover .close-icon {
-    transform: rotate(90deg) scale(1.15);
-  }
-
+  /* ─────────────── Réseaux / contact (bas droite) ─────────────── */
   .bottom-strip {
     position: absolute;
     left: clamp(1rem, 2vw, 2rem);
-    right: clamp(1rem, 2vw, 2rem);
+    right: clamp(1.75rem, 5vw, 6rem);
     bottom: clamp(1rem, 2.4vw, 2rem);
     z-index: 14;
     display: flex;
@@ -1031,74 +671,8 @@
     pointer-events: none;
   }
 
-  .mobile-preview-scroll {
-    display: flex;
-    gap: 0.75rem;
-    overflow-x: auto;
-    overflow-y: hidden;
-    padding: 0 1rem;
-    -webkit-overflow-scrolling: touch;
-    touch-action: pan-x pan-y pinch-zoom;
-    scrollbar-width: none;
-    overscroll-behavior-x: contain;
-  }
-
-  .mobile-preview-scroll::-webkit-scrollbar {
-    display: none;
-  }
-
-  .mobile-preview-card {
-    flex: 0 0 min(18.5rem, 76vw);
-    display: grid;
-    grid-template-columns: 4.3rem minmax(0, 1fr);
-    gap: 0.7rem;
-    align-items: center;
-    padding: 0.75rem;
-    background: var(--menu-card-surface);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    border-radius: 14px;
-    text-align: left;
-    cursor: pointer;
-  }
-
-  .mobile-preview-copy {
-    order: 2;
-    min-width: 0;
-  }
-
-  .mobile-preview-row {
-    order: 1;
-  }
-
-  .mobile-preview-image {
-    width: 4.3rem;
-    height: 4.3rem;
-    object-fit: cover;
-    border-radius: 2px;
-    filter: brightness(0.88) saturate(0.92);
-  }
-
-  .mobile-preview-title {
-    display: block;
-    font-family: "Inter", sans-serif;
-    font-size: 0.82rem;
-    font-weight: 500;
-    line-height: 1.04;
-    letter-spacing: -0.03em;
-    color: #fff;
-  }
-
-  .mobile-preview-text {
-    margin: 0.28rem 0 0;
-    font-family: "Inter", sans-serif;
-    font-size: 0.64rem;
-    line-height: 1.14;
-    color: rgba(255, 255, 255, 0.68);
-  }
-
-  .mobile-square-btn::before,
-  .mobile-square-btn::after {
+  .social-link::before,
+  .social-link::after {
     content: "";
     position: absolute;
     inset: -1px;
@@ -1111,7 +685,7 @@
     opacity: 0;
   }
 
-  .mobile-square-btn::before {
+  .social-link::before {
     background: radial-gradient(
       68px circle at var(--mx, 50%) var(--my, 50%),
       var(--site-glow-strong) 0%,
@@ -1123,7 +697,7 @@
     transition: opacity 0.25s ease;
   }
 
-  .mobile-square-btn::after {
+  .social-link::after {
     background: radial-gradient(
       78px circle at var(--mx, 50%) var(--my, 50%),
       var(--site-glow-ambient) 0%,
@@ -1134,31 +708,9 @@
     transition: opacity 0.25s ease;
   }
 
-  .mobile-square-btn:hover::before,
-  .mobile-square-btn:hover::after,
-  .mobile-square-btn:focus-visible::before,
-  .mobile-square-btn:focus-visible::after,
-  .mobile-square-btn:active::before,
-  .mobile-square-btn:active::after {
+  .social-link:hover::before,
+  .social-link:hover::after {
     opacity: 1;
-  }
-
-  .bottom-kicker {
-    font-family: "Inter", sans-serif;
-    font-size: 0.9rem;
-    letter-spacing: 0.02em;
-    color: var(--menu-muted-gray);
-    margin-bottom: 0.8rem;
-  }
-
-  .menu-email a {
-    font-family: "Inter", sans-serif;
-    font-size: clamp(1.05rem, 1.45vw, 1.5rem);
-    line-height: 1;
-    letter-spacing: -0.03em;
-    color: #fff;
-    text-decoration: none;
-    pointer-events: auto;
   }
 
   .menu-socials {
@@ -1185,7 +737,13 @@
     backdrop-filter: blur(20px) saturate(160%) brightness(0.82);
     -webkit-backdrop-filter: blur(20px) saturate(160%) brightness(0.82);
     border-radius: 10px;
+    /* Mêmes hints GPU que les boutons verre du site (header/footer/contact) : init
+       propre du backdrop-filter. Le translateZ sur le bouton LUI-MÊME est sans
+       danger (seul un transform sur un ANCÊTRE casserait le blur). */
     will-change: transform, opacity;
+    transform: translateZ(0);
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
     transition:
       transform 0.35s cubic-bezier(.22, .61, .36, 1),
       background 0.35s ease,
@@ -1219,6 +777,16 @@
     height: clamp(1.26rem, 1.65vw, 1.55rem);
   }
 
+  .bottom-kicker {
+    font-family: "Inter", sans-serif;
+    font-size: 0.9rem;
+    letter-spacing: 0.02em;
+    color: var(--menu-muted-gray);
+    margin-bottom: 0.8rem;
+    text-align: right;
+  }
+
+  /* ─────────────── États d'ouverture / fermeture ─────────────── */
   .fs-menu.expanded .menu-scrim {
     opacity: 1;
   }
@@ -1231,7 +799,6 @@
 
   .fs-menu.expanded .menu-panel {
     opacity: 1;
-    filter: blur(0);
   }
 
   .fs-menu.content-visible .ui-content {
@@ -1240,20 +807,13 @@
     transform: translate3d(0, 0, 0);
   }
 
-  .fs-menu.content-visible .menu-link-line,
-  .fs-menu.content-visible .project-card {
+  .fs-menu.content-visible .menu-link-line {
     opacity: 1;
     filter: blur(0);
     transform: translate3d(0, 0, 0);
   }
 
   .fs-menu.footer-visible .bottom-strip {
-    opacity: 1;
-    filter: blur(0);
-    transform: translate3d(0, 0, 0);
-  }
-
-  .fs-menu.footer-visible .mobile-preview-rail {
     opacity: 1;
     filter: blur(0);
     transform: translate3d(0, 0, 0);
@@ -1266,8 +826,7 @@
     transform: translate3d(0, -18px, 0);
   }
 
-  .fs-menu.is-closing .menu-link-line,
-  .fs-menu.is-closing .project-card {
+  .fs-menu.is-closing .menu-link-line {
     opacity: 0;
     filter: blur(14px);
     transform: translate3d(0, -14px, 0);
@@ -1276,7 +835,6 @@
 
   .fs-menu.is-closing .menu-panel {
     opacity: 0;
-    filter: blur(26px);
   }
 
   .fs-menu.is-closing .menu-scrim {
@@ -1289,81 +847,19 @@
     -webkit-backdrop-filter: blur(0px);
   }
 
-  @media (max-width: 1100px) {
+  /* ─────────────── Tablette ─────────────── */
+  @media (max-width: 1100px) and (min-width: 901px) {
     .menu-upper {
-      grid-template-columns: minmax(0, 1fr);
-      justify-items: center;
-      padding-top: 1rem;
+      padding-right: clamp(1.5rem, 4vw, 3rem);
     }
 
-    .project-previews {
-      position: absolute;
-      /* Sit below the header close (X) so they never overlap it. */
-      top: clamp(4.5rem, 8vh, 5.5rem);
-      right: 1rem;
-      grid-column: auto;
-      width: min(34vw, 260px);
-    }
-
-    .menu-nav {
-      grid-column: auto;
-      justify-self: center;
-      align-items: flex-start;
-      padding-top: 0;
+    .menu-link-text {
+      font-size: clamp(2.8rem, 5.5vw, 4.4rem);
     }
   }
 
-  @media (min-width: 901px) {
-    .menu-shell {
-      grid-template-rows: 1fr;
-    }
-
-    .menu-upper {
-      height: 100%;
-      align-content: center;
-      pointer-events: none;
-    }
-
-    .menu-nav,
-    .project-previews {
-      pointer-events: auto;
-    }
-
-    .menu-media-shell {
-      position: absolute;
-      top: clamp(2rem, 4vh, 3.25rem);
-      bottom: clamp(2rem, 4vh, 3.25rem);
-      left: 0;
-      right: 0;
-      width: min(32vw, 39rem);
-      min-height: 0;
-      margin: 0 auto;
-      display: block;
-      padding: 0;
-    }
-
-    .menu-media-reveal {
-      position: absolute;
-      inset: 0;
-      width: 100%;
-      height: 100%;
-      max-height: none;
-      min-height: 0;
-    }
-  }
-
-  @media (min-width: 1101px) {
-    .project-previews {
-      position: absolute;
-      /* Sit below the header close (X) so they never overlap it. */
-      top: clamp(5rem, 9vh, 6.5rem);
-      right: clamp(1rem, 2vw, 2rem);
-      padding-top: 0;
-    }
-  }
-
+  /* ─────────────── Mobile ─────────────── */
   @media (max-width: 900px) {
-    .nav-btn,
     .social-link {
       backdrop-filter: blur(12px) saturate(130%);
       -webkit-backdrop-filter: blur(12px) saturate(130%);
@@ -1373,7 +869,7 @@
       --menu-panel-duration: 460ms;
       --menu-content-duration: 420ms;
       --menu-footer-duration: 380ms;
-      --menu-media-duration: 460ms;
+      --menu-media-duration: 560ms;
       --menu-scrim-duration: 460ms;
       --menu-blur-strength: 0px;
     }
@@ -1382,8 +878,7 @@
       display: none;
     }
 
-    /* Mobile keeps the same fade language but drops the blur on the solid
-       black surface (negligible visually, costly on mobile GPUs). */
+    /* Solid black surface: drop the blur/translate on mobile (costly on GPU). */
     .menu-panel {
       transform: none;
       filter: none;
@@ -1404,30 +899,13 @@
     }
 
     .ui-content,
-    .mobile-topbar,
-    .menu-media-shell,
-    .mobile-preview-rail {
+    .mobile-topbar {
       filter: none;
-    }
-
-    .ui-content {
-      transition:
-        opacity var(--menu-content-duration) var(--menu-ease),
-        transform var(--menu-content-duration) var(--menu-ease);
     }
 
     .fs-menu.is-closing .ui-content,
-    .fs-menu.is-closing .bottom-strip,
-    .fs-menu.is-closing .mobile-preview-rail {
+    .fs-menu.is-closing .bottom-strip {
       filter: none;
-    }
-
-    .menu-top-logo {
-      top: calc(clamp(1.25rem, 2vw, 1.75rem) + 0.2rem);
-    }
-
-    .menu-top-logo img {
-      width: clamp(1.95rem, 7vw, 2.45rem);
     }
 
     .menu-shell {
@@ -1435,36 +913,65 @@
       flex-direction: column;
       inset: 0;
       padding-top: calc(env(safe-area-inset-top, 0px) + 0.9rem);
-      padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 5.25rem);
+      padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 1.5rem);
       gap: 0;
     }
 
+    /* Image plein écran derrière la nav, un peu plus présente sur mobile. */
+    .menu-media {
+      z-index: 5;
+    }
+
+    /* Projets & Services : image AU-DESSUS des noms (les noms restent centrés en
+       dessous). Décalées un peu plus bas que le tout en haut. */
+    .placement-projets { object-position: center 12%; }
+    .placement-services { object-position: center 24%; }
+
+    /* À propos (visage) : remontée un peu par rapport au bas. */
+    .placement-apropos { object-position: left 82%; }
+
+    /* Contact : beaucoup plus grande et collée bas-gauche. On sort du plein écran :
+       boîte fixée en bas à gauche, PLUS LARGE que l'écran (déborde à droite) → l'image
+       est franchement calée à gauche et bien grande. */
+    .placement-contact {
+      inset: auto auto 0 0;
+      width: 155%;
+      height: 82%;
+      object-fit: cover;
+      object-position: left bottom;
+    }
+
+    /* Voile mobile : assombrit surtout le CENTRE (derrière les noms) et laisse le
+       haut / le bas plus clairs → les images calées en haut (projets/services) ou en
+       bas (contact/accueil/à propos) restent bien visibles. */
+    .menu-media-scrim {
+      background:
+        linear-gradient(180deg,
+          rgba(1, 1, 1, 0.26) 0%,
+          rgba(1, 1, 1, 0.52) 38%,
+          rgba(1, 1, 1, 0.52) 62%,
+          rgba(1, 1, 1, 0.26) 100%),
+        rgba(1, 1, 1, 0.18);
+    }
+
+    /* Le contact passe désormais par la barre du bas (centrée) → on retire tout le
+       système d'en haut à gauche. La fermeture reste assurée par la croix du header. */
     .mobile-topbar {
-      position: relative;
-      z-index: 18;
-      display: grid;
-      grid-template-columns: 2.75rem 1fr 2.75rem;
-      align-items: center;
-      width: 100%;
-      padding: 0 1rem;
-      margin-bottom: 0.9rem;
-      opacity: 0;
-      filter: blur(18px);
-      transform: translate3d(0, 26px, 0);
-      transition:
-        opacity var(--menu-content-duration) var(--menu-ease),
-        transform var(--menu-content-duration) var(--menu-ease);
+      display: none;
     }
 
     .mobile-square-btn {
+      position: relative;
+      overflow: hidden;
+      border: 0;
+      color: inherit;
       width: 2.75rem;
       height: 2.75rem;
       display: inline-flex;
       align-items: center;
       justify-content: center;
       background: rgba(24, 24, 24, 0.96);
-      backdrop-filter: none;
-      -webkit-backdrop-filter: none;
+      border-radius: 10px;
       padding: 0;
       cursor: pointer;
       transition:
@@ -1478,7 +985,7 @@
       display: none;
     }
 
-    /* Contact button moves to the LEFT corner. */
+    /* Contact button (mail) in the LEFT corner. */
     .mobile-actions {
       position: relative;
       justify-self: start;
@@ -1509,39 +1016,11 @@
       transform: translate3d(0, 0, 0);
     }
 
-    .mobile-mail-link {
-      display: block;
-      font-family: "Inter", sans-serif;
-      font-size: 0.76rem;
-      line-height: 1.15;
-      color: #fff;
-      text-decoration: none;
-      margin-top: 0.55rem;
-      width: max-content;
-      min-width: 0;
-      margin-left: 0;
-      margin-right: 0;
-      text-align: right;
-      white-space: nowrap;
-    }
-
     .mobile-socials {
       display: flex;
       flex-direction: column;
       align-items: center;
       gap: 0.5rem;
-    }
-
-    .mobile-top-logo {
-      display: flex;
-      justify-content: center;
-      pointer-events: none;
-    }
-
-    .mobile-top-logo img {
-      width: 2rem;
-      height: auto;
-      object-fit: contain;
     }
 
     .mobile-topbar-icon {
@@ -1561,12 +1040,6 @@
       transition: transform 0.35s ease;
     }
 
-    .mobile-close-btn:hover .mobile-close-icon,
-    .mobile-close-btn:focus-visible .mobile-close-icon,
-    .mobile-close-btn:active .mobile-close-icon {
-      transform: rotate(90deg) scale(1.12);
-    }
-
     .mobile-actions-toggle:hover .mobile-action-mail-icon,
     .mobile-actions-toggle:focus-visible .mobile-action-mail-icon,
     .mobile-actions-toggle:active .mobile-action-mail-icon,
@@ -1574,123 +1047,85 @@
       transform: scale(1.08);
     }
 
-    .menu-top-logo,
-    .project-previews,
-    .close-block,
+    /* Boutons contact / réseaux en bas, CENTRÉS (comme desktop mais centré). */
     .bottom-strip {
-      display: none;
+      display: flex;
+      left: 1rem;
+      right: 1rem;
+      bottom: calc(env(safe-area-inset-bottom, 0px) + 3.25rem);
+      justify-content: center;
+      gap: 0;
+      filter: none;
+      /* PAS de transform ici : un ancêtre transformé casserait le backdrop-filter
+         des boutons (ils ne bluraient pas). Arrivée en opacité seule. */
+      transform: none;
+      transition: opacity var(--menu-footer-duration) var(--menu-ease);
     }
 
-    .menu-media-shell {
-      order: 2;
-      height: 25vh;
-      min-height: 10.6rem;
-      padding: 0 1rem;
-      margin-bottom: 0.7rem;
+    /* AUCUN `filter` sur la barre (même `blur(0)` créerait un backdrop root qui
+       casse le blur des boutons enfants). On force `none` dans tous les états. */
+    .fs-menu.footer-visible .bottom-strip {
+      transform: none;
+      filter: none;
+    }
+
+    .fs-menu.is-closing .bottom-strip {
+      transform: none;
+      filter: none;
       opacity: 0;
-      filter: blur(18px);
-      transform: translate3d(0, 26px, 0);
-      transition:
-        opacity var(--menu-content-duration) var(--menu-ease),
-        transform var(--menu-content-duration) var(--menu-ease);
     }
 
-    .menu-media-reveal {
-      position: relative;
-      width: 100%;
-      height: 100%;
-      border-radius: 2px;
+    .bottom-strip .menu-socials {
+      align-items: center;
+    }
+
+    .bottom-strip .bottom-kicker {
+      text-align: center;
+    }
+
+    .bottom-strip .socials-group {
+      justify-content: center;
     }
 
     .menu-upper {
       order: 3;
-      display: flex;
-      align-items: flex-start;
-      justify-content: center;
-      padding: 2.2rem 1.25rem 0;
+      height: auto;
       flex: 1 1 auto;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem 1.25rem;
     }
 
     .menu-nav {
       width: 100%;
-      max-width: 19rem;
-      padding-top: 0;
-      gap: 0.42rem;
+      max-width: 20rem;
       align-items: center;
+      text-align: center;
+      gap: 0.42rem;
+    }
+
+    .menu-link,
+    .menu-link-text {
+      text-align: center;
     }
 
     .menu-link-text {
-      font-size: clamp(2.3rem, 8vw, 3.45rem);
+      font-size: clamp(2.4rem, 9vw, 3.7rem);
       line-height: 0.92;
-      text-align: center;
-    }
-
-    .menu-link {
-      width: 100%;
-      text-align: center;
     }
 
     .menu-link-line {
       display: flex;
       justify-content: center;
-    }
-
-    .mobile-preview-rail {
-      order: 4;
-      display: block;
-      width: 100%;
-      margin-top: 1.35rem;
-      padding-bottom: 0.2rem;
-      opacity: 0;
-      filter: blur(16px);
-      transform: translate3d(0, 26px, 0);
-      transition:
-        opacity var(--menu-footer-duration) var(--menu-ease),
-        transform var(--menu-footer-duration) var(--menu-ease);
-    }
-
-    .social-link {
-      width: 2.7rem;
-      height: 2.7rem;
-      background: rgba(24, 24, 24, 0.96);
-      backdrop-filter: none;
-      -webkit-backdrop-filter: none;
-    }
-
-    .icon-instagram {
-      width: 1.05rem;
-      height: 1.05rem;
-    }
-
-    .icon-mail {
-      width: 1.06rem;
-      height: 1.06rem;
-    }
-
-    .icon-x {
-      width: 1rem;
-      height: 1rem;
-    }
-
-    .mobile-topbar,
-    .menu-media-shell,
-    .mobile-preview-rail,
-    .ui-content {
-      filter: none;
-    }
-
-    /* Mobile drives the lightweight reveal on the text itself (no blur, for
-       perf) — keep the line wrapper neutral so the two don't compound. */
-    .menu-link-line {
       opacity: 1;
       filter: none;
       transform: none;
       transition: none;
     }
 
+    /* Mobile drives the lightweight reveal on the text itself (no blur, for perf). */
     .menu-link-text {
-      clip-path: none;
-      -webkit-clip-path: none;
       opacity: 0;
       transform: translate3d(0, 14px, 0);
       transition:
@@ -1699,15 +1134,11 @@
     }
 
     .fs-menu.content-visible .menu-link-text {
-      clip-path: none;
-      -webkit-clip-path: none;
       opacity: 1;
       transform: translate3d(0, 0, 0);
     }
 
     .fs-menu.is-closing .menu-link-text {
-      clip-path: none;
-      -webkit-clip-path: none;
       opacity: 0;
       transform: translate3d(0, -10px, 0);
       transition-delay: 0ms;
@@ -1728,23 +1159,19 @@
     .menu-scrim,
     .menu-blur,
     .menu-panel,
-    .menu-media-reveal,
+    .menu-media,
     .menu-media-image,
     .ui-content,
     .menu-link-text,
     .menu-link-line,
-    .project-card,
     .bottom-strip,
-    .nav-btn,
-    .social-link,
-    .close-icon {
+    .social-link {
       transition: none !important;
       animation: none !important;
       filter: none !important;
     }
 
-    .fs-menu.content-visible .menu-link-line,
-    .fs-menu.content-visible .project-card {
+    .fs-menu.content-visible .menu-link-line {
       opacity: 1;
       transform: none;
     }
