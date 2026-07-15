@@ -23,19 +23,19 @@
     {
       title: "3 Terres Digital",
       subtitle: "Sites web, applications & développement sur mesure",
-      image: "/images/moovy_mac.webp",
-      mobileImage: "/images/tel_moovy2.webp"
+      image: "/images/montre-justx.webp",
+      mobileImage: "/images/montre-justx.webp"
     },
     {
       title: "3 Terres Design",
       subtitle: "Logo, charte, typographie & stratégie de marque",
-      image: "/images/creation_logo_desktop.webp",
-      mobileImage: "/images/creation_logo_mobile.webp"
+      image: "/images/ipad-logo.webp",
+      mobileImage: "/images/ipad-logo.webp"
     },
     {
       title: "3 Terres Studio",
       subtitle: "Photo, vidéo, réseaux sociaux & événements",
-      image: "/images/tel_moovy3.webp"
+      image: "/images/mobile-photo.webp"
     }
   ];
 

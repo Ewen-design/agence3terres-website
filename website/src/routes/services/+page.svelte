@@ -2,6 +2,7 @@
   import ProjectThemePage from "$lib/components/projets/shared/ProjectThemePage.svelte";
   import PolesHero from "$lib/components/poles/PolesHero.svelte";
   import SectionLead from "$lib/components/poles/SectionLead.svelte";
+  import PoleHeadline from "$lib/components/poles/PoleHeadline.svelte";
   import ShowcaseCards from "$lib/components/poles/ShowcaseCards.svelte";
   import MediaSlider from "$lib/components/poles/MediaSlider.svelte";
   import AboutEditorialSingleShowcase from "$lib/components/apropos/AboutEditorialSingleShowcase.svelte";
@@ -33,7 +34,7 @@
   // Design — identité visuelle : logo, charte, typographie, système cohérent (+ naming & stratégie).
   const designSlides = [
      { image: "/images/naming.webp", alt: "Naming et fondations", label: "Naming & fondations", caption: "Un nom, un ton et des repères qui posent des bases solides pour la marque." },
-    { image: "/images/logo-creation.webp", alt: "Logo", label: "Logo", caption: "Création de logo cohérent et déclinable, pensé pour installer une présence immédiate et mémorable." },
+    { image: "/images/ipad-logo.webp", alt: "Logo", label: "Logo", caption: "Création de logo cohérent et déclinable, pensé pour installer une présence immédiate et mémorable." },
     { image: "/images/justx_couleurs.webp", alt: "Identité visuelle", label: "Identité visuelle", caption: "De la palette de couleurs, aux typographies, nous concevons un univers visuel cohérent, répondant aux valeurs de la marque." },
     { image: "/images/charte-typo.webp", alt: "Présentation de la typographie", label: "Charte éditoriale", caption: "Une nouvelle manière de communiquer en adaptant le ton et l'expérience." },
     { image: "/images/parfum_ordinateur.webp", alt: "Suivi stratégique", label: "Suivi & stratégie", caption: "Un accompagnement dans la durée mêlant stratégie, suivi détaillé et reportings, pour faire évoluer la marque avec cohérence." }
@@ -41,7 +42,7 @@
 
   // Studio — toute l'image de la marque : captation, DA, réseaux, contenu, 3D.
   const studioSlides = [
-    { image: "/images/appareil_photo.webp", alt: "Captation photo et vidéo", label: "Captation & événements", caption: "Une présence événementielle plus forte afin de faire durer un moment inoubliable." },
+    { image: "/images/mobile-photo.webp", alt: "Captation photo et vidéo", label: "Captation & événements", caption: "Une présence événementielle plus forte afin de faire durer un moment inoubliable." },
     { image: "/images/justx-rs.webp", alt: "Réseaux sociaux", label: "Réseaux sociaux", caption: "Une présence sur les réseaux sociaux posant un univers en faisant connaître la marque." },
     { image: "/images/justx_textile.webp", alt: "Contenu et montage", label: "Contenu & montage", caption: "Nous créons des contenus vidéos et photos adaptables à chaque marque et à chaque cible." },
     { image: "/images/apple_justx.webp", alt: "Photo produit", label: "Photo produit", caption: "Des visuels soignés qui subliment produits et supports." }
@@ -58,7 +59,7 @@
 <ProjectThemePage>
   <!-- ───────── Pôle 01 — Digital (fond noir) ───────── -->
   <div class="project-theme-band band-nuance-dark theme-dark">
-    <SectionLead lead="3 Terres Digital" />
+    <PoleHeadline label="3 Terres Digital" text="Des expériences<br>digitales<br>qui captivent." />
     <ShowcaseCards cards={digitalCards} showSubtitle={false} />
     <SectionLead
       text="Des <span class='hl'>sites web</span> et des applications sur mesure, du design d'interface au <span class='hl'>développement</span>, pensés pour toucher durablement votre cible."
@@ -78,7 +79,7 @@
 
   <!-- ───────── Pôle 02 — Design (fond blanc) ───────── -->
   <div class="project-theme-band band-nuance-light theme-light">
-    <SectionLead lead="3 Terres Design" />
+    <PoleHeadline label="3 Terres Design" text="Une identité<br>qui marque<br>les esprits." />
     <ShowcaseCards cards={designCards} showSubtitle={false} />
     <SectionLead
       text="Nous façonnons l'<span class='hl'>identité visuelle</span> de la marque, du logo à la charte et la typographie, pour lui donner une <span class='hl'>présence claire et durable</span>."
@@ -102,7 +103,7 @@
 
   <!-- ───────── Pôle 03 — Studio (reprend la 1ʳᵉ config : fond noir/dark) ───────── -->
   <div class="project-theme-band band-nuance-dark theme-dark">
-    <SectionLead lead="3 Terres Studio" />
+    <PoleHeadline label="3 Terres Studio" text="Des contenus<br>qui font vivre<br>la marque." />
     <ShowcaseCards cards={studioCards} showSubtitle={false} />
     <SectionLead
       text="Nous produisons toute l'image de la marque : captation, réseaux sociaux, montage et contenu, au service d'une <span class='hl'>direction artistique durable</span>."

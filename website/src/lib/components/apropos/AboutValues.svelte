@@ -15,7 +15,7 @@
     {
       label: "Créativité enracinée",
       text: "Nous imaginons des idées qui prennent racine dans l'<span class='hl'>identité</span>, les valeurs et la vision de chaque projet afin d'en révéler toute la <span class='hl'>singularité</span>.",
-      image: "/images/tel-justx.webp",
+      image: "/images/ipad-creation.webp",
       alt: "Application JustX sur mobile",
       layout: "text-left",
       // Image ancrée au bas du bloc (façon téléphone qui remonte du bord bas).
@@ -27,7 +27,7 @@
     {
       label: "Proximité et confiance",
       text: "Nous avançons aux côtés de nos clients avec écoute, <span class='hl'>transparence</span> et collaboration pour bâtir des relations solides et <span class='hl'>durables</span>.",
-      image: "/images/tel-justx.webp",
+      image: "/images/visage.webp",
       alt: "Application JustX sur mobile",
       layout: "text-right",
       flushBottom: true,
@@ -207,6 +207,12 @@
     .value-part--text-right .value-text {
       margin-right: clamp(1rem, 2.2vw, 2.2rem);
     }
+
+    /* Part 1 : l'image colle au bord droit de l'écran (déborde du conteneur
+       centré). 50% = moitié de la largeur du conteneur flex (.value-inner). */
+    .value-part--text-left .value-media {
+      margin-right: calc(50% - 50vw);
+    }
   }
 
   /* ── Mobile ───────────────────────────────────────────────────────── */
@@ -242,6 +248,12 @@
     .value-part--text-right .value-inner {
       flex-direction: column;
       align-items: stretch;
+    }
+
+    /* Part 2 (« Proximité et confiance ») : un peu plus d'air entre le texte
+       et l'image sur mobile. */
+    .value-part--text-right .value-inner {
+      gap: clamp(3.2rem, 9vw, 4.5rem);
     }
 
     /* Partie 3 : image au-dessus, texte en dessous. */
