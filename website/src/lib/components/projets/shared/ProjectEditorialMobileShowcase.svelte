@@ -30,7 +30,7 @@
   </div>
 
   <div class="editorial-mobile-showcase__text-grid">
-    <p use:reveal>{text}</p>
+    <p use:reveal>{@html text}</p>
   </div>
 </section>
 
@@ -83,6 +83,15 @@
     font-size: var(--project-lead-size, clamp(1.35rem, 2.7vw, 2.8rem));
     line-height: 0.98;
     letter-spacing: -0.05em;
+  }
+
+  /* Texte gris + mots importants (.hl) en pleine encre. */
+  .editorial-mobile-showcase__text-grid p:has(:global(.hl)) {
+    color: color-mix(in srgb, var(--project-surface-ink, #121212) 50%, transparent);
+  }
+
+  .editorial-mobile-showcase__text-grid p :global(.hl) {
+    color: var(--project-surface-ink, #121212);
   }
 
   .editorial-mobile-showcase--reverse .editorial-mobile-showcase__media-grid figure:first-child {

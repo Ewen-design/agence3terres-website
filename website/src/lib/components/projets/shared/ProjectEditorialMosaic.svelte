@@ -20,7 +20,7 @@
   </div>
 
   {#if text}
-    <p class="project-editorial-mosaic__text" use:reveal>{text}</p>
+    <p class="project-editorial-mosaic__text" use:reveal>{@html text}</p>
   {/if}
 </section>
 
@@ -70,6 +70,15 @@
     font-size: var(--project-lead-size, clamp(1.35rem, 2.7vw, 2.8rem));
     line-height: 0.98;
     letter-spacing: -0.05em;
+  }
+
+  /* Texte gris + mots importants (.hl) en pleine encre. */
+  .project-editorial-mosaic__text:has(:global(.hl)) {
+    color: color-mix(in srgb, var(--project-surface-ink, #f4efe6) 50%, transparent);
+  }
+
+  .project-editorial-mosaic__text :global(.hl) {
+    color: var(--project-surface-ink, #f4efe6);
   }
 
   @media (max-width: 900px) {

@@ -8,7 +8,7 @@
 <section class="editorial-statement">
   <div class="editorial-statement__eyebrow" use:reveal>{eyebrow}</div>
   <div class="editorial-statement__body">
-    <p use:reveal={{ delay: 90 }}>{text}</p>
+    <p use:reveal={{ delay: 90 }}>{@html text}</p>
   </div>
 </section>
 
@@ -45,6 +45,16 @@
     font-size: var(--project-lead-size, clamp(1.35rem, 2.7vw, 2.8rem));
     line-height: 0.98;
     letter-spacing: -0.05em;
+  }
+
+  /* Texte gris + mots importants (.hl) en pleine encre — n'agit que si le texte
+     contient des <span class="hl"> (sinon le texte reste inchangé). */
+  .editorial-statement__body p:has(:global(.hl)) {
+    color: color-mix(in srgb, var(--project-surface-ink, #121212) 50%, transparent);
+  }
+
+  .editorial-statement__body p :global(.hl) {
+    color: var(--project-surface-ink, #121212);
   }
 
   @media (max-width: 900px) {

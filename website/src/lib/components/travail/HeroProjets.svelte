@@ -53,7 +53,7 @@
   };
 
   const finalText =
-    "Stratégie, esthétique, exécution. Des projets où chaque décision a du sens.";
+    "<span class='hl'>Stratégie</span>, <span class='hl'>esthétique</span>, <span class='hl'>exécution</span>. Des projets où <span class='hl'>chaque décision a du sens</span>.";
   const activeAfterImage = "/images/apple_justx.webp";
 
   const clamp = (v, min = 0, max = 1) => Math.max(min, Math.min(max, v));
@@ -309,7 +309,7 @@
   <section class="after-section">
     <div class="after-grid">
       <div class="after-text" bind:this={afterTextEl}>
-        <h2 use:reveal>{finalText}</h2>
+        <h2 use:reveal>{@html finalText}</h2>
       </div>
 
       <div class="after-image" bind:this={afterImageEl} use:reveal>
@@ -535,8 +535,12 @@
     font-size: clamp(1.5rem, 2.5vw, 2.55rem);
     line-height: 1.18;
     letter-spacing: -0.025em;
-    color: #f4efe6;
+    color: rgba(245, 241, 232, 0.5);
     text-wrap: pretty;
+  }
+
+  .after-text h2 :global(.hl) {
+    color: #f4efe6;
   }
 
   .after-image {

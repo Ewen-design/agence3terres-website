@@ -372,7 +372,7 @@
     <div class="gallery-header">
       <div class="intro-card">
         {#if introLead}
-          <p class="intro-lead" use:reveal>{introLead}</p>
+          <p class="intro-lead" use:reveal>{@html introLead}</p>
         {:else}
           <p class="intro-headline" use:reveal>
             <span class="intro-main">{introMain}</span><span class="intro-muted">{introMuted}</span>
@@ -570,7 +570,9 @@
     margin-bottom: 1.2rem;
   }
 
-  .intro-main { color: #f4efe6; }
+  /* Titre projet (« Découvrez / nos autres projets. ») : 1ʳᵉ ligne en gris,
+     2ᵉ ligne (les mots importants) en blanc. */
+  .intro-main { color: rgba(245, 241, 232, 0.5); }
   .intro-muted {
     display: block;
     color: #f4efe6;
@@ -588,6 +590,15 @@
     color: #f4efe6;
     text-align: left;
     text-wrap: pretty;
+  }
+
+  /* Texte gris + mots importants (.hl) en blanc (accueil). */
+  .intro-lead:has(:global(.hl)) {
+    color: rgba(245, 241, 232, 0.5);
+  }
+
+  .intro-lead :global(.hl) {
+    color: #f4efe6;
   }
 
   .desktop-stack {

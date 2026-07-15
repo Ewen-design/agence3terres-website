@@ -93,7 +93,7 @@
       {#if label}
         <h2 class="about-editorial-single-showcase__label" use:reveal>{label}</h2>
       {/if}
-      <p class="about-editorial-single-showcase__text" use:reveal={{ delay: 120 }}>{[text, mutedText].filter(Boolean).join(" ")}</p>
+      <p class="about-editorial-single-showcase__text" use:reveal={{ delay: 120 }}>{@html [text, mutedText].filter(Boolean).join(" ")}</p>
 
       {#if ctaLabel && ctaHref}
         <div class="about-editorial-single-showcase__cta" use:reveal={{ delay: 220 }}>
@@ -261,6 +261,17 @@
     letter-spacing: -0.025em;
     color: var(--ase-ink, #f4efe6);
     text-wrap: pretty;
+  }
+
+  /* Texte gris + mots importants (.hl) en pleine encre — n'agit que si le texte
+     contient des <span class="hl"> (sinon le texte reste inchangé). Adaptatif
+     fond sombre/clair via --ase-muted / --ase-ink. */
+  .about-editorial-single-showcase__text:has(:global(.hl)) {
+    color: var(--ase-muted, rgba(245, 241, 232, 0.62));
+  }
+
+  .about-editorial-single-showcase__text :global(.hl) {
+    color: var(--ase-ink, #f4efe6);
   }
 
   .about-editorial-single-showcase__cta {

@@ -26,8 +26,8 @@
 
   <ProjectBrief
     lines={[
-      "JustX est une marque sport qui réunit entraînement, nutrition et gamme textile dans un même univers.",
-      "Une identité directe et énergique, un symbole fort pensé pour garder la même présence sur les interfaces, les contenus et les vêtements."
+      "<span class='hl'>JustX</span> est une <span class='hl'>marque sport</span> qui réunit <span class='hl'>entraînement</span>, <span class='hl'>nutrition</span> et <span class='hl'>gamme textile</span> dans un même univers.",
+      "Une <span class='hl'>identité</span> directe et énergique, un <span class='hl'>symbole fort</span> pensé pour garder la même présence sur les <span class='hl'>interfaces</span>, les contenus et les <span class='hl'>vêtements</span>."
     ]}
     images={[
       { src: "/images/justx_textile.webp", alt: "Gamme textile JustX" },

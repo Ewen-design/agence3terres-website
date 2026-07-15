@@ -20,7 +20,7 @@
       </h2>
     {/if}
     {#if text}
-      <p class="sl-text" use:reveal={{ delay: lead ? 90 : 0 }}>{text}</p>
+      <p class="sl-text" use:reveal={{ delay: lead ? 90 : 0 }}>{@html text}</p>
     {/if}
   </div>
 </section>
@@ -91,5 +91,15 @@
       transform 0.85s cubic-bezier(0.22, 0.61, 0.36, 1),
       color var(--project-theme-transition, 920ms cubic-bezier(0.16, 1, 0.3, 1));
     transition-delay: var(--reveal-delay, 0ms);
+  }
+
+  /* Texte gris + mots importants (.hl) en pleine encre — n'agit que si le texte
+     contient des <span class="hl"> (adaptatif fond sombre/clair). */
+  .sl-text:has(:global(.hl)) {
+    color: color-mix(in srgb, var(--project-surface-ink, #f4efe6) 50%, transparent);
+  }
+
+  .sl-text :global(.hl) {
+    color: var(--project-surface-ink, #f4efe6);
   }
 </style>

@@ -5,7 +5,7 @@
   // Présenté comme les textes des pages projet (ProjectBrief) :
   // un paragraphe léger, aligné à gauche.
   export let lead =
-    "Chaque projet devient une signature : une direction claire, un univers singulier et une exécution soignée qui le distingue durablement.";
+    "Chaque projet devient une <span class='hl'>signature</span> : une <span class='hl'>direction claire</span>, un <span class='hl'>univers singulier</span> et une <span class='hl'>exécution soignée</span> qui le distingue durablement.";
 
   let pEl;
   let revealed = false;
@@ -29,7 +29,7 @@
 <section class="story-slider-intro">
   <div class="story-slider-intro__text-wrap">
     <div class="story-slider-intro__card">
-      <p class="story-slider-intro__lead" class:is-revealed={revealed} bind:this={pEl}>{lead}</p>
+      <p class="story-slider-intro__lead" class:is-revealed={revealed} bind:this={pEl}>{@html lead}</p>
     </div>
   </div>
 </section>
@@ -70,7 +70,7 @@
     font-size: clamp(1.5rem, 2.5vw, 2.55rem);
     line-height: 1.18;
     letter-spacing: -0.025em;
-    color: #f4efe6;
+    color: rgba(245, 241, 232, 0.5);
     text-align: left;
     text-wrap: pretty;
     opacity: 0;
@@ -82,6 +82,10 @@
       transform 0.85s cubic-bezier(0.22, 0.61, 0.36, 1);
     will-change: opacity, filter, transform;
     backface-visibility: hidden;
+  }
+
+  .story-slider-intro__lead :global(.hl) {
+    color: #f4efe6;
   }
 
   .story-slider-intro__lead.is-revealed {

@@ -47,7 +47,7 @@
   };
 
   const finalText =
-    "Nous sommes 3 Terres, l'agence dans l'ombre des projets qui durent. De l'identité au digital, nous façonnons des marques fortes, pensées pour traverser le temps.";
+    "Nous sommes <span class='hl'>3 Terres</span>, l'agence dans l'ombre des projets qui durent. De l'<span class='hl'>identité</span> au <span class='hl'>digital</span>, nous façonnons des <span class='hl'>marques fortes</span>, pensées pour <span class='hl'>traverser le temps</span>.";
 
   const clamp = (v, min = 0, max = 1) => Math.max(min, Math.min(max, v));
   const lerp = (a, b, t) => a + (b - a) * t;
@@ -306,7 +306,7 @@
           class="after-lead"
           bind:this={h2TextEl}
           class:is-text-revealed={textRevealed}
-        >{finalText}</h2>
+        >{@html finalText}</h2>
       </div>
     </div>
   </section>
@@ -498,7 +498,7 @@
     line-height: 1.18;
     letter-spacing: -0.025em;
     text-align: left;
-    color: #f4efe6;
+    color: rgba(245, 241, 232, 0.5);
     text-wrap: pretty;
     opacity: 0;
     filter: blur(14px);
@@ -507,6 +507,10 @@
       opacity 0.6s ease,
       filter 0.85s cubic-bezier(0.22, 0.61, 0.36, 1),
       transform 0.7s cubic-bezier(0.22, 0.61, 0.36, 1);
+  }
+
+  .after-lead :global(.hl) {
+    color: #f4efe6;
   }
 
   h2.is-text-revealed {

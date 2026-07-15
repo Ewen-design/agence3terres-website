@@ -12,7 +12,7 @@
 
 <section class="project-brief" class:project-brief--single={single}>
   {#if paragraphs[0]}
-    <p class="project-brief__lead project-brief__lead--top" use:reveal>{paragraphs[0]}</p>
+    <p class="project-brief__lead project-brief__lead--top" use:reveal>{@html paragraphs[0]}</p>
   {/if}
 
   {#each media as image, i}
@@ -27,7 +27,7 @@
   {/each}
 
   {#if paragraphs[1]}
-    <p class="project-brief__lead project-brief__lead--bottom" use:reveal>{paragraphs[1]}</p>
+    <p class="project-brief__lead project-brief__lead--bottom" use:reveal>{@html paragraphs[1]}</p>
   {/if}
 </section>
 
@@ -51,6 +51,15 @@
     letter-spacing: -0.025em;
     color: var(--project-surface-ink, #f4efe6);
     text-wrap: pretty;
+  }
+
+  /* Texte gris + mots importants (.hl) en pleine encre. */
+  .project-brief__lead:has(:global(.hl)) {
+    color: color-mix(in srgb, var(--project-surface-ink, #f4efe6) 50%, transparent);
+  }
+
+  .project-brief__lead :global(.hl) {
+    color: var(--project-surface-ink, #f4efe6);
   }
 
   /* First text — above the images, spanning exactly the first image's column

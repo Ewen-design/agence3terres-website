@@ -14,7 +14,7 @@
   const parts = [
     {
       label: "Créativité enracinée",
-      text: "Nous imaginons des idées qui prennent racine dans l'identité, les valeurs et la vision de chaque projet afin d'en révéler toute la singularité.",
+      text: "Nous imaginons des idées qui prennent racine dans l'<span class='hl'>identité</span>, les <span class='hl'>valeurs</span> et la <span class='hl'>vision</span> de chaque projet afin d'en révéler toute la <span class='hl'>singularité</span>.",
       image: "/images/tel-justx.webp",
       alt: "Application JustX sur mobile",
       layout: "text-left",
@@ -26,7 +26,7 @@
     },
     {
       label: "Proximité et confiance",
-      text: "Nous avançons aux côtés de nos clients avec écoute, transparence et collaboration pour bâtir des relations solides et durables.",
+      text: "Nous avançons aux côtés de nos clients avec <span class='hl'>écoute</span>, <span class='hl'>transparence</span> et <span class='hl'>collaboration</span> pour bâtir des relations solides et <span class='hl'>durables</span>.",
       image: "/images/tel-justx.webp",
       alt: "Application JustX sur mobile",
       layout: "text-right",
@@ -37,9 +37,9 @@
     },
     {
       label: "Excellence engagée",
-      text: "Nous abordons chaque mission avec rigueur, passion et authenticité afin de créer des résultats cohérents, porteurs de sens et fidèles à l'image de ceux que nous accompagnons.",
-      image: "/images/tel-justx.webp",
-      alt: "Application JustX sur mobile",
+      text: "Nous abordons chaque mission avec <span class='hl'>rigueur</span>, <span class='hl'>passion</span> et <span class='hl'>authenticité</span> afin de créer des <span class='hl'>résultats cohérents</span>, porteurs de <span class='hl'>sens</span> et fidèles à l'image de ceux que nous accompagnons.",
+      image: "/images/justx-ipads.webp",
+      alt: "Application JustX sur iPad",
       layout: "stacked",
       background: "#161617",
       ink: "#f4efe6",
@@ -58,7 +58,7 @@
       <div class="value-inner">
         <div class="value-text" use:reveal>
           <h2 class="value-label">{part.label}</h2>
-          <p class="value-copy">{part.text}</p>
+          <p class="value-copy">{@html part.text}</p>
         </div>
 
         <figure class="value-media" use:reveal={{ delay: 120 }}>
@@ -77,6 +77,9 @@
 <style>
   .about-values {
     width: 100%;
+    /* Garde-fou anti-scroll horizontal : posé sur le conteneur (et non sur
+       chaque bloc) pour laisser la 3ᵉ image déborder en pleine largeur. */
+    overflow-x: clip;
   }
 
   .value-part {
@@ -84,15 +87,14 @@
     background: var(--av-bg, #000);
     color: var(--av-ink, #f4efe6);
     padding: clamp(5rem, 12vh, 11rem) clamp(1.5rem, 3vw, 3rem);
-    overflow-x: clip;
   }
 
   .value-inner {
-    width: min(1400px, 100%);
+    width: min(1560px, 100%);
     margin: 0 auto;
     display: flex;
     align-items: center;
-    gap: clamp(2rem, 5vw, 6rem);
+    gap: clamp(1.6rem, 3.5vw, 4rem);
   }
 
   /* ── Layouts desktop ──────────────────────────────────────────────── */
@@ -108,7 +110,13 @@
   .value-part--stacked .value-inner {
     flex-direction: column-reverse;
     align-items: center;
-    gap: clamp(2.4rem, 4vw, 3.6rem);
+    /* Un peu moins d'espace au-dessus du texte (entre l'image et le texte). */
+    gap: clamp(1.5rem, 2.6vw, 2.4rem);
+  }
+
+  /* Un peu plus d'air sous le texte de la partie 3. */
+  .value-part--stacked {
+    padding-bottom: clamp(7rem, 15vh, 13.5rem);
   }
 
   /* ── Bloc texte ───────────────────────────────────────────────────── */
@@ -142,8 +150,13 @@
     font-weight: 300;
     line-height: 1.18;
     letter-spacing: -0.025em;
-    color: var(--av-ink, #f4efe6);
+    /* Texte en gris, mots importants (.hl) en blanc. */
+    color: rgba(245, 241, 232, 0.5);
     text-wrap: pretty;
+  }
+
+  .value-copy :global(.hl) {
+    color: var(--av-ink, #f4efe6);
   }
 
   .value-part--stacked .value-copy {
@@ -155,15 +168,17 @@
      Aucun cadre : ni fond, ni arrondi, ni hauteur fixe. L'image entière à sa
      hauteur naturelle, à la manière d'AboutEditorialSingleShowcase. */
   .value-media {
-    /* Image plus grande que le texte (parties 1 & 2). */
-    flex: 1.6 1 0;
+    /* Image nettement plus grande que le texte (parties 1 & 2). */
+    flex: 2.6 1 0;
     min-width: 0;
     margin: 0;
   }
 
   .value-part--stacked .value-media {
+    /* Pleine largeur bord à bord : 100vw, centré par la colonne (align-items:
+       center) → déborde symétriquement jusqu'aux bords de l'écran. */
     flex: 0 0 auto;
-    width: min(820px, 100%);
+    width: 100vw;
   }
 
   .value-media img {
@@ -182,6 +197,18 @@
     align-self: flex-end;
   }
 
+  /* Desktop : rapproche très légèrement les deux textes vers le centre
+     (part 1 vers la droite, part 2 vers la gauche). */
+  @media (min-width: 901px) {
+    .value-part--text-left .value-text {
+      margin-left: clamp(1rem, 2.2vw, 2.2rem);
+    }
+
+    .value-part--text-right .value-text {
+      margin-right: clamp(1rem, 2.2vw, 2.2rem);
+    }
+  }
+
   /* ── Mobile ───────────────────────────────────────────────────────── */
   @media (max-width: 900px) {
     .value-part {
@@ -192,6 +219,18 @@
        l'image reste collée au bas du bloc (parties 1 & 2). */
     .value-part--flush-bottom {
       padding-bottom: 0;
+    }
+
+    /* Un peu plus d'air au-dessus des textes des parties 1 & 2 (texte en haut). */
+    .value-part--text-left,
+    .value-part--text-right {
+      padding-top: clamp(5.5rem, 13vh, 8.5rem);
+    }
+
+    /* Un peu plus d'air sous le texte de la partie 3 (le raccourci `padding`
+       ci-dessus l'avait réécrit). */
+    .value-part--stacked {
+      padding-bottom: clamp(5rem, 11vh, 7.5rem);
     }
 
     .value-inner {
@@ -221,6 +260,19 @@
       margin-inline: -1.25rem;
     }
 
+    /* Parties 1 & 2 (photos portrait) encore plus grandes : hauteur généreuse,
+       image cadrée pour remplir tout le cadre (aucun cadre/fond visible). */
+    .value-part--text-left .value-media,
+    .value-part--text-right .value-media {
+      height: 82vh;
+    }
+
+    .value-part--text-left .value-media img,
+    .value-part--text-right .value-media img {
+      height: 100%;
+      object-fit: cover;
+    }
+
     .value-label,
     .value-copy {
       max-width: 24ch;
@@ -233,7 +285,7 @@
     }
 
     .value-part--stacked .value-media {
-      width: calc(100% + 2.5rem);
+      width: 100vw;
       margin-inline: 0;
     }
 

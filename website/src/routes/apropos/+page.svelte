@@ -17,13 +17,43 @@
 
 
 <AboutFocusSlider />
-<AboutEditorialSingleShowcase
-  text="Organisée en trois pôles complémentaires, l'agence accompagne chaque marque du conseil stratégique à la création digitale, jusqu'à la production de contenus."
-  image="/images/justx.webp"
-  alt="Direction artistique Agence 3 Terres"
-  mediaMinHeight="38rem"
-  ctaLabel="Découvrir"
-  ctaHref="services"
-/>
+<div class="apropos-intro-showcase">
+  <AboutEditorialSingleShowcase
+    text="Organisée en trois pôles complémentaires, l'agence accompagne chaque marque du conseil stratégique à la création digitale, jusqu'à la production de contenus."
+    image="/images/justx.webp"
+    alt="Direction artistique Agence 3 Terres"
+    mediaMinHeight="38rem"
+    showAccent={false}
+    ctaLabel="Découvrir"
+    ctaHref="services"
+  />
+</div>
 <AboutValues />
 <VisionSlider />
+
+<style>
+  /* Réduit le grand vide sous le texte : la section fait 220vh par défaut alors
+     que l'image plein cadre n'en fait que 150vh. On ramène la hauteur juste
+     au-dessus de l'image et on raccourcit la dernière rangée (vide) de la
+     grille. Scopé à cette page : la page services n'est pas touchée. */
+  .apropos-intro-showcase :global(.about-editorial-single-showcase) {
+    min-height: 152vh;
+  }
+
+  .apropos-intro-showcase :global(.about-editorial-single-showcase__content) {
+    grid-template-rows: 100vh auto 8vh;
+  }
+
+  /* Mobile : plus d'air sous le texte. */
+  @media (max-width: 900px) {
+    .apropos-intro-showcase :global(.about-editorial-single-showcase) {
+      min-height: 182vh;
+    }
+  }
+
+  @media (max-width: 640px) {
+    .apropos-intro-showcase :global(.about-editorial-single-showcase) {
+      min-height: 172vh;
+    }
+  }
+</style>
