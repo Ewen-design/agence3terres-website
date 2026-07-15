@@ -19,7 +19,7 @@
 <AboutFocusSlider />
 <div class="apropos-intro-showcase">
   <AboutEditorialSingleShowcase
-    text="Organisée en trois pôles complémentaires, l'agence accompagne chaque marque du conseil stratégique à la création digitale, jusqu'à la production de contenus."
+    text="Organisée en <span class='hl'>trois pôles</span> complémentaires, l'agence accompagne chaque marque du <span class='hl'>conseil</span> stratégique à la <span class='hl'>création</span> digitale, jusqu'à la <span class='hl'>production</span> de contenus."
     image="/images/justx.webp"
     alt="Direction artistique Agence 3 Terres"
     mediaMinHeight="38rem"

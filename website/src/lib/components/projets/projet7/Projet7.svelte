@@ -27,8 +27,8 @@
 
   <ProjectBrief
     lines={[
-      "<span class='hl'>JustX Fitness</span> prolonge la marque <span class='hl'>JustX</span> en une <span class='hl'>application mobile</span> pour <span class='hl'>planifier ses séances</span>, suivre l'effort et mesurer sa <span class='hl'>progression</span>.",
-      "Chaque écran se concentre sur une <span class='hl'>action précise</span>, dans un <span class='hl'>design system</span> cohérent qui garde l'<span class='hl'>identité</span> de la marque jusque dans le détail."
+      "<span class='hl'>JustX Fitness</span> prolonge la marque JustX en une <span class='hl'>application mobile</span> pour planifier ses séances, suivre l'effort et mesurer sa progression.",
+      "Chaque écran se concentre sur une action précise, dans un <span class='hl'>design system</span> cohérent qui garde l'<span class='hl'>identité</span> de la marque jusque dans le détail."
     ]}
     images={[
       { src: "/images/justx-tel.webp", alt: "Univers visuel de JustX Fitness" },

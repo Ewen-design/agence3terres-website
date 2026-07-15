@@ -23,8 +23,8 @@
 
   <ProjectBrief
     lines={[
-      "<span class='hl'>Serein Design</span> cherchait une présence plus nette et résolument <span class='hl'>premium</span>. Nous avons clarifié son <span class='hl'>identité</span> et son <span class='hl'>interface</span> pour donner à l'ensemble plus d'air, de <span class='hl'>hiérarchie</span> et de calme.",
-      "Une <span class='hl'>direction visuelle</span> sobre, pensée pour <span class='hl'>durer</span> et se déployer sans effort du <span class='hl'>desktop au mobile</span>."
+      "<span class='hl'>Serein Design</span> cherchait une présence plus nette et résolument <span class='hl'>premium</span>. Nous avons clarifié son identité et son interface pour donner à l'ensemble plus d'air, de hiérarchie et de calme.",
+      "Une <span class='hl'>direction visuelle</span> sobre, pensée pour durer et se déployer sans effort du <span class='hl'>desktop au mobile</span>."
     ]}
     images={[
       { src: "/images/telephone2.webp", alt: "Interface Serein Design" },

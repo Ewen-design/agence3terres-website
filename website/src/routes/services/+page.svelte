@@ -52,7 +52,7 @@
 
 <PolesHero
   label="Services"
-  finalText="Nos trois pôles, <span class='hl'>digital</span>, <span class='hl'>design</span> et <span class='hl'>studio</span>, permettent d'offrir un <span class='hl'>accompagnement complet</span> et spécialisé à nos clients."
+  finalText="Nos trois pôles, digital, design et studio, permettent d'offrir un <span class='hl'>accompagnement complet</span> et spécialisé à nos clients."
 />
 
 <ProjectThemePage>
@@ -61,14 +61,14 @@
     <SectionLead lead="3 Terres Digital" />
     <ShowcaseCards cards={digitalCards} showSubtitle={false} />
     <SectionLead
-      text="Des <span class='hl'>sites web</span> et des <span class='hl'>applications</span> sur mesure, du <span class='hl'>design d'interface</span> au <span class='hl'>développement</span>, pensés pour toucher <span class='hl'>durablement</span> votre cible."
+      text="Des <span class='hl'>sites web</span> et des applications sur mesure, du design d'interface au <span class='hl'>développement</span>, pensés pour toucher durablement votre cible."
     />
     <div class="digital-showcase">
       <AboutEditorialSingleShowcase
         showCue={false}
         showAccent={false}
         background="#040404"
-        text="Nos projets sont pensés pour <span class='hl'>s'adapter sur tous les supports</span>, de manière à répondre aux <span class='hl'>besoins de nos clients</span>."
+        text="Nos projets sont pensés pour <span class='hl'>s'adapter sur tous les supports</span>, de manière à répondre aux besoins de nos clients."
         image="/images/apple_justx.webp"
         alt="Application JustX Fitness"
       />
@@ -81,7 +81,7 @@
     <SectionLead lead="3 Terres Design" />
     <ShowcaseCards cards={designCards} showSubtitle={false} />
     <SectionLead
-      text="Nous façonnons l'<span class='hl'>identité visuelle</span> de la marque, du <span class='hl'>logo</span> à la <span class='hl'>charte</span> et la <span class='hl'>typographie</span>, pour lui donner une <span class='hl'>présence claire et durable</span>."
+      text="Nous façonnons l'<span class='hl'>identité visuelle</span> de la marque, du logo à la charte et la typographie, pour lui donner une <span class='hl'>présence claire et durable</span>."
     />
     <div class="design-showcase">
       <AboutEditorialSingleShowcase
@@ -91,7 +91,7 @@
         background="#f4f6fc"
         ink="#121212"
         inkMuted="rgba(18, 18, 18, 0.66)"
-        text="Nous concevons des <span class='hl'>systèmes visuels complets</span>, pensés pour représenter la marque dans un <span class='hl'>univers global cohérent</span> et moderne."
+        text="Nous concevons des <span class='hl'>systèmes visuels complets</span>, pensés pour représenter la marque dans un univers global cohérent et moderne."
         image="/images/main-justx.webp"
         imageDesktop="/images/main-justx-desktop.webp"
         alt="Création de logo et d'identité"
@@ -105,7 +105,7 @@
     <SectionLead lead="3 Terres Studio" />
     <ShowcaseCards cards={studioCards} showSubtitle={false} />
     <SectionLead
-      text="Nous produisons toute l'image de la marque : <span class='hl'>captation</span>, <span class='hl'>réseaux sociaux</span>, <span class='hl'>montage</span> et <span class='hl'>contenu</span>, au service d'une <span class='hl'>direction artistique durable</span>."
+      text="Nous produisons toute l'image de la marque : captation, réseaux sociaux, montage et contenu, au service d'une <span class='hl'>direction artistique durable</span>."
     />
     <div class="studio-showcase">
       <AboutEditorialSingleShowcase
@@ -114,7 +114,7 @@
         background="#040404"
         imageFit="contain"
         imagePosition="right top"
-        text="Chaque contenu est produit avec le <span class='hl'>même soin</span>, pour <span class='hl'>prolonger l'expérience</span> de la marque et <span class='hl'>renforcer sa présence</span>, de l'<span class='hl'>événement aux réseaux</span>."
+        text="Chaque contenu est produit avec le même soin, pour <span class='hl'>prolonger l'expérience</span> de la marque et renforcer sa présence, de l'événement aux réseaux."
         image="/images/justx-ipads.webp"
         alt="Contenu et réseaux sociaux JustX"
       />

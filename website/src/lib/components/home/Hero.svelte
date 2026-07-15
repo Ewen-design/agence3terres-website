@@ -47,7 +47,7 @@
   };
 
   const finalText =
-    "Nous sommes <span class='hl'>3 Terres</span>, l'agence dans l'ombre des projets qui durent. De l'<span class='hl'>identité</span> au <span class='hl'>digital</span>, nous façonnons des <span class='hl'>marques fortes</span>, pensées pour <span class='hl'>traverser le temps</span>.";
+    "Nous sommes <span class='hl'>3 Terres</span>, l'agence dans l'ombre des projets qui durent. De l'identité au digital, nous façonnons des marques fortes, pensées pour <span class='hl'>traverser le temps</span>.";
 
   const clamp = (v, min = 0, max = 1) => Math.max(min, Math.min(max, v));
   const lerp = (a, b, t) => a + (b - a) * t;

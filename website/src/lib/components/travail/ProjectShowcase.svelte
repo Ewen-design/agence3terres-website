@@ -328,8 +328,15 @@
     aspect-ratio: 2 / 1;
   }
 
-  /* Pas de vide sous le bloc pleine largeur. */
+  /* Réduit le vide au-dessus du bloc pleine largeur « Votre projet »
+     (cumul du padding-bottom de la grille précédente + padding-top ici). */
+  .projects-grid:not(.is-full) {
+    padding-bottom: clamp(1.5rem, 3vw, 3rem);
+  }
+
+  /* Pas de vide sous le bloc pleine largeur, top réduit. */
   .projects-grid.is-full {
+    padding-top: clamp(1.5rem, 3vw, 3rem);
     padding-bottom: 0;
   }
 

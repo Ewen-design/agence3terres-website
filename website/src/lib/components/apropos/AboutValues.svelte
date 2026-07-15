@@ -14,7 +14,7 @@
   const parts = [
     {
       label: "Créativité enracinée",
-      text: "Nous imaginons des idées qui prennent racine dans l'<span class='hl'>identité</span>, les <span class='hl'>valeurs</span> et la <span class='hl'>vision</span> de chaque projet afin d'en révéler toute la <span class='hl'>singularité</span>.",
+      text: "Nous imaginons des idées qui prennent racine dans l'<span class='hl'>identité</span>, les valeurs et la vision de chaque projet afin d'en révéler toute la <span class='hl'>singularité</span>.",
       image: "/images/tel-justx.webp",
       alt: "Application JustX sur mobile",
       layout: "text-left",
@@ -26,7 +26,7 @@
     },
     {
       label: "Proximité et confiance",
-      text: "Nous avançons aux côtés de nos clients avec <span class='hl'>écoute</span>, <span class='hl'>transparence</span> et <span class='hl'>collaboration</span> pour bâtir des relations solides et <span class='hl'>durables</span>.",
+      text: "Nous avançons aux côtés de nos clients avec écoute, <span class='hl'>transparence</span> et collaboration pour bâtir des relations solides et <span class='hl'>durables</span>.",
       image: "/images/tel-justx.webp",
       alt: "Application JustX sur mobile",
       layout: "text-right",
@@ -37,7 +37,7 @@
     },
     {
       label: "Excellence engagée",
-      text: "Nous abordons chaque mission avec <span class='hl'>rigueur</span>, <span class='hl'>passion</span> et <span class='hl'>authenticité</span> afin de créer des <span class='hl'>résultats cohérents</span>, porteurs de <span class='hl'>sens</span> et fidèles à l'image de ceux que nous accompagnons.",
+      text: "Nous abordons chaque mission avec <span class='hl'>rigueur</span>, passion et authenticité afin de créer des <span class='hl'>résultats cohérents</span>, porteurs de sens et fidèles à l'image de ceux que nous accompagnons.",
       image: "/images/justx-ipads.webp",
       alt: "Application JustX sur iPad",
       layout: "stacked",

@@ -24,8 +24,8 @@
 
   <ProjectBrief
     lines={[
-      "<span class='hl'>Mission X</span> est un <span class='hl'>jeu social mobile</span> qui oppose <span class='hl'>détectives et voleurs</span> autour d'un téléphone qui circule comme un <span class='hl'>dossier confidentiel</span>.",
-      "Un <span class='hl'>langage rouge / bleu</span> simple et une <span class='hl'>interface lisible</span>, pensés pour rendre chaque partie immédiatement <span class='hl'>jouable</span> et <span class='hl'>spectaculaire</span>."
+      "<span class='hl'>Mission X</span> est un <span class='hl'>jeu social mobile</span> qui oppose détectives et voleurs autour d'un téléphone qui circule comme un dossier confidentiel.",
+      "Un <span class='hl'>langage rouge / bleu</span> simple et une <span class='hl'>interface lisible</span>, pensés pour rendre chaque partie immédiatement jouable et spectaculaire."
     ]}
     images={[
       { src: "/images/missionX5.webp", alt: "Univers du détective dans Mission X" },

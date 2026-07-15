@@ -53,7 +53,7 @@
   };
 
   const finalText =
-    "<span class='hl'>Stratégie</span>, <span class='hl'>esthétique</span>, <span class='hl'>exécution</span>. Des projets où <span class='hl'>chaque décision a du sens</span>.";
+    "<span class='hl'>Stratégie</span>, esthétique, exécution. Des projets où <span class='hl'>chaque décision a du sens</span>.";
   const activeAfterImage = "/images/apple_justx.webp";
 
   const clamp = (v, min = 0, max = 1) => Math.max(min, Math.min(max, v));

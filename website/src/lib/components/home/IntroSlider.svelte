@@ -5,7 +5,7 @@
   // Présenté comme les textes des pages projet (ProjectBrief) :
   // un paragraphe léger, aligné à gauche.
   export let lead =
-    "Chaque projet devient une <span class='hl'>signature</span> : une <span class='hl'>direction claire</span>, un <span class='hl'>univers singulier</span> et une <span class='hl'>exécution soignée</span> qui le distingue durablement.";
+    "Chaque projet devient une <span class='hl'>signature</span> : une direction claire, un <span class='hl'>univers singulier</span> et une exécution soignée qui le distingue durablement.";
 
   let pEl;
   let revealed = false;

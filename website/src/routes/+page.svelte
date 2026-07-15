@@ -56,7 +56,7 @@
 <Hero />
 <GalleryColonnes />
 <ParallaxGallery2
-  introLead="<span class='hl'>Trois pôles spécialisés</span> réunis sous une même <span class='hl'>direction artistique</span> pour construire chaque marque de <span class='hl'>bout en bout</span>."
+  introLead="<span class='hl'>Trois pôles spécialisés</span> réunis sous une même <span class='hl'>direction artistique</span> pour construire chaque marque de bout en bout."
 />
 
 <IntroSlider />

@@ -44,7 +44,7 @@
   };
 
   const finalText =
-    "Une agence indépendante, exigente par nature, précise par choix.";
+    "Une agence <span class='hl'>indépendante</span>, <span class='hl'>exigente</span> par nature, <span class='hl'>précise</span> par choix.";
 
   const clamp = (v, min = 0, max = 1) => Math.max(min, Math.min(max, v));
   const lerp = (a, b, t) => a + (b - a) * t;
@@ -283,7 +283,7 @@
   <section class="after-section">
     <div class="after-grid">
       <div class="after-text" bind:this={afterTextEl}>
-        <h2 use:reveal>{finalText}</h2>
+        <h2 use:reveal>{@html finalText}</h2>
       </div>
     </div>
   </section>
@@ -504,8 +504,13 @@
     font-size: clamp(1.5rem, 2.5vw, 2.55rem);
     line-height: 1.18;
     letter-spacing: -0.025em;
-    color: #f4efe6;
+    /* Texte gris, mots importants (.hl) en blanc. */
+    color: rgba(245, 241, 232, 0.5);
     text-wrap: pretty;
+  }
+
+  .after-text h2 :global(.hl) {
+    color: #f4efe6;
   }
 
   @media (max-width: 900px) {

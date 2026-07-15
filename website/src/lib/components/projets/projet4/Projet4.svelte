@@ -23,8 +23,8 @@
 
   <ProjectBrief
     lines={[
-      "<span class='hl'>Ludosphères</span> est un <span class='hl'>site vitrine d'artiste</span> pensé pour laisser les <span class='hl'>œuvres peintes</span> prendre toute la place.",
-      "Une <span class='hl'>direction éditoriale</span> sobre, beaucoup d'<span class='hl'>espace</span> et un <span class='hl'>rythme juste</span> entre images, titres et respirations."
+      "<span class='hl'>Ludosphères</span> est un <span class='hl'>site vitrine d'artiste</span> pensé pour laisser les œuvres peintes prendre toute la place.",
+      "Une <span class='hl'>direction éditoriale</span> sobre, beaucoup d'espace et un <span class='hl'>rythme juste</span> entre images, titres et respirations."
     ]}
     images={[
       { src: "/images/ludo.webp", alt: "Univers éditorial de Ludosphères" },

@@ -76,7 +76,7 @@
 
     <ProjectEditorialStatement
       eyebrow="Recommendation"
-      text="Le projet repose sur une <span class='hl'>lecture immediate</span>, quelques <span class='hl'>choix bien cadres</span> et une <span class='hl'>recommandation</span> qui arrive sans surcharge."
+      text="Le projet repose sur une <span class='hl'>lecture immediate</span>, quelques choix bien cadres et une <span class='hl'>recommandation</span> qui arrive sans surcharge."
     />
 
     <ProjectEditorialSplit
@@ -90,7 +90,7 @@
 
   <div class="project-theme-band">
     <ProjectEditorialMobileShowcase
-      text="Le <span class='hl'>mobile</span> devait permettre de passer d'une envie vague a un <span class='hl'>choix concret</span> avec le <span class='hl'>moins de friction</span> possible."
+      text="Le mobile devait permettre de passer d'une envie vague a un <span class='hl'>choix concret</span> avec le <span class='hl'>moins de friction</span> possible."
       leftImage="/images/moovy_ipad.webp"
       leftAlt="Interface mobile verticale Moovy"
       rightImage="/images/tel_moovy3.webp"
@@ -103,7 +103,7 @@
 
   <div class="project-theme-band">
     <ProjectEditorialMosaic
-      text="Un <span class='hl'>premier plan large</span> pour ouvrir l'univers, puis <span class='hl'>deux vues resserrees</span> qui gardent la meme <span class='hl'>clarte</span>."
+      text="Un <span class='hl'>premier plan large</span> pour ouvrir l'univers, puis deux vues resserrees qui gardent la meme <span class='hl'>clarte</span>."
       feature={{ src: "/images/affiche-moovy.webp", alt: "Grand visuel desktop de Moovy" }}
       items={[
         { src: "/images/moovy_mobile.webp", alt: "Vue mobile du projet Moovy" },
