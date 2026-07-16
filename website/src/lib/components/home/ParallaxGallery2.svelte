@@ -110,7 +110,16 @@
 
   function measure() {
     if (!browser) return;
-    isMobile = window.innerWidth <= 900;
+    // A phone in landscape can be wider than 900px (Pro Max = 932) yet must use
+    // the mobile card rail, not the desktop wheel-driven stack. Count it as
+    // mobile via the coarse pointer + short height (the CSS below mirrors this
+    // with the same landscape condition on the mobile block).
+    const coarse = window.matchMedia?.("(pointer: coarse)")?.matches ?? false;
+    const landscapePhone =
+      coarse &&
+      window.matchMedia?.("(orientation: landscape)")?.matches &&
+      window.innerHeight <= 600;
+    isMobile = window.innerWidth <= 900 || landscapePhone;
   }
 
   // Positions de scroll réellement atteignables (une par « cran »). Les cartes
@@ -921,7 +930,11 @@
     display: none;
   }
 
-  @media (max-width: 900px) {
+  /* The landscape condition here mirrors the JS `isMobile` check so that phones
+     wider than 900px in landscape (Pro Max etc.) get the whole mobile card rail
+     instead of the desktop wheel stack. */
+  @media (max-width: 900px),
+    (pointer: coarse) and (orientation: landscape) and (max-height: 600px) {
     .gallery { padding: 0 0 8rem 0; }
 
     .gallery-header {
@@ -1051,6 +1064,32 @@
     .pc-title-flip::after,
     .pc-plus {
       transition: none;
+    }
+  }
+
+  /* Landscape proportion tuning on top of the mobile rail (cards + spacing are
+     portrait-tuned: 72vh cards and 8rem padding are too tall/loose for a short
+     wide viewport). Fit the card to the viewport height and let ~2 cards show. */
+  @media (pointer: coarse) and (orientation: landscape) and (max-height: 600px) {
+    .gallery { padding: 0 0 3rem 0; }
+
+    .gallery-header {
+      padding: 2.4rem 1.25rem 1.2rem;
+    }
+
+    .mobile-rail {
+      margin-top: 1.4rem;
+      padding-bottom: 1.4rem;
+      padding-left: calc((100vw - clamp(280px, 46vw, 420px)) / 2);
+      padding-right: calc((100vw - clamp(280px, 46vw, 420px)) / 2);
+      scroll-padding-left: calc((100vw - clamp(280px, 46vw, 420px)) / 2);
+      scroll-padding-right: calc((100vw - clamp(280px, 46vw, 420px)) / 2);
+    }
+
+    .mobile-card {
+      flex: 0 0 clamp(280px, 46vw, 420px);
+      width: clamp(280px, 46vw, 420px);
+      height: min(78svh, 340px);
     }
   }
 

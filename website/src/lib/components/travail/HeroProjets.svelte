@@ -713,4 +713,8 @@
       opacity: 0.22 !important;
     }
   }
+
+  @media (pointer: coarse) and (orientation: landscape) and (max-height: 600px) {
+    .hero-scroll-label { font-size: clamp(2.4rem, 6vw, 3.6rem); }
+  }
 </style>

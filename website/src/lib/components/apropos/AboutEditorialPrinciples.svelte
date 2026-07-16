@@ -645,4 +645,12 @@
       -webkit-clip-path: inset(0 0 0 0);
     }
   }
+
+  @media (pointer: coarse) and (orientation: landscape) and (max-height: 600px) {
+    .principles-mobile-nav-btn {
+      top: auto;
+      bottom: clamp(0.8rem, 3vw, 1.4rem);
+      transform: none;
+    }
+  }
 </style>

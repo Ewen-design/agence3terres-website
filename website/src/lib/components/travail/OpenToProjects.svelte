@@ -317,4 +317,8 @@
     .open__pos-photo-a { top: 62%; left: 2vw; }
     .open__pos-photo-b { top: 84%; right: 2vw; }
   }
+
+  @media (pointer: coarse) and (orientation: landscape) and (max-height: 600px) {
+    .open__scrim { height: 40vh; }
+  }
 </style>

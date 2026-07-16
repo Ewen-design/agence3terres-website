@@ -329,4 +329,8 @@
       transition: none;
     }
   }
+
+  @media (pointer: coarse) and (orientation: landscape) and (max-height: 600px) {
+    .pole-card { height: min(78vh, 460px); }
+  }
 </style>

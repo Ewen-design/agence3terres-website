@@ -683,4 +683,9 @@
     .hss__caption.is-active .hss__btn { opacity: 1; transform: none; }
     .hss__title span { opacity: 1 !important; transition: none; }
   }
+
+  @media (pointer: coarse) and (orientation: landscape) and (max-height: 600px) {
+    .hss__bottom { height: calc(clamp(7rem, 18vh, 11rem) + var(--bar-inset)); }
+    .hss__panel { padding-top: clamp(3.5rem, 7vw, 5rem); }
+  }
 </style>

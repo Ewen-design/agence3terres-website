@@ -785,4 +785,34 @@
       opacity: 0;
     }
   }
+
+  /* Phones are keyed on the coarse pointer, NOT on width: the "Max/Plus" iPhones
+     and large Androids exceed 900px in landscape, so a `max-width: 900px` hide
+     alone would let the top/bottom vignettes (and the desktop corner logo)
+     reappear on those phones when rotated. Hide them on every touch device,
+     both orientations, and override the travail/light/pip opacity variants with
+     `!important` so no phone ever shows the fixed-position vignette bands. */
+  @media (hover: none) and (pointer: coarse) {
+    .site-prism-mark {
+      display: none;
+    }
+
+    .top-gradient,
+    .bottom-gradient {
+      opacity: 0 !important;
+    }
+  }
+
+  /* Phone in landscape (short viewport). The iOS safe-area caps are horizontal
+     bars sized for PORTRAIT — in landscape the notch/home-indicator move to the
+     SIDES, so `safe-area-inset-top/bottom` collapse and these bars become a
+     stray black strip across the top/bottom of the screen (the "cache/masque"
+     the user sees at the bottom on Safari). Landscape has no top/bottom unsafe
+     strip to cover, so drop both masks entirely here. */
+  @media (pointer: coarse) and (orientation: landscape) and (max-height: 600px) {
+    .ios-top-mask,
+    .ios-bottom-mask {
+      display: none !important;
+    }
+  }
 </style>

@@ -143,4 +143,9 @@
       height: clamp(22rem, 52vh, 34rem);
     }
   }
+
+  @media (pointer: coarse) and (orientation: landscape) and (max-height: 600px) {
+    .project-brief__figure { height: clamp(14rem, 62vh, 22rem); }
+    .project-brief--single .project-brief__figure--a { height: clamp(15rem, 68vh, 24rem); }
+  }
 </style>

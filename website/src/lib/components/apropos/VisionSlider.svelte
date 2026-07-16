@@ -27,8 +27,12 @@
   let dragStartCurrent = 0;
   const mobileDragDivider = 11;
 
-  function next() { current = (current + 1) % quotes.length; }
-  function prev() { current = (current - 1 + quotes.length) % quotes.length; }
+  // `current` is an UNBOUNDED counter: it keeps growing/shrinking so the
+  // carousel rotates continuously in one direction and never snaps back to the
+  // start (a true infinite loop). The cylinder is symmetric, so the visible
+  // front card just cycles through the quotes seamlessly.
+  function next() { current += 1; }
+  function prev() { current -= 1; }
 
   function handleMove(e) {
     const rect = e.currentTarget.getBoundingClientRect();
@@ -39,9 +43,14 @@
   }
 
   function getOpacity(i) {
-    const diff = Math.abs(i - current);
+    const n = quotes.length;
+    // Which card faces front for the current (unbounded) rotation.
+    const front = ((current % n) + n) % n;
+    // Shortest distance around the ring, so wrap-around neighbours dim correctly.
+    let diff = Math.abs(i - front);
+    diff = Math.min(diff, n - diff);
     if (diff === 0) return 1;
-    if (diff === 1 || diff === quotes.length - 1) return 0.45;
+    if (diff === 1) return 0.45;
     return 0;
   }
 
@@ -79,8 +88,8 @@
 
   function touchEnd() {
     if (!isMobile) return;
-    if (deltaX > 52) current = (dragStartCurrent - 1 + quotes.length) % quotes.length;
-    else if (deltaX < -52) current = (dragStartCurrent + 1) % quotes.length;
+    if (deltaX > 52) current = dragStartCurrent - 1;
+    else if (deltaX < -52) current = dragStartCurrent + 1;
     else current = dragStartCurrent;
 
     isDragging = false;
@@ -135,8 +144,18 @@
 
   let resizeTimeout;
   function checkMobile() {
-    isMobile = window.innerWidth <= 768;
-    radius = isMobile ? 260 : radiusDesktop;
+    // A phone rotated to landscape is often WIDER than 768px (Pro Max = 932),
+    // so a width-only check would wrongly treat it as desktop (click-zones,
+    // 540px radius) and blow the layout out of a ~400px-tall viewport. Detect
+    // the landscape phone via the coarse pointer + short height and drive the
+    // mobile drag behaviour with a radius tuned for the wide, short frame.
+    const coarse = window.matchMedia?.("(pointer: coarse)")?.matches ?? false;
+    const landscapePhone =
+      coarse &&
+      window.matchMedia?.("(orientation: landscape)")?.matches &&
+      window.innerHeight <= 600;
+    isMobile = window.innerWidth <= 768 || landscapePhone;
+    radius = landscapePhone ? 320 : isMobile ? 260 : radiusDesktop;
   }
   function handleResize() {
     clearTimeout(resizeTimeout);
@@ -482,6 +501,74 @@
 
     .card::before {
       display: none;
+    }
+  }
+
+  /* Phone in landscape — same drag carousel as portrait mobile (no click-zones),
+     re-proportioned so the cards, quotes and marks sit correctly in a short,
+     wide viewport instead of overflowing the desktop 550px frame. */
+  @media (pointer: coarse) and (orientation: landscape) and (max-height: 600px) {
+    .vision-section {
+      height: auto;
+      min-height: 116svh;
+      padding: 9svh 0;
+    }
+
+    .nav-zones {
+      display: none;
+    }
+
+    .vision-header {
+      margin-bottom: 0;
+    }
+
+    .vision-header h2 {
+      font-size: clamp(1.7rem, 4.4vw, 2.3rem);
+      margin-bottom: 0.5rem;
+    }
+
+    .vision-header p {
+      font-size: 0.82rem;
+      line-height: 1.5;
+    }
+
+    .carousel-wrapper {
+      height: min(58svh, 300px);
+    }
+
+    .carousel {
+      transition: transform 0.9s cubic-bezier(.22, .61, .36, 1);
+    }
+
+    .card {
+      width: clamp(240px, 44vw, 360px);
+      padding: 1.7rem 1.9rem;
+      backdrop-filter: blur(12px) saturate(130%);
+      -webkit-backdrop-filter: blur(12px) saturate(130%);
+    }
+
+    .card::before {
+      display: none;
+    }
+
+    .quote p {
+      font-size: clamp(0.98rem, 2.3vw, 1.18rem);
+      line-height: 1.45;
+    }
+
+    .mark {
+      font-size: 3.1rem;
+    }
+    .mark.top { top: -24px; left: -10px; }
+    .mark.bottom { bottom: -36px; right: -8px; }
+
+    .author {
+      margin-top: 1.1rem;
+      font-size: 0.8rem;
+    }
+
+    .br-m {
+      display: inline;
     }
   }
 </style>

@@ -633,4 +633,11 @@
     .bfs__title.is-active, .bfs__caption.is-active .bfs__caption-line > span,
     .bfs__caption.is-active .bfs__btn { opacity: 1; transform: none; filter: none; }
   }
+
+  @media (pointer: coarse) and (orientation: landscape) and (max-height: 600px) {
+    .bfs__bottom { height: calc(clamp(6.5rem, 18vh, 10rem) + var(--bar-inset)); }
+    .bfs__title { top: clamp(3rem, 7vw, 4.5rem); }
+    .bfs__captions { bottom: calc(var(--bar-inset) + clamp(1.6rem, 4vh, 2.6rem)); }
+    .bfs__arrow-cue { bottom: calc(var(--bar-inset) + clamp(1.6rem, 4vh, 2.6rem)); }
+  }
 </style>

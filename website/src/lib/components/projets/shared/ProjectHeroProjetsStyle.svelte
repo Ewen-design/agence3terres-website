@@ -870,4 +870,8 @@
       transform: none !important;
     }
   }
+
+  @media (pointer: coarse) and (orientation: landscape) and (max-height: 600px) {
+    .hero-media::after { height: 14svh; }
+  }
 </style>

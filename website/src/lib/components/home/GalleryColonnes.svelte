@@ -691,4 +691,19 @@
       width: 160vw;
     }
   }
+
+  /* Phone in landscape — the base gallery layout is kept as-is. The ONLY issue
+     was the bottom shade shifting with the Safari toolbar: the sticky overlay
+     is 100svh, but when the bar retracts on scroll the real viewport grows to
+     ~100lvh, so a `bottom: 0` shade lifts off the real screen edge and reveals
+     a gap above it (the images show through). Bleed the shade down by the
+     toolbar height (--bar-inset = 100lvh − 100svh) and grow its height to
+     match, so the top stays put while the bottom always covers the real edge —
+     regardless of scroll direction / bar state. */
+  @media (pointer: coarse) and (orientation: landscape) and (max-height: 600px) {
+    .gallery-bottom-shade {
+      bottom: calc(-1 * var(--bar-inset));
+      height: calc(38svh + var(--bar-inset));
+    }
+  }
 </style>

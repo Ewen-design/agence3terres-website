@@ -318,4 +318,8 @@
       transform: none;
     }
   }
+
+  @media (pointer: coarse) and (orientation: landscape) and (max-height: 600px) {
+    .ms-media { height: min(62vh, 420px); }
+  }
 </style>

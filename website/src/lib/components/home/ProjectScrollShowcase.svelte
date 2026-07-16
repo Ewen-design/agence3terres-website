@@ -616,7 +616,11 @@
     .ps__title { font-size: clamp(3.2rem, 8vw, 6rem); }
   }
 
-  @media (max-width: 900px) {
+  /* The landscape condition mirrors the mobile layout onto phones wider than
+     900px in landscape (Pro Max etc.), which would otherwise keep the desktop
+     top-title layout in a short viewport. */
+  @media (max-width: 900px),
+    (pointer: coarse) and (orientation: landscape) and (max-height: 600px) {
     /* Titre du haut masqué : sur mobile il passe dans la partie basse,
        juste au-dessus du petit texte. */
     .ps__titles { display: none; }
@@ -717,6 +721,25 @@
       opacity: 1;
       transform: none;
       filter: none;
+    }
+  }
+
+  /* Landscape refinements on top of the (now shared) mobile layout: lift the
+     info block, shrink the title + its margin, and pull the top/bottom
+     darkening gradients back so they don't swallow the short viewport. */
+  @media (pointer: coarse) and (orientation: landscape) and (max-height: 600px) {
+    .ps__grad-bottom { height: calc(34vh + var(--bar-inset)); }
+    .ps__grad-top { height: 24vh; }
+
+    .ps__info { top: clamp(3.5rem, 9vh, 5.5rem); }
+
+    .ps__mtitle {
+      font-size: clamp(1.7rem, 6.5vw, 2.6rem);
+      margin: 0 0 clamp(0.6rem, 2vw, 1rem);
+    }
+
+    .ps--mcap-bottom .ps__info {
+      bottom: calc(max(clamp(3rem, 9vw, 4.5rem), var(--safe-bottom-offset)) + var(--bar-inset));
     }
   }
 </style>

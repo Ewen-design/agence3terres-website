@@ -659,4 +659,10 @@
     .bfs__head.is-active .bfs__caption-line > span,
     .bfs__head.is-active .bfs__arrow-cue { opacity: 1; transform: none; filter: none; }
   }
+
+  @media (pointer: coarse) and (orientation: landscape) and (max-height: 600px) {
+    .bfs__bottom { height: calc(clamp(6rem, 16vh, 9rem) + var(--bar-inset)); }
+    /* raise title (caption + arrow are static children of .bfs__head and follow it) */
+    .bfs__head { top: clamp(3rem, 7vw, 4.5rem); }
+  }
 </style>

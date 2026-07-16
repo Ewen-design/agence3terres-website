@@ -110,4 +110,8 @@
       font-size: clamp(1.7rem, 8.5vw, 2.55rem);
     }
   }
+
+  @media (pointer: coarse) and (orientation: landscape) and (max-height: 600px) {
+    .project-editorial-mosaic__grid { --mosaic-tile-height: min(78vh, 30rem); }
+  }
 </style>

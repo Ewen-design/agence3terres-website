@@ -1185,4 +1185,13 @@
       visibility: visible;
     }
   }
+
+  @media (pointer: coarse) and (orientation: landscape) and (max-height: 600px) {
+    .menu-link-text { font-size: clamp(1.5rem, 6vw, 2.4rem); }
+    .menu-nav { gap: clamp(0.15rem, 1vh, 0.5rem); }
+    .menu-upper {
+      max-height: 100%;
+      overflow-y: auto;
+    }
+  }
 </style>

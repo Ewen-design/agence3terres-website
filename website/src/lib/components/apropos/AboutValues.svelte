@@ -313,4 +313,82 @@
       font-size: clamp(1.4rem, 6.6vw, 1.9rem);
     }
   }
+
+  /* Phone in landscape. Neither the desktop (natural-height images that
+     overflow a 400px viewport) nor the portrait-mobile column (a portrait photo
+     squashed into a wide band) reads well here. Give landscape ONE coherent
+     treatment: text beside the image (uses the wide, short frame), the image
+     constrained to the viewport height and cropped with object-fit. */
+  @media (pointer: coarse) and (orientation: landscape) and (max-height: 600px) {
+    .value-part {
+      padding: 8svh clamp(1.25rem, 3vw, 2.5rem);
+    }
+    .value-part--flush-bottom {
+      padding-bottom: 0;
+    }
+
+    .value-inner {
+      gap: clamp(1.5rem, 4vw, 3rem);
+      align-items: center;
+    }
+    .value-part--text-left .value-inner {
+      flex-direction: row;
+    }
+    .value-part--text-right .value-inner {
+      flex-direction: row-reverse;
+    }
+
+    .value-text {
+      width: auto;
+      flex: 1 1 40%;
+    }
+
+    .value-media {
+      flex: 1 1 56%;
+      width: auto;
+      margin-inline: 0;
+    }
+    /* Kill the desktop full-bleed-right on part 1 so the image stays in its
+       column at a controlled height. */
+    .value-part--text-left .value-media {
+      margin-right: 0;
+    }
+    .value-part--text-left .value-media,
+    .value-part--text-right .value-media {
+      height: min(80svh, 420px);
+    }
+    .value-part--text-left .value-media img,
+    .value-part--text-right .value-media img {
+      height: 100%;
+      width: 100%;
+      object-fit: cover;
+      border-radius: 8px;
+    }
+
+    .value-label,
+    .value-copy {
+      max-width: 32ch;
+      font-size: clamp(1.15rem, 3.1vw, 1.6rem);
+      line-height: 1.2;
+    }
+
+    /* Part 3 stays image-over-text, but compact. */
+    .value-part--stacked {
+      padding-bottom: 8svh;
+    }
+    .value-part--stacked .value-inner {
+      gap: clamp(1.2rem, 3vw, 2rem);
+    }
+    .value-part--stacked .value-media {
+      width: 100vw;
+    }
+    .value-part--stacked .value-media img {
+      max-height: 60svh;
+      width: 100%;
+      object-fit: cover;
+    }
+    .value-part--stacked .value-text {
+      max-width: 62ch;
+    }
+  }
 </style>

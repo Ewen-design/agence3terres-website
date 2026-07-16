@@ -445,6 +445,29 @@ body {
   }
 }
 
+/* ── Phone in landscape ──
+   Canonical breakpoint reused across the whole site for landscape fixes:
+   coarse pointer + landscape + short viewport. `max-height: 600px` keeps this
+   to phones (largest phone landscape height ≈ 430px) and excludes tablets
+   (iPad mini landscape height ≈ 744px) and desktop.
+
+   The portrait coarse-pointer block above tunes the viewport overscan and the
+   hero/focus/story dark overlays for a TALL screen: it forces a 96px bottom
+   overscan (sized for Safari's portrait bottom toolbar) and 280/360px gradient
+   bleeds. In a ~400px-tall landscape viewport those portrait values make the
+   dark overlays extend roughly a full extra screen and blanket the image.
+   Relax them here: real safe-areas instead of the forced portrait minimums,
+   and gentler bleeds that still push the dense end of each gradient just off
+   the visible edge without swallowing the short viewport. */
+@media (pointer: coarse) and (orientation: landscape) and (max-height: 600px) {
+  :root {
+    --mobile-viewport-overscan-top: env(safe-area-inset-top, 0px);
+    --mobile-viewport-overscan-bottom: env(safe-area-inset-bottom, 0px);
+    --mobile-gradient-bleed-top: 120px;
+    --mobile-gradient-bleed-bottom: 140px;
+  }
+}
+
 .project-theme-page {
   position: relative;
   isolation: isolate;
