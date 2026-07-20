@@ -80,7 +80,7 @@
   <div
     class="contact-bg"
     class:is-visible={bgVisible}
-    style="background-image: url('/images/agence.webp')"
+    style="background-image: url('/images/cartes-agence.webp')"
   ></div>
   <div class="contact-overlay"></div>
 

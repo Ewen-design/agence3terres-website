@@ -35,9 +35,9 @@
   const designSlides = [
      { image: "/images/naming.webp", alt: "Naming et fondations", label: "Naming & fondations", caption: "Un nom, un ton et des repères qui posent des bases solides pour la marque." },
     { image: "/images/ipad-logo.webp", alt: "Logo", label: "Logo", caption: "Création de logo cohérent et déclinable, pensé pour installer une présence immédiate et mémorable." },
-    { image: "/images/justx_couleurs.webp", alt: "Identité visuelle", label: "Identité visuelle", caption: "De la palette de couleurs, aux typographies, nous concevons un univers visuel cohérent, répondant aux valeurs de la marque." },
-    { image: "/images/charte-typo.webp", alt: "Présentation de la typographie", label: "Charte éditoriale", caption: "Une nouvelle manière de communiquer en adaptant le ton et l'expérience." },
-    { image: "/images/parfum_ordinateur.webp", alt: "Suivi stratégique", label: "Suivi & stratégie", caption: "Un accompagnement dans la durée mêlant stratégie, suivi détaillé et reportings, pour faire évoluer la marque avec cohérence." }
+    { image: "/images/justx-couleurs2.webp", alt: "Identité visuelle", label: "Identité visuelle", caption: "De la palette de couleurs, aux typographies, nous concevons un univers visuel cohérent, répondant aux valeurs de la marque." },
+    { image: "/images/carte-ludo.webp", alt: "Présentation de la typographie", label: "Charte éditoriale", caption: "Une nouvelle manière de communiquer en adaptant le ton et l'expérience." },
+    { image: "/images/ipad-ludo.webp", alt: "Suivi stratégique", label: "Suivi & stratégie", caption: "Un accompagnement dans la durée mêlant stratégie, suivi détaillé et reportings, pour faire évoluer la marque avec cohérence." }
   ];
 
   // Studio — toute l'image de la marque : captation, DA, réseaux, contenu, 3D.
