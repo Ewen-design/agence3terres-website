@@ -14,7 +14,7 @@
   export let finalText =
     "Design, création digitale et studio : trois territoires complémentaires, réunis sous une même direction artistique.";
   export let image = "/images/montre-justx.webp";
-  export let afterImage = "/images/agence2.webp";
+  export let afterImage = "/images/mobile-j.webp";
   export let showAfterImage = true;
 
   let heroSection;

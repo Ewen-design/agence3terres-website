@@ -31,7 +31,7 @@
   // Une image par page (change au survol du nom de page). `placement` pilote le
   // cadrage / l'ancrage plein écran de chaque image (voir .placement-* en CSS).
   const links = [
-    { label: "Accueil", page: "home", image: "/images/ipad-creation.webp", placement: "home" },
+    { label: "Accueil", page: "home", image: "/images/ipad-creation.webp", desktopImage: "/images/ipad-creation2.webp", placement: "home" },
     { label: "Services", page: "services", image: "/images/montre-justx.webp", placement: "services" },
     { label: "Projets", page: "travail", image: "/images/justx-ipads.webp", placement: "projets" },
     { label: "A propos", page: "apropos", image: "/images/visage.webp", placement: "apropos" },
@@ -290,7 +290,7 @@
           <img
             class="menu-media-image placement-{link.placement}"
             class:is-active={previewIndex === i}
-            src={link.image}
+            src={!isMobile && link.desktopImage ? link.desktopImage : link.image}
             alt=""
             loading="lazy"
             decoding="async"
