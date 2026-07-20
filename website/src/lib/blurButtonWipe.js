@@ -16,7 +16,7 @@ export function installBlurButtonWipe() {
   const reduceQuery = window.matchMedia?.("(prefers-reduced-motion: reduce)");
 
   // Boutons à exclure explicitement (logo, ou opt-out manuel via data-no-wipe).
-  const EXCLUDE = ".site-prism-mark, [data-no-wipe]";
+  const EXCLUDE = ".site-prism-mark, .mobile-logo, [data-no-wipe]";
 
   function hasBlurBackdrop(el) {
     const cs = getComputedStyle(el);

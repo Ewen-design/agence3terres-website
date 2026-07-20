@@ -561,7 +561,7 @@
     aria-disabled={pathname === "/"}
     on:click={(e) => { if (pathname === "/") e.preventDefault(); }}
   >
-    <img src="/images/logo_prisme.png" alt="" loading="eager" />
+    <span class="site-prism-glass" aria-hidden="true"></span>
   </a>
 
   <div class="ios-top-mask" aria-hidden="true"></div>
@@ -623,6 +623,8 @@
   }
 
   .site-prism-mark {
+    --logo-cut-size: clamp(1.8rem, 2.9vw, 2.7rem);
+    --logo-button-size: calc(var(--logo-cut-size) + 0.44rem);
     position: fixed;
     top: 1rem;
     left: 1rem;
@@ -630,33 +632,76 @@
     pointer-events: auto;
     cursor: pointer;
     display: block;
-    padding: 0.22rem;
-    border-radius: 2px;
-    background: rgba(255, 255, 255, 0.05);
-    backdrop-filter: blur(3px);
-    -webkit-backdrop-filter: blur(3px);
-    transition: transform .3s cubic-bezier(.22,.61,.36,1), background .3s ease;
+    width: var(--logo-button-size);
+    height: var(--logo-button-size);
+    padding: 0;
+    border-radius: 10px;
+    overflow: hidden;
+    background: none;
+    color: #fff;
+    transform: translateZ(0);
+    transition: transform .3s cubic-bezier(.22,.61,.36,1);
     -webkit-tap-highlight-color: transparent;
   }
-  .site-prism-mark:hover { transform: scale(1.06); background: rgba(255,255,255,.1); }
+
+  .site-prism-mark:hover { transform: scale(1.06); }
   .site-prism-mark:focus-visible { outline: 2px solid rgba(245,241,232,.9); outline-offset: 3px; }
 
   /* Sur la home, le logo ne navigue pas (on y est déjà). */
   .site-prism-mark.is-home { cursor: default; }
-  .site-prism-mark.is-home:hover { transform: none; background: rgba(255,255,255,.05); }
+  .site-prism-mark.is-home:hover { transform: none; }
 
-  .site-prism-mark img {
+  .site-prism-glass {
+    position: absolute;
+    inset: 0;
     display: block;
-    width: clamp(1.8rem, 2.9vw, 2.7rem);
-    height: auto;
-    transition: filter 220ms ease;
+    border-radius: inherit;
+    background: rgba(255, 255, 255, 0.11);
+    backdrop-filter: blur(20px) saturate(160%) brightness(0.82);
+    -webkit-backdrop-filter: blur(20px) saturate(160%) brightness(0.82);
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    transform: translateZ(0);
+    transition: background 1.2s cubic-bezier(.22,.61,.36,1);
+    -webkit-mask-image: linear-gradient(#fff 0 0), url("/images/logo_prisme.png");
+    -webkit-mask-position: center, center;
+    -webkit-mask-repeat: no-repeat, no-repeat;
+    -webkit-mask-size: 100% 100%, var(--logo-cut-size) var(--logo-cut-size);
+    -webkit-mask-composite: xor;
+    mask-image: linear-gradient(#fff 0 0), url("/images/logo_prisme.png");
+    mask-position: center, center;
+    mask-repeat: no-repeat, no-repeat;
+    mask-size: 100% 100%, var(--logo-cut-size) var(--logo-cut-size);
+    mask-composite: exclude;
   }
 
-  /* Pages à fond clair (Moovy en thème clair, mentions légales) : le texte du
-     header passe au noir → le logo suit. */
-  main.project-light-theme .site-prism-mark img,
-  main.legal-route .site-prism-mark img {
-    filter: brightness(0);
+  .site-prism-mark:hover .site-prism-glass {
+    background: rgba(255, 255, 255, 0.14);
+  }
+
+  @supports not ((-webkit-mask-composite: xor) or (mask-composite: exclude)) {
+    .site-prism-mark {
+      background: rgba(255, 255, 255, 0.11);
+      backdrop-filter: blur(20px) saturate(160%) brightness(0.82);
+      -webkit-backdrop-filter: blur(20px) saturate(160%) brightness(0.82);
+    }
+
+    .site-prism-glass {
+      inset: 50% auto auto 50%;
+      width: var(--logo-cut-size);
+      height: var(--logo-cut-size);
+      background: currentColor;
+      backdrop-filter: none;
+      -webkit-backdrop-filter: none;
+      transform: translate3d(-50%, -50%, 0);
+      -webkit-mask: url("/images/logo_prisme.png") center / contain no-repeat;
+      mask: url("/images/logo_prisme.png") center / contain no-repeat;
+    }
+
+    main.project-light-theme .site-prism-mark,
+    main.legal-route .site-prism-mark {
+      color: #000;
+    }
   }
 
   @media (hover: none) and (pointer: coarse) {
