@@ -27,8 +27,8 @@
       "Une <span class='hl'>direction éditoriale</span> sobre, beaucoup d'espace et un <span class='hl'>rythme juste</span> entre images, titres et respirations."
     ]}
     images={[
-      { src: "/images/ludo.webp", alt: "Univers éditorial de Ludosphères" },
-      { src: "/images/ludo.webp", alt: "Mise en page de Ludosphères" }
+      { src: "/images/ludo-logo-peintures.webp", alt: "Univers éditorial de Ludosphères" },
+      { src: "/images/ludo-cartes.webp", alt: "Mise en page de Ludosphères" }
     ]}
   />
 
