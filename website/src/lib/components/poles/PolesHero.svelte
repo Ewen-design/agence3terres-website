@@ -466,6 +466,11 @@
     line-height: 1;
     letter-spacing: var(--site-display-letter-spacing);
     text-align: left;
+    /* line-height:1 + background-clip:text rognait les descendantes (le « g » de
+       Digital/Design) : la boîte de fond ne descendait pas sous la ligne de base.
+       On l'étend vers le bas ; la marge négative annule le décalage de mise en page. */
+    padding-bottom: 0.22em;
+    margin-bottom: -0.22em;
     /* Dégradé de transparence de haut en bas sur le titre. */
     background: linear-gradient(
       to top,
