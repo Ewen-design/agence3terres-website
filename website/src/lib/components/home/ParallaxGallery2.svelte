@@ -15,6 +15,9 @@
   export let ariaLabelPrefix = "Voir le pôle";
   export let introMain = "Trois pôles,";
   export let introMuted = "une même exigence.";
+  // "dark" (défaut) : fond sombre. "light" : fond clair + texte d'intro foncé,
+  // pour un slider placé en bas d'une page claire (pôle Design).
+  export let theme = "dark";
   // Si fourni, l'intro s'affiche comme un texte de page projet (style ProjectBrief :
   // paragraphe léger aligné à gauche) au lieu du couple main/muted à puce bleue.
   export let introLead = "";
@@ -106,6 +109,71 @@
     const rect = btn.getBoundingClientRect();
     btn.style.setProperty("--mx", `${event.clientX - rect.left}px`);
     btn.style.setProperty("--my", `${event.clientY - rect.top}px`);
+  }
+
+  // Au clic : on intercepte la navigation pour jouer un feedback (zoom de la
+  // carte + le glow du "+" qui fait un tour complet du bouton), puis on navigue.
+  const CLICK_NAV_DELAY = 360;
+
+  function handleCardClick(event, targetHref) {
+    // On laisse le navigateur gérer les clics « nouvel onglet » (cmd/ctrl/maj,
+    // clic du milieu) et tout clic déjà traité.
+    if (
+      event.defaultPrevented ||
+      event.button !== 0 ||
+      event.metaKey ||
+      event.ctrlKey ||
+      event.shiftKey ||
+      event.altKey
+    ) {
+      return;
+    }
+
+    event.preventDefault();
+
+    if (prefersReduced) {
+      navigate(targetHref);
+      return;
+    }
+
+    const card = event.currentTarget;
+    if (!card || card.classList.contains("is-clicking")) return;
+    card.classList.add("is-clicking");
+
+    // Zoom de la carte : piloté en inline (priorité garantie sur l'état :hover
+    // qui, à spécificité CSS égale, gagnerait sinon).
+    const img = card.querySelector(".pc-img img");
+    if (img) {
+      img.style.transition = "transform 0.55s cubic-bezier(0.22, 0.61, 0.36, 1)";
+      img.style.transform = "scale(1.12) translateZ(0)";
+    }
+
+    runPlusGlowLap(card.querySelector(".pc-plus"));
+
+    window.setTimeout(() => navigate(targetHref), CLICK_NAV_DELAY);
+  }
+
+  // Fait parcourir au point de glow (piloté par --mx/--my, comme au survol) tout
+  // le périmètre du bouton "+", en un tour.
+  function runPlusGlowLap(plus) {
+    if (!plus) return;
+    const rect = plus.getBoundingClientRect();
+    if (!rect.width) return;
+
+    const cx = rect.width / 2;
+    const cy = rect.height / 2;
+    const radius = rect.width / 2;
+    const duration = 560;
+    const start = performance.now();
+
+    const step = (now) => {
+      const t = Math.min((now - start) / duration, 1);
+      const angle = t * Math.PI * 2 - Math.PI / 2; // départ en haut, sens horaire
+      plus.style.setProperty("--mx", `${cx + Math.cos(angle) * radius}px`);
+      plus.style.setProperty("--my", `${cy + Math.sin(angle) * radius}px`);
+      if (t < 1) requestAnimationFrame(step);
+    };
+    requestAnimationFrame(step);
   }
 
   function measure() {
@@ -422,7 +490,7 @@
   });
 </script>
 
-<section class="gallery" bind:this={galleryEl}>
+<section class="gallery" class:theme-light={theme === "light"} bind:this={galleryEl}>
   <div class="gallery-intro-group">
     <div class="gallery-header">
       <div class="intro-card">
@@ -449,6 +517,7 @@
             aria-label={item.ariaLabel ?? `${ariaLabelPrefix} ${item.title}`}
             draggable="false"
             onmousemove={handleCardMove}
+            onclick={(e) => handleCardClick(e, item.href ?? href)}
           >
             <div class="pc-img">
               <picture>
@@ -506,6 +575,7 @@
             data-cursor="view"
             aria-label={item.ariaLabel ?? `${ariaLabelPrefix} ${item.title}`}
             draggable="false"
+            onclick={(e) => handleCardClick(e, item.href ?? href)}
           >
             <div class="pc-img">
               <picture>
@@ -577,6 +647,16 @@
     overflow: clip;
     isolation: isolate;
   }
+
+  /* Variante claire : fond clair + texte d'intro foncé (le reste des cartes,
+     images pleines, reste inchangé). */
+  .gallery.theme-light {
+    background: var(--nuance-light, #f4f6fc);
+  }
+  .gallery.theme-light .intro-main { color: rgba(18, 18, 18, 0.5); }
+  .gallery.theme-light .intro-muted { color: #121212; }
+  .gallery.theme-light .intro-lead { color: rgba(18, 18, 18, 0.5); }
+  .gallery.theme-light .intro-lead :global(.hl) { color: #121212; }
 
   .gallery-intro-group,
   .gallery-content-group {
@@ -924,6 +1004,44 @@
   .desktop-card:hover .pc-plus::before,
   .desktop-card:hover .pc-plus::after {
     opacity: 1;
+  }
+
+  /* ─────────── Effet au clic (voir handleCardClick) ───────────
+     Le zoom de la carte est piloté en inline dans handleCardClick (priorité sur
+     :hover). Ici : le "+" reste visible et son glow (position via --mx/--my en
+     JS, runPlusGlowLap) fait un tour complet du bouton. */
+  .pole-card.is-clicking .pc-plus {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    background: rgba(255, 255, 255, 0.2);
+  }
+
+  .pole-card.is-clicking .pc-plus::before,
+  .pole-card.is-clicking .pc-plus::after {
+    opacity: 1;
+    transition: none;
+  }
+
+  /* Rayon resserré pendant le clic pour que le point lumineux qui fait le tour
+     soit bien défini (au survol il reste large et diffus). */
+  .pole-card.is-clicking .pc-plus::before {
+    background: radial-gradient(
+      28px circle at var(--mx, 50%) var(--my, 50%),
+      var(--site-glow-strong) 0%,
+      var(--site-glow-mid) 26%,
+      var(--site-glow-soft) 50%,
+      var(--site-glow-fade) 70%,
+      transparent 86%
+    );
+  }
+
+  .pole-card.is-clicking .pc-plus::after {
+    background: radial-gradient(
+      40px circle at var(--mx, 50%) var(--my, 50%),
+      var(--site-glow-ambient) 0%,
+      var(--site-glow-outer) 48%,
+      transparent 82%
+    );
   }
 
   .mobile-stack {

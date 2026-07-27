@@ -7,6 +7,9 @@
   export let onlyPages = null;
   // Carte(s) en pleine largeur (bannière) plutôt qu'en grille 2 colonnes.
   export let full = false;
+  // Si fourni, remplace entièrement la liste de projets (et ignore les filtres) :
+  // utilisé par la page Services pour présenter les 3 pôles avec la même grille.
+  export let projects = null;
 
   const baseProjects = [
     {
@@ -67,9 +70,11 @@
     }
   ];
 
-  $: filteredProjects = baseProjects.filter(
-    (p) => (onlyPages ? onlyPages.includes(p.page) : true) && !excludePages.includes(p.page)
-  );
+  $: filteredProjects = projects
+    ? projects
+    : baseProjects.filter(
+        (p) => (onlyPages ? onlyPages.includes(p.page) : true) && !excludePages.includes(p.page)
+      );
 
   function handleMove(event) {
     const btn = event.currentTarget.querySelector(".p-btn");

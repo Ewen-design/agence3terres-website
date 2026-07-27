@@ -139,6 +139,20 @@
     syncLayoutTheme();
     forceScrollEngineUpdate();
 
+    // Au premier chargement d'une page, l'onMount de ce composant (enfant) tourne
+    // AVANT celui du layout (parent) qui pose ses écouteurs `project-theme-change`
+    // / `project-header-tone`. Les pages projet classiques changent de thème au
+    // scroll et se resynchronisent, mais une page à thème STATIQUE (ex. pôle
+    // Design, clair) n'émet qu'une fois — au mauvais moment. On force donc une
+    // ré-émission au frame suivant, quand les écouteurs du layout sont en place.
+    requestAnimationFrame(() => {
+      if (!mounted) return;
+      lastHeaderTone = null;
+      lastLayoutTheme = null;
+      syncHeaderTone();
+      syncLayoutTheme();
+    });
+
     const handleResize = () => {
       clearTimeout(resizeTimer);
       resizeTimer = setTimeout(scheduleMeasure, 80);
