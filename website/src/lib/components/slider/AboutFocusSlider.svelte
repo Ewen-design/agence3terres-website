@@ -1,5 +1,5 @@
 <script>
-  import ProjectScrollShowcase from "$lib/components/home/ProjectScrollShowcase.svelte";
+  import ProjectFocusReveal from "$lib/components/home/ProjectFocusReveal.svelte";
 
   // Mêmes infos qu'avant, adaptées au nouveau principe (une image ~200vh par
   // slide, titre fixe en haut, texte + wipe gris→blanc en bas). Pas de lien →
@@ -23,4 +23,4 @@
   ];
 </script>
 
-<ProjectScrollShowcase {slides} mobileCaptionBottom />
+<ProjectFocusReveal {slides} />

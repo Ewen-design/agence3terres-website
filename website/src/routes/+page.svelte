@@ -8,7 +8,7 @@
   import Hero from "$lib/components/home/Hero.svelte";
   import IntroSlider from "$lib/components/home/IntroSlider.svelte";
   import FaqAccordion from "$lib/components/home/FaqAccordion.svelte";
-  import ProjectScrollShowcase from "$lib/components/home/ProjectScrollShowcase.svelte";
+  import ProjectFocusReveal from "$lib/components/home/ProjectFocusReveal.svelte";
 
   const hsliderSlides = [
     {
@@ -60,5 +60,5 @@
 />
 
 <IntroSlider />
-<ProjectScrollShowcase slides={hsliderSlides} />
+<ProjectFocusReveal slides={hsliderSlides} />
 <FaqAccordion />
