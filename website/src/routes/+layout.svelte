@@ -51,8 +51,8 @@
   const DESKTOP_WHEEL_LERP = 0.14;
   const DESKTOP_WHEEL_SNAP = 0.18;
   const DESKTOP_WHEEL_MIN_WIDTH = 1100;
-  const SITE_URL = "https://agence3terres.com";
-  const SHARE_IMAGE_PATH = "/images/ordinateur.webp";
+  const SITE_URL = "https://agence3terres.fr";
+  const SHARE_IMAGE_PATH = "/images/apercu.webp";
   const PAGE_META = {
     "/": {
       title: "Agence 3 Terres | Sites web, identité et direction artistique",

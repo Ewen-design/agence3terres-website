@@ -14,7 +14,7 @@
     {
       title: "Moovy",
       description: "Recommandation de films\nselon ses envies.",
-      images: ["/images/moovy_mac.webp", "/images/tel_moovy2.webp", "/images/moovy_recherche.webp"],
+      images: ["/images/moovy-phone.webp", "/images/tel_moovy2.webp", "/images/moovy_recherche.webp"],
       href: "/projet3"
     },
     {
@@ -38,7 +38,7 @@
     {
       title: "Ludosphères",
       description: "Site d'artiste pour\noeuvres peintes.",
-      images: ["/images/ludo.webp", "/images/ludo.webp", "/images/ludo.webp"],
+      images: ["/images/ipad-ludo.webp", "/images/ludo.webp", "/images/ludo.webp"],
       href: "/projet4"
     },
     {
