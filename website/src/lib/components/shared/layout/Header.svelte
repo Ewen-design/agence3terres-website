@@ -533,7 +533,8 @@
       background 1.2s cubic-bezier(.22,.61,.36,1);
   }
 
-  /* Logo mobile — masqué sur desktop */
+  /* Logo mobile — masqué sur desktop (le logo desktop est .site-prism-mark
+     dans +layout.svelte). */
   .mobile-logo {
     --logo-cut-size: 1.25rem;
     --logo-button-width: calc(var(--logo-cut-size) + 2rem);

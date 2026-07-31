@@ -11,9 +11,18 @@
   export let slides = [];
 
   let track;
+  let sectionEl;
   let active = 0;
   const panelEls = [];
   let raf = 0;
+  // Pendant l'anim de défilement premium, on rend le dock OPAQUE (backdrop-filter
+  // retiré) : c'est le re-raster du flou du dock, par-dessus les images qui
+  // défilent, qui saccadait. Sans lui, le défilement rAF reste bien fluide. On
+  // (dé)pose la classe de façon IMPÉRATIVE (synchrone, avant la 1re frame de
+  // scroll) — via `class:` Svelte l'ajout serait asynchrone et arriverait trop
+  // tard.
+  const setAnimating = (on) =>
+    sectionEl?.classList.toggle("ms--anim", on);
 
   // Desktop : seul le dock est sticky (position: sticky; bottom → il flotte puis
   // se pose). Mobile : image plus courte (pour ne pas être trop haute), donc le
@@ -58,7 +67,11 @@
     const anchor = track.getBoundingClientRect().left + padLeft();
     const delta = panelEls[i].getBoundingClientRect().left - anchor;
     scrollCtrl?.cancel();
-    scrollCtrl = animateScrollLeft(track, track.scrollLeft + delta);
+    scrollCtrl = animateScrollLeft(track, track.scrollLeft + delta, {
+      eased: true,
+      onStart: () => setAnimating(true),
+      onDone: () => setAnimating(false)
+    });
   }
 
   onMount(() => {
@@ -81,7 +94,7 @@
 </script>
 
 {#if slides.length}
-<section class="ms">
+<section class="ms" bind:this={sectionEl}>
   {#if title}
     <div class="ms-head" use:reveal>
       <h3 class="ms-title">{title}</h3>
@@ -135,6 +148,18 @@
     position: relative;
     background: transparent;
     padding: clamp(2rem, 4vw, 4rem) 0 clamp(3rem, 6vw, 6rem);
+  }
+
+  /* Pendant l'anim de défilement premium : on retire le backdrop-filter du dock
+     (il se rasterisait à chaque frame par-dessus les images qui défilent = la
+     seule source de saccade). Un fond opaque proche du verre dépoli sombre le
+     remplace le temps de la transition → rendu quasi identique, mais fluide. */
+  .ms--anim :global(.sd__pill),
+  .ms--anim :global(.sd__pp),
+  .ms--anim :global(.sd__blob) {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    background: rgba(32, 34, 40, 0.72) !important;
   }
 
   /* SEUL le dock est sticky (desktop ET mobile) : `position: sticky; bottom` → le

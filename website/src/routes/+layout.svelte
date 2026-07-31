@@ -637,10 +637,14 @@
     padding: 0;
     border-radius: 10px;
     overflow: hidden;
-    background: none;
+    /* Fond blur plein (plus de « trou » découpé) : le prisme est posé par-dessus
+       en aplat via .site-prism-glass. */
+    background: rgba(255, 255, 255, 0.11);
+    backdrop-filter: blur(20px) saturate(160%) brightness(0.82);
+    -webkit-backdrop-filter: blur(20px) saturate(160%) brightness(0.82);
     color: #fff;
     transform: translateZ(0);
-    transition: transform .3s cubic-bezier(.22,.61,.36,1);
+    transition: transform .3s cubic-bezier(.22,.61,.36,1), background 1.2s cubic-bezier(.22,.61,.36,1);
     -webkit-tap-highlight-color: transparent;
   }
 
@@ -651,57 +655,29 @@
   .site-prism-mark.is-home { cursor: default; }
   .site-prism-mark.is-home:hover { transform: none; }
 
+  /* Prisme en aplat (blanc par défaut via currentColor), centré dans le fond
+     blur : l'image sert de masque → seule la forme du prisme est peinte. */
   .site-prism-glass {
     position: absolute;
-    inset: 0;
+    inset: 50% auto auto 50%;
     display: block;
-    border-radius: inherit;
-    background: rgba(255, 255, 255, 0.11);
-    backdrop-filter: blur(20px) saturate(160%) brightness(0.82);
-    -webkit-backdrop-filter: blur(20px) saturate(160%) brightness(0.82);
-    backface-visibility: hidden;
-    -webkit-backface-visibility: hidden;
-    transform: translateZ(0);
-    transition: background 1.2s cubic-bezier(.22,.61,.36,1);
-    -webkit-mask-image: linear-gradient(#fff 0 0), url("/images/logo_prisme.png");
-    -webkit-mask-position: center, center;
-    -webkit-mask-repeat: no-repeat, no-repeat;
-    -webkit-mask-size: 100% 100%, var(--logo-cut-size) var(--logo-cut-size);
-    -webkit-mask-composite: xor;
-    mask-image: linear-gradient(#fff 0 0), url("/images/logo_prisme.png");
-    mask-position: center, center;
-    mask-repeat: no-repeat, no-repeat;
-    mask-size: 100% 100%, var(--logo-cut-size) var(--logo-cut-size);
-    mask-composite: exclude;
+    width: var(--logo-cut-size);
+    height: var(--logo-cut-size);
+    transform: translate3d(-50%, -50%, 0);
+    background: currentColor;
+    pointer-events: none;
+    -webkit-mask: url("/images/logo_prisme.png") center / contain no-repeat;
+    mask: url("/images/logo_prisme.png") center / contain no-repeat;
   }
 
-  .site-prism-mark:hover .site-prism-glass {
+  .site-prism-mark:hover {
     background: rgba(255, 255, 255, 0.14);
   }
 
-  @supports not ((-webkit-mask-composite: xor) or (mask-composite: exclude)) {
-    .site-prism-mark {
-      background: rgba(255, 255, 255, 0.11);
-      backdrop-filter: blur(20px) saturate(160%) brightness(0.82);
-      -webkit-backdrop-filter: blur(20px) saturate(160%) brightness(0.82);
-    }
-
-    .site-prism-glass {
-      inset: 50% auto auto 50%;
-      width: var(--logo-cut-size);
-      height: var(--logo-cut-size);
-      background: currentColor;
-      backdrop-filter: none;
-      -webkit-backdrop-filter: none;
-      transform: translate3d(-50%, -50%, 0);
-      -webkit-mask: url("/images/logo_prisme.png") center / contain no-repeat;
-      mask: url("/images/logo_prisme.png") center / contain no-repeat;
-    }
-
-    main.project-light-theme .site-prism-mark,
-    main.legal-route .site-prism-mark {
-      color: #000;
-    }
+  /* Pages à thème clair → prisme en noir pour rester lisible sur le fond blur. */
+  main.project-light-theme .site-prism-mark,
+  main.legal-route .site-prism-mark {
+    color: #000;
   }
 
   @media (hover: none) and (pointer: coarse) {
