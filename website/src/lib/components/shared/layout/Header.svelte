@@ -538,75 +538,36 @@
     --logo-cut-size: 1.25rem;
     --logo-button-width: calc(var(--logo-cut-size) + 2rem);
     display: none;
+    position: relative;
     width: var(--logo-button-width);
     flex: 0 0 var(--logo-button-width);
     padding: 0;
     overflow: hidden;
+    /* Fond blur plein (plus de « trou » découpé) : le logo est posé en blanc
+       par-dessus via .mobile-logo-glass. */
     background: rgba(255, 255, 255, 0.11);
     backdrop-filter: blur(20px) saturate(160%) brightness(0.82);
     -webkit-backdrop-filter: blur(20px) saturate(160%) brightness(0.82);
-    -webkit-mask-image: linear-gradient(#fff 0 0), url("/images/logo_prisme.png");
-    -webkit-mask-position: center, center;
-    -webkit-mask-repeat: no-repeat, no-repeat;
-    -webkit-mask-size: 100% 100%, var(--logo-cut-size) var(--logo-cut-size);
-    -webkit-mask-composite: xor;
-    mask-image: linear-gradient(#fff 0 0), url("/images/logo_prisme.png");
-    mask-position: center, center;
-    mask-repeat: no-repeat, no-repeat;
-    mask-size: 100% 100%, var(--logo-cut-size) var(--logo-cut-size);
-    mask-composite: exclude;
   }
 
+  /* Logo prisme en BLANC, centré dans le fond blur (image utilisée comme masque
+     sur un aplat blanc → seule la forme du prisme est peinte). */
   .mobile-logo-glass {
     position: absolute;
-    inset: 0;
-    display: none;
-    border-radius: inherit;
-    background: rgba(255, 255, 255, 0.11);
-    backdrop-filter: blur(20px) saturate(160%) brightness(0.82);
-    -webkit-backdrop-filter: blur(20px) saturate(160%) brightness(0.82);
-    backface-visibility: hidden;
-    -webkit-backface-visibility: hidden;
-    transform: translateZ(0);
-    transition: background 1.2s cubic-bezier(.22,.61,.36,1);
-    -webkit-mask-image: linear-gradient(#fff 0 0), url("/images/logo_prisme.png");
-    -webkit-mask-position: center, center;
-    -webkit-mask-repeat: no-repeat, no-repeat;
-    -webkit-mask-size: 100% 100%, var(--logo-cut-size) var(--logo-cut-size);
-    -webkit-mask-composite: xor;
-    mask-image: linear-gradient(#fff 0 0), url("/images/logo_prisme.png");
-    mask-position: center, center;
-    mask-repeat: no-repeat, no-repeat;
-    mask-size: 100% 100%, var(--logo-cut-size) var(--logo-cut-size);
-    mask-composite: exclude;
+    inset: 50% auto auto 50%;
+    display: block;
+    width: var(--logo-cut-size);
+    height: var(--logo-cut-size);
+    transform: translate3d(-50%, -50%, 0);
+    background: #fff;
+    pointer-events: none;
+    -webkit-mask: url("/images/logo_prisme.png") center / contain no-repeat;
+    mask: url("/images/logo_prisme.png") center / contain no-repeat;
   }
 
   /* Sur la home, le logo ne navigue pas : pas de curseur cliquable. */
   .mobile-logo.is-home {
     cursor: default;
-  }
-
-  @supports not ((-webkit-mask-composite: xor) or (mask-composite: exclude)) {
-    .mobile-logo {
-      background: rgba(255, 255, 255, 0.11);
-      backdrop-filter: blur(20px) saturate(160%) brightness(0.82);
-      -webkit-backdrop-filter: blur(20px) saturate(160%) brightness(0.82);
-      -webkit-mask: none;
-      mask: none;
-    }
-
-    .mobile-logo-glass {
-      display: block;
-      inset: 50% auto auto 50%;
-      width: var(--logo-cut-size);
-      height: var(--logo-cut-size);
-      background: currentColor;
-      backdrop-filter: none;
-      -webkit-backdrop-filter: none;
-      transform: translate3d(-50%, -50%, 0);
-      -webkit-mask: url("/images/logo_prisme.png") center / contain no-repeat;
-      mask: url("/images/logo_prisme.png") center / contain no-repeat;
-    }
   }
 
   /* Menu button */
@@ -795,18 +756,6 @@
     .mobile-logo {
       backdrop-filter: blur(12px) saturate(130%);
       -webkit-backdrop-filter: blur(12px) saturate(130%);
-    }
-
-    @supports not ((-webkit-mask-composite: xor) or (mask-composite: exclude)) {
-      .mobile-logo {
-        backdrop-filter: blur(12px) saturate(130%);
-        -webkit-backdrop-filter: blur(12px) saturate(130%);
-      }
-
-      .mobile-logo-glass {
-        backdrop-filter: none;
-        -webkit-backdrop-filter: none;
-      }
     }
 
     .menu-text {

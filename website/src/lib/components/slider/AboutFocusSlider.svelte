@@ -23,4 +23,5 @@
   ];
 </script>
 
-<ProjectFocusReveal {slides} />
+<!-- Sur la page à propos, les slides défilent plus lentement (autoplay allongé). -->
+<ProjectFocusReveal {slides} interval={8000} />

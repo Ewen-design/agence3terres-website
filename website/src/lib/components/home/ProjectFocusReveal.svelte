@@ -315,8 +315,8 @@
   .fr {
     position: relative;
     width: 100%;
-    height: 100vh;
-    height: 100lvh;
+    height: 120vh;
+    height: 120lvh;
     overflow: hidden;
     background: #000;
     isolation: isolate;
@@ -381,7 +381,7 @@
     justify-content: flex-start;
     text-align: left;
     padding: clamp(2.2rem, 5vw, 5.5rem);
-    padding-bottom: clamp(2.6rem, 6vh, 5.5rem);
+    padding-bottom: clamp(8rem, 20vh, 17rem);
     pointer-events: none;
   }
   .fr__content {
@@ -660,10 +660,10 @@
       left: 50%;
       right: auto;
       top: auto;
-      bottom: calc(max(clamp(1.1rem, 4vw, 1.8rem), var(--safe-bottom-offset)) + var(--bar-inset));
+      bottom: calc(max(clamp(5rem, 13vw, 7.5rem), var(--safe-bottom-offset)) + var(--bar-inset));
       transform: translateX(-50%);
       flex-direction: row;
-      gap: 0;
+      gap: clamp(0.5rem, 2vw, 0.75rem);
     }
     .fr__pill {
       flex-direction: row;
