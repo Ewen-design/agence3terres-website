@@ -31,7 +31,7 @@
     "/": "/images/justx-pub2.webp",
     "/services": "/images/montre-justx.webp",
     "/travail": "/images/cartes-visites.webp",
-    "/apropos": "/images/moovy.webp",
+    "/apropos": "/images/pexels-jack-atkinson-1289771108-24356055.webp",
   };
 
   $: pathname = $page.url.pathname.replace(/\/+$/, "") || "/";

@@ -263,7 +263,7 @@
       <div class="hero-media" class:media-visible={heroMediaVisible} bind:this={heroStage}>
         <img
           bind:this={heroMediaImgEl}
-          src="/images/moovy2.webp"
+          src="/images/pexels-jack-atkinson-1289771108-24356055.webp"
           alt=""
           fetchpriority="high"
           decoding="async"
