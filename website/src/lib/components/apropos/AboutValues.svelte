@@ -213,6 +213,13 @@
     .value-part--text-left .value-media {
       margin-right: calc(50% - 50vw);
     }
+
+    /* Part 2 (photo visage) : miroir de la part 1 → l'image colle au bord GAUCHE
+       de l'écran (sinon, sur grand écran, elle restait calée dans le conteneur
+       centré avec un vide à gauche → « mal justifiée à gauche »). */
+    .value-part--text-right .value-media {
+      margin-left: calc(50% - 50vw);
+    }
   }
 
   /* ── Mobile ───────────────────────────────────────────────────────── */

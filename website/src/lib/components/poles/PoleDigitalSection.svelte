@@ -14,11 +14,11 @@
 
   // Digital — sites web & applications : parcours, interface, responsive, dev.
   const digitalSlides = [
-    { image: "/images/moovy-ordi.webp", alt: "Site web desktop", label: "Site web", caption: "Des expériences digitales modernes, pensées comme un parcours fluide qui guide vers l'essentiel." },
-    { image: "/images/moovy_page.webp", alt: "Design d'interface", label: "Design d'interface", caption: "Chaque écran est composé pour hiérarchiser l'information et guider le regard sans effort." },
-    { image: "/images/justx-tel.webp", alt: "Vue mobile responsive", label: "Responsive & mobile", caption: "La même clarté et la même fluidité, du grand écran adapté à tous les supports." },
-    { image: "/images/moovy_recherche.webp", alt: "Parcours et recherche", label: "Parcours & recherche", caption: "Des parcours stratégiques pensés pour guider l'utilisateur vers ses objectifs." },
-    { image: "/images/app-justx.webp", alt: "Application mobile", label: "Application mobile", caption: "Des expériences d'application mobiles fluides et intuitives, pensées pour marquer et capter l'attention de l'utilisateur." },
+    { image: "/images/moovy-salon.webp", alt: "Site web desktop", label: "Site web", caption: "Des expériences digitales pensées comme un parcours fluide." },
+    { image: "/images/moovy_page.webp", alt: "Design d'interface", label: "Design d'interface", caption: "Des écrans qui guident le regard sans effort." },
+    { image: "/images/justx-tel.webp", alt: "Vue mobile responsive", label: "Responsive & mobile", caption: "La même clarté sur tous les supports." },
+    { image: "/images/moovy_recherche.webp", alt: "Parcours et recherche", label: "Parcours & recherche", caption: "Des parcours pensés pour atteindre chaque objectif." },
+    { image: "/images/app-justx.webp", alt: "Application mobile", label: "Application mobile", caption: "Des applications mobiles fluides et intuitives." },
   ];
 </script>
 

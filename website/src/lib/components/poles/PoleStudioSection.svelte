@@ -14,10 +14,10 @@
 
   // Studio — toute l'image de la marque : captation, DA, réseaux, contenu, 3D.
   const studioSlides = [
-    { image: "/images/mobile-photo.webp", alt: "Captation photo et vidéo", label: "Captation & événements", caption: "Une présence événementielle plus forte afin de faire durer un moment inoubliable." },
-    { image: "/images/justx-rs.webp", alt: "Réseaux sociaux", label: "Réseaux sociaux", caption: "Une présence sur les réseaux sociaux posant un univers en faisant connaître la marque." },
-    { image: "/images/justx_textile.webp", alt: "Contenu et montage", label: "Contenu & montage", caption: "Nous créons des contenus vidéos et photos adaptables à chaque marque et à chaque cible." },
-    { image: "/images/apple_justx.webp", alt: "Photo produit", label: "Photo produit", caption: "Des visuels soignés qui subliment produits et supports." }
+    { image: "/images/mobile-photo.webp", alt: "Captation photo et vidéo", label: "Captation & événements", caption: "Une présence événementielle qui marque les esprits." },
+    { image: "/images/justx-rs.webp", alt: "Réseaux sociaux", label: "Réseaux sociaux", caption: "Une présence sociale qui installe votre univers." },
+    { image: "/images/pexels-jack-atkinson-1289771108-24356055.webp", alt: "Contenu et montage", label: "Contenu & montage", caption: "Des contenus photo et vidéo sur mesure." },
+    { image: "/images/apple_justx.webp", alt: "Photo produit", label: "Photo produit", caption: "Des visuels qui subliment vos produits." }
   ];
 </script>
 

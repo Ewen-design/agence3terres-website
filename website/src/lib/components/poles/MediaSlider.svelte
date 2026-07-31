@@ -5,72 +5,69 @@
   import SliderDock from "$lib/components/shared/SliderDock.svelte";
   import { animateScrollLeft } from "$lib/scroll/smoothScrollLeft.js";
 
-  // Slider horizontal : grandes images, le texte EN DESSOUS de chaque image.
-  // Navigation via le dock de pagination (points + lecture auto).
+  // Carrousel « cartes » (façon Apple Cards Carousel) — MÊME mécanisme de
+  // mouvement que ParallaxGallery2 : conteneur à SCROLL NATIF (fluide, compositeur,
+  // stable), scroll-snap, et la navigation par le dock utilise `animateScrollLeft`
+  // (défilement doux natif, snap géré). L'index actif est déduit de `offsetLeft`
+  // (aucun reflow forcé pendant le scroll → stable). Pas de flèches, pas de
+  // panneau au clic : les cartes sont de simples visuels.
   export let title = "";
   export let slides = [];
 
   let track;
-  let sectionEl;
   let active = 0;
-  const panelEls = [];
+  const cardEls = [];
   let raf = 0;
-  // Pendant l'anim de défilement premium, on rend le dock OPAQUE (backdrop-filter
-  // retiré) : c'est le re-raster du flou du dock, par-dessus les images qui
-  // défilent, qui saccadait. Sans lui, le défilement rAF reste bien fluide. On
-  // (dé)pose la classe de façon IMPÉRATIVE (synchrone, avant la 1re frame de
-  // scroll) — via `class:` Svelte l'ajout serait asynchrone et arriverait trop
-  // tard.
-  const setAnimating = (on) =>
-    sectionEl?.classList.toggle("ms--anim", on);
+  let isAutoScrolling = false;
+  let scrollCtrl = null;
 
-  // Desktop : seul le dock est sticky (position: sticky; bottom → il flotte puis
-  // se pose). Mobile : image plus courte (pour ne pas être trop haute), donc le
-  // sticky-bottom ne pourrait pas flotter → on épingle le dock au bas de l'écran
-  // (overlay 100lvh de SliderDock), qui fonctionne quelle que soit la hauteur.
   let isMobile = false;
   let mqMobile;
   const onMq = (e) => (isMobile = e.matches);
 
-  const padLeft = () => (track ? parseFloat(getComputedStyle(track).scrollPaddingLeft) || 0 : 0);
+  const padLeft = () =>
+    track ? parseFloat(getComputedStyle(track).scrollPaddingLeft) || 0 : 0;
 
   function updateActive() {
     raf = 0;
     if (!track) return;
-    // Dernier cran : la dernière image ne peut pas s'aligner complètement à gauche
-    // (course de scroll insuffisante) → sans ce garde-fou le dock n'atteindrait
-    // jamais le dernier point. Dès qu'on est en butée de scroll, on force le
-    // dernier index.
+    // Dernier cran : en butée de scroll, on force le dernier index (la dernière
+    // carte ne peut pas s'aligner complètement à gauche).
     if (track.scrollLeft + track.clientWidth >= track.scrollWidth - 2) {
-      active = panelEls.length - 1;
+      active = cardEls.length - 1;
       return;
     }
-    const anchor = track.getBoundingClientRect().left + padLeft();
-    let best = 0, bestD = Infinity;
-    for (let i = 0; i < panelEls.length; i++) {
-      if (!panelEls[i]) continue;
-      const d = Math.abs(panelEls[i].getBoundingClientRect().left - anchor);
-      if (d < bestD) { bestD = d; best = i; }
+    const anchor = track.scrollLeft + padLeft();
+    let best = 0;
+    let bestD = Infinity;
+    for (let i = 0; i < cardEls.length; i++) {
+      const c = cardEls[i];
+      if (!c) continue;
+      const d = Math.abs(c.offsetLeft - anchor);
+      if (d < bestD) {
+        bestD = d;
+        best = i;
+      }
     }
     active = best;
   }
 
   function onScroll() {
+    if (isAutoScrolling) return; // pendant une nav programmatique, l'index est déjà connu
     if (!raf) raf = requestAnimationFrame(updateActive);
   }
 
-  // Défilement horizontal premium partagé (courbe douce, snap géré, stable).
-  let scrollCtrl = null;
-
   function goTo(i) {
-    if (!track || !panelEls[i]) return;
-    const anchor = track.getBoundingClientRect().left + padLeft();
-    const delta = panelEls[i].getBoundingClientRect().left - anchor;
+    if (!track || !cardEls[i]) return;
+    const targetLeft = Math.max(0, cardEls[i].offsetLeft - padLeft());
+    active = i;
     scrollCtrl?.cancel();
-    scrollCtrl = animateScrollLeft(track, track.scrollLeft + delta, {
-      eased: true,
-      onStart: () => setAnimating(true),
-      onDone: () => setAnimating(false)
+    isAutoScrolling = true;
+    scrollCtrl = animateScrollLeft(track, targetLeft, {
+      onDone: () => {
+        isAutoScrolling = false;
+        updateActive();
+      }
     });
   }
 
@@ -94,7 +91,7 @@
 </script>
 
 {#if slides.length}
-<section class="ms" bind:this={sectionEl}>
+<section class="ms">
   {#if title}
     <div class="ms-head" use:reveal>
       <h3 class="ms-title">{title}</h3>
@@ -103,21 +100,27 @@
 
   <div class="ms-track" bind:this={track}>
     {#each slides as slide, i}
-      <article class="ms-panel" bind:this={panelEls[i]}>
-        <div class="ms-media" use:reveal>
-          <img src={slide.image} alt={slide.alt ?? slide.label ?? ""} loading={i < 2 ? "eager" : "lazy"} decoding="async" draggable="false" />
-        </div>
-        <div class="ms-cap" use:reveal={{ delay: 120 }}>
-          {#if slide.label}<span class="ms-cap__label">{slide.label}</span>{/if}
-          {#if slide.caption}<p class="ms-cap__text">{slide.caption}</p>{/if}
-        </div>
-      </article>
+      <div class="ms-card" bind:this={cardEls[i]}>
+        <span class="ms-card__media" use:reveal>
+          <img
+            class="ms-card__img"
+            src={slide.image}
+            alt={slide.alt ?? slide.label ?? ""}
+            loading={i < 2 ? "eager" : "lazy"}
+            decoding="async"
+            draggable="false"
+          />
+        </span>
+        <span class="ms-card__grad" aria-hidden="true"></span>
+        <span class="ms-card__text">
+          {#if slide.label}<span class="ms-card__cat">{slide.label}</span>{/if}
+          {#if slide.caption}<span class="ms-card__title">{slide.caption}</span>{/if}
+        </span>
+      </div>
     {/each}
   </div>
 
   {#if isMobile}
-    <!-- Mobile : dock épinglé au bas de l'écran (overlay), fonctionne avec une
-         image de hauteur normale. -->
     <SliderDock
       count={slides.length}
       {active}
@@ -126,9 +129,6 @@
       on:goto={(e) => goTo(e.detail)}
     />
   {:else}
-    <!-- Desktop : seul le dock est sticky (`position: sticky; bottom`) → il flotte
-         en bas du viewport pendant qu'on scrolle le composant, puis se pose à sa
-         position naturelle (sous les légendes). Le contenu défile normalement. -->
     <div class="ms-dock">
       <SliderDock
         count={slides.length}
@@ -150,42 +150,16 @@
     padding: clamp(2rem, 4vw, 4rem) 0 clamp(3rem, 6vw, 6rem);
   }
 
-  /* Pendant l'anim de défilement premium : on retire le backdrop-filter du dock
-     (il se rasterisait à chaque frame par-dessus les images qui défilent = la
-     seule source de saccade). Un fond opaque proche du verre dépoli sombre le
-     remplace le temps de la transition → rendu quasi identique, mais fluide. */
-  .ms--anim :global(.sd__pill),
-  .ms--anim :global(.sd__pp),
-  .ms--anim :global(.sd__blob) {
-    backdrop-filter: none !important;
-    -webkit-backdrop-filter: none !important;
-    background: rgba(32, 34, 40, 0.72) !important;
-  }
-
-  /* SEUL le dock est sticky (desktop ET mobile) : `position: sticky; bottom` → le
-     dock flotte au bas du viewport pendant qu'on scrolle le composant, puis se
-     pose à sa position naturelle (sous les légendes) au bas du composant. Le
-     contenu (rail + légendes) défile normalement. */
   .ms-dock {
     position: sticky;
     bottom: max(clamp(1.1rem, 3vh, 2rem), var(--safe-bottom-offset, 1rem));
     z-index: 5;
   }
 
-  /* Desktop : image haute (le dock flotte par-dessus le média), section plus
-     haute que le viewport (course du flottement), et `margin-top` pour rétablir
-     l'espace au-dessus du slider entre les sections. */
   @media (min-width: 769px) {
     .ms {
       min-height: calc(100lvh + 24vh);
       margin-top: clamp(4rem, 9vh, 8rem);
-    }
-    .ms-track {
-      grid-auto-columns: min(84%, 78rem);
-    }
-    .ms-media {
-      aspect-ratio: auto;
-      height: min(72vh, 760px);
     }
   }
 
@@ -197,7 +171,6 @@
     justify-content: space-between;
     gap: 1rem;
   }
-
   .ms-title {
     margin: 0;
     font-family: "Inter", sans-serif;
@@ -208,19 +181,16 @@
     transition: color var(--project-theme-transition, 920ms cubic-bezier(0.16, 1, 0.3, 1));
   }
 
-  /* ── Track ── */
+  /* ── Piste : scroll natif (comme ParallaxGallery2) ── */
   .ms-track {
     display: grid;
     grid-auto-flow: column;
-    grid-auto-columns: min(60%, 56rem);
-    /* Plus d'espace entre les images du slider. */
-    gap: clamp(1.5rem, 3.5vw, 3.5rem);
+    /* Cartes 1,5× plus larges (desktop). */
+    grid-auto-columns: clamp(30rem, 39vw, 36rem);
+    gap: clamp(1rem, 1.6vw, 1.5rem);
     overflow-x: auto;
-    /* Lock the track to horizontal scrolling only. Without an explicit
-       overflow-y, `overflow-x: auto` forces overflow-y to compute to `auto`
-       too (CSS spec), letting the track drift vertically. `hidden` removes that
-       vertical scroll; touch-action is left at its default so the browser still
-       routes vertical swipes to the page and horizontal swipes to the track. */
+    /* Verrouille au scroll horizontal (sinon `overflow-x:auto` force overflow-y à
+       `auto` aussi → dérive verticale). Le tactile vertical scrolle donc la page. */
     overflow-y: hidden;
     scroll-snap-type: x mandatory;
     scroll-padding-left: max((100vw - min(1400px, 92%)) / 2, 4vw);
@@ -231,70 +201,92 @@
   }
   .ms-track::-webkit-scrollbar { display: none; }
 
-  .ms-panel {
+  /* ── Carte (façon Apple Cards Carousel) ── */
+  .ms-card {
     scroll-snap-align: start;
+    position: relative;
     min-width: 0;
-  }
-
-  .ms-media {
-    aspect-ratio: 16 / 11;
-    border-radius: 16px;
+    aspect-ratio: 9 / 10;
+    border-radius: 24px;
     overflow: hidden;
     background: var(--project-surface-card, #121212);
-    /* Reassert the full reveal transition alongside the theme colour fade — a
-       scoped `transition: background-color` alone would out-specify the global
-       `.reveal` rule and cancel the arrival animation. */
-    transition:
-      opacity 0.6s ease,
-      filter 0.85s cubic-bezier(0.22, 0.61, 0.36, 1),
-      transform 0.85s cubic-bezier(0.22, 0.61, 0.36, 1),
-      background-color var(--project-theme-transition, 920ms cubic-bezier(0.16, 1, 0.3, 1));
-    transition-delay: var(--reveal-delay, 0ms);
   }
-
-  .ms-media img {
+  /* Média + zoom : SEULE l'image zoome au survol (aucun effet sur le rayon, la
+     position de la carte ou les textes). Le zoom est clippé par la carte. */
+  .ms-card__media {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    overflow: hidden;
+    display: block;
+  }
+  .ms-card__img {
     width: 100%;
     height: 100%;
     object-fit: cover;
     display: block;
-    transform: scale(1.05);
+    transform: scale(1.06);
     transition: transform 1.2s cubic-bezier(0.22, 0.61, 0.36, 1);
+    backface-visibility: hidden;
   }
-  /* Dé-zoom d'arrivée en un seul coup : pas de will-change permanent (sinon une
-     couche GPU par image reste promue en permanence, hors écran compris). */
-  .ms-media:global(.is-revealed) img { transform: scale(1); }
-
-  /* Texte EN DESSOUS de l'image */
-  .ms-cap {
-    margin-top: clamp(1rem, 1.6vw, 1.4rem);
-    max-width: 44ch;
+  /* Dé-zoom d'arrivée (reveal), puis état stable à scale(1). */
+  .ms-card__media:global(.is-revealed) .ms-card__img {
+    transform: scale(1);
   }
-
-  .ms-cap__label {
-    display: block;
+  @media (hover: hover) {
+    .ms-card:hover .ms-card__img {
+      transform: scale(1.06);
+    }
+  }
+  .ms-card__grad {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    pointer-events: none;
+    background: linear-gradient(
+      to bottom,
+      rgba(0, 0, 0, 0.55) 0%,
+      rgba(0, 0, 0, 0.16) 28%,
+      rgba(0, 0, 0, 0) 55%
+    );
+  }
+  .ms-card__text {
+    position: absolute;
+    z-index: 2;
+    top: 0;
+    left: 0;
+    right: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    padding: clamp(1.5rem, 2vw, 2rem);
+    text-align: left;
+    pointer-events: none;
+  }
+  /* Petit titre = le label. */
+  .ms-card__cat {
     font-family: "Inter", sans-serif;
     font-weight: 500;
-    font-size: clamp(1.1rem, 1.5vw, 1.35rem);
-    letter-spacing: -0.02em;
-    color: var(--project-surface-ink, #f4efe6);
-    transition: color var(--project-theme-transition, 920ms cubic-bezier(0.16, 1, 0.3, 1));
+    font-size: clamp(0.9rem, 1vw, 1.05rem);
+    letter-spacing: 0.01em;
+    color: rgba(255, 255, 255, 0.92);
+    text-shadow: 0 2px 14px rgba(0, 0, 0, 0.4);
   }
-
-  .ms-cap__text {
-    margin: 0.5rem 0 0;
+  /* Gros titre = le petit texte (caption), court et un peu moins large. */
+  .ms-card__title {
+    max-width: 25rem;
     font-family: "Inter", sans-serif;
-    font-weight: 400;
-    font-size: clamp(0.98rem, 1.1vw, 1.1rem);
-    line-height: 1.5;
-    color: var(--project-surface-muted, rgba(244, 239, 230, 0.7));
-    text-wrap: pretty;
-    transition: color var(--project-theme-transition, 920ms cubic-bezier(0.16, 1, 0.3, 1));
+    font-weight: 600;
+    font-size: clamp(1.4rem, 2vw, 1.85rem);
+    line-height: 1.14;
+    letter-spacing: -0.02em;
+    color: #fff;
+    text-wrap: balance;
+    text-shadow: 0 4px 24px rgba(0, 0, 0, 0.42);
   }
 
-  /* Mobile : image de hauteur normale (pas trop haute) et contenu centré ; le
-     dock est épinglé au bas de l'écran (overlay, cf. markup) tant qu'on parcourt
-     le composant. La section est un peu plus haute que le viewport pour laisser
-     l'épinglage jouer. */
+  /* ── Mobile ── (mêmes tailles de cartes que ParallaxGallery2 : quasi plein
+     écran, hauteur pilotée par la fenêtre, un léger aperçu de la suivante). */
   @media (max-width: 768px) {
     .ms {
       min-height: calc(100lvh + 14vh);
@@ -303,48 +295,45 @@
       justify-content: center;
     }
     .ms-track {
-      grid-auto-columns: 86%;
+      grid-auto-columns: clamp(300px, 88vw, 440px);
+      gap: clamp(0.9rem, 3vw, 1.2rem);
     }
-    .ms-media {
+    .ms-card {
       aspect-ratio: auto;
-      height: min(48vh, 420px);
+      height: min(72vh, 660px);
+      border-radius: 22px;
     }
-    /* Réglage du dock épinglé SANS toucher au contenu (l'overlay est en `absolute`,
-       hors flux) :
-       - `top` négatif → l'épinglage démarre plus tôt / plus haut dans le scroll ;
-       - `bottom` positif → l'overlay se termine plus haut, donc le dock se pose plus
-         près du bas des slides (moins de vide en fin de course). */
+    .ms-card__title {
+      max-width: none;
+      font-size: clamp(1.45rem, 6vw, 1.85rem);
+    }
     .ms :global(.sd-overlay) {
       top: -42vh;
       bottom: 8vh;
     }
   }
 
-  /* Mobile: drop the blur from the arrival (matches the global reveal rule,
-     which our scoped transition above would otherwise re-enable). */
+  @media (max-width: 640px) {
+    .ms-track {
+      grid-auto-columns: clamp(270px, 90vw, 380px);
+    }
+    .ms-card {
+      height: min(74vh, 620px);
+    }
+  }
+
   @media (hover: none) and (pointer: coarse) {
-    .ms-media.reveal {
-      filter: none;
-      transition:
-        opacity 0.5s ease,
-        transform 0.6s cubic-bezier(0.22, 0.61, 0.36, 1),
-        background-color var(--project-theme-transition, 920ms cubic-bezier(0.16, 1, 0.3, 1));
-      transition-delay: var(--reveal-delay, 0ms);
+    .ms-card__img,
+    .ms-card__media:global(.is-revealed) .ms-card__img {
+      transition: transform 0.6s cubic-bezier(0.22, 0.61, 0.36, 1);
     }
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .ms-media.reveal {
-      transition: background-color var(--project-theme-transition, 920ms cubic-bezier(0.16, 1, 0.3, 1));
-    }
-    .ms-media img,
-    .ms-media:global(.is-revealed) img {
+    .ms-card__img,
+    .ms-card__media:global(.is-revealed) .ms-card__img {
       transition: none;
-      transform: none;
+      transform: scale(1);
     }
-  }
-
-  @media (pointer: coarse) and (orientation: landscape) and (max-height: 600px) {
-    .ms-media { height: min(62vh, 420px); }
   }
 </style>
