@@ -287,6 +287,24 @@
     text-shadow: 0 4px 24px rgba(0, 0, 0, 0.42);
   }
 
+  /* ── Très grands écrans (moniteurs externes) ── Les cartes font 46vw : sur un
+     grand écran elles deviennent énormes, alors que le texte est figé par le max
+     des clamp (≈ dès 1480px). On laisse donc le texte grandir avec l'écran pour
+     rester proportionné (les portables ≤ 1600px ne sont pas touchés). */
+  @media (min-width: 1600px) {
+    .ms-card__text {
+      gap: 0.5rem;
+      padding: clamp(2rem, 2.4vw, 3rem);
+    }
+    .ms-card__cat {
+      font-size: clamp(1.05rem, 1.15vw, 1.5rem);
+    }
+    .ms-card__title {
+      max-width: 34rem;
+      font-size: clamp(1.85rem, 2.35vw, 3rem);
+    }
+  }
+
   /* ── Mobile ── (mêmes tailles de cartes que ParallaxGallery2 : quasi plein
      écran, hauteur pilotée par la fenêtre, un léger aperçu de la suivante). */
   @media (max-width: 768px) {
@@ -309,9 +327,11 @@
       max-width: none;
       font-size: clamp(1.45rem, 6vw, 1.85rem);
     }
+    /* Le dock se pose plus bas (bottom plus petit = point d'ancrage plus proche
+       du bas de la section) pour ne plus être collé aux slides en état final. */
     .ms :global(.sd-overlay) {
       top: -42vh;
-      bottom: 8vh;
+      bottom: 3vh;
     }
   }
 
