@@ -115,8 +115,9 @@
       items={otherProjects}
       ctaLabel="Voir le projet"
       ariaLabelPrefix="Voir le projet"
-      introMain="Découvrez"
-      introMuted="nos autres projets."
+      introMain="Découvrez "
+      introMuted={"nos<br>autres projets."}
+      strongIntro
     />
   </div>
 </ProjectThemePage>

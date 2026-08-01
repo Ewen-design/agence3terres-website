@@ -185,9 +185,10 @@
   .ms-track {
     display: grid;
     grid-auto-flow: column;
-    /* Cartes 1,5× plus larges (desktop). */
-    grid-auto-columns: clamp(30rem, 39vw, 36rem);
-    gap: clamp(1rem, 1.6vw, 1.5rem);
+    /* Mêmes tailles de cartes que ParallaxGallery2 (desktop) : 46vw de large →
+       deux cartes visibles à la fois, avec un aperçu de la suivante. */
+    grid-auto-columns: 46vw;
+    gap: clamp(0.7rem, 1vw, 1.1rem);
     overflow-x: auto;
     /* Verrouille au scroll horizontal (sinon `overflow-x:auto` force overflow-y à
        `auto` aussi → dérive verticale). Le tactile vertical scrolle donc la page. */
@@ -206,7 +207,8 @@
     scroll-snap-align: start;
     position: relative;
     min-width: 0;
-    aspect-ratio: 9 / 10;
+    /* Hauteur pilotée par la fenêtre, comme ParallaxGallery2 (desktop). */
+    height: min(86vh, 920px);
     border-radius: 24px;
     overflow: hidden;
     background: var(--project-surface-card, #121212);

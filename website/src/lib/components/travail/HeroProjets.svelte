@@ -87,7 +87,7 @@
   }
 
   function computeFrame(y) {
-    if (!afterTextEl || !afterImageEl) return;
+    if (!afterTextEl) return;
 
     const heroScrollable = Math.max(heroHeight - vh, 1);
     const imageFadeProgress = clamp((y - heroTop) / heroScrollable, 0, 1);
@@ -311,10 +311,6 @@
       <div class="after-text" bind:this={afterTextEl}>
         <h2 use:reveal>{@html finalText}</h2>
       </div>
-
-      <div class="after-image" bind:this={afterImageEl} use:reveal>
-        <img class="after-image-asset" src={activeAfterImage} alt="Visuel 3 Terres" />
-      </div>
     </div>
   </section>
 
@@ -402,6 +398,7 @@
     opacity: 1;
     transform: scale(1.05);
     filter: brightness(1);
+    will-change: transform, opacity, filter;
     backface-visibility: hidden;
     -webkit-backface-visibility: hidden;
   }
@@ -512,7 +509,7 @@
     width: min(1400px, 92%);
     margin: 0 auto;
     display: grid;
-    grid-template-columns: minmax(0, 1.08fr) minmax(320px, 0.78fr);
+    grid-template-columns: minmax(0, 1fr);
     gap: clamp(1.4rem, 4vw, 4.5rem);
     align-items: start;
   }
@@ -569,7 +566,7 @@
   @media (max-width: 900px) {
     .after-grid {
       width: min(100%, 760px);
-      grid-template-columns: 1fr 0.82fr;
+      grid-template-columns: 1fr;
       gap: 0.8rem;
       padding-inline: var(--project-side-padding, 0.8rem);
       box-sizing: border-box;

@@ -5,32 +5,32 @@
     {
       question: "Quels types de projets prenez-vous en charge ?",
       answer:
-        "Nous intervenons sur l'identite visuelle, la direction artistique, la conception de sites web, les interfaces digitales et les univers de marque qui demandent une presence plus claire, plus forte et plus durable."
+        "De la jeune marque qui démarre au projet le plus ambitieux, chaque idée nous intéresse. Nous intervenons sur l'identité visuelle, la direction artistique, les sites web, les interfaces digitales et les univers de marque qui veulent une présence plus claire, plus forte et plus durable."
     },
     {
       question: "Avec quels secteurs travaillez-vous ?",
       answer:
-        "Nous travaillons avec des marques, studios, independants et structures culturelles ou commerciales qui veulent un cadre visuel plus juste, plus singulier et plus coherent sur le fond comme sur la forme."
+        "Avec tous ceux qui ont une vraie histoire à raconter : marques, studios, indépendants, structures culturelles ou commerciales. Ce qui nous guide n'est pas le secteur mais l'exigence du projet et l'envie d'aller au bout d'une vision."
     },
     {
       question: "Comment fonctionne votre tarification ?",
       answer:
-        "Chaque projet est chiffre selon son perimetre, son niveau d'exigence et le temps de conception necessaire. Nous preferons construire une proposition claire plutot qu'appliquer un forfait generique."
+        "Chaque projet est unique, notre tarification l'est aussi. Nous construisons un devis sur mesure, calibré selon vos besoins réels, le périmètre à couvrir et le temps de conception nécessaire. Vous payez pour un travail pensé pour vous, jamais pour un forfait standard."
     },
     {
-      question: "Prenez-vous aussi en charge le developpement ?",
+      question: "Comment démarrer un projet avec vous ?",
       answer:
-        "Oui, selon le projet. Nous pouvons concevoir l'experience, produire le systeme visuel et accompagner ou realiser l'integration pour garder une execution fidele jusqu'au rendu final."
+        "Écrivez-nous en quelques lignes : qui vous êtes, votre projet et vos objectifs. Nous fixons ensuite un premier échange pour cerner vos besoins, puis nous vous envoyons une proposition détaillée avec les grandes étapes, un calendrier et un devis sur mesure. Dès votre accord, le travail commence."
     },
     {
-      question: "A quoi ressemble votre processus de travail ?",
+      question: "À quoi ressemble votre processus de travail ?",
       answer:
-        "Le travail avance en general par cadrage, direction, aller-retours puis affinage. L'objectif est de garder une lecture simple, des decisions solides et un niveau de finition eleve a chaque etape."
+        "Tout commence par un échange, pour comprendre qui vous êtes et faire en sorte que le projet vous ressemble vraiment. Vient ensuite un vrai travail de recherche et de création, où nous avançons main dans la main avec vous à chaque étape, du premier cadrage jusqu'à la finition."
     },
     {
-      question: "Combien de temps dure un projet type ?",
+      question: "Combien de temps dure un projet ?",
       answer:
-        "Cela depend du format, mais un projet peut aller de quelques semaines a plusieurs mois. Le rythme est defini des le depart pour garder une progression nette et une execution stable."
+        "Le plus souvent entre deux semaines et deux mois, selon l'ampleur du travail et vos besoins : nous savons livrer vite quand il le faut, sans jamais rogner sur la qualité. Et lorsque le projet le demande, la collaboration se prolonge sur le long terme, avec un véritable accompagnement pour faire grandir votre marque étape après étape."
     }
   ];
 

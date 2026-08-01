@@ -528,8 +528,8 @@
   <meta property="og:image" content={shareImageUrl} />
   <meta property="og:image:secure_url" content={shareImageUrl} />
   <meta property="og:image:type" content="image/webp" />
-  <meta property="og:image:width" content="1800" />
-  <meta property="og:image:height" content="1000" />
+  <meta property="og:image:width" content="4180" />
+  <meta property="og:image:height" content="2410" />
   <meta property="og:image:alt" content={seoImageAlt} />
   <meta property="og:url" content={canonicalUrl} />
   <meta property="og:type" content="website" />

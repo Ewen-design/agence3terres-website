@@ -24,6 +24,14 @@ let resizeRafId = 0;
 const IDLE_TIMEOUT_MS = 140;
 const STABLE_EPSILON = 0.1;
 const MOBILE_MOTION_SMOOTHING_MS = 165;
+// Desktop scrolls natively (no Lenis, wheel damping disabled), so the wheel
+// arrives in coarse ~100px notches. Without temporal smoothing, motionY would
+// track those raw steps and every scroll-linked value driven by it (the hero
+// darkening in particular) would jump notch-by-notch — the "saccadé" the darker
+// the bigger the screen. Easing motionY toward currentY turns those discrete
+// steps into a continuous glide; the motionSettling keep-alive below then runs
+// the rAF loop until it lands, so the darkening softly settles after scroll.
+const DESKTOP_MOTION_SMOOTHING_MS = 155;
 
 const parallaxCallbacks = [];
 const readCallbacks = [];
@@ -103,8 +111,10 @@ function emitFrame(now) {
 
   currentY = nextY;
 
-  if ((isMobile || isTouch) && !prefersReducedMotion) {
-    const motionAlpha = 1 - Math.exp(-dt / MOBILE_MOTION_SMOOTHING_MS);
+  if (!prefersReducedMotion) {
+    const smoothingMs =
+      isMobile || isTouch ? MOBILE_MOTION_SMOOTHING_MS : DESKTOP_MOTION_SMOOTHING_MS;
+    const motionAlpha = 1 - Math.exp(-dt / smoothingMs);
     motionY += (currentY - motionY) * motionAlpha;
 
     if (Math.abs(currentY - motionY) <= STABLE_EPSILON) {

@@ -21,6 +21,8 @@
   // Si fourni, l'intro s'affiche comme un texte de page projet (style ProjectBrief :
   // paragraphe léger aligné à gauche) au lieu du couple main/muted à puce bleue.
   export let introLead = "";
+  // Titre d'intro plus gras et sans le trait bleu au-dessus (pages pôle).
+  export let strongIntro = false;
 
   // items: {title, subtitle?, tags?[], image, mobileImage?, href?, cta?, ariaLabel?}[]
   export let items = [
@@ -490,7 +492,7 @@
   });
 </script>
 
-<section class="gallery" class:theme-light={theme === "light"} bind:this={galleryEl}>
+<section class="gallery" class:theme-light={theme === "light"} class:strong-intro={strongIntro} bind:this={galleryEl}>
   <div class="gallery-intro-group">
     <div class="gallery-header">
       <div class="intro-card">
@@ -498,7 +500,7 @@
           <p class="intro-lead" use:reveal>{@html introLead}</p>
         {:else}
           <p class="intro-headline" use:reveal>
-            <span class="intro-main">{introMain}</span><span class="intro-muted">{introMuted}</span>
+            <span class="intro-main">{introMain}</span><span class="intro-muted">{@html introMuted}</span>
           </p>
         {/if}
       </div>
@@ -711,6 +713,36 @@
   .intro-muted {
     display: block;
     color: #f4efe6;
+  }
+
+  /* Pages pôle : intro calquée exactement sur le h2 du footer
+     (« Parlons de votre projet. ») — mêmes taille, graisse, interlignage,
+     espacement et couleurs, sans le trait bleu au-dessus. */
+  .gallery.strong-intro .intro-headline::before { display: none; }
+  .gallery.strong-intro .intro-headline {
+    max-width: 14ch;
+    font-weight: 500;
+    font-size: clamp(2.2rem, 5.5vw, 4.8rem);
+    line-height: 0.96;
+    letter-spacing: -0.04em;
+  }
+  /* Ligne 1 : « Explorez » (blanc) + « nos » (gris) ; ligne 2 : « autres pôles. » (gris).
+     Le muted redevient inline pour rester sur la 1ʳᵉ ligne ; le <br> gère la césure. */
+  .gallery.strong-intro .intro-main { color: #fff; }
+  .gallery.strong-intro .intro-muted {
+    display: inline;
+    color: rgba(255, 255, 255, 0.42);
+  }
+
+  /* Desktop : intro alignée sur le bord gauche de la 1ʳᵉ slide (rail à 2.5vw)
+     et rapprochée du slider (moins d'air en dessous). */
+  @media (min-width: 901px) {
+    .gallery.strong-intro .gallery-header {
+      width: 100%;
+      padding-left: 2.5vw;
+      padding-right: 2.5vw;
+      padding-bottom: clamp(1.25rem, 2.5vw, 2rem);
+    }
   }
 
   /* Style identique aux textes des pages projet (ProjectBrief). */
@@ -1068,6 +1100,13 @@
       font-size: clamp(1.7rem, 8.5vw, 2.55rem);
       max-width: 18ch;
       line-height: 1;
+    }
+
+    /* Pages pôle : suit le h2 du footer en version mobile. */
+    .gallery.strong-intro .intro-headline {
+      font-size: clamp(1.9rem, 9.5vw, 3.2rem);
+      max-width: 14ch;
+      line-height: 0.96;
     }
 
     .intro-lead {

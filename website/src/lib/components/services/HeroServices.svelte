@@ -396,9 +396,12 @@
     opacity: 1;
     transform: scale(1.05);
     filter: brightness(1);
-    transition:
-      opacity 1.2s cubic-bezier(0.22, 1, 0.36, 1),
-      transform 1.2s cubic-bezier(0.22, 1, 0.36, 1);
+    /* Pas de transition CSS ici : opacity / transform / brightness sont pilotés
+       image par image par le moteur de scroll (voir applyFrame). Une transition
+       traînerait derrière le scroll et ferait « poursuivre » la valeur cible en
+       permanence — d'où un assombrissement saccadé. L'intro est gérée par le
+       parent .hero-media, pas par l'image. */
+    will-change: transform, opacity, filter;
     backface-visibility: hidden;
     -webkit-backface-visibility: hidden;
   }

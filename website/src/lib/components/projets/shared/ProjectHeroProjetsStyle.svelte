@@ -453,6 +453,7 @@
     opacity: 1;
     transform: scale(1.05);
     filter: brightness(1);
+    will-change: transform, opacity, filter;
     backface-visibility: hidden;
     -webkit-backface-visibility: hidden;
   }

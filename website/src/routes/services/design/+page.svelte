@@ -29,7 +29,8 @@
     href="/services"
     ctaLabel="Découvrir"
     ariaLabelPrefix="Voir le pôle"
-    introMain="Explorez"
-    introMuted="nos autres pôles."
+    introMain="Explorez "
+    introMuted={"nos<br>autres pôles."}
+    strongIntro
   />
 </ProjectThemePage>
