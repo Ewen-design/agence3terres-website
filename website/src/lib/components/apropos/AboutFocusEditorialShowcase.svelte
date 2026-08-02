@@ -256,6 +256,7 @@
           <button
             type="button"
             class="aess__pp"
+            data-no-wipe
             on:click={togglePlay}
             aria-label={playing ? "Pause de la lecture automatique" : atEnd() ? "Rejouer la lecture automatique" : "Lecture automatique"}
           >
@@ -526,9 +527,13 @@
     cursor: pointer;
     -webkit-tap-highlight-color: transparent;
   }
+  /* Aucun éclaircissement (blanc) au survol / clic / focus : fond figé. */
+  .aess__pp:hover,
+  .aess__pp:active,
+  .aess__pp:focus,
   .aess__pp:focus-visible {
-    outline: 2px solid var(--lead-blue, #5768ff);
-    outline-offset: 3px;
+    background: rgba(255, 255, 255, 0.11);
+    outline: none;
   }
   .aess__pp svg { display: block; }
 
