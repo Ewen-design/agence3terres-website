@@ -54,9 +54,7 @@
   });
 
   const socialLinks = [
-    { href: "/", label: "Instagram", icon: "/images/instagram.png", className: "icon-instagram" },
-    { href: "/", label: "Facebook", icon: "/images/facebook.png", className: "icon-facebook" },
-    { href: "/", label: "X", icon: "/images/X.png", className: "icon-x" }
+    { href: "https://www.instagram.com/agence_3terres/", label: "Instagram", icon: "/images/instagram.png", className: "icon-instagram" }
   ];
 
   function handleButtonMove(event) {
@@ -89,29 +87,33 @@
       <div class="hero-copy">
         <h2 use:reveal>Parlons <span class="muted">de votre projet.</span></h2>
 
-        <a
-          class="nav-btn contact-button"
-          href={`mailto:${mail}`}
-          on:mousemove={handleButtonMove}
-        >
-          <span class="nav-btn-flip" data-text="Écrire un message">
-            <span class="nav-btn-text">{mail}</span>
-          </span>
-        </a>
+        <div class="contact-actions">
+          <a
+            class="nav-btn contact-button"
+            href={`mailto:${mail}`}
+            on:mousemove={handleButtonMove}
+          >
+            <span class="nav-btn-flip" data-text="Écrire un message">
+              <span class="nav-btn-text">{mail}</span>
+            </span>
+          </a>
 
-        <div class="socials">
+          <div class="socials">
           {#each socialLinks as social}
             <a
               class="social"
               href={social.href}
+              target={social.href.startsWith("http") ? "_blank" : undefined}
+              rel={social.href.startsWith("http") ? "noopener noreferrer" : undefined}
               aria-label={social.label}
               data-cursor="button"
               on:mousemove={handleButtonMove}
-              on:click|preventDefault
+              on:click={(e) => { if (social.href === "/") e.preventDefault(); }}
             >
               <img src={social.icon} alt={social.label} class={`icon ${social.className}`} />
             </a>
-          {/each}
+            {/each}
+          </div>
         </div>
       </div>
 
@@ -368,16 +370,22 @@
   .nav-btn:hover::after { opacity: 1; }
 
   /* Réseaux sociaux — petits, discrets. */
+  .contact-actions {
+    display: flex;
+    align-items: stretch;
+    gap: clamp(0.6rem, 1vw, 0.9rem);
+  }
+
   .socials {
     display: flex;
-    align-items: center;
+    align-items: stretch;
     gap: clamp(0.6rem, 1vw, 0.9rem);
   }
 
   .social {
     position: relative;
-    width: clamp(2.8rem, 3.2vw, 3.3rem);
-    height: clamp(2.8rem, 3.2vw, 3.3rem);
+    width: clamp(60px, 6.8vw, 78px);
+    height: clamp(60px, 6.8vw, 78px);
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -429,7 +437,7 @@
     object-fit: contain;
     filter: brightness(0) invert(1);
   }
-  .icon-instagram { width: clamp(1.25rem, 1.6vw, 1.5rem); height: clamp(1.25rem, 1.6vw, 1.5rem); }
+  .icon-instagram { width: clamp(1.6rem, 2.1vw, 2rem); height: clamp(1.6rem, 2.1vw, 2rem); }
   .icon-facebook { width: clamp(1.15rem, 1.5vw, 1.4rem); height: clamp(1.15rem, 1.5vw, 1.4rem); }
   .icon-x { width: clamp(1.1rem, 1.45vw, 1.35rem); height: clamp(1.1rem, 1.45vw, 1.35rem); }
 
@@ -468,8 +476,13 @@
       font-size: clamp(1.9rem, 9.5vw, 3.2rem);
     }
 
+    .contact-actions {
+      flex-wrap: wrap;
+    }
+
     .contact-button {
-      width: min(100%, 320px);
+      width: auto;
+      max-width: 100%;
     }
   }
 </style>

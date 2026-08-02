@@ -7,7 +7,7 @@
       paragraphs: [
         "Le site agence3terres.com est édité par Agence 3 Terres.",
         "Adresse : Paris, France.",
-        "E-mail : contact@agence3terres.com.",
+        "E-mail : contact@agence3terres.fr.",
         "Responsable de la publication : Agence 3 Terres."
       ]
     },
@@ -29,7 +29,7 @@
       title: "Données personnelles",
       paragraphs: [
         "Les informations éventuellement transmises via le formulaire de contact sont utilisées uniquement pour répondre aux demandes envoyées à Agence 3 Terres.",
-        "Vous pouvez demander l'accès, la rectification ou la suppression de vos données en écrivant à contact@agence3terres.com."
+        "Vous pouvez demander l'accès, la rectification ou la suppression de vos données en écrivant à contact@agence3terres.fr."
       ]
     },
     {

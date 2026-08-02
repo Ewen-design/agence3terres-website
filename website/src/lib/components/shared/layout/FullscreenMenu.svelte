@@ -9,22 +9,16 @@
 
   const socialLinks = [
     {
-      href: "/",
+      href: "https://www.instagram.com/agence_3terres/",
       label: "Instagram",
       icon: "/images/instagram.png",
       className: "icon-instagram"
     },
     {
-      href: "mailto:contact@agence3terres.com",
+      href: "mailto:contact@agence3terres.fr",
       label: "Mail",
       icon: "/images/mail.png",
       className: "icon-mail"
-    },
-    {
-      href: "/",
-      label: "X",
-      icon: "/images/X.png",
-      className: "icon-x"
     }
   ];
 
@@ -35,7 +29,7 @@
     { label: "Services", page: "services", image: "/images/montre-justx.webp", placement: "services" },
     { label: "Projets", page: "travail", image: "/images/justx-ipads.webp", placement: "projets" },
     { label: "A propos", page: "apropos", image: "/images/visage.webp", placement: "apropos" },
-    { label: "Contact", page: "contact", image: "/images/mobile-photo.webp", placement: "contact" }
+    { label: "Contact", page: "contact", image: "/images/mobile-photo2.webp", placement: "contact" }
   ];
 
   let visible = false;
@@ -333,10 +327,12 @@
               <a
                 class="social-link"
                 href={social.href}
+                target={social.href.startsWith("http") ? "_blank" : undefined}
+                rel={social.href.startsWith("http") ? "noopener noreferrer" : undefined}
                 aria-label={social.label}
                 data-cursor="button"
                 on:mousemove={handleGlowMove}
-                on:click|preventDefault
+                on:click={(e) => { if (social.href === "/") e.preventDefault(); }}
               >
                 <img src={social.icon} alt={social.label} class={`icon ${social.className}`} />
               </a>
@@ -376,10 +372,12 @@
             <a
               class="social-link"
               href={social.href}
+              target={social.href.startsWith("http") ? "_blank" : undefined}
+              rel={social.href.startsWith("http") ? "noopener noreferrer" : undefined}
               aria-label={social.label}
               data-cursor="button"
               on:mousemove={handleGlowMove}
-              on:click|preventDefault
+              on:click={(e) => { if (social.href === "/") e.preventDefault(); }}
             >
               <img src={social.icon} alt={social.label} class={`icon ${social.className}`} />
             </a>

@@ -106,7 +106,7 @@
       text="Un <span class='hl'>premier plan large</span> pour ouvrir l'univers, puis deux vues resserrees qui gardent la meme <span class='hl'>clarte</span>."
       feature={{ src: "/images/affiche-moovy.webp", alt: "Grand visuel desktop de Moovy" }}
       items={[
-        { src: "/images/moovy_mobile.webp", alt: "Vue mobile du projet Moovy" },
+        { src: "/images/moovy-ordi-bleu.webp", alt: "Vue mobile du projet Moovy" },
         { src: "/images/moovy-ordi.webp", alt: "Vue catalogue du projet Moovy" }
       ]}
     />
