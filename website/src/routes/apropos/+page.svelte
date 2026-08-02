@@ -1,59 +1,40 @@
 <script>
   import AboutStoryIntro from "$lib/components/apropos/AboutStoryIntro.svelte";
-  import AboutFocusSlider from "$lib/components/slider/AboutFocusSlider.svelte";
   import VisionSlider from "$lib/components/apropos/VisionSlider.svelte";
   // AboutEditorialPrinciples retiré des composants actifs (fichier conservé)
   // au profit d'AboutValues (3 parties éditoriales sans slider).
   // import AboutEditorialPrinciples from "$lib/components/apropos/AboutEditorialPrinciples.svelte";
   import AboutValues from "$lib/components/apropos/AboutValues.svelte";
   import HeroApropos from "$lib/components/apropos/HeroApropos.svelte";
-  import AboutEditorialSingleShowcase from "$lib/components/apropos/AboutEditorialSingleShowcase.svelte";
+  // Fusion des anciens AboutFocusSlider + AboutEditorialSingleShowcase :
+  // un seul slider éditorial (look/texte du 2e, module de slider du 1er).
+  import AboutFocusEditorialShowcase from "$lib/components/apropos/AboutFocusEditorialShowcase.svelte";
+
+  const showcaseSlides = [
+    {
+      label: "Un reflet",
+      text: "Nous <span class='hl'>reflétons</span> l'identité de nos clients avec <span class='hl'>précision</span>, pour leur proposer les solutions les plus adaptées.",
+      image: "/images/lac copie.webp",
+      alt: "Reflet — identité de marque Agence 3 Terres"
+    },
+    {
+      label: "Une création",
+      text: "Nous concevons des <span class='hl'>expériences</span> de marque uniques, pensées pour <span class='hl'>durer</span> et faire la différence.",
+      image: "/images/pexels-hikaique-5913599.webp",
+      alt: "Création — expériences de marque Agence 3 Terres"
+    },
+    {
+      label: "Une ambition",
+      text: "Nous imaginons des <span class='hl'>stratégies</span> sur-mesure, pour accompagner chaque projet jusqu'au sommet de ses <span class='hl'>ambitions</span>.",
+      image: "/images/pexels-jack-atkinson-1289771108-24356055.webp",
+      alt: "Ambition — stratégie de marque Agence 3 Terres"
+    }
+  ];
 </script>
 
 <h1 class="seo-page-title">À propos - Vision et approche Agence 3 Terres</h1>
 <HeroApropos />
 
-
-
-
-<AboutFocusSlider />
-<div class="apropos-intro-showcase">
-  <AboutEditorialSingleShowcase
-    text="Organisée en <span class='hl'>trois pôles</span> complémentaires, l'agence accompagne chaque marque du <span class='hl'>conseil</span> stratégique à la <span class='hl'>création</span> digitale, jusqu'à la <span class='hl'>production</span> de contenus."
-    image="/images/pexels-jack-atkinson-1289771108-24356055.webp"
-    alt="Direction artistique Agence 3 Terres"
-    mediaMinHeight="38rem"
-    showAccent={false}
-    ctaLabel="Découvrir"
-    ctaHref="services"
-  />
-</div>
+<AboutFocusEditorialShowcase slides={showcaseSlides} interval={8000} />
 <AboutValues />
 <VisionSlider />
-
-<style>
-  /* Réduit le grand vide sous le texte : la section fait 220vh par défaut alors
-     que l'image plein cadre n'en fait que 150vh. On ramène la hauteur juste
-     au-dessus de l'image et on raccourcit la dernière rangée (vide) de la
-     grille. Scopé à cette page : la page services n'est pas touchée. */
-  .apropos-intro-showcase :global(.about-editorial-single-showcase) {
-    min-height: 152vh;
-  }
-
-  .apropos-intro-showcase :global(.about-editorial-single-showcase__content) {
-    grid-template-rows: 100vh auto 8vh;
-  }
-
-  /* Mobile : plus d'air sous le texte. */
-  @media (max-width: 900px) {
-    .apropos-intro-showcase :global(.about-editorial-single-showcase) {
-      min-height: 182vh;
-    }
-  }
-
-  @media (max-width: 640px) {
-    .apropos-intro-showcase :global(.about-editorial-single-showcase) {
-      min-height: 172vh;
-    }
-  }
-</style>
