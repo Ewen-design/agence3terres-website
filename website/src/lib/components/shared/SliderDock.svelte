@@ -17,11 +17,16 @@
   // Force le mode « flux » sur mobile (où une section pleine hauteur laisserait
   // trop de vide), tout en gardant l'épinglage sur desktop.
   export let flowOnMobile = false;
+  // Démarre la lecture automatique dès que le dock entre à l'écran (sauf
+  // « mouvement réduit »). L'utilisateur garde la main via le bouton play/pause.
+  export let autoplay = false;
 
   const dispatch = createEventDispatcher();
 
   let playing = false;
   let visible = false;          // apparition déclenchée
+  let autoStarted = false;      // l'auto-lecture n'est armée qu'une fois
+  let prefersReduced = false;
   let dockEl;
   let io;
   let timer = null;
@@ -63,8 +68,18 @@
 
   onMount(() => {
     if (!browser || !dockEl) return;
+    prefersReduced = window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches ?? false;
     io = new IntersectionObserver(
-      ([e]) => { if (e.isIntersecting) { visible = true; io.disconnect(); } },
+      ([e]) => {
+        if (!e.isIntersecting) return;
+        visible = true;
+        // Lecture auto par défaut : armée une seule fois, à la première apparition.
+        if (autoplay && !autoStarted && !prefersReduced && count > 1) {
+          autoStarted = true;
+          playing = true;
+        }
+        io.disconnect();
+      },
       { rootMargin: "0px 0px 14% 0px", threshold: 0.01 }
     );
     io.observe(dockEl);

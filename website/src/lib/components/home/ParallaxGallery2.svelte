@@ -631,6 +631,8 @@
     active={dockActive}
     interval={5200}
     label="pôles"
+    autoplay
+    loop
     on:goto={(e) => dockGoto(e.detail)}
   />
 </section>
