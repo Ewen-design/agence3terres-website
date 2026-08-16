@@ -2,6 +2,7 @@
   import { onMount } from "svelte";
   import { browser } from "$app/environment";
   import { reveal } from "$lib/actions/reveal.js";
+  import AutoVideo from "$lib/components/shared/media/AutoVideo.svelte";
   import {
     registerParallax,
     unregisterParallax,
@@ -13,6 +14,13 @@
   export let title = "";
   export let image = "";
   export let mobileImage = "";
+  /**
+   * Si renseigné, le média du hero devient une vidéo ; `image` reste le repli.
+   * Format : liste `[{ src, type }]` — voir `videoSources.js`.
+   */
+  export let video = [];
+  export let mobileVideo = [];
+  export let videoPoster = "";
   export let metaBlocks = [];
   export let ctaLabel = "Visit Website";
   export let ctaHref = "";
@@ -124,7 +132,13 @@
         frame.imageOpacity !== applied.imageOpacity
       ) {
         heroMediaImgEl.style.transform = `scale(${frame.imageScale})`;
-        heroMediaImgEl.style.filter = `brightness(${frame.imageBrightness})`;
+        // Pas de `filter` sur le média vidéo : un filtre animé image par image
+        // force certains Safari à recomposer la vidéo hors GPU. L'assombrissement
+        // est de toute façon porté par .hero-dark-layer, et le média est déjà
+        // quasi transparent quand la luminosité descend.
+        if (!video.length) {
+          heroMediaImgEl.style.filter = `brightness(${frame.imageBrightness})`;
+        }
         heroMediaImgEl.style.opacity = `${frame.imageOpacity}`;
         applied.imageScale = frame.imageScale;
         applied.imageBrightness = frame.imageBrightness;
@@ -298,18 +312,32 @@
   <section class="hero-stage">
     <div class="hero-media-sticky" aria-hidden="true">
       <div class="hero-media" class:media-visible={heroMediaVisible} bind:this={heroStage}>
-        <picture>
-          {#if mobileImage}
-            <source media="(max-width: 640px)" srcset={mobileImage} />
-          {/if}
-          <img
-            bind:this={heroMediaImgEl}
-            src={image}
-            alt=""
-            fetchpriority="high"
-            decoding="async"
-          />
-        </picture>
+        {#if video.length}
+          <!-- Le scroll pilote le wrapper, pas le <video> : garder les
+               transformations hors de l'élément média évite de sortir la vidéo
+               de la couche composite du GPU pendant le scroll. -->
+          <div class="hero-media-video" bind:this={heroMediaImgEl}>
+            <AutoVideo
+              sources={video}
+              mobileSources={mobileVideo}
+              poster={videoPoster || image}
+              eager
+            />
+          </div>
+        {:else}
+          <picture>
+            {#if mobileImage}
+              <source media="(max-width: 640px)" srcset={mobileImage} />
+            {/if}
+            <img
+              bind:this={heroMediaImgEl}
+              src={image}
+              alt=""
+              fetchpriority="high"
+              decoding="async"
+            />
+          </picture>
+        {/if}
         <div class="hero-dark-layer" bind:this={heroDarkLayerEl}></div>
       </div>
     </div>
@@ -454,6 +482,19 @@
     transform: scale(1.05);
     filter: brightness(1);
     will-change: transform, opacity, filter;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+  }
+
+  /* Même boîte que .hero-media img : c'est ce wrapper que le scroll anime. */
+  .hero-media-video {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 1;
+    transform: scale(1.05);
+    will-change: transform, opacity;
     backface-visibility: hidden;
     -webkit-backface-visibility: hidden;
   }
@@ -757,6 +798,7 @@
     }
 
     .hero-media img,
+    .hero-media-video,
     .hero-dark-layer {
       inset: 0 0 -12svh 0;
       height: calc(100% + 12svh);
@@ -856,6 +898,7 @@
 
   @media (prefers-reduced-motion: reduce) {
     .hero-media img,
+    .hero-media-video,
     .hero-dark-layer,
     .hero-scroll-label,
     .hero-scroll-cue,

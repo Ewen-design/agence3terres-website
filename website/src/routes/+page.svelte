@@ -9,12 +9,24 @@
   import IntroSlider from "$lib/components/home/IntroSlider.svelte";
   import FaqAccordion from "$lib/components/home/FaqAccordion.svelte";
   import ProjectFocusReveal from "$lib/components/home/ProjectFocusReveal.svelte";
+  import { videoSources } from "$lib/components/shared/media/videoSources.js";
 
   const hsliderSlides = [
+    {
+      title: "Lybra",
+      description: "Identité de marque,\ncolibri et charte.",
+      images: ["/images/lybra-cartes.webp", "/images/lybra-macbook.webp", "/images/lybra-affichage.webp"],
+      href: "/projet8"
+    },
     {
       title: "Moovy",
       description: "Recommandation de films\nselon ses envies.",
       images: ["/images/moovy-phone.webp", "/images/tel_moovy2.webp", "/images/moovy_recherche.webp"],
+      // Fond animé : le plan « parcours » de la page projet, remonté au cadre
+      // du slider (bien plus haut) et repassé en portrait sur mobile.
+      video: videoSources("moovy-parcours-slider"),
+      mobileVideo: videoSources("moovy-parcours-slider-mobile"),
+      poster: "/videos/moovy-parcours-poster.webp",
       href: "/projet3"
     },
     {

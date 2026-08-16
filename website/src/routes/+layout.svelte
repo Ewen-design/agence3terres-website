@@ -124,6 +124,12 @@
       description:
         "Application fitness, product design et UX/UI: découvrez JustX Fitness par Agence 3 Terres.",
       imageAlt: "Application JustX Fitness par Agence 3 Terres"
+    },
+    "/projet8": {
+      title: "Lybra | Projet Agence 3 Terres",
+      description:
+        "Logo, identité visuelle et charte graphique: découvrez la modernisation de la marque Lybra par Agence 3 Terres.",
+      imageAlt: "Projet Lybra par Agence 3 Terres"
     }
   };
 
@@ -231,7 +237,7 @@
   }
 
   $: pathname = $page.url.pathname.replace(/\/+$/, "") || "/";
-  $: hideFooter = ["/projet1", "/projet3", "/projet4", "/projet5", "/projet6", "/projet7", "/contact"].includes(pathname)
+  $: hideFooter = ["/projet1", "/projet4", "/projet5", "/projet6", "/projet7", "/contact"].includes(pathname)
     || ($page.status ?? 200) >= 400;   // no footer on the error / 404 page
   $: isTravailPage = pathname === "/travail";
   $: isProjectLightTheme = projectTheme === "light";

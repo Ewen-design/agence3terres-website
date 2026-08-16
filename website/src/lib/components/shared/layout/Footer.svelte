@@ -32,13 +32,15 @@
     "/services": "/images/montre-justx.webp",
     "/travail": "/images/cartes-visites.webp",
     "/apropos": "/images/pexels-jack-atkinson-1289771108-24356055.webp",
+    "/projet3": "/images/moovy-salon.webp",
+    "/projet8": "/images/lybra-affichage.webp",
   };
 
   $: pathname = $page.url.pathname.replace(/\/+$/, "") || "/";
   $: footerImage = footerImages[pathname] ?? footerImages["/"];
   $: footerThemeClass =
     pathname === "/services" ? "theme-services" :
-    ["/travail", "/projet1", "/projet3", "/projet4", "/projet5", "/projet6", "/projet7"].includes(pathname) ? "theme-projets" :
+    ["/travail", "/projet1", "/projet3", "/projet4", "/projet5", "/projet6", "/projet7", "/projet8"].includes(pathname) ? "theme-projets" :
     pathname === "/apropos" ? "theme-apropos" :
     pathname === "/contact" ? "theme-contact" :
     "theme-home";

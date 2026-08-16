@@ -1,8 +1,14 @@
 <script>
   import { reveal } from "$lib/actions/reveal.js";
+  import AutoVideo from "$lib/components/shared/media/AutoVideo.svelte";
 
   export let title = "";
   export let items = [];
+  /**
+   * `{ src, alt }` pour une image, ou `{ video, poster, alt, objectPosition }`
+   * pour une vidéo en autoplay — `video` étant une liste `[{ src, type }]`
+   * (voir `videoSources.js`).
+   */
   export let images = [];
 </script>
 
@@ -10,8 +16,21 @@
   {#if images.length}
     <div class="editorial-role__media-row">
       {#each images as image, i}
-        <figure class="editorial-role__media" use:reveal={{ delay: i * 90 }}>
-          <img src={image.src} alt={image.alt} loading="lazy" decoding="async" />
+        <figure
+          class="editorial-role__media"
+          class:editorial-role__media--video={image.video}
+          use:reveal={{ delay: i * 90 }}
+        >
+          {#if image.video}
+            <AutoVideo
+              sources={image.video}
+              poster={image.poster}
+              label={image.alt}
+              objectPosition={image.objectPosition || "center"}
+            />
+          {:else}
+            <img src={image.src} alt={image.alt} loading="lazy" decoding="async" />
+          {/if}
         </figure>
       {/each}
     </div>
@@ -144,6 +163,13 @@
 
     .editorial-role__media:nth-child(2) {
       aspect-ratio: 0.74;
+    }
+
+    /* Une vidéo garde son cadre paysage sur mobile — le même qu'en desktop.
+       La recadrer en portrait reviendrait à n'en montrer qu'un tiers de la
+       largeur, alors qu'une image fixe, elle, est choisie pour ce format. */
+    .editorial-role__media--video {
+      aspect-ratio: 1.55;
     }
 
     .editorial-role__title-wrap h2 {

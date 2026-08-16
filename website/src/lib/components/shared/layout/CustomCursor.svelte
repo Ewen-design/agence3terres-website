@@ -18,7 +18,7 @@
 
   $: themeClass =
     $page.url.pathname === "/services" ? "theme-services" :
-    ["/travail", "/projet1", "/projet3", "/projet4", "/projet5", "/projet6", "/projet7"].includes($page.url.pathname) ? "theme-projets" :
+    ["/travail", "/projet1", "/projet3", "/projet4", "/projet5", "/projet6", "/projet7", "/projet8"].includes($page.url.pathname) ? "theme-projets" :
     $page.url.pathname === "/apropos" ? "theme-apropos" :
     $page.url.pathname === "/contact" ? "theme-contact" :
     "";

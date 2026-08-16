@@ -8,10 +8,12 @@
   import ProjectEditorialMobileShowcase from "$lib/components/projets/shared/ProjectEditorialMobileShowcase.svelte";
   import ProjectEditorialMosaic from "$lib/components/projets/shared/ProjectEditorialMosaic.svelte";
   import ParallaxGallery2 from "$lib/components/home/ParallaxGallery2.svelte";
+  import { videoSources } from "$lib/components/shared/media/videoSources.js";
 
   // Mêmes visuels (optimisés .webp) que la page Travail, en excluant Moovy
   // (le projet courant). Évite aussi les .jpg lourds qui chargeaient mal ici.
   const otherProjects = [
+    { title: "Lybra", image: "/images/lybra-cartes.webp", href: "/projet8" },
     { title: "JustX", image: "/images/justx.webp", href: "/projet5" },
     { title: "JustX Fitness", image: "/images/justx_app.webp", href: "/projet7" },
     { title: "Mission X", image: "/images/missionX5.webp", href: "/projet6" },
@@ -26,6 +28,9 @@
     title="Moovy"
     image="/images/tel_moovy2.webp"
     mobileImage="/images/tel_moovy2.webp"
+    video={videoSources("moovy-hero")}
+    mobileVideo={videoSources("moovy-hero-mobile")}
+    videoPoster="/videos/moovy-hero-poster.webp"
     metaBlocks={[
       { label: "Date", value: "2025 - Present" },
       { label: "Localisation", value: "Digital" },
@@ -46,7 +51,11 @@
       title="Notre rôle"
       images={[
         { src: "/images/moovy_page.webp", alt: "Interface desktop de Moovy" },
-        { src: "/images/tel_moovy3.webp", alt: "Interface mobile de Moovy" }
+        {
+          video: videoSources("moovy-parcours"),
+          poster: "/videos/moovy-parcours-poster.webp",
+          alt: "Parcours de recommandation de Moovy sur mobile"
+        }
       ]}
       items={[
         {
@@ -93,8 +102,9 @@
       text="Le mobile devait permettre de passer d'une envie vague a un <span class='hl'>choix concret</span> avec le <span class='hl'>moins de friction</span> possible."
       leftImage="/images/moovy_ipad.webp"
       leftAlt="Interface mobile verticale Moovy"
-      rightImage="/images/tel_moovy3.webp"
-      rightAlt="Interface desktop Moovy"
+      rightVideo={videoSources("moovy-fiche-film")}
+      rightPoster="/videos/moovy-fiche-film-poster.webp"
+      rightAlt="Fiche film de Moovy sur mobile"
       mediaMinHeight="46.5rem"
     />
   </div>

@@ -13,6 +13,14 @@
 
   const baseProjects = [
     {
+      title: "Lybra",
+      category: "Identité de marque",
+      lead: "Un colibri modernisé pour porter l'envol de leurs clients.",
+      image: "/images/lybra-cartes.webp",
+      page: "projet8",
+      button: "Voir le projet"
+    },
+    {
       title: "Moovy",
       category: "Plateforme web",
       lead: "Une recommandation de films simple, directe et personnelle.",

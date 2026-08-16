@@ -47,7 +47,9 @@
 		#     the browser blocks it and the page stays blank. No nonce-based alternative
 		#     exists without a server-side rendering layer (this app is fully static/SSG).
 		#   - No unsafe-eval needed
-		Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https://images.unsplash.com https://cdn.prod.website-files.com; connect-src 'self' https://fonts.googleapis.com https://fonts.gstatic.com"
+		#   - media-src 'self': vidéos auto-hébergées (/videos/*). Couvert par
+		#     default-src, mais explicité pour que l'intention reste lisible.
+		Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https://images.unsplash.com https://cdn.prod.website-files.com; media-src 'self'; connect-src 'self' https://fonts.googleapis.com https://fonts.gstatic.com"
 
 		# Remove server identity header
 		-Server
@@ -67,6 +69,15 @@
 	#   - edited    → new bytes served immediately (no stale 7-day copy)
 	@images path /images/*
 	header @images Cache-Control "public, no-cache"
+
+	# Vidéos — même logique que les images (nom de fichier stable → revalidation
+	# via ETag plutôt qu'un long max-age, pour qu'un ré-encodage soit servi tout
+	# de suite). file_server gère nativement les requêtes Range, indispensables
+	# pour que Safari accepte de démarrer la lecture.
+	# Note : `encode` ne compresse que les types texte par défaut — les .mp4
+	# passent donc en clair, ce qui est voulu (le gzip casserait le Range).
+	@videos path /videos/*
+	header @videos Cache-Control "public, no-cache"
 
 	# HTML — never cache (ensures users get fresh SPA shell)
 	@html path /

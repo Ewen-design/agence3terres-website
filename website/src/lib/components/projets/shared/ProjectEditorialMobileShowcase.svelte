@@ -1,11 +1,20 @@
 <script>
   import { reveal } from "$lib/actions/reveal.js";
+  import AutoVideo from "$lib/components/shared/media/AutoVideo.svelte";
 
   export let text = "";
   export let leftImage = "";
   export let leftAlt = "";
   export let rightImage = "";
   export let rightAlt = "";
+  /**
+   * Renseigner `*Video` remplace l'image du côté correspondant.
+   * Format : liste `[{ src, type }]` — voir `videoSources.js`.
+   */
+  export let leftVideo = [];
+  export let leftPoster = "";
+  export let rightVideo = [];
+  export let rightPoster = "";
   export let reverse = false;
   export let mediaMinHeight = "32rem";
 </script>
@@ -17,7 +26,11 @@
       style={`--editorial-mobile-showcase-media-min-height:${mediaMinHeight};`}
       use:reveal
     >
-      <img src={leftImage} alt={leftAlt} loading="lazy" decoding="async" />
+      {#if leftVideo.length}
+        <AutoVideo sources={leftVideo} poster={leftPoster} label={leftAlt} />
+      {:else}
+        <img src={leftImage} alt={leftAlt} loading="lazy" decoding="async" />
+      {/if}
     </figure>
 
     <figure
@@ -25,7 +38,11 @@
       style={`--editorial-mobile-showcase-media-min-height:${mediaMinHeight};`}
       use:reveal={{ delay: 100 }}
     >
-      <img src={rightImage} alt={rightAlt} loading="lazy" decoding="async" />
+      {#if rightVideo.length}
+        <AutoVideo sources={rightVideo} poster={rightPoster} label={rightAlt} />
+      {:else}
+        <img src={rightImage} alt={rightAlt} loading="lazy" decoding="async" />
+      {/if}
     </figure>
   </div>
 

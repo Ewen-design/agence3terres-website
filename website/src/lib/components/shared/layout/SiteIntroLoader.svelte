@@ -19,7 +19,7 @@
   let handleHeaderIntroDone;
   let contentRevealDispatched = false;
 
-  // Intro : la phrase « Né pour créer. » arrive mot par mot (blur → net), tient,
+  // Intro : la phrase « Née pour créer. » arrive mot par mot (blur → net), tient,
   // puis tous les mots disparaissent EN MÊME TEMPS en blur.
   const LOGO_IN_DELAY = 220;        // avant que les mots commencent à arriver
   const LOGO_HOLD_DURATION = 2000;  // temps d'affichage avant la disparition
@@ -145,7 +145,7 @@
         class:is-visible={logoVisible}
         class:is-clearing={logoClearing}
       >
-        <span class="intro-word">Né</span>
+        <span class="intro-word">Née</span>
         <span class="intro-word">pour</span>
         <span class="intro-word">créer.</span>
       </p>

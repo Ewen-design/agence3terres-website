@@ -1,6 +1,7 @@
 <script>
   import { onMount, onDestroy } from "svelte";
   import { browser } from "$app/environment";
+  import AutoVideo from "$lib/components/shared/media/AutoVideo.svelte";
 
   // ─────────────────────────────────────────────────────────────────────────
   //  ProjectFocusReveal — slider plein écran (100vh) des projets.
@@ -222,18 +223,33 @@
   aria-roledescription="carrousel"
   aria-label="Sélection de projets"
 >
-  <!-- Fond : images plein écran en fondu doux (piloté par le slide actif) -->
+  <!-- Fond : médias plein écran en fondu doux (piloté par le slide actif) -->
   <div class="fr__bg" aria-hidden="true">
     {#each slides as slide, i}
-      <img
-        class="fr__bg-img"
-        class:is-shown={activeIndex === i}
-        src={slide.images[0]}
-        alt=""
-        loading={i < 2 ? "eager" : "lazy"}
-        decoding="async"
-        draggable="false"
-      />
+      {#if slide.video}
+        <!-- Toutes les slides sont empilées : la vidéo reste « visible » pour
+             l'IntersectionObserver même à opacité nulle. D'où le verrou `active`,
+             qui ne la laisse jouer que quand sa slide est réellement à l'écran. -->
+        <div class="fr__bg-media" class:is-shown={activeIndex === i}>
+          <AutoVideo
+            sources={slide.video}
+            mobileSources={slide.mobileVideo ?? []}
+            mobileQuery="(max-width: 900px) and (orientation: portrait)"
+            poster={slide.poster}
+            active={activeIndex === i && sectionInView}
+          />
+        </div>
+      {:else}
+        <img
+          class="fr__bg-img"
+          class:is-shown={activeIndex === i}
+          src={slide.images[0]}
+          alt=""
+          loading={i < 2 ? "eager" : "lazy"}
+          decoding="async"
+          draggable="false"
+        />
+      {/if}
     {/each}
   </div>
 
@@ -350,6 +366,20 @@
     transition: opacity var(--fr-dur-img) var(--fr-ease-soft);
   }
   .fr__bg-img.is-shown {
+    z-index: 1;
+    opacity: 1;
+  }
+
+  /* Même boîte et même fondu que .fr__bg-img — c'est ce conteneur qui porte
+     l'opacité, la vidéo à l'intérieur se contente de remplir le cadre. */
+  .fr__bg-media {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    backface-visibility: hidden;
+    transition: opacity var(--fr-dur-img) var(--fr-ease-soft);
+  }
+  .fr__bg-media.is-shown {
     z-index: 1;
     opacity: 1;
   }
@@ -702,6 +732,7 @@
 
   @media (prefers-reduced-motion: reduce) {
     .fr__bg-img,
+    .fr__bg-media,
     .fr__focus-slot {
       transition-duration: 0.25s;
     }

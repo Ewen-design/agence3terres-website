@@ -1,13 +1,26 @@
 <script>
   import { reveal } from "$lib/actions/reveal.js";
+  import AutoVideo from "$lib/components/shared/media/AutoVideo.svelte";
 
   export let title = "";
   export let text = "";
   export let image = "";
   export let alt = "";
+  /**
+   * Si renseigné, le média devient une vidéo en autoplay.
+   * Format : liste `[{ src, type }]` — voir `videoSources.js`.
+   */
+  export let video = [];
+  export let videoPoster = "";
   export let reverse = false;
   export let mediaMinHeight = "38rem";
   export let mediaAspectRatio = "";
+  /**
+   * Cadre sur mobile. Par défaut 0.82 (portrait) quel que soit le média : c'est
+   * le format des visuels de la page. À renseigner pour un média paysage, sinon
+   * `contain` le laisse flotter entre deux grosses bandes vides.
+   */
+  export let mediaMobileAspectRatio = "";
   export let mediaFit = "cover";
 </script>
 
@@ -20,10 +33,14 @@
   <figure
     class="editorial-split__media"
     class:editorial-split__media--ratio={!!mediaAspectRatio}
-    style={`--editorial-split-media-min-height:${mediaMinHeight}; --editorial-split-media-fit:${mediaFit}; ${mediaAspectRatio ? `--editorial-split-media-aspect-ratio:${mediaAspectRatio};` : ""}`}
+    style={`--editorial-split-media-min-height:${mediaMinHeight}; --editorial-split-media-fit:${mediaFit}; ${mediaAspectRatio ? `--editorial-split-media-aspect-ratio:${mediaAspectRatio};` : ""} ${mediaMobileAspectRatio ? `--editorial-split-media-aspect-ratio-mobile:${mediaMobileAspectRatio};` : ""}`}
     use:reveal={{ delay: 120 }}
   >
-    <img src={image} alt={alt} loading="lazy" decoding="async" />
+    {#if video.length}
+      <AutoVideo sources={video} poster={videoPoster} label={alt} objectFit={mediaFit} />
+    {:else}
+      <img src={image} alt={alt} loading="lazy" decoding="async" />
+    {/if}
   </figure>
 </section>
 
@@ -101,7 +118,7 @@
     .editorial-split__media {
       height: auto;
       min-height: auto;
-      aspect-ratio: 0.82;
+      aspect-ratio: var(--editorial-split-media-aspect-ratio-mobile, 0.82);
     }
 
     .editorial-split__copy {

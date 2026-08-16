@@ -44,7 +44,7 @@
   };
 
   const finalText =
-    "Une agence <span class='hl'>indépendante</span>, <span class='hl'>exigente</span> par nature, <span class='hl'>précise</span> par choix, <span class='hl'>engagée</span> à chaque étape pour donner à vos idées la forme qu'elles méritent.";
+    "Une agence <span class='hl'>indépendante</span>, <span class='hl'>exigeante</span> par nature, <span class='hl'>précise</span> par choix, <span class='hl'>engagée</span> à chaque étape pour donner à vos idées la forme qu'elles méritent.";
 
   const clamp = (v, min = 0, max = 1) => Math.max(min, Math.min(max, v));
   const lerp = (a, b, t) => a + (b - a) * t;

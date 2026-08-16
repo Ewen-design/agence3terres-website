@@ -1,7 +1,12 @@
 <script>
   import { reveal } from "$lib/actions/reveal.js";
+  import AutoVideo from "$lib/components/shared/media/AutoVideo.svelte";
 
   export let text = "";
+  /**
+   * `{ src, alt }` pour une image, ou `{ video, poster, alt }` pour une vidéo
+   * en autoplay — `video` étant une liste `[{ src, type }]` (voir `videoSources.js`).
+   */
   export let feature = { src: "", alt: "" };
   export let items = [];
 </script>
@@ -9,12 +14,20 @@
 <section class="project-editorial-mosaic">
   <div class="project-editorial-mosaic__grid">
     <figure class="project-editorial-mosaic__media project-editorial-mosaic__media--feature" use:reveal>
-      <img src={feature.src} alt={feature.alt} loading="lazy" decoding="async" />
+      {#if feature.video}
+        <AutoVideo sources={feature.video} poster={feature.poster} label={feature.alt} />
+      {:else}
+        <img src={feature.src} alt={feature.alt} loading="lazy" decoding="async" />
+      {/if}
     </figure>
 
     {#each items.slice(0, 2) as item, i}
       <figure class="project-editorial-mosaic__media" use:reveal={{ delay: i * 90 + 90 }}>
-        <img src={item.src} alt={item.alt} loading="lazy" decoding="async" />
+        {#if item.video}
+          <AutoVideo sources={item.video} poster={item.poster} label={item.alt} />
+        {:else}
+          <img src={item.src} alt={item.alt} loading="lazy" decoding="async" />
+        {/if}
       </figure>
     {/each}
   </div>

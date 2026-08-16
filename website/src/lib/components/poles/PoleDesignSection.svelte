@@ -8,6 +8,7 @@
   export let id = "pole-design";
 
   const designCards = [
+    { image: "/images/lybra-cartes.webp", alt: "Projet Lybra", title: "Lybra", subtitle: "Logo & identité visuelle", href: "projet8", tags: ["Logo & charte", "Identité visuelle", "Direction artistique"] },
     { image: "/images/ludo.webp", alt: "Projet Ludosphères", title: "Ludosphères", subtitle: "Identité & charte", href: "projet4", tags: ["Logo & charte", "Direction artistique", "Naming"] },
     { image: "/images/justx_textile.webp", alt: "Projet JustX", title: "JustX", subtitle: "Identité de marque", href: "projet5", tags: ["Logo & charte", "Naming", "Stratégie"] }
   ];
