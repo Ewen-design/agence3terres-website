@@ -56,9 +56,9 @@
       style={`--av-bg:${part.background}; --av-ink:${part.ink}; --av-muted:${part.inkMuted};`}
     >
       <div class="value-inner">
-        <div class="value-text" use:reveal>
-          <h2 class="value-label">{part.label}</h2>
-          <p class="value-copy">{@html part.text}</p>
+        <div class="value-text">
+          <h2 class="value-label" use:reveal>{part.label}</h2>
+          <p class="value-copy" use:reveal={{ delay: 90 }}>{@html part.text}</p>
         </div>
 
         <figure class="value-media" use:reveal={{ delay: 120 }}>

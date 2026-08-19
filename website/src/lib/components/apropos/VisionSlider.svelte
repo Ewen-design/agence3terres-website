@@ -247,10 +247,14 @@
         >
           <div class="quote">
             <span class="mark top" aria-hidden="true">“</span>
-            <p>{quote.text}</p>
+            <!-- L'arrivée est posée sur la citation elle-même, pas sur la carte :
+                 la carte a son opacité pilotée en ligne par l'angle du carrousel,
+                 y ajouter un `reveal` reviendrait à se battre avec lui. Les deux
+                 opacités se multiplient sans se gêner. -->
+            <p use:reveal>{quote.text}</p>
             <span class="mark bottom" aria-hidden="true">”</span>
           </div>
-          <div class="author">{quote.author}</div>
+          <div class="author" use:reveal={{ delay: 90 }}>{quote.author}</div>
         </div>
       {/each}
     </div>

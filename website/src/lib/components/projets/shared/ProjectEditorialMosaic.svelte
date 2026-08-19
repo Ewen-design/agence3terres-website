@@ -1,11 +1,15 @@
 <script>
-  import { reveal } from "$lib/actions/reveal.js";
+  import { revealBlock as reveal } from "$lib/actions/reveal.js";
   import AutoVideo from "$lib/components/shared/media/AutoVideo.svelte";
 
   export let text = "";
   /**
    * `{ src, alt }` pour une image, ou `{ video, poster, alt }` pour une vidéo
    * en autoplay — `video` étant une liste `[{ src, type }]` (voir `videoSources.js`).
+   *
+   * `mobileAspectRatio` remplace le cadre imposé sur mobile, tuile par tuile :
+   * les cadres par défaut sont pensés pour des images cadrées exprès, une vidéo
+   * y perd une bande de chaque côté.
    */
   export let feature = { src: "", alt: "" };
   export let items = [];
@@ -13,7 +17,13 @@
 
 <section class="project-editorial-mosaic">
   <div class="project-editorial-mosaic__grid">
-    <figure class="project-editorial-mosaic__media project-editorial-mosaic__media--feature" use:reveal>
+    <figure
+      class="project-editorial-mosaic__media project-editorial-mosaic__media--feature"
+      style={feature.mobileAspectRatio
+        ? `--mosaic-media-aspect-mobile:${feature.mobileAspectRatio};`
+        : undefined}
+      use:reveal
+    >
       {#if feature.video}
         <AutoVideo sources={feature.video} poster={feature.poster} label={feature.alt} />
       {:else}
@@ -22,7 +32,13 @@
     </figure>
 
     {#each items.slice(0, 2) as item, i}
-      <figure class="project-editorial-mosaic__media" use:reveal={{ delay: i * 90 + 90 }}>
+      <figure
+        class="project-editorial-mosaic__media"
+        style={item.mobileAspectRatio
+          ? `--mosaic-media-aspect-mobile:${item.mobileAspectRatio};`
+          : undefined}
+        use:reveal={{ delay: i * 90 + 90 }}
+      >
         {#if item.video}
           <AutoVideo sources={item.video} poster={item.poster} label={item.alt} />
         {:else}
@@ -110,11 +126,11 @@
     .project-editorial-mosaic__media--feature {
       grid-column: auto;
       height: auto;
-      aspect-ratio: 0.74;
+      aspect-ratio: var(--mosaic-media-aspect-mobile, 0.74);
     }
 
     .project-editorial-mosaic__media--feature {
-      aspect-ratio: 0.82;
+      aspect-ratio: var(--mosaic-media-aspect-mobile, 0.82);
     }
 
     .project-editorial-mosaic__text {

@@ -46,8 +46,16 @@
     <ProjectEditorialRole
       title="Notre rôle"
       images={[
-        { src: "/images/lybra-logo.webp", alt: "Logo Lybra sur fond bleu nuit" },
-        { src: "/images/lybra-cartes.webp", alt: "Cartes de visite Lybra" }
+        {
+          src: "/images/lybra-logo.webp",
+          alt: "Logo Lybra sur fond bleu nuit",
+          mobileAspectRatio: "2.24"
+        },
+        {
+          src: "/images/lybra-cartes.webp",
+          alt: "Cartes de visite Lybra",
+          mobileAspectRatio: "1.2"
+        }
       ]}
       items={[
         {
@@ -111,6 +119,7 @@
       rightImage="/images/lybra-fond-ciel.webp"
       rightAlt="Logo Lybra en réserve sur fond bleu ciel"
       mediaMinHeight="26rem"
+      mediaMobileAspectRatio="1.778"
     />
 
     <ProjectEditorialSplit
@@ -134,7 +143,10 @@
         {
           video: videoSources("lybra-envol"),
           poster: "/videos/lybra-envol-poster.webp",
-          alt: "Le colibri Lybra en volume, filmé en plein envol"
+          alt: "Le colibri Lybra en volume, filmé en plein envol",
+          // Format réel de la vidéo : la tuile s'y cale, la vidéo n'est donc
+          // pas rognée. Les deux images de la mosaïque gardent leur cadre.
+          mobileAspectRatio: "0.8"
         },
         {
           src: "/images/lybra-coffret-portrait.webp",

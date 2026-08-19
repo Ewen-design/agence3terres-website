@@ -2,6 +2,7 @@
   import { onMount, onDestroy } from "svelte";
   import { browser } from "$app/environment";
   import { navigate } from "$lib/navigate.js";
+  import { reveal } from "$lib/actions/reveal.js";
 
   export let title = "Donnons une forme claire a votre prochain projet.";
   export let buttonLabel = "Nous contacter";
@@ -52,7 +53,7 @@
 
     <div class="premium-contact-cta__content">
       <div class="premium-contact-cta__copy">
-        <h2>{title}</h2>
+        <h2 use:reveal>{title}</h2>
       </div>
 
       <div class="premium-contact-cta__action">

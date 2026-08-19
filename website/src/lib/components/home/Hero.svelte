@@ -49,8 +49,17 @@
     imageDark: -1
   };
 
-  const finalText =
-    "Nous sommes <span class='hl'>3 Terres</span>, l'agence dans l'ombre des projets qui durent. De l'identité au digital, nous façonnons des marques fortes, pensées pour <span class='hl'>traverser le temps</span>.";
+  // Le texte est découpé en mots pour que chacun arrive séparément, comme dans
+  // l'intro du site. `h` marque les passages mis en avant — la ponctuation
+  // reste collée à son mot, sinon les blancs se dédoublent à la césure.
+  const LEAD = [
+    {t: "Nous"}, {t: "sommes"}, {t: "3", h: 1}, {t: "Terres,", h: 1},
+    {t: "l\u2019agence"}, {t: "dans"}, {t: "l\u2019ombre"}, {t: "des"},
+    {t: "projets"}, {t: "qui"}, {t: "durent."}, {t: "De"}, {t: "l\u2019identit\u00e9"},
+    {t: "au"}, {t: "digital,"}, {t: "nous"}, {t: "fa\u00e7onnons"}, {t: "des"},
+    {t: "marques"}, {t: "fortes,"}, {t: "pens\u00e9es"}, {t: "pour"},
+    {t: "traverser", h: 1}, {t: "le", h: 1}, {t: "temps.", h: 1}
+  ];
 
   const clamp = (v, min = 0, max = 1) => Math.max(min, Math.min(max, v));
   const lerp = (a, b, t) => a + (b - a) * t;
@@ -329,7 +338,8 @@
           class="after-lead"
           bind:this={h2TextEl}
           class:is-text-revealed={textRevealed}
-        >{@html finalText}</h2>
+        >{#each LEAD as w, i}<span class="lead-word" class:hl={w.h} style="--i:{i}"
+            >{w.t}</span>{" "}{/each}</h2>
       </div>
     </div>
   </section>
@@ -534,23 +544,56 @@
     text-align: left;
     color: rgba(245, 241, 232, 0.5);
     text-wrap: pretty;
+  }
+
+  /* Arrivée mot par mot, reprise de l'intro du site : chaque mot se dépose en
+     flou et traverse le violet profond puis l'indigo de la charte avant de
+     rejoindre sa couleur définitive. Le dégradé de l'intro n'est PAS repris
+     ici : il éteint le bas des lettres, ce qui gênerait la lecture sur un
+     paragraphe de plusieurs lignes. */
+  .lead-word {
+    display: inline-block;
     opacity: 0;
-    filter: blur(14px);
-    transform: translateY(0.28em);
-    transition:
-      opacity 0.6s ease,
-      filter 0.85s cubic-bezier(0.22, 0.61, 0.36, 1),
-      transform 0.7s cubic-bezier(0.22, 0.61, 0.36, 1);
+    --lead-final: rgba(245, 241, 232, 0.5);
+    will-change: opacity, filter, transform;
   }
 
-  .after-lead :global(.hl) {
-    color: #f4efe6;
+  .lead-word.hl {
+    --lead-final: #f4efe6;
   }
 
-  h2.is-text-revealed {
-    opacity: 1;
-    filter: blur(0);
-    transform: none;
+  @keyframes leadIn {
+    0% {
+      opacity: 0;
+      filter: blur(12px);
+      transform: translateY(0.24em);
+      color: #17052f;
+    }
+    38% {
+      color: #5768ff;
+    }
+    100% {
+      opacity: 1;
+      filter: blur(0);
+      transform: translateY(0);
+      color: var(--lead-final);
+    }
+  }
+
+  .after-lead.is-text-revealed .lead-word {
+    animation: leadIn 0.9s cubic-bezier(0.22, 0.61, 0.36, 1) both;
+    animation-delay: calc(var(--i) * 38ms);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .lead-word {
+      opacity: 1;
+      color: var(--lead-final);
+    }
+
+    .after-lead.is-text-revealed .lead-word {
+      animation: none;
+    }
   }
 
   @media (max-width: 900px) {

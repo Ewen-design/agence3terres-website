@@ -1,5 +1,5 @@
 <script>
-  import { reveal } from "$lib/actions/reveal.js";
+  import { revealBlock as reveal } from "$lib/actions/reveal.js";
 
   export let text = "";
   export let lines = [];

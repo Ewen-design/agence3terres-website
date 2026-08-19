@@ -1,7 +1,7 @@
 <script>
   import { onMount } from "svelte";
   import { browser } from "$app/environment";
-  import { reveal } from "$lib/actions/reveal.js";
+  import { revealBlock as reveal } from "$lib/actions/reveal.js";
   import AutoVideo from "$lib/components/shared/media/AutoVideo.svelte";
   import {
     registerParallax,
@@ -586,6 +586,13 @@
     opacity: 1;
     filter: blur(0);
     transform: translate3d(0, 0, 0);
+  }
+
+  /* Balayage de la charte, par-dessus le flou ci-dessus (voir heroTitleSweep
+     dans app.css) : le titre traverse le violet profond puis l'indigo avant de
+     laisser réapparaître son dégradé. */
+  .title-visible .hero-scroll-label {
+    animation: heroTitleSweep 900ms cubic-bezier(0.22, 1, 0.36, 1) backwards;
   }
 
   .hero-scroll-arrow {

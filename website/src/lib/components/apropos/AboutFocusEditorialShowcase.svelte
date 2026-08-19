@@ -217,10 +217,13 @@
 
     <div class="about-editorial-single-showcase__text-block">
       <!-- Textes en fondu croisé (réutilisés tels quels, un par slide).
-           use:reveal est ici (pas sur .text-block) pour que .text-block ne porte
-           PAS de transform/filter : le rail en absolute (desktop) se réfère alors
-           à .content (l'image), pas au texte. -->
-      <div class="aess__copy" use:reveal>
+           L'arrivée est portée par le libellé et le texte eux-mêmes, pas par un
+           conteneur : posée sur un conteneur, elle n'anime qu'un bloc et laisse
+           les textes de côté. Ni .text-block ni .aess__copy ne doivent porter de
+           transform/filter, sinon le rail en absolute (desktop) se réfère à eux
+           plutôt qu'à .content (l'image) — l'arrivée mot à mot ne pose rien sur
+           l'élément, seulement sur ses mots, donc le rail reste intact. -->
+      <div class="aess__copy">
         {#each slides as slide, i}
           <div
             class="aess__slot"
@@ -228,9 +231,9 @@
             aria-hidden={activeIndex !== i ? "true" : undefined}
           >
             {#if slide.label}
-              <h2 class="about-editorial-single-showcase__label">{slide.label}</h2>
+              <h2 class="about-editorial-single-showcase__label" use:reveal>{slide.label}</h2>
             {/if}
-            <p class="about-editorial-single-showcase__text">{@html slide.text}</p>
+            <p class="about-editorial-single-showcase__text" use:reveal={{ delay: 90 }}>{@html slide.text}</p>
           </div>
         {/each}
       </div>

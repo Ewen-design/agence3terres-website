@@ -111,9 +111,10 @@ select {
 }
 
 
-/* ── Text arrival effect (focus-pull) ──
-   Shared across the whole site via the `reveal` action (src/lib/actions/reveal.js).
-   Same motion language as the sliders: blur → sharp, slight rise, fade-in. */
+/* ── Arrivée en bloc ──
+   Utilisée pour tout ce que l'action `reveal` ne découpe pas en mots : les
+   figures qui portent une image ou une vidéo. Les textes, eux, passent par
+   l'arrivée mot à mot définie juste après. */
 .reveal {
   opacity: 0;
   filter: blur(12px);
@@ -159,6 +160,125 @@ select {
   .reveal.is-revealed {
     filter: none;
     transform: translate3d(0, 0, 0);
+  }
+}
+
+/* ── Arrivée mot à mot (tous les textes) ──
+   L'effet de référence du site : celui du paragraphe d'ouverture de la home
+   (« Nous sommes 3 Terres… »). Chaque mot se dépose l'un après l'autre en
+   sortant du flou, et traverse le violet profond puis l'indigo de la charte
+   avant de rejoindre sa couleur définitive.
+
+   Le découpage est fait par l'action `reveal` (src/lib/actions/reveal.js), qui
+   ne l'applique qu'aux éléments dont le contenu est du texte.
+
+   Ces règles viennent APRÈS celles de l'arrivée en bloc, et portent deux
+   classes (`.reveal.reveal--words`), pour passer devant elles en toutes
+   circonstances — y compris devant la variante mobile ci-dessus, qui a la même
+   spécificité que `.reveal--words` seul et l'emporterait sinon. */
+.reveal.reveal--words {
+  /* L'élément lui-même ne bouge plus : ce sont ses mots qui arrivent. Sans ça,
+     son flou s'ajouterait à celui des mots. */
+  opacity: 1;
+  filter: none;
+  transform: none;
+  transition: none;
+  will-change: auto;
+}
+
+.reveal-word {
+  display: inline-block;
+  opacity: 0;
+  /* Pas de `will-change` ici : une page porte des centaines de mots, et autant
+     de couches promues en permanence coûterait bien plus que ce que ça ferait
+     gagner. L'animation promeut d'elle-même ce qui doit l'être. */
+}
+
+.reveal.reveal--words.is-revealed .reveal-word {
+  animation: revealWordIn 0.9s cubic-bezier(0.22, 0.61, 0.36, 1) both;
+  animation-delay: calc(var(--reveal-delay, 0ms) + var(--i) * 38ms);
+}
+
+/* Une fois la cascade terminée, l'action retire l'animation. Indispensable :
+   `both` fige la dernière image, donc la couleur capturée à l'arrivée — et les
+   pages projet changent de thème au scroll. Sans ça, un texte déjà révélé
+   resterait à la couleur de l'ancien thème. Rendu à sa couleur héritée, il
+   reprend la transition de thème. */
+.reveal.reveal--words.reveal--settled .reveal-word {
+  animation: none;
+  opacity: 1;
+  filter: none;
+  transform: none;
+}
+
+/* La couleur d'arrivée est passée en `--reveal-final` par l'action plutôt que
+   laissée à `inherit` : `inherit` n'est pas fiable dans une `@keyframes`, et
+   chaque mot doit rejoindre la couleur de SON parent — un `.hl` en pleine encre
+   au milieu d'un paragraphe gris n'atterrit pas au même endroit. */
+@keyframes revealWordIn {
+  0% {
+    opacity: 0;
+    filter: blur(12px);
+    transform: translateY(0.24em);
+    color: #17052f;
+  }
+  38% {
+    color: #5768ff;
+  }
+  100% {
+    opacity: 1;
+    filter: blur(0);
+    transform: translateY(0);
+    color: var(--reveal-final, currentColor);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal-word {
+    opacity: 1;
+  }
+  .reveal.reveal--words.is-revealed .reveal-word {
+    animation: none;
+  }
+}
+
+/* ── Le même balayage, pour les textes qui ont déjà leur propre arrivée ──
+   Les titres de hero et les liens du menu plein écran ne passent pas par
+   l'action `reveal` : leur arrivée est déclenchée par l'intro du site ou par
+   l'ouverture du menu, pas par le défilement. On leur ajoute donc seulement le
+   balayage de couleur, par-dessus le flou qu'ils avaient déjà.
+
+   `animation-fill-mode: backwards` et non `both` : la couleur reprend sa valeur
+   normale dès l'animation finie. C'est ce qui permet à un lien de menu de
+   repasser au blanc au survol, et à un titre de retrouver son dégradé. */
+@keyframes brandInkSweep {
+  0% {
+    color: #17052f;
+  }
+  38% {
+    color: #5768ff;
+  }
+  100% {
+    color: var(--sweep-final, currentColor);
+  }
+}
+
+/* Variante pour un texte en dégradé découpé (`background-clip: text`) : sa
+   couleur visible ne vient pas de `color` mais du fond, donc animer `color` n'y
+   ferait rien. On peint par-dessus avec `-webkit-text-fill-color`, qu'on fait
+   ensuite disparaître — le dégradé réapparaît dessous. Passer par l'indigo
+   transparent plutôt que par `transparent` tout court : sinon l'interpolation
+   file vers le noir transparent et salit la fin du balayage.
+   Aucune couleur de dégradé n'est écrite ici : chaque hero garde le sien. */
+@keyframes heroTitleSweep {
+  0% {
+    -webkit-text-fill-color: #17052f;
+  }
+  38% {
+    -webkit-text-fill-color: #5768ff;
+  }
+  100% {
+    -webkit-text-fill-color: rgba(87, 104, 255, 0);
   }
 }
 

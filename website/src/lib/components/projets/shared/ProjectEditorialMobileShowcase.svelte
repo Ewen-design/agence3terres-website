@@ -1,5 +1,5 @@
 <script>
-  import { reveal } from "$lib/actions/reveal.js";
+  import { revealBlock as reveal } from "$lib/actions/reveal.js";
   import AutoVideo from "$lib/components/shared/media/AutoVideo.svelte";
 
   export let text = "";
@@ -17,13 +17,19 @@
   export let rightPoster = "";
   export let reverse = false;
   export let mediaMinHeight = "32rem";
+  /**
+   * Cadre du média visible sur mobile (celui de droite y est masqué). Par
+   * défaut 0.86 (portrait) : à renseigner avec le format réel du média pour le
+   * montrer entier plutôt que recadré.
+   */
+  export let mediaMobileAspectRatio = "";
 </script>
 
 <section class="editorial-mobile-showcase" class:editorial-mobile-showcase--reverse={reverse}>
   <div class="editorial-mobile-showcase__media-grid">
     <figure
       class="editorial-mobile-showcase__media editorial-mobile-showcase__media--dark"
-      style={`--editorial-mobile-showcase-media-min-height:${mediaMinHeight};`}
+      style={`--editorial-mobile-showcase-media-min-height:${mediaMinHeight};${mediaMobileAspectRatio ? `--editorial-mobile-showcase-media-aspect-mobile:${mediaMobileAspectRatio};` : ""}`}
       use:reveal
     >
       {#if leftVideo.length}
@@ -35,7 +41,7 @@
 
     <figure
       class="editorial-mobile-showcase__media"
-      style={`--editorial-mobile-showcase-media-min-height:${mediaMinHeight};`}
+      style={`--editorial-mobile-showcase-media-min-height:${mediaMinHeight};${mediaMobileAspectRatio ? `--editorial-mobile-showcase-media-aspect-mobile:${mediaMobileAspectRatio};` : ""}`}
       use:reveal={{ delay: 100 }}
     >
       {#if rightVideo.length}
@@ -140,7 +146,7 @@
     }
 
     .editorial-mobile-showcase__media-grid figure:first-child {
-      aspect-ratio: 0.86;
+      aspect-ratio: var(--editorial-mobile-showcase-media-aspect-mobile, 0.86);
     }
 
     .editorial-mobile-showcase__media-grid figure:last-child {

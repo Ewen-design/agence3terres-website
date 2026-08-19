@@ -1,5 +1,5 @@
 <script>
-  import { reveal } from "$lib/actions/reveal.js";
+  import { revealBlock as reveal } from "$lib/actions/reveal.js";
   import AutoVideo from "$lib/components/shared/media/AutoVideo.svelte";
 
   export let title = "";
@@ -8,6 +8,11 @@
    * `{ src, alt }` pour une image, ou `{ video, poster, alt, objectPosition }`
    * pour une vidéo en autoplay — `video` étant une liste `[{ src, type }]`
    * (voir `videoSources.js`).
+   *
+   * `mobileAspectRatio` remplace le cadre imposé sur mobile. À renseigner avec
+   * le format réel du média quand on veut le voir entier plutôt que recadré :
+   * les cadres par défaut sont portrait, un visuel paysage y perd les deux
+   * tiers de sa largeur.
    */
   export let images = [];
 </script>
@@ -19,6 +24,9 @@
         <figure
           class="editorial-role__media"
           class:editorial-role__media--video={image.video}
+          style={image.mobileAspectRatio
+            ? `--role-media-aspect-mobile:${image.mobileAspectRatio};`
+            : undefined}
           use:reveal={{ delay: i * 90 }}
         >
           {#if image.video}
@@ -158,18 +166,18 @@
     }
 
     .editorial-role__media:nth-child(1) {
-      aspect-ratio: 0.88;
+      aspect-ratio: var(--role-media-aspect-mobile, 0.88);
     }
 
     .editorial-role__media:nth-child(2) {
-      aspect-ratio: 0.74;
+      aspect-ratio: var(--role-media-aspect-mobile, 0.74);
     }
 
     /* Une vidéo garde son cadre paysage sur mobile — le même qu'en desktop.
        La recadrer en portrait reviendrait à n'en montrer qu'un tiers de la
        largeur, alors qu'une image fixe, elle, est choisie pour ce format. */
     .editorial-role__media--video {
-      aspect-ratio: 1.55;
+      aspect-ratio: var(--role-media-aspect-mobile, 1.55);
     }
 
     .editorial-role__title-wrap h2 {

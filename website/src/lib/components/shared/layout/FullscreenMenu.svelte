@@ -644,6 +644,30 @@
   .menu-nav .menu-link:nth-child(4) .menu-link-line { transition-delay: 255ms; }
   .menu-nav .menu-link:nth-child(5) .menu-link-line { transition-delay: 290ms; }
 
+  /* Balayage de la charte sur les libellés, calé sur la même cascade que les
+     lignes ci-dessus (voir brandInkSweep dans app.css). `backwards` et non
+     `both` : la couleur reprend sa valeur normale dès l'animation finie, donc
+     le lien courant et le survol repassent bien au blanc. */
+  .menu-link-text {
+    --sweep-final: var(--menu-muted-gray);
+  }
+
+  .menu-link.is-current .menu-link-text,
+  .menu-link:hover .menu-link-text,
+  .menu-link:focus-visible .menu-link-text {
+    --sweep-final: #fff;
+  }
+
+  .fs-menu.content-visible .menu-link-text {
+    animation: brandInkSweep 900ms var(--menu-ease) backwards;
+  }
+
+  .fs-menu.content-visible .menu-nav .menu-link:nth-child(1) .menu-link-text { animation-delay: 90ms; }
+  .fs-menu.content-visible .menu-nav .menu-link:nth-child(2) .menu-link-text { animation-delay: 155ms; }
+  .fs-menu.content-visible .menu-nav .menu-link:nth-child(3) .menu-link-text { animation-delay: 210ms; }
+  .fs-menu.content-visible .menu-nav .menu-link:nth-child(4) .menu-link-text { animation-delay: 255ms; }
+  .fs-menu.content-visible .menu-nav .menu-link:nth-child(5) .menu-link-text { animation-delay: 290ms; }
+
   .fs-menu.is-closing .menu-nav .menu-link .menu-link-line {
     transition-delay: 0ms;
   }

@@ -2,6 +2,7 @@
   import { onMount } from "svelte";
   import { browser } from "$app/environment";
   import { page } from "$app/stores";
+  import { reveal } from "$lib/actions/reveal.js";
 
   let footerEl;
   let resizeObserver;
@@ -96,7 +97,7 @@
     <div class="footer-shell">
       <div class="hero-block">
         <div class="hero-copy">
-          <h2>Parlons <span class="footer-h2-muted">de votre projet.</span></h2>
+          <h2 use:reveal>Parlons <span class="footer-h2-muted">de votre projet.</span></h2>
           <a
             href="/contact"
             class="contact-button nav-btn"

@@ -1,35 +1,16 @@
 <script>
-  import { onMount } from "svelte";
-  import { browser } from "$app/environment";
+  import { reveal } from "$lib/actions/reveal.js";
 
   // Présenté comme les textes des pages projet (ProjectBrief) :
   // un paragraphe léger, aligné à gauche.
   export let lead =
     "Chaque projet devient une <span class='hl'>signature</span> : une direction claire, un <span class='hl'>univers singulier</span> et une exécution soignée qui le distingue durablement.";
-
-  let pEl;
-  let revealed = false;
-  let obs;
-
-  onMount(() => {
-    if (!browser || !pEl) return;
-    if (window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches) {
-      revealed = true;
-      return;
-    }
-    obs = new IntersectionObserver(
-      ([entry]) => { if (entry.isIntersecting) { revealed = true; obs.disconnect(); } },
-      { rootMargin: "0px 0px -10% 0px", threshold: 0 }
-    );
-    obs.observe(pEl);
-    return () => obs?.disconnect();
-  });
 </script>
 
 <section class="story-slider-intro">
   <div class="story-slider-intro__text-wrap">
     <div class="story-slider-intro__card">
-      <p class="story-slider-intro__lead" class:is-revealed={revealed} bind:this={pEl}>{@html lead}</p>
+      <p class="story-slider-intro__lead" use:reveal>{@html lead}</p>
     </div>
   </div>
 </section>
@@ -73,34 +54,10 @@
     color: rgba(245, 241, 232, 0.5);
     text-align: left;
     text-wrap: pretty;
-    opacity: 0;
-    filter: blur(12px);
-    transform: translate3d(0, 18px, 0);
-    transition:
-      opacity 0.6s ease,
-      filter 0.85s cubic-bezier(0.22, 0.61, 0.36, 1),
-      transform 0.85s cubic-bezier(0.22, 0.61, 0.36, 1);
-    will-change: opacity, filter, transform;
-    backface-visibility: hidden;
   }
 
   .story-slider-intro__lead :global(.hl) {
     color: #f4efe6;
-  }
-
-  .story-slider-intro__lead.is-revealed {
-    opacity: 1;
-    filter: blur(0);
-    transform: translate3d(0, 0, 0);
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    .story-slider-intro__lead {
-      transition: none;
-      opacity: 1;
-      filter: none;
-      transform: none;
-    }
   }
 
   @media (max-width: 900px) {

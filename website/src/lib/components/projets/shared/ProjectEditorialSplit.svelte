@@ -1,5 +1,5 @@
 <script>
-  import { reveal } from "$lib/actions/reveal.js";
+  import { revealBlock as reveal } from "$lib/actions/reveal.js";
   import AutoVideo from "$lib/components/shared/media/AutoVideo.svelte";
 
   export let title = "";
@@ -115,10 +115,18 @@
       padding: 0 var(--project-side-padding, 0.8rem) 4rem;
     }
 
+    /* Sur mobile le média garde le cadre qu'on lui a donné en desktop, qui est
+       son format réel — il occupe donc toute la largeur sans être ni recadré ni
+       posé entre deux bandes vides. Le 0.82 ne sert plus que de repli aux
+       emplacements qui ne déclarent aucun format (le média y remplit alors une
+       boîte portrait, comme avant). */
     .editorial-split__media {
       height: auto;
       min-height: auto;
-      aspect-ratio: var(--editorial-split-media-aspect-ratio-mobile, 0.82);
+      aspect-ratio: var(
+        --editorial-split-media-aspect-ratio-mobile,
+        var(--editorial-split-media-aspect-ratio, 0.82)
+      );
     }
 
     .editorial-split__copy {
