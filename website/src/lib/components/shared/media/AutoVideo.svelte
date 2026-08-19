@@ -62,6 +62,14 @@
   let candidates = [];
   let candidateIndex = 0;
 
+  // Chien de garde. Safari peut laisser l'élément dans un état « ni en pause
+  // ni en train d'avancer » après un redimensionnement, un retour sur la page
+  // ou une recomposition de couche. On le détecte au temps qui ne bouge plus,
+  // et on relance — d'abord par un simple play(), puis par un rechargement.
+  let watchdog;
+  let lastTime = -1;
+  let stuckTicks = 0;
+
   $: element = videoEl;
 
   const GESTURE_EVENTS = ["pointerdown", "touchstart", "keydown", "wheel"];
@@ -170,6 +178,46 @@
     return inView && active && !document.hidden && !reduceMotion;
   }
 
+  function recover() {
+    if (!videoEl || !mayPlay()) return;
+    stuckTicks += 1;
+    if (stuckTicks <= 2) {
+      tryPlay();
+      return;
+    }
+    // Toujours bloqué : on recharge la source en reprenant au même endroit.
+    const at = Number.isFinite(videoEl.currentTime) ? videoEl.currentTime : 0;
+    const src = currentSrc;
+    currentSrc = "";
+    if (src) {
+      videoEl.src = src;
+      videoEl.load();
+      videoEl.addEventListener(
+        "loadedmetadata",
+        () => {
+          if (Number.isFinite(videoEl.duration)) videoEl.currentTime = at % videoEl.duration;
+          tryPlay();
+        },
+        { once: true }
+      );
+      currentSrc = src;
+    }
+    stuckTicks = 0;
+  }
+
+  function tick() {
+    if (!videoEl || !mayPlay() || !currentSrc) {
+      lastTime = -1;
+      stuckTicks = 0;
+      return;
+    }
+    if (videoEl.readyState < 2) return;
+    const t = videoEl.currentTime;
+    if (t === lastTime) recover();
+    else stuckTicks = 0;
+    lastTime = t;
+  }
+
   function syncPlayback() {
     if (!videoEl) return;
     if (mayPlay()) {
@@ -224,6 +272,17 @@
     const onVisibility = () => syncPlayback();
     const onPageShow = () => syncPlayback();
 
+    // Un redimensionnement (passage plein écran → fenêtré) recompose la couche
+    // vidéo : on réaffirme la lecture une fois le geste terminé.
+    let resizeTimer;
+    const onResize = () => {
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(() => {
+        stuckTicks = 0;
+        syncPlayback();
+      }, 180);
+    };
+
     // Deux seuils : on charge en avance (rootMargin), on ne joue qu'à l'écran.
     const loadObserver = new IntersectionObserver(
       (entries) => {
@@ -255,6 +314,9 @@
     mobileMedia?.addEventListener?.("change", onBreakpointChange);
     document.addEventListener("visibilitychange", onVisibility);
     window.addEventListener("pageshow", onPageShow);
+    window.addEventListener("resize", onResize, { passive: true });
+    window.addEventListener("orientationchange", onResize, { passive: true });
+    watchdog = window.setInterval(tick, 1200);
 
     return () => {
       mounted = false;
@@ -265,6 +327,10 @@
       mobileMedia?.removeEventListener?.("change", onBreakpointChange);
       document.removeEventListener("visibilitychange", onVisibility);
       window.removeEventListener("pageshow", onPageShow);
+      window.removeEventListener("resize", onResize);
+      window.removeEventListener("orientationchange", onResize);
+      clearTimeout(resizeTimer);
+      clearInterval(watchdog);
     };
   });
 </script>
@@ -287,6 +353,8 @@
   role={label ? "img" : undefined}
   style={`--auto-video-fit:${objectFit};--auto-video-position:${objectPosition};`}
   on:canplay={syncPlayback}
+  on:stalled={recover}
+  on:emptied={syncPlayback}
   on:play={enforceGate}
   on:error={handleError}
 ></video>
@@ -302,5 +370,10 @@
        couleur de section transparaître pendant le chargement. */
     background: transparent;
     pointer-events: none;
+    /* Couche propre : évite que Safari recompose la vidéo avec ses voisins
+       lors d'un redimensionnement. */
+    transform: translateZ(0);
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
   }
 </style>

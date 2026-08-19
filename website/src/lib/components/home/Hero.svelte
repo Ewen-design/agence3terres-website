@@ -15,6 +15,7 @@
   let heroStage;
   let afterTextEl;
   let heroMediaEl;
+  let heroBrightEl;
   let heroDarkLayerEl;
 
   let h2TextEl;
@@ -110,8 +111,13 @@
         f.imageOpacity !== applied.imageOpacity
       ) {
         heroMediaEl.style.transform = `scale(${f.imageScale})`;
-        heroMediaEl.style.filter = `brightness(${f.imageBrightness})`;
         heroMediaEl.style.opacity = `${f.imageOpacity}`;
+        // L'assombrissement passe par un voile noir, PAS par un filtre CSS sur
+        // la balise <video> : en Safari, un filtre sort la vidéo du chemin de
+        // composition matériel — d'où les gels, écrans noirs et images
+        // fantômes après un redimensionnement ou un retour sur la page.
+        // Un noir à l'opacité (1 - b) est l'exact équivalent de brightness(b).
+        if (heroBrightEl) heroBrightEl.style.opacity = `${1 - f.imageBrightness}`;
         applied.imageScale = f.imageScale;
         applied.imageBrightness = f.imageBrightness;
         applied.imageOpacity = f.imageOpacity;
@@ -303,6 +309,7 @@
           poster="/videos/home-hero-reel-poster.webp"
           eager
         />
+        <div class="hero-brightness-veil" bind:this={heroBrightEl} aria-hidden="true"></div>
         <div class="hero-dark-layer" bind:this={heroDarkLayerEl}></div>
         <div class="hero-bottom-veil" aria-hidden="true"></div>
       </div>
@@ -413,10 +420,17 @@
        se contente de suivre le scroll de façon nette. */
     opacity: 1;
     transform: scale(1.05);
-    filter: brightness(1);
-    will-change: transform, opacity, filter;
+    will-change: transform, opacity;
     backface-visibility: hidden;
     -webkit-backface-visibility: hidden;
+  }
+
+  .hero-brightness-veil {
+    position: absolute;
+    inset: 0;
+    background: #000;
+    opacity: 0;
+    pointer-events: none;
   }
 
   .hero-dark-layer {
