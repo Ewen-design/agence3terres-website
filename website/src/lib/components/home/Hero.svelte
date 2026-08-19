@@ -1,6 +1,8 @@
 <script>
   import { onMount } from "svelte";
   import { browser } from "$app/environment";
+  import AutoVideo from "$lib/components/shared/media/AutoVideo.svelte";
+  import { videoSources } from "$lib/components/shared/media/videoSources.js";
   import {
     registerParallax,
     unregisterParallax,
@@ -12,7 +14,7 @@
   let heroSection;
   let heroStage;
   let afterTextEl;
-  let heroMediaImgEl;
+  let heroMediaEl;
   let heroDarkLayerEl;
 
   let h2TextEl;
@@ -101,15 +103,15 @@
 
     const f = pendingFrame;
 
-    if (heroMediaImgEl) {
+    if (heroMediaEl) {
       if (
         f.imageScale !== applied.imageScale ||
         f.imageBrightness !== applied.imageBrightness ||
         f.imageOpacity !== applied.imageOpacity
       ) {
-        heroMediaImgEl.style.transform = `scale(${f.imageScale})`;
-        heroMediaImgEl.style.filter = `brightness(${f.imageBrightness})`;
-        heroMediaImgEl.style.opacity = `${f.imageOpacity}`;
+        heroMediaEl.style.transform = `scale(${f.imageScale})`;
+        heroMediaEl.style.filter = `brightness(${f.imageBrightness})`;
+        heroMediaEl.style.opacity = `${f.imageOpacity}`;
         applied.imageScale = f.imageScale;
         applied.imageBrightness = f.imageBrightness;
         applied.imageOpacity = f.imageOpacity;
@@ -276,16 +278,30 @@
   });
 </script>
 
+<!-- Le poster est déjà dans le HTML prérendu (attribut de <video>), donc trouvé
+     par le preload scanner ; ce lien ne fait que le remonter en priorité haute.
+     C'est la première image du hero, et donc le LCP de la home. -->
+<svelte:head>
+  <link rel="preload" as="image" href="/videos/home-hero-reel-poster.webp" fetchpriority="high" />
+</svelte:head>
+
 <section class="hero-join-clean" bind:this={heroSection}>
   <section class="hero-stage">
     <div class="hero-media-sticky" aria-hidden="true">
       <div class="hero-media" class:media-visible={heroMediaVisible} bind:this={heroStage}>
-        <img
-          bind:this={heroMediaImgEl}
-          src="/images/tel_moovy2.webp"
-          alt=""
-          fetchpriority="high"
-          decoding="async"
+        <!-- Bande-annonce de fond : un seul fichier qui boucle, montage des 5
+             plans du dossier /videos/ suivi de la carte signature (voir
+             media-source/encode-home-hero-reel.sh). Tout le séquençage est cuit
+             dans le média : rien à synchroniser en JS, donc rien qui puisse
+             décrocher. `eager` car on est au-dessus de la ligne de flottaison,
+             et le poster (photogramme 0 du montage) tient le cadre tant que la
+             lecture n'a pas démarré. -->
+        <AutoVideo
+          bind:element={heroMediaEl}
+          sources={videoSources("home-hero-reel")}
+          mobileSources={videoSources("home-hero-reel-mobile")}
+          poster="/videos/home-hero-reel-poster.webp"
+          eager
         />
         <div class="hero-dark-layer" bind:this={heroDarkLayerEl}></div>
         <div class="hero-bottom-veil" aria-hidden="true"></div>
@@ -380,17 +396,20 @@
     z-index: 1;
   }
 
-  .hero-media img {
+  /* `:global` car l'élément est rendu par AutoVideo. On ne redéclare surtout pas
+     `object-fit` ici : AutoVideo le porte déjà (cover par défaut) avec la même
+     spécificité, et l'ordre d'injection des styles entre composants n'est pas
+     garanti — deux règles à égalité laisseraient le cadrage au hasard. */
+  .hero-media :global(video) {
     position: absolute;
     inset: 0;
     width: 100%;
     height: 100%;
-    object-fit: cover;
     /* opacity / transform / brightness sont pilotés image par image par le
        moteur de scroll (voir applyFrame). Aucune transition CSS ici volontairement :
        une transition traînerait derrière le scroll et, pendant le dézoom d'arrivée
        du parent .hero-media, produirait un « zoom→dézoom » composite instable.
-       Le dézoom d'arrivée est géré uniquement par le parent (one-shot) ; l'image
+       Le dézoom d'arrivée est géré uniquement par le parent (one-shot) ; la vidéo
        se contente de suivre le scroll de façon nette. */
     opacity: 1;
     transform: scale(1.05);
@@ -539,7 +558,7 @@
       display: none;
     }
 
-    .hero-media img,
+    .hero-media :global(video),
     .hero-dark-layer {
       inset: 0 0 -12svh 0;
       height: calc(100% + 12svh);
@@ -656,7 +675,7 @@
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .hero-media img,
+    .hero-media :global(video),
     .hero-scroll-cue,
     .after-text {
       transition: none !important;
