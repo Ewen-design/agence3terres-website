@@ -20,3 +20,39 @@ export function videoSources(name, base = "/videos") {
     { src: `${base}/${name}.h264.mp4`, type: H264 }
   ];
 }
+
+export const isAv1Source = (source) => source?.type === AV1;
+
+/**
+ * L'appareil sait-il décoder l'AV1 SANS y laisser son processeur ?
+ *
+ * `canPlayType` ne répond qu'à « sais-tu lire ce codec » : Chrome sur Android
+ * répond « probably » pour l'AV1 même quand il n'a qu'un décodeur logiciel. Le
+ * fichier se lit alors — en saccadant, et en chauffant. `decodingInfo` est la
+ * seule API qui distingue les deux, via `powerEfficient`.
+ *
+ * La sonde est volontairement générique (un 1080p vertical à 30 i/s) : ce qu'on
+ * cherche à savoir, c'est si l'appareil a un décodeur AV1 matériel, pas si tel
+ * fichier passe. Une seule promesse pour tout le site, calculée une fois.
+ */
+let av1Probe = null;
+export function av1IsPowerEfficient() {
+  if (av1Probe) return av1Probe;
+
+  const caps = typeof navigator !== "undefined" ? navigator.mediaCapabilities : null;
+  if (!caps?.decodingInfo) {
+    // Pas d'API : on garde le comportement d'avant (l'AV1 reste candidat).
+    av1Probe = Promise.resolve(true);
+    return av1Probe;
+  }
+
+  av1Probe = caps
+    .decodingInfo({
+      type: "file",
+      video: { contentType: AV1, width: 1080, height: 1920, bitrate: 1_500_000, framerate: 30 }
+    })
+    .then((info) => Boolean(info?.supported && info?.smooth && info?.powerEfficient))
+    .catch(() => true);
+
+  return av1Probe;
+}

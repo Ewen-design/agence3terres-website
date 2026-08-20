@@ -5,7 +5,7 @@ export default defineConfig({
   plugins: [sveltekit()],
   server: {
     host: true,
-    port: 5174,
+    port: 5173,
     allowedHosts: ['localhost', 'agence3terres.fr', 'demo.agence3terres.fr'],
   },
 });

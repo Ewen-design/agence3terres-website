@@ -26,6 +26,8 @@
   let introVisible = true;
   let heroMediaVisible = false;
   let titleVisible = false;
+  let heroPosterHidden = false;
+  let removeHeroPlayWatch;
 
   let fallbackTimeout;
   let mediaIntroTimeout;
@@ -177,6 +179,29 @@
     return !window.__homeHeroIntroPlayed;
   }
 
+  // Le calque poster ne se retire pas sur `play` ni sur `playing` : ces
+  // événements arrivent avant la première image décodée, et le retirer là
+  // découvrirait la vidéo encore vide. On attend que le temps ait réellement
+  // avancé — donc qu'une image soit à l'écran.
+  function watchHeroPlayback(video) {
+    if (!video || removeHeroPlayWatch) return;
+
+    const onTick = () => {
+      if (video.currentTime <= 0.04) return;
+      heroPosterHidden = true;
+      removeHeroPlayWatch?.();
+    };
+
+    video.addEventListener("timeupdate", onTick);
+    removeHeroPlayWatch = () => {
+      video.removeEventListener("timeupdate", onTick);
+      removeHeroPlayWatch = null;
+    };
+    onTick();
+  }
+
+  $: if (browser && heroMediaEl) watchHeroPlayback(heroMediaEl);
+
   function scheduleResizeUpdate() {
     clearTimeout(resizeTimer);
     resizeTimer = setTimeout(() => {
@@ -289,15 +314,32 @@
       clearTimeout(resizeTimer);
       resizeObserver?.disconnect();
       textObserver?.disconnect();
+      removeHeroPlayWatch?.();
     };
   });
 </script>
 
-<!-- Le poster est déjà dans le HTML prérendu (attribut de <video>), donc trouvé
-     par le preload scanner ; ce lien ne fait que le remonter en priorité haute.
-     C'est la première image du hero, et donc le LCP de la home. -->
+<!-- Les deux renditions n'ont pas le même cadrage : chacune a donc son poster,
+     et c'est `media` qui décide — un seul des deux fichiers est téléchargé.
+     C'est la première image du hero, et donc le LCP de la home, d'où la
+     priorité haute. Le poster n'est pas dans l'attribut `poster` du HTML
+     prérendu : celui-ci est unique et imposerait le cadrage desktop aux
+     téléphones (voir AutoVideo). -->
 <svelte:head>
-  <link rel="preload" as="image" href="/videos/home-hero-reel-poster.webp" fetchpriority="high" />
+  <link
+    rel="preload"
+    as="image"
+    href="/videos/home-hero-reel-poster.webp"
+    media="(min-width: 641px)"
+    fetchpriority="high"
+  />
+  <link
+    rel="preload"
+    as="image"
+    href="/videos/home-hero-reel-mobile-poster.webp"
+    media="(max-width: 640px)"
+    fetchpriority="high"
+  />
 </svelte:head>
 
 <section class="hero-join-clean" bind:this={heroSection}>
@@ -316,8 +358,19 @@
           sources={videoSources("home-hero-reel")}
           mobileSources={videoSources("home-hero-reel-mobile")}
           poster="/videos/home-hero-reel-poster.webp"
+          mobilePoster="/videos/home-hero-reel-mobile-poster.webp"
           eager
         />
+        <!-- Le poster, en couche AU-DESSUS de la vidéo, retiré à la première
+             image réellement affichée.
+             En mode économie d'énergie, Safari iOS refuse le démarrage
+             automatique et pose un gros bouton de lecture sur la vidéo. Ce
+             bouton n'est pas stylable : `::-webkit-media-controls-start-playback-button`
+             ne le masque plus. Un calque par-dessus, lui, le cache toujours —
+             et il n'a rien de superflu, puisqu'il montre exactement l'image que
+             la vidéo va afficher. La lecture démarre alors au premier geste
+             (voir AutoVideo), et le calque s'efface à ce moment-là. -->
+        <div class="hero-poster" class:is-hidden={heroPosterHidden} aria-hidden="true"></div>
         <div class="hero-brightness-veil" bind:this={heroBrightEl} aria-hidden="true"></div>
         <div class="hero-dark-layer" bind:this={heroDarkLayerEl}></div>
         <div class="hero-bottom-veil" aria-hidden="true"></div>
@@ -433,6 +486,26 @@
     will-change: transform, opacity;
     backface-visibility: hidden;
     -webkit-backface-visibility: hidden;
+  }
+
+  /* Même cadrage que la vidéo (`cover`, même centre) : l'effacement du calque
+     ne doit produire aucun glissement d'image. C'est un fond CSS et non un
+     attribut `poster`, pour que `media` choisisse la bonne des deux renditions
+     — un attribut est unique, il imposerait le cadrage desktop aux téléphones. */
+  .hero-poster {
+    position: absolute;
+    inset: 0;
+    background-image: url("/videos/home-hero-reel-poster.webp");
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    opacity: 1;
+    transition: opacity 380ms ease;
+    pointer-events: none;
+  }
+
+  .hero-poster.is-hidden {
+    opacity: 0;
   }
 
   .hero-brightness-veil {
@@ -616,9 +689,14 @@
     }
 
     .hero-media :global(video),
+    .hero-poster,
     .hero-dark-layer {
       inset: 0 0 -12svh 0;
       height: calc(100% + 12svh);
+    }
+
+    .hero-poster {
+      background-image: url("/videos/home-hero-reel-mobile-poster.webp");
     }
 
     .hero-dark-layer {

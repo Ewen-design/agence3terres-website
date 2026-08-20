@@ -23,6 +23,7 @@
    *   repli permanent si la lecture est refusée.
    */
   import { onMount } from "svelte";
+  import { av1IsPowerEfficient, isAv1Source } from "./videoSources.js";
 
   /**
    * Sources du plus léger au plus universel : `[{ src, type }]`, où `type`
@@ -33,6 +34,17 @@
   export let mobileSources = [];
   export let mobileQuery = "(max-width: 640px)";
   export let poster = "";
+  /**
+   * Poster de la rendition portrait. À renseigner dès que les deux renditions
+   * n'ont PAS le même cadrage : sinon le poster desktop est recadré en `cover`
+   * dans un cadre vertical, et le premier photogramme de la vidéo arrive sur un
+   * tout autre cadrage — ça se voit comme un sursaut au démarrage.
+   *
+   * Quand il est fourni, l'attribut `poster` disparaît du HTML prérendu et
+   * c'est le JS qui pose le bon des deux : un HTML unique ne peut pas décider,
+   * et laisser le desktop par défaut ferait télécharger la mauvaise image.
+   */
+  export let mobilePoster = "";
   /** Texte alternatif. Vide = média purement décoratif (masqué aux lecteurs d'écran). */
   export let label = "";
   /** true pour un média au-dessus de la ligne de flottaison (hero) : charge au montage. */
@@ -61,6 +73,12 @@
   /** Sources retenues pour ce navigateur, dans l'ordre à essayer. */
   let candidates = [];
   let candidateIndex = 0;
+  /** Affinage asynchrone du classement (capacités de décodage réelles). */
+  let candidatesReady = null;
+  /** Tentatives de relance quand la lecture est refusée par la politique. */
+  let blockedRetries = 0;
+  /** Une image a-t-elle déjà été montrée ? (voir onGesture) */
+  let hasPlayed = false;
 
   // Chien de garde. Safari peut laisser l'élément dans un état « ni en pause
   // ni en train d'avancer » après un redimensionnement, un retour sur la page
@@ -80,10 +98,10 @@
   function refreshCandidates() {
     if (!videoEl) return;
 
-    const list =
-      mobileSources.length && window.matchMedia(mobileQuery).matches ? mobileSources : sources;
+    const onMobile = Boolean(mobileSources.length) && window.matchMedia(mobileQuery).matches;
+    const list = onMobile ? mobileSources : sources;
 
-    candidates = list
+    const ranked = list
       .map((source, order) => {
         const verdict = videoEl.canPlayType(source.type || "video/mp4");
         return { ...source, order, rank: verdict === "probably" ? 0 : verdict === "maybe" ? 1 : 2 };
@@ -91,7 +109,22 @@
       .filter((source) => source.rank < 2)
       .sort((a, b) => a.rank - b.rank || a.order - b.order);
 
+    candidates = ranked;
     candidateIndex = 0;
+    candidatesReady = null;
+
+    // Sur téléphone uniquement : un AV1 sans décodeur matériel saccade du début
+    // à la fin. On ne le garde que si `decodingInfo` le déclare efficace, et il
+    // faut un repli sous la main pour pouvoir l'écarter.
+    if (!onMobile || ranked.length < 2 || !ranked.some(isAv1Source)) return;
+
+    candidatesReady = av1IsPowerEfficient().then((efficient) => {
+      if (efficient || candidates !== ranked) return;
+      const withoutAv1 = ranked.filter((source) => !isAv1Source(source));
+      if (!withoutAv1.length) return;
+      candidates = withoutAv1;
+      candidateIndex = 0;
+    });
   }
 
   function wantedSrc() {
@@ -107,8 +140,16 @@
     loadSource();
   }
 
-  function loadSource() {
+  async function loadSource() {
     if (!videoEl || reduceMotion) return;
+
+    // Le classement peut encore être affiné (voir refreshCandidates). On
+    // l'attend AVANT de poser un src, sinon on téléchargerait un fichier pour
+    // le remplacer aussitôt — c'est-à-dire un redémarrage visible.
+    if (candidatesReady) {
+      await candidatesReady;
+      if (!videoEl || reduceMotion) return;
+    }
 
     const next = wantedSrc();
     if (!next || next === currentSrc) return;
@@ -134,19 +175,38 @@
     }
   }
 
+  /**
+   * Réaffirme en JS les propriétés dont dépend l'autoplay.
+   *
+   * L'attribut `muted` n'alimente que `defaultMuted` ; la propriété `muted`
+   * n'en hérite qu'à la création de l'élément. Un élément repris à
+   * l'hydratation ou restauré depuis le bfcache peut donc porter l'attribut
+   * sans être muet — et l'autoplay est alors refusé.
+   */
+  function armVideo() {
+    if (!videoEl) return;
+    videoEl.defaultMuted = true;
+    videoEl.muted = true;
+    videoEl.playsInline = true;
+  }
+
   function tryPlay() {
     if (!videoEl || reduceMotion || !currentSrc) return;
 
-    // Certains navigateurs remettent `muted` à false en restaurant l'élément
-    // depuis le bfcache : on le réaffirme avant chaque tentative.
-    videoEl.muted = true;
+    armVideo();
 
     const attempt = videoEl.play();
     if (attempt && typeof attempt.catch === "function") {
-      attempt.then(disarmGesture).catch((error) => {
-        // AbortError = un load() a interrompu la lecture, `canplay` relancera.
-        if (error?.name !== "AbortError") armGesture();
-      });
+      attempt
+        .then(() => {
+          blockedRetries = 0;
+          hasPlayed = true;
+          disarmGesture();
+        })
+        .catch((error) => {
+          // AbortError = un load() a interrompu la lecture, `canplay` relancera.
+          if (error?.name !== "AbortError") armGesture();
+        });
     }
   }
 
@@ -155,6 +215,18 @@
   // qu'elle soit — l'utilisateur n'a rien à cliquer volontairement.
   function onGesture() {
     disarmGesture();
+
+    // Tant que la lecture était refusée, c'est le poster qui tenait le cadre.
+    // Le média, lui, a pu voir son horloge avancer sans rien afficher :
+    // démarrer là où elle en est ferait sauter le plan en plein milieu, juste
+    // après une image fixe qui montrait le début. On repart donc de zéro.
+    // Le try/catch n'est pas décoratif : sans métadonnées, l'affectation lève.
+    if (!hasPlayed && videoEl) {
+      try {
+        videoEl.currentTime = 0;
+      } catch {}
+    }
+
     tryPlay();
   }
 
@@ -180,6 +252,13 @@
 
   function recover() {
     if (!videoEl || !mayPlay()) return;
+    // Une vidéo en pause n'est pas gelée : c'est `tick` qui traite ce cas, et
+    // il ne recharge pas. Sans ce garde-fou, un `stalled` reçu pendant un
+    // refus d'autoplay relançait la boucle de rechargements.
+    if (videoEl.paused) {
+      tryPlay();
+      return;
+    }
     stuckTicks += 1;
     if (stuckTicks <= 2) {
       tryPlay();
@@ -211,6 +290,25 @@
       stuckTicks = 0;
       return;
     }
+
+    // En pause alors qu'on devrait jouer = lecture REFUSÉE (politique
+    // d'autoplay, économie d'énergie), pas un gel. On relance en douceur, on
+    // ne recharge jamais : un rechargement repose le poster et remet la
+    // lecture à zéro — c'est ce qui se voyait comme un clignotement toutes les
+    // trois secondes. Au bout de quelques essais on s'en remet au geste, qui
+    // finira bien par arriver.
+    if (videoEl.paused || videoEl.ended) {
+      lastTime = -1;
+      stuckTicks = 0;
+      if (blockedRetries < 5) {
+        blockedRetries += 1;
+        tryPlay();
+      } else {
+        armGesture();
+      }
+      return;
+    }
+
     if (videoEl.readyState < 2) return;
     const t = videoEl.currentTime;
     if (t === lastTime) recover();
@@ -221,8 +319,7 @@
   function syncPlayback() {
     if (!videoEl) return;
     if (mayPlay()) {
-      loadSource();
-      tryPlay();
+      loadSource().then(tryPlay);
     } else if (!videoEl.paused) {
       videoEl.pause();
     }
@@ -245,9 +342,21 @@
 
   onMount(() => {
     const motionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
-    const mobileMedia = mobileSources.length ? window.matchMedia(mobileQuery) : null;
+    const mobileMedia =
+      mobileSources.length || mobilePoster ? window.matchMedia(mobileQuery) : null;
+
+    // Le poster vertical n'est pas dans le HTML prérendu : on le pose ici,
+    // avant tout chargement, pour que le cadre affiché soit dès la première
+    // image celui de la rendition qui va effectivement jouer.
+    const syncPoster = () => {
+      if (!videoEl || !mobilePoster) return;
+      const wanted = mobileMedia?.matches ? mobilePoster : poster;
+      if (wanted && videoEl.poster !== wanted) videoEl.poster = wanted;
+    };
 
     reduceMotion = motionQuery.matches;
+    armVideo();
+    syncPoster();
     refreshCandidates();
 
     const onMotionChange = () => {
@@ -263,6 +372,7 @@
     // contente d'oublier le src courant, il sera re-choisi au retour.
     const onBreakpointChange = () => {
       const wasLoaded = Boolean(currentSrc);
+      syncPoster();
       refreshCandidates();
       if (!wasLoaded) return;
       if (inView) loadSource();
@@ -338,7 +448,7 @@
 <!-- svelte-ignore a11y-media-has-caption (aucune piste audio : rien à sous-titrer) -->
 <video
   bind:this={videoEl}
-  {poster}
+  poster={mobilePoster ? undefined : poster}
   autoplay
   muted
   loop
@@ -375,5 +485,20 @@
     transform: translateZ(0);
     backface-visibility: hidden;
     -webkit-backface-visibility: hidden;
+  }
+
+  /* iOS pose un bouton « lecture » plein cadre sur toute vidéo en ligne qu'il
+     n'a pas démarrée lui-même — typiquement en mode économie d'énergie, où
+     l'autoplay est refusé même muet. Ces vidéos sont des décors (`pointer-events:
+     none`) : le bouton ne serait même pas cliquable. On supprime donc toute
+     l'interface native ; la relance au premier geste s'en charge (voir
+     armGesture). */
+  video::-webkit-media-controls,
+  video::-webkit-media-controls-start-playback-button,
+  video::-webkit-media-controls-panel,
+  video::-webkit-media-controls-overlay-play-button {
+    display: none !important;
+    -webkit-appearance: none;
+    opacity: 0;
   }
 </style>
