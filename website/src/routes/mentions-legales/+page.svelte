@@ -49,7 +49,10 @@
   ];
 </script>
 
-<section class="creative-section legal-page">
+<!-- Plus de `creative-section` : cette classe est dans la liste des sections
+     CLAIRES du header, qui y passait donc son texte en noir. La page est
+     sombre depuis le 2026-09-01. -->
+<section class="legal-page">
   <div class="legal-shell">
     <div class="legal-hero">
       <h1 use:reveal>Mentions légales</h1>
@@ -70,11 +73,13 @@
 </section>
 
 <style>
+  /* Page sombre depuis le 2026-09-01 (elle était blanche) : le gris foncé
+     bleuté de la palette, comme les pages projet. */
   .legal-page {
     position: relative;
     min-height: 100svh;
-    background: #f4f6fc;
-    color: #131313;
+    background: var(--bg-panel, #161617);
+    color: #f4efe6;
   }
 
   .legal-shell {
@@ -93,12 +98,12 @@
 
   h1 {
     margin: 0;
-    font-family: "Inter", sans-serif;
+    font-family: var(--site-font);
     font-size: clamp(3rem, 8vw, 6.25rem);
     line-height: 0.94;
-    font-weight: 500;
+    font-weight: var(--site-weight-display);
     letter-spacing: var(--site-display-letter-spacing);
-    color: #111111;
+    color: #f4efe6;
     text-wrap: balance;
   }
 
@@ -111,27 +116,27 @@
 
   .legal-section {
     padding-top: 1.2rem;
-    border-top: 1px solid rgba(19, 19, 19, 0.08);
+    border-top: 1px solid rgba(var(--ink-muted-rgb, 245, 241, 232), 0.14);
   }
 
   h2 {
     margin: 0 0 0.95rem;
-    font-family: "Inter", sans-serif;
+    font-family: var(--site-font);
     font-size: clamp(1.3rem, 1.9vw, 1.7rem);
     line-height: 1.04;
-    font-weight: 300;
+    font-weight: var(--site-weight);
     letter-spacing: -0.03em;
-    color: #111111;
+    color: #f4efe6;
   }
 
   .legal-section p {
     margin: 0;
     max-width: 34rem;
-    font-family: "Inter", sans-serif;
+    font-family: var(--site-font);
     font-size: clamp(0.98rem, 1.06vw, 1.05rem);
     line-height: 1.72;
-    font-weight: 300;
-    color: rgba(19, 19, 19, 0.62);
+    font-weight: var(--site-weight);
+    color: rgba(var(--ink-muted-rgb, 245, 241, 232), 0.62);
   }
 
   .legal-section p + p {

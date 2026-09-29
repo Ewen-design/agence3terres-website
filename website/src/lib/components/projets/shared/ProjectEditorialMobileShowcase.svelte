@@ -61,7 +61,9 @@
   .editorial-mobile-showcase {
     background: transparent;
     color: var(--project-surface-ink, #121212);
-    padding: 0 var(--project-side-padding, 1.25rem) 6.5rem;
+    /* Même correction que sur les deux autres blocs éditoriaux : sans marge
+       haute, le bloc se colle au bord de sa bande quand il l'ouvre. */
+    padding: clamp(3rem, 7vh, 5.5rem) var(--project-side-padding, 1.25rem) 6.5rem;
   }
 
   .editorial-mobile-showcase__media-grid {
@@ -74,12 +76,12 @@
     margin: 4rem 0 0;
     height: var(--editorial-mobile-showcase-media-min-height, 32rem);
     overflow: hidden;
-    border-radius: 0.35rem;
+    border-radius: var(--project-media-radius, 22px);
     background: var(--project-surface-bg-alt, #efe9df);
   }
 
   .editorial-mobile-showcase__media--dark {
-    background: var(--project-surface-card-strong, #040404);
+    background: var(--project-surface-card-strong, var(--bg-deep, #040404));
   }
 
   .editorial-mobile-showcase__media img {
@@ -101,8 +103,8 @@
     margin: 0;
     grid-column: 2;
     max-width: 13ch;
-    font-family: "Inter", sans-serif;
-    font-weight: 300;
+    font-family: var(--site-font);
+    font-weight: var(--site-weight-display);
     font-size: var(--project-lead-size, clamp(1.35rem, 2.7vw, 2.8rem));
     line-height: 0.98;
     letter-spacing: -0.05em;
@@ -127,7 +129,7 @@
 
   @media (max-width: 900px) {
     .editorial-mobile-showcase {
-      padding: 0 var(--project-side-padding, 0.8rem) 4rem;
+      padding: clamp(2rem, 5vh, 3.2rem) var(--project-side-padding, 0.8rem) 4rem;
     }
 
     .editorial-mobile-showcase__media-grid,

@@ -2,28 +2,56 @@
   import { onMount } from "svelte";
   import { browser } from "$app/environment";
   import AutoVideo from "$lib/components/shared/media/AutoVideo.svelte";
-  import { videoSources } from "$lib/components/shared/media/videoSources.js";
-  import {
-    registerParallax,
-    unregisterParallax,
-    registerWrite,
-    unregisterWrite,
-    forceScrollEngineUpdate
-  } from "$lib/scrollEngine.js";
+  import { videoSources, videoPoster } from "$lib/components/shared/media/videoSources.js";
+  import { heroFrame } from "$lib/actions/heroFrame.js";
 
-  let heroSection;
-  let heroStage;
-  let afterTextEl;
+  // ───────────────────────────────────────────────────────────────────────────
+  //  Hero de la home — version simple (2026-09-01)
+  //
+  //  Un cadre d'une hauteur d'écran, aux marges et à l'arrondi du site, la
+  //  bande-annonce dedans, l'accroche dans le coin bas gauche et le bouton de
+  //  contact dans le coin bas droit. C'est tout.
+  //
+  //  Ce qui a disparu, et pourquoi : le média n'est plus ÉPINGLÉ sur une scène
+  //  de 132svh, et il n'est plus assombri image par image au défilement. Tout
+  //  cet appareillage (moteur de scroll, mesures de position, voiles pilotés en
+  //  JS) tenait pour un hero qui se traversait ; il n'a plus lieu d'être pour un
+  //  cadre qui tient dans un écran. Reste du JS : l'arrivée en fondu et le
+  //  retrait du calque poster — deux choses que le CSS ne sait pas faire seul.
+  // ───────────────────────────────────────────────────────────────────────────
+
+  // ── Quelle coupe du reel est en ligne ────────────────────────────────────
+  //  Les fichiers du reel gardent un nom stable d'un montage à l'autre, et
+  //  c'est voulu (voir videoSources.js). Ce jeton est ce qui les distingue aux
+  //  yeux du navigateur. Sans lui : on réencode, on revient sur la home par une
+  //  navigation interne, et le poster de l'ANCIEN montage s'affiche un instant
+  //  par-dessus la nouvelle vidéo — rien n'a été redemandé au serveur.
+  //
+  //  À CHANGER À CHAQUE PASSAGE DE media-source/encode-home-hero-reel.sh.
+  const REEL_VERSION = "2026-09-05";
+
+  // Le point de rupture desktop/portrait, écrit UNE seule fois et partagé avec
+  // AutoVideo. Les deux doivent basculer au même pixel : le calque poster était
+  // resté en CSS à 900px quand la vidéo bascule à 640px, si bien qu'entre les
+  // deux le calque montrait le poster PORTRAIT au-dessus de la vidéo PAYSAGE —
+  // et téléchargeait les deux posters au passage.
+  const HERO_MOBILE_QUERY = "(max-width: 640px)";
+
+  const REEL = { version: REEL_VERSION };
+  const heroSources = videoSources("home-hero-reel", REEL);
+  const heroMobileSources = videoSources("home-hero-reel-mobile", REEL);
+  const heroPosterDesktop = videoPoster("home-hero-reel", REEL);
+  const heroPosterMobile = videoPoster("home-hero-reel-mobile", REEL);
+
   let heroMediaEl;
-  let heroBrightEl;
-  let heroDarkLayerEl;
 
-  let h2TextEl;
-  let textRevealed  = false;
-  let textObserver;
+  // Vide dans le HTML prérendu, posé au montage une fois la rendition connue.
+  // Une image de fond écrite en dur serait téléchargée sur TOUS les formats, y
+  // compris ceux qui ne la joueront jamais : c'est exactement la raison pour
+  // laquelle AutoVideo retire aussi l'attribut `poster` du HTML prérendu.
+  let heroPoster = "";
 
   let introStarted = false;
-  let introVisible = true;
   let heroMediaVisible = false;
   let titleVisible = false;
   let heroPosterHidden = false;
@@ -32,136 +60,23 @@
   let fallbackTimeout;
   let mediaIntroTimeout;
   let titleIntroTimeout;
-  let resizeObserver;
-  let resizeTimer;
 
-  let vh = 1;
-  let isMobile = false;
-  let heroTop = 0;
-  let heroHeight = 1;
-  let afterTextTop = 0;
-
-  let pendingFrame = null;
-  let dirty = false;
-
-  let applied = {
-    imageScale: -1,
-    imageBrightness: -1,
-    imageOpacity: -1,
-    imageDark: -1
-  };
-
-  // Le texte est découpé en mots pour que chacun arrive séparément, comme dans
-  // l'intro du site. `h` marque les passages mis en avant — la ponctuation
-  // reste collée à son mot, sinon les blancs se dédoublent à la césure.
-  const LEAD = [
-    {t: "Nous"}, {t: "sommes"}, {t: "3", h: 1}, {t: "Terres,", h: 1},
-    {t: "l\u2019agence"}, {t: "dans"}, {t: "l\u2019ombre"}, {t: "des"},
-    {t: "projets"}, {t: "qui"}, {t: "durent."}, {t: "De"}, {t: "l\u2019identit\u00e9"},
-    {t: "au"}, {t: "digital,"}, {t: "nous"}, {t: "fa\u00e7onnons"}, {t: "des"},
-    {t: "marques"}, {t: "fortes,"}, {t: "pens\u00e9es"}, {t: "pour"},
-    {t: "traverser", h: 1}, {t: "le", h: 1}, {t: "temps.", h: 1}
-  ];
-
-  const clamp = (v, min = 0, max = 1) => Math.max(min, Math.min(max, v));
-  const lerp = (a, b, t) => a + (b - a) * t;
-  const q = (v, step) => Math.round(v / step) * step;
-
-  function getScrollY() {
-    return window.scrollY || window.pageYOffset || 0;
-  }
-
-  function getAbsoluteTop(el) {
-    if (!el) return 0;
-    const rect = el.getBoundingClientRect();
-    return rect.top + getScrollY();
-  }
-
-  function measureLayout() {
-    vh = window.innerHeight || 1;
-    isMobile = (window.innerWidth || 0) <= 640;
-    heroTop = getAbsoluteTop(heroSection);
-    heroHeight = Math.max(heroSection?.offsetHeight || 1, 1);
-    afterTextTop = getAbsoluteTop(afterTextEl);
-  }
-
-  function getLocalRevealFromAbsolute(scrollY, absTop, startMul = 0.9, endMul = 0.2) {
-    const topInViewport = absTop - scrollY;
-    const start = vh * startMul;
-    const end = vh * endMul;
-    return clamp((start - topInViewport) / Math.max(start - end, 1), 0, 1);
-  }
-
-  function computeFrame(y) {
-    if (!afterTextEl) return;
-
-    const heroScrollable = Math.max(heroHeight - vh, 1);
-    const imageFadeProgress = clamp((y - heroTop) / heroScrollable, 0, 1);
-    const globalFade = imageFadeProgress * imageFadeProgress * (3 - 2 * imageFadeProgress);
-
-    const localTextReveal = getLocalRevealFromAbsolute(y, afterTextTop, 0.92, 0.16);
-    pendingFrame = {
-      imageScale: q(lerp(1.05, 1.0, globalFade), 0.0001),
-      imageBrightness: isMobile ? 1 : q(lerp(1, 0.62, globalFade), 0.001),
-      imageOpacity: isMobile ? 1 : q(lerp(1, 0, globalFade), 0.001),
-      imageDark: isMobile ? 0 : q(lerp(0.08, 0.62, globalFade), 0.001)
-    };
-
-    dirty = true;
-  }
-
-  function applyFrame() {
-    if (!dirty || !pendingFrame) return;
-
-    const f = pendingFrame;
-
-    if (heroMediaEl) {
-      if (
-        f.imageScale !== applied.imageScale ||
-        f.imageBrightness !== applied.imageBrightness ||
-        f.imageOpacity !== applied.imageOpacity
-      ) {
-        heroMediaEl.style.transform = `scale(${f.imageScale})`;
-        heroMediaEl.style.opacity = `${f.imageOpacity}`;
-        // L'assombrissement passe par un voile noir, PAS par un filtre CSS sur
-        // la balise <video> : en Safari, un filtre sort la vidéo du chemin de
-        // composition matériel — d'où les gels, écrans noirs et images
-        // fantômes après un redimensionnement ou un retour sur la page.
-        // Un noir à l'opacité (1 - b) est l'exact équivalent de brightness(b).
-        if (heroBrightEl) heroBrightEl.style.opacity = `${1 - f.imageBrightness}`;
-        applied.imageScale = f.imageScale;
-        applied.imageBrightness = f.imageBrightness;
-        applied.imageOpacity = f.imageOpacity;
-      }
-    }
-
-    if (heroDarkLayerEl && f.imageDark !== applied.imageDark) {
-      heroDarkLayerEl.style.opacity = `${f.imageDark}`;
-      applied.imageDark = f.imageDark;
-    }
-
-    dirty = false;
-  }
-
-  function handleParallax(y, ctx) {
-    computeFrame(ctx?.motionY ?? y);
-  }
-
-  function handleWrite() {
-    applyFrame();
+  // Le halo du contour des boutons suit le curseur (comme dans le header).
+  function handleButtonMove(e) {
+    const btn = e.currentTarget;
+    const rect = btn.getBoundingClientRect();
+    btn.style.setProperty("--mx", `${e.clientX - rect.left}px`);
+    btn.style.setProperty("--my", `${e.clientY - rect.top}px`);
   }
 
   function startIntro(withDelay = true) {
     if (introStarted) return;
     introStarted = true;
 
-    if (typeof window !== "undefined") {
-      window.__homeHeroIntroPlayed = true;
-    }
+    if (typeof window !== "undefined") window.__homeHeroIntroPlayed = true;
 
     requestAnimationFrame(() => {
       requestAnimationFrame(() => {
-        introVisible = true;
         clearTimeout(mediaIntroTimeout);
         mediaIntroTimeout = setTimeout(() => {
           heroMediaVisible = true;
@@ -202,18 +117,19 @@
 
   $: if (browser && heroMediaEl) watchHeroPlayback(heroMediaEl);
 
-  function scheduleResizeUpdate() {
-    clearTimeout(resizeTimer);
-    resizeTimer = setTimeout(() => {
-      measureLayout();
-      forceScrollEngineUpdate();
-    }, 70);
-  }
-
   onMount(() => {
     if (!browser) return;
 
-    let destroyed = false;
+    // Le calque poster suit la MÊME rendition que la vidéo, à tout moment :
+    // franchir le point de rupture (rotation, redimensionnement) change les
+    // deux ensemble, jamais l'un sans l'autre.
+    const mobileMedia = window.matchMedia(HERO_MOBILE_QUERY);
+    const syncHeroPoster = () => {
+      heroPoster = mobileMedia.matches ? heroPosterMobile : heroPosterDesktop;
+    };
+    syncHeroPoster();
+    mobileMedia.addEventListener?.("change", syncHeroPoster);
+
     const shouldDelayIntro = shouldDelayIntroForSession();
 
     const handlePreloaderReveal = () => {
@@ -221,74 +137,9 @@
       startIntro(false);
     };
 
-    const handleWindowLoad = () => {
-      measureLayout();
-      forceScrollEngineUpdate();
-    };
-
-    const handlePageShow = () => {
-      measureLayout();
-      forceScrollEngineUpdate();
-    };
-
-    const boot = async () => {
-      measureLayout();
-
-      if (document.fonts?.ready) {
-        try {
-          await document.fonts.ready;
-        } catch {}
-      }
-
-      if (destroyed) return;
-
-      requestAnimationFrame(() => {
-        measureLayout();
-        requestAnimationFrame(() => {
-          measureLayout();
-          forceScrollEngineUpdate();
-        });
-      });
-    };
-
-    boot();
-
-    registerParallax(handleParallax, { priority: 2 });
-    registerWrite(handleWrite, { priority: 2 });
-
-    // Word-by-word opacity reveal on scroll-into-view
-    if (!window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches && h2TextEl) {
-      textObserver = new IntersectionObserver(
-        ([entry]) => {
-          if (entry.isIntersecting) { textRevealed = true; textObserver.disconnect(); }
-        },
-        { rootMargin: "0px 0px -10% 0px", threshold: 0 }
-      );
-      textObserver.observe(h2TextEl);
-    } else {
-      textRevealed = true;
-    }
-
-    window.addEventListener("resize", scheduleResizeUpdate, { passive: true });
-    window.addEventListener("orientationchange", scheduleResizeUpdate, { passive: true });
-    window.addEventListener("load", handleWindowLoad);
-    window.addEventListener("pageshow", handlePageShow);
     if (shouldDelayIntro) {
       window.addEventListener("preloader:content-reveal", handlePreloaderReveal);
       window.addEventListener("preloader:done", handlePreloaderReveal);
-    }
-
-    if (typeof ResizeObserver !== "undefined") {
-      resizeObserver = new ResizeObserver(() => {
-        scheduleResizeUpdate();
-      });
-
-      if (heroSection) resizeObserver.observe(heroSection);
-      if (heroStage) resizeObserver.observe(heroStage);
-      if (afterTextEl) resizeObserver.observe(afterTextEl);
-    }
-
-    if (shouldDelayIntro) {
       fallbackTimeout = setTimeout(() => {
         startIntro(true);
       }, document.getElementById("site-intro-loader") ? 8000 : 1800);
@@ -297,13 +148,7 @@
     }
 
     return () => {
-      destroyed = true;
-      unregisterParallax(handleParallax);
-      unregisterWrite(handleWrite);
-      window.removeEventListener("resize", scheduleResizeUpdate);
-      window.removeEventListener("orientationchange", scheduleResizeUpdate);
-      window.removeEventListener("load", handleWindowLoad);
-      window.removeEventListener("pageshow", handlePageShow);
+      mobileMedia.removeEventListener?.("change", syncHeroPoster);
       if (shouldDelayIntro) {
         window.removeEventListener("preloader:content-reveal", handlePreloaderReveal);
         window.removeEventListener("preloader:done", handlePreloaderReveal);
@@ -311,9 +156,6 @@
       clearTimeout(fallbackTimeout);
       clearTimeout(mediaIntroTimeout);
       clearTimeout(titleIntroTimeout);
-      clearTimeout(resizeTimer);
-      resizeObserver?.disconnect();
-      textObserver?.disconnect();
       removeHeroPlayWatch?.();
     };
   });
@@ -329,111 +171,130 @@
   <link
     rel="preload"
     as="image"
-    href="/videos/home-hero-reel-poster.webp"
+    href={heroPosterDesktop}
     media="(min-width: 641px)"
     fetchpriority="high"
   />
   <link
     rel="preload"
     as="image"
-    href="/videos/home-hero-reel-mobile-poster.webp"
+    href={heroPosterMobile}
     media="(max-width: 640px)"
     fetchpriority="high"
   />
 </svelte:head>
 
-<section class="hero-join-clean" bind:this={heroSection}>
-  <section class="hero-stage">
-    <div class="hero-media-sticky" aria-hidden="true">
-      <div class="hero-media" class:media-visible={heroMediaVisible} bind:this={heroStage}>
-        <!-- Bande-annonce de fond : un seul fichier qui boucle, montage des 5
-             plans du dossier /videos/ suivi de la carte signature (voir
-             media-source/encode-home-hero-reel.sh). Tout le séquençage est cuit
-             dans le média : rien à synchroniser en JS, donc rien qui puisse
-             décrocher. `eager` car on est au-dessus de la ligne de flottaison,
-             et le poster (photogramme 0 du montage) tient le cadre tant que la
-             lecture n'a pas démarré. -->
-        <AutoVideo
-          bind:element={heroMediaEl}
-          sources={videoSources("home-hero-reel")}
-          mobileSources={videoSources("home-hero-reel-mobile")}
-          poster="/videos/home-hero-reel-poster.webp"
-          mobilePoster="/videos/home-hero-reel-mobile-poster.webp"
-          eager
-        />
-        <!-- Le poster, en couche AU-DESSUS de la vidéo, retiré à la première
-             image réellement affichée.
-             En mode économie d'énergie, Safari iOS refuse le démarrage
-             automatique et pose un gros bouton de lecture sur la vidéo. Ce
-             bouton n'est pas stylable : `::-webkit-media-controls-start-playback-button`
-             ne le masque plus. Un calque par-dessus, lui, le cache toujours —
-             et il n'a rien de superflu, puisqu'il montre exactement l'image que
-             la vidéo va afficher. La lecture démarre alors au premier geste
-             (voir AutoVideo), et le calque s'efface à ce moment-là. -->
-        <div class="hero-poster" class:is-hidden={heroPosterHidden} aria-hidden="true"></div>
-        <div class="hero-brightness-veil" bind:this={heroBrightEl} aria-hidden="true"></div>
-        <div class="hero-dark-layer" bind:this={heroDarkLayerEl}></div>
-        <div class="hero-bottom-veil" aria-hidden="true"></div>
-      </div>
+<section class="hero" use:heroFrame>
+  <div class="hero__frame">
+    <div class="hero__media" class:media-visible={heroMediaVisible}>
+      <!-- Bande-annonce de fond : un seul fichier qui boucle, montage des plans
+           du dossier /videos/ (voir media-source/remotion-3terres). Tout le
+           séquençage est cuit dans le média : rien à synchroniser en JS, donc
+           rien qui puisse décrocher. `eager` car on est au-dessus de la ligne
+           de flottaison, et le poster (photogramme 0 du montage) tient le cadre
+           tant que la lecture n'a pas démarré. -->
+      <AutoVideo
+        bind:element={heroMediaEl}
+        sources={heroSources}
+        mobileSources={heroMobileSources}
+        poster={heroPosterDesktop}
+        mobilePoster={heroPosterMobile}
+        mobileQuery={HERO_MOBILE_QUERY}
+        eager
+      />
+      <!-- Le poster, en couche AU-DESSUS de la vidéo, retiré à la première
+           image réellement affichée.
+           En mode économie d'énergie, Safari iOS refuse le démarrage
+           automatique et pose un gros bouton de lecture sur la vidéo. Ce bouton
+           n'est pas stylable : un calque par-dessus, lui, le cache toujours —
+           et il n'a rien de superflu, puisqu'il montre exactement l'image que la
+           vidéo va afficher. -->
+      <div
+        class="hero__poster"
+        class:is-hidden={heroPosterHidden}
+        style:background-image={heroPoster ? `url("${heroPoster}")` : null}
+        aria-hidden="true"
+      ></div>
     </div>
 
-    <div class="hero-stage-content">
-      <div class="hero-scroll-cue" class:intro-visible={introVisible} class:title-visible={titleVisible} aria-hidden="true">
-        <span class="hero-scroll-arrow">↓</span>
-      </div>
-    </div>
-  </section>
+    <div class="hero__veil" aria-hidden="true"></div>
+  </div>
 
-  <section class="after-section">
-    <div class="after-grid">
-      <div class="after-text" bind:this={afterTextEl}>
-        <h2
-          class="after-lead"
-          bind:this={h2TextEl}
-          class:is-text-revealed={textRevealed}
-        >{#each LEAD as w, i}<span class="lead-word" class:hl={w.h} style="--i:{i}"
-            >{w.t}</span>{" "}{/each}</h2>
-      </div>
-    </div>
-  </section>
-
-  <div class="hero-scroll-cue-mobile" class:title-visible={titleVisible} aria-hidden="true">
-    <span class="hero-scroll-arrow">↓</span>
+  <!-- Le bouton vit HORS du cadre : celui-ci est refermé par un `clip-path`,
+       qui le rognerait. Cette couche est posée à la place qu'elle occupe cadre
+       fermé, et elle n'en bouge plus. -->
+  <div class="hero__ui">
+    <a
+      class="hero__cta nav-btn"
+      class:is-in={titleVisible}
+      href="/contact"
+      data-cursor="button"
+      data-sveltekit-preload-data="hover"
+      on:mousemove={handleButtonMove}
+    >
+      <span class="nav-btn-flip" data-text="Nous contacter">
+        <span class="nav-btn-text">Nous contacter</span>
+      </span>
+    </a>
   </div>
 </section>
-
 <style>
-  .hero-join-clean {
+  /* ── Le cadre ─────────────────────────────────────────────────────────────
+     Une hauteur d'écran, les marges et l'arrondi des blocs du site, et le fond
+     sombre de la palette autour. */
+  .hero {
+    /* `--hero-t` : 0 en haut de page (plein écran), 1 une fois la marge et
+       l'arrondi installés. Écrit image par image par le moteur de scroll. */
+    --hero-t: 0;
+    --hero-inset: var(--site-inset);
+    --hero-radius: 22px;
+    /* Sert au seul découpage du cadre. */
+    --hero-cut: calc(var(--hero-inset) * var(--hero-t));
+
     position: relative;
+    box-sizing: border-box;
     width: 100%;
-    background: #000;
+    /* `svh` et jamais `vh` : sur iOS, `vh` se mesure sur l'écran SANS la barre
+       d'outils, et le cadre déborderait par le bas tant qu'elle est affichée. */
+    height: 100svh;
+    background: var(--bg-deep, #050709);
     color: #f4efe6;
     overflow: clip;
   }
 
-  .hero-stage {
-    position: relative;
-    min-height: 132svh;
-    z-index: 0;
+  /* Le cadre occupe TOUT l'écran ; c'est le découpage qui le referme. Un
+     `clip-path` ne refait aucune mise en page — contrairement à une marge ou à
+     une hauteur animées, qui redimensionneraient la vidéo à chaque image. */
+  .hero__frame {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    background: var(--bg-deep, #000);
+    clip-path: inset(var(--hero-cut) round calc(var(--hero-radius) * var(--hero-t)));
+    /* C'est CETTE transition qui fait toute l'animation : `--hero-t` bascule de
+       0 à 1 d'un coup, le navigateur mène le reste. Aucune mise en page n'est
+       refaite — la vidéo garde sa taille et sa place, seul le découpage bouge. */
+    transition: clip-path 820ms cubic-bezier(0.22, 1, 0.36, 1);
+    /* Contexte isolé : la vidéo et son voile restent sous le contenu. */
+    isolation: isolate;
   }
 
-  .hero-media-sticky {
-    position: sticky;
-    top: 0;
-    height: var(--viewport-height);
-    margin-bottom: calc(-1 * var(--viewport-height));
-    z-index: 0;
+  /* La couche des textes est posée à la place qu'elle occupe CADRE FERMÉ, et
+     elle n'en bouge plus : le cadre s'ouvre et se referme autour d'elle. */
+  .hero__ui {
+    position: absolute;
+    inset: var(--hero-inset);
+    z-index: 3;
     pointer-events: none;
   }
 
-  .hero-media {
+  .hero__media {
     position: absolute;
     inset: 0;
-    height: var(--viewport-height);
-    background: #000;
+    z-index: 0;
     opacity: 0;
-    /* Gentle zoom-in on arrival (settles together with the fade-in). */
-    transform: translateZ(0) scale(1.07);
+    /* Léger dézoom d'arrivée, qui se pose en même temps que le fondu. */
+    transform: translateZ(0) scale(1.06);
     transition:
       opacity 760ms cubic-bezier(0.22, 1, 0.36, 1),
       transform 1800ms cubic-bezier(0.22, 1, 0.36, 1);
@@ -442,60 +303,34 @@
     -webkit-backface-visibility: hidden;
   }
 
-  .hero-media.media-visible {
+  .hero__media.media-visible {
     opacity: 1;
     transform: translateZ(0) scale(1);
   }
 
-  .hero-media::after {
-    content: "";
-    position: absolute;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    height: 22vh;
-    height: 22svh;
-    background: linear-gradient(
-      to top,
-      rgba(0, 0, 0, 0.88) 0%,
-      rgba(0, 0, 0, 0.58) 34%,
-      rgba(0, 0, 0, 0.2) 68%,
-      rgba(0, 0, 0, 0) 100%
-    );
-    pointer-events: none;
-    z-index: 1;
-  }
-
-  /* `:global` car l'élément est rendu par AutoVideo. On ne redéclare surtout pas
-     `object-fit` ici : AutoVideo le porte déjà (cover par défaut) avec la même
-     spécificité, et l'ordre d'injection des styles entre composants n'est pas
-     garanti — deux règles à égalité laisseraient le cadrage au hasard. */
-  .hero-media :global(video) {
+  /* `:global` car l'élément est rendu par AutoVideo. On ne redéclare surtout
+     pas `object-fit` ici : AutoVideo le porte déjà (cover par défaut) avec la
+     même spécificité, et l'ordre d'injection des styles entre composants n'est
+     pas garanti — deux règles à égalité laisseraient le cadrage au hasard. */
+  .hero__media :global(video) {
     position: absolute;
     inset: 0;
     width: 100%;
     height: 100%;
-    /* opacity / transform / brightness sont pilotés image par image par le
-       moteur de scroll (voir applyFrame). Aucune transition CSS ici volontairement :
-       une transition traînerait derrière le scroll et, pendant le dézoom d'arrivée
-       du parent .hero-media, produirait un « zoom→dézoom » composite instable.
-       Le dézoom d'arrivée est géré uniquement par le parent (one-shot) ; la vidéo
-       se contente de suivre le scroll de façon nette. */
-    opacity: 1;
-    transform: scale(1.05);
-    will-change: transform, opacity;
-    backface-visibility: hidden;
-    -webkit-backface-visibility: hidden;
+    display: block;
   }
 
   /* Même cadrage que la vidéo (`cover`, même centre) : l'effacement du calque
-     ne doit produire aucun glissement d'image. C'est un fond CSS et non un
-     attribut `poster`, pour que `media` choisisse la bonne des deux renditions
-     — un attribut est unique, il imposerait le cadrage desktop aux téléphones. */
-  .hero-poster {
+     ne doit produire aucun glissement d'image.
+     L'IMAGE elle-même n'est pas ici, elle est posée en JS (voir `heroPoster`).
+     Elle l'était en CSS, avec son propre point de rupture — qui avait dérivé de
+     celui de la vidéo : entre 641 et 900px le calque montrait le poster
+     portrait au-dessus de la vidéo paysage, et les deux fichiers partaient au
+     téléchargement. Une seule décision, en JS, pour le calque comme pour la
+     vidéo : ils ne peuvent plus se désaccorder. */
+  .hero__poster {
     position: absolute;
     inset: 0;
-    background-image: url("/videos/home-hero-reel-poster.webp");
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
@@ -504,333 +339,204 @@
     pointer-events: none;
   }
 
-  .hero-poster.is-hidden {
+  .hero__poster.is-hidden {
     opacity: 0;
   }
 
-  .hero-brightness-veil {
+  /* Voile du bas : le bouton se pose sur des plans qui bougent, il lui faut un
+     socle. Paliers rapprochés pour qu'aucune arête ne se voie. */
+  /* Le voile est VIDE sur desktop, et c'est voulu (2026-09-02) : plus aucun
+     assombrissement des bords, ni ici ni dans le layout — les deux vignettes
+     fixes du site ont été retirées le même jour. Il ne reste qu'une bande
+     basse, sur mobile seulement, plus bas dans ce fichier. L'élément est
+     conservé : il porte cette bande, et il est le seul calque disponible entre
+     la vidéo et l'interface si un besoin de contraste revient. */
+  .hero__veil {
     position: absolute;
     inset: 0;
-    background: #000;
+    z-index: 1;
+    pointer-events: none;
+  }
+
+  /* ── Le bouton, coin bas droit ────────────────────────────────────────────
+     C'est le bouton du menu du header, à l'identique : même verre, même
+     arrondi, même bascule du libellé au survol. */
+  /* À GAUCHE, sur tous les formats (2026-09-02 pour le desktop, qui l'avait à
+     droite) : c'est le bord où commence la lecture, et sur téléphone c'est
+     aussi le coin le plus loin du pouce. */
+  .hero__cta {
+    position: absolute;
+    z-index: 3;
+    left: clamp(1.1rem, 2.4vw, 2.6rem);
+    bottom: clamp(1.1rem, 2.4vw, 2.6rem);
+    /* Le gabarit du bouton du footer, pas celui du header : c'est l'appel à
+       l'action principal de la page. */
+    min-width: clamp(180px, 20vw, 260px);
+    min-height: clamp(60px, 6.8vw, 78px);
+    padding: 0 2rem;
+    font-size: clamp(1.08rem, 1.5vw, 1.26rem);
+    color: #fff;
+    text-decoration: none;
+    pointer-events: auto;
     opacity: 0;
-    pointer-events: none;
+    transition:
+      opacity 900ms cubic-bezier(0.22, 1, 0.36, 1),
+      color 220ms ease,
+      transform 1.2s cubic-bezier(.22, .61, .36, 1),
+      background 1.2s cubic-bezier(.22, .61, .36, 1);
   }
 
-  .hero-dark-layer {
-    position: absolute;
-    inset: 0;
-    background:
-      linear-gradient(
-        to top,
-        rgba(0, 0, 0, 1) 0%,
-        rgba(0, 0, 0, 0.96) 16%,
-        rgba(0, 0, 0, 0.78) 34%,
-        rgba(0, 0, 0, 0.42) 52%,
-        rgba(0, 0, 0, 0.12) 66%,
-        rgba(0, 0, 0, 0) 78%
-      ),
-      radial-gradient(
-        circle at 50% 50%,
-        rgba(0, 0, 0, 0) 0%,
-        rgba(0, 0, 0, 0.03) 44%,
-        rgba(0, 0, 0, 0.12) 72%,
-        rgba(0, 0, 0, 0.34) 100%
-      );
-    pointer-events: none;
-    opacity: 0.08;
-    will-change: opacity;
+  .hero__cta.is-in {
+    opacity: 1;
   }
 
-  /* Only used on mobile (see the max-width: 640px block). */
-  .hero-bottom-veil {
-    display: none;
-  }
-
-  .hero-stage-content {
-    position: relative;
-    min-height: 100svh;
-    display: flex;
+  .nav-btn {
+    font-family: var(--site-font);
+    font-weight: var(--site-weight);
+    display: inline-flex;
     align-items: center;
     justify-content: center;
-    z-index: 2;
-  }
-
-  .hero-scroll-cue {
-    position: absolute;
-    left: clamp(1rem, 2vw, 1.8rem);
-    bottom: max(clamp(1rem, 2.2vw, 1.6rem), var(--safe-bottom-offset));
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    justify-content: flex-end;
-    gap: 0.45rem;
-    color: #fff;
-    z-index: 4;
-    opacity: 1;
-    transform: none;
-  }
-
-  .hero-scroll-cue-mobile {
-    display: none;
-  }
-
-  .hero-scroll-arrow {
-    display: block;
-    font-family: "Inter", sans-serif;
-    font-size: clamp(1.1rem, 1.1vw, 1.2rem);
-    line-height: 1;
-    font-weight: 300;
-    color: #fff;
-  }
-
-  .after-section {
-    position: relative;
-    z-index: 3;
-    background: transparent;
-    padding: 22vh 0 28vh;
-  }
-
-  .after-grid {
-    width: min(1400px, 92%);
-    margin: 0 auto;
-    display: block;
-  }
-
-  .after-text {
+    white-space: nowrap;
+    cursor: pointer;
+    border: 0;
+    background: rgba(255, 255, 255, 0.11);
+    backdrop-filter: blur(20px) saturate(160%) brightness(0.82);
+    -webkit-backdrop-filter: blur(20px) saturate(160%) brightness(0.82);
     will-change: transform, opacity;
-    width: 100%;
-    min-width: 0;
-    opacity: 1;
-    transform: none;
+    transform: translateZ(0);
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    border-radius: 10px;
+    box-shadow: 0 6px 8px rgba(var(--shade-rgb, 0, 0, 0), 0.04);
   }
 
-  /* Même présentation que les textes des pages projet (ProjectBrief) :
-     un paragraphe léger, aligné à gauche, sans trait ni découpe muted. */
-  .after-text h2 {
-    margin: 0;
-    max-width: 24ch;
-    font-family: "Inter", sans-serif;
-    font-weight: 300;
-    font-size: clamp(1.5rem, 2.5vw, 2.55rem);
-    line-height: 1.18;
-    letter-spacing: -0.025em;
-    text-align: left;
-    color: rgba(245, 241, 232, 0.5);
-    text-wrap: pretty;
+  .nav-btn:hover {
+    background: rgba(255, 255, 255, 0.18);
+    transform: translateZ(0) translateY(-2px);
   }
 
-  /* Arrivée mot par mot, reprise de l'intro du site : chaque mot se dépose en
-     flou et traverse le violet profond puis l'indigo de la charte avant de
-     rejoindre sa couleur définitive. Le dégradé de l'intro n'est PAS repris
-     ici : il éteint le bas des lettres, ce qui gênerait la lecture sur un
-     paragraphe de plusieurs lignes. */
-  .lead-word {
-    display: inline-block;
+  .nav-btn-flip {
+    position: relative;
+    display: block;
+    overflow: hidden;
+    height: 1.2em;
+    line-height: 1.2em;
+  }
+
+  .nav-btn-text {
+    display: block;
+    transform: translateY(0%);
+    transition: transform 0.45s cubic-bezier(.22, .61, .36, 1);
+  }
+
+  .nav-btn-flip::after {
+    content: attr(data-text);
+    position: absolute;
+    left: 0;
+    top: 0;
+    line-height: 1.2em;
+    transform: translateY(100%);
+    transition: transform 0.45s cubic-bezier(.22, .61, .36, 1);
+    white-space: nowrap;
+    color: inherit;
+  }
+
+  .nav-btn:hover .nav-btn-text {
+    transform: translateY(-100%);
+  }
+
+  .nav-btn:hover .nav-btn-flip::after {
+    transform: translateY(0%);
+  }
+
+  /* Halo de contour au survol : un liseré d'un pixel, allumé par un dégradé
+     radial qui suit le curseur. Le masque `xor` ne garde que le contour, ce qui
+     respecte l'arrondi — un `border-image` ne saurait pas le faire. Rayons du
+     bouton du footer, puisque c'est son gabarit. */
+  .nav-btn::before,
+  .nav-btn::after {
+    content: "";
+    position: absolute;
+    inset: -1px;
+    border-radius: inherit;
+    padding: 1px;
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
     opacity: 0;
-    --lead-final: rgba(245, 241, 232, 0.5);
-    will-change: opacity, filter, transform;
+    transition: opacity 0.25s ease;
   }
 
-  .lead-word.hl {
-    --lead-final: #f4efe6;
+  .nav-btn::before {
+    background: radial-gradient(
+      128px circle at var(--mx, 50%) var(--my, 50%),
+      var(--site-glow-strong) 0%,
+      var(--site-glow-mid) 26%,
+      var(--site-glow-soft) 52%,
+      var(--site-glow-fade) 70%,
+      transparent 86%
+    );
   }
 
-  @keyframes leadIn {
-    0% {
-      opacity: 0;
-      filter: blur(12px);
-      transform: translateY(0.24em);
-      color: #17052f;
-    }
-    38% {
-      color: #5768ff;
-    }
-    100% {
-      opacity: 1;
-      filter: blur(0);
-      transform: translateY(0);
-      color: var(--lead-final);
-    }
+  .nav-btn::after {
+    background: radial-gradient(
+      156px circle at var(--mx, 50%) var(--my, 50%),
+      var(--site-glow-ambient) 0%,
+      var(--site-glow-outer) 48%,
+      transparent 82%
+    );
+    filter: blur(3px);
   }
 
-  .after-lead.is-text-revealed .lead-word {
-    animation: leadIn 0.9s cubic-bezier(0.22, 0.61, 0.36, 1) both;
-    animation-delay: calc(var(--i) * 38ms);
+  .nav-btn:hover::before,
+  .nav-btn:hover::after {
+    opacity: 1;
   }
 
-  @media (prefers-reduced-motion: reduce) {
-    .lead-word {
-      opacity: 1;
-      color: var(--lead-final);
-    }
-
-    .after-lead.is-text-revealed .lead-word {
-      animation: none;
-    }
+  .nav-btn:focus-visible {
+    outline: 2px solid var(--lead-blue, #5768ff);
+    outline-offset: 3px;
   }
 
+  /* ── Écrans étroits ───────────────────────────────────────────────────── */
   @media (max-width: 900px) {
-    .after-grid {
-      width: min(100%, 760px);
-      padding-inline: var(--project-side-padding, 0.8rem);
-      box-sizing: border-box;
+    .hero {
+      --hero-inset: 1rem;
+      --hero-radius: 18px;
     }
 
-    .after-text h2 {
-      font-size: clamp(1.5rem, 6.6vw, 2rem);
-      max-width: 26ch;
-      line-height: 1.2;
-    }
-  }
-
-  @media (max-width: 640px) {
-    .hero-media::after {
-      display: none;
-    }
-
-    .hero-media :global(video),
-    .hero-poster,
-    .hero-dark-layer {
-      inset: 0 0 -12svh 0;
-      height: calc(100% + 12svh);
-    }
-
-    .hero-poster {
-      background-image: url("/videos/home-hero-reel-mobile-poster.webp");
+    /* Voile du bas renforcé sur mobile. Le montage vertical garde 5 à 10 % d'air
+       sous le sujet — c'est inhérent : un mockup couché ne remplit pas un cadre
+       9:20 sans être charcuté (voir la note de cadrage en mémoire). Le voile
+       absorbe cet air : la coupe du plan tombe dans sa partie dense, et plus
+       aucune arête ne se lit. */
+    .hero__veil {
+      background:
+        linear-gradient(to top,
+          rgba(var(--shade-rgb, 0, 0, 0), 1) 0%,
+          rgba(var(--shade-rgb, 0, 0, 0), 0.96) 8%,
+          rgba(var(--shade-rgb, 0, 0, 0), 0.82) 15%,
+          rgba(var(--shade-rgb, 0, 0, 0), 0.6) 22%,
+          rgba(var(--shade-rgb, 0, 0, 0), 0.38) 30%,
+          rgba(var(--shade-rgb, 0, 0, 0), 0.2) 38%,
+          rgba(var(--shade-rgb, 0, 0, 0), 0.08) 46%,
+          rgba(var(--shade-rgb, 0, 0, 0), 0.02) 54%,
+          rgba(var(--shade-rgb, 0, 0, 0), 0) 62%);
     }
 
-    .hero-dark-layer {
-      background: none;
-      opacity: 0 !important;
-    }
-
-    /* Solid-black bottom veil for the home hero on mobile. The shared hero
-       gradients only half-cover the lower edge here (leaving the pinned image
-       faintly visible as a line/strip in the svh↔lvh overscan zone); this veil
-       guarantees a clean black base that fades up, killing that seam. It spans
-       down past the image's -12svh extension so no strip is ever exposed. */
-    .hero-bottom-veil {
-      display: block;
-      position: absolute;
-      left: 0;
-      right: 0;
-      bottom: -12svh;
-      height: 48svh;
-      background: linear-gradient(
-        to top,
-        #000 0%,
-        #000 28%,
-        rgba(0, 0, 0, 0.92) 44%,
-        rgba(0, 0, 0, 0.6) 62%,
-        rgba(0, 0, 0, 0.28) 80%,
-        rgba(0, 0, 0, 0) 100%
-      );
-      z-index: 1;
-      pointer-events: none;
-    }
-
-    .hero-scroll-cue {
-      display: none;
-    }
-
-    .hero-scroll-cue-mobile {
-      position: absolute;
-      left: 1rem;
-      top: calc(100svh - max(4.8rem, calc(var(--safe-bottom-offset) + 4rem)));
-      display: flex;
-      flex-direction: column;
-      align-items: flex-start;
-      justify-content: flex-end;
-      gap: 0.42rem;
-      color: #fff;
-      z-index: 20;
-      pointer-events: none;
-    }
-
-    .hero-scroll-arrow {
-      font-size: 1.05rem;
-    }
-
-    .after-section {
-      padding: 26vh 0 28vh;
-      background: #000;
-    }
-
-    .after-section::before {
-      content: "";
-      position: absolute;
-      left: 0;
-      right: 0;
-      top: -48rem;
-      height: 48rem;
-      background: linear-gradient(
-        to bottom,
-        rgba(0, 0, 0, 0) 0%,
-        rgba(0, 0, 0, 0.01) 16%,
-        rgba(0, 0, 0, 0.03) 32%,
-        rgba(0, 0, 0, 0.08) 48%,
-        rgba(0, 0, 0, 0.18) 64%,
-        rgba(0, 0, 0, 0.38) 78%,
-        rgba(0, 0, 0, 0.68) 90%,
-        rgba(0, 0, 0, 0.92) 97%,
-        rgba(0, 0, 0, 1) 100%
-      );
-      pointer-events: none;
-      z-index: 0;
-    }
-
-    .after-grid {
-      width: min(100%, 520px);
-      padding-inline: var(--project-side-padding, 0.8rem);
-      box-sizing: border-box;
-      margin-top: -3rem;
-      position: relative;
-      z-index: 1;
-    }
-
-    .after-text {
-      width: 100%;
-      justify-self: start;
-    }
-
-    .after-text h2 {
-      max-width: 26ch;
-      font-size: clamp(1.4rem, 6.6vw, 1.9rem);
-      line-height: 1.2;
-      padding-inline: var(--project-text-inset, 0);
-    }
-
-    .after-text {
-      transition: none !important;
-      animation: none !important;
-      filter: none !important;
-      opacity: 1 !important;
-      transform: none !important;
-    }
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .hero-media :global(video),
-    .hero-scroll-cue,
-    .after-text {
-      transition: none !important;
-      animation: none !important;
-      filter: none !important;
-      opacity: 1 !important;
-      -webkit-mask-image: none !important;
-      mask-image: none !important;
-      transform: none !important;
+    .hero__frame {
+      transition-duration: 0.2s;
     }
 
-    .after-text h2 {
-      transition: none !important;
-      opacity: 1 !important;
-      filter: none !important;
-      transform: none !important;
-    }
-
-    .hero-dark-layer {
-      opacity: 0.22 !important;
+    .hero__media,
+    .hero__cta {
+      transition-duration: 0.25s;
+      transform: none;
     }
   }
 </style>

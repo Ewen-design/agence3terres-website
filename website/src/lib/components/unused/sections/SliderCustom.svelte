@@ -200,8 +200,8 @@
 
   .hero-title h1 {
     margin: 0;
-    font-family: "Inter", sans-serif;
-  font-weight: 500;
+    font-family: var(--site-font);
+  font-weight: var(--site-weight-display);
     font-size:clamp(4rem,4vw,8rem);
     font-weight: 700;
     line-height: 0.9;
@@ -231,7 +231,7 @@
     max-width:480px;
     color:#9b9b9b;
     line-height: 1.04;
-    font-weight: 500;
+    font-weight: var(--site-weight);
     will-change: transform, filter, opacity;
   }
 

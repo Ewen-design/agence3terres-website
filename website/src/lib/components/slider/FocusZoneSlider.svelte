@@ -405,7 +405,7 @@
     transform: translateY(-50%);
     font-family: var(--site-font);
     font-size: clamp(1.9rem, 3vw, 2.8rem);
-    font-weight: 300;
+    font-weight: var(--site-weight-display);
     line-height: 1;
     color: var(--number-color);
     letter-spacing: -0.04em;
@@ -495,7 +495,7 @@
     display: block;
     font-family: var(--site-font);
     font-size: clamp(0.88rem, 1.1vw, 1.05rem);
-    font-weight: 300;
+    font-weight: var(--site-weight);
     line-height: 1.42;
     color: var(--copy-color);
     opacity: 0;
@@ -522,7 +522,7 @@
 
   .fzs-btn {
     font-family: var(--site-font);
-    font-weight: 400;
+    font-weight: var(--site-weight);
     position: relative;
     display: inline-flex;
     align-items: center;

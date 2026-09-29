@@ -229,7 +229,7 @@
     background: rgba(255, 255, 255, 0.11);
     backdrop-filter: blur(20px) saturate(160%) brightness(0.82);
     -webkit-backdrop-filter: blur(20px) saturate(160%) brightness(0.82);
-    box-shadow: 0 6px 8px rgba(0, 0, 0, 0.08);
+    box-shadow: 0 6px 8px rgba(var(--shade-rgb, 0, 0, 0), 0.08);
   }
 
   .sd__pill {

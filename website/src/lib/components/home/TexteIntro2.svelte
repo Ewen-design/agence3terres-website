@@ -104,7 +104,7 @@
      min-height: var(--section-height);
     background:
       radial-gradient(circle at 50% 0%, rgba(255,255,255,0.05), transparent 36%),
-      linear-gradient(180deg, #050505 0%, #0a0a0a 48%, #070809 100%);
+      linear-gradient(180deg, var(--bg-deep, #050505) 0%, var(--bg-raised, #0a0a0a) 48%, #070809 100%);
     overflow: clip;
   }
 
@@ -122,8 +122,8 @@
     background: #111;
     will-change: width, height;
     box-shadow:
-      0 24px 70px rgba(0, 0, 0, 0.34),
-      0 6px 24px rgba(0, 0, 0, 0.18),
+      0 24px 70px rgba(var(--shade-rgb, 0, 0, 0), 0.34),
+      0 6px 24px rgba(var(--shade-rgb, 0, 0, 0), 0.18),
       inset 0 0 0 1px rgba(255,255,255,0.06);
   }
 
@@ -142,16 +142,16 @@
     inset: 0;
     background: linear-gradient(
       to bottom,
-      rgba(0,0,0,0.14) 0%,
-      rgba(0,0,0,0.03) 24%,
-      rgba(0,0,0,0.18) 100%
+      rgba(var(--shade-rgb, 0, 0, 0), 0.14) 0%,
+      rgba(var(--shade-rgb, 0, 0, 0), 0.03) 24%,
+      rgba(var(--shade-rgb, 0, 0, 0), 0.18) 100%
     );
   }
 
   .vignette {
     position: absolute;
     inset: 0;
-    background: radial-gradient(circle at 50% 50%, transparent 48%, rgba(0,0,0,0.22) 100%);
+    background: radial-gradient(circle at 50% 50%, transparent 48%, rgba(var(--shade-rgb, 0, 0, 0), 0.22) 100%);
   }
 
   .intro {
@@ -164,9 +164,9 @@
   h2 {
     margin: 0 auto;
     max-width: 11ch;
-    font-family: "Inter", sans-serif;
+    font-family: var(--site-font);
     font-style: normal;
-    font-weight: 500;
+    font-weight: var(--site-weight-display);
     font-size: clamp(2.3rem, 4.6vw, 5rem);
     line-height: 0.95;
     letter-spacing: -0.045em;
@@ -177,8 +177,8 @@
   .text {
     margin: 1rem auto 0; /* ✅ réduit */
     max-width: 40rem;
-    font-family: "Inter", sans-serif;
-    font-weight: 300;
+    font-family: var(--site-font);
+    font-weight: var(--site-weight);
     font-size: clamp(0.95rem, 1vw, 1.05rem);
     line-height: 1.65;
     color: rgba(255,255,255,0.72);

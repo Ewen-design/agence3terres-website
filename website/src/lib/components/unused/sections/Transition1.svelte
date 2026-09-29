@@ -126,7 +126,7 @@
     font-style: italic;
     font-size: clamp(9rem, 8vw, 9rem);
     line-height: 1.02;
-    font-weight: 400;
+    font-weight: var(--site-weight-display);
     color: #fff;
   }
 

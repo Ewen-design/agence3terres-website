@@ -129,8 +129,8 @@ h1 {
   position: absolute;
   max-width: 900px;
   text-align: center;
-  font-family: "Inter", sans-serif;
-  font-weight: 500;
+  font-family: var(--site-font);
+  font-weight: var(--site-weight-display);
   font-size: clamp(2rem, 4vw, 3.5rem);
   line-height: 1.3;
   color: #fff;

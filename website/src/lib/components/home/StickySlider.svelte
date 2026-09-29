@@ -187,7 +187,7 @@
     margin: 0;
     background: #050b14;
     color: white;
-    font-family: "Inter", sans-serif;
+    font-family: var(--site-font);
   }
 
   :global(*) { box-sizing: border-box; }
@@ -252,17 +252,17 @@
     inset: 0;
     background: linear-gradient(
       to right,
-      rgba(0,0,0,.84) 0%,
-      rgba(0,0,0,.56) 28%,
-      rgba(0,0,0,.18) 58%,
-      rgba(0,0,0,.42) 100%
+      rgba(var(--shade-rgb, 0, 0, 0), .84) 0%,
+      rgba(var(--shade-rgb, 0, 0, 0), .56) 28%,
+      rgba(var(--shade-rgb, 0, 0, 0), .18) 58%,
+      rgba(var(--shade-rgb, 0, 0, 0), .42) 100%
     );
   }
 
   .vignette {
     position: absolute;
     inset: 0;
-    background: radial-gradient(circle at 50% 50%, transparent 40%, rgba(0,0,0,.14) 100%);
+    background: radial-gradient(circle at 50% 50%, transparent 40%, rgba(var(--shade-rgb, 0, 0, 0), .14) 100%);
     pointer-events: none;
   }
 
@@ -283,8 +283,8 @@
 
   .bottom-left p {
     margin: 0;
-    font-family: "Inter", sans-serif;
-    font-weight: 300;
+    font-family: var(--site-font);
+    font-weight: var(--site-weight);
     font-size: clamp(0.82rem, 0.82vw, 0.95rem);
     line-height: 1.5;
     letter-spacing: 0.01em;
@@ -319,8 +319,8 @@
 
   /* ✅ UNIQUEMENT LA POLICE MODIFIÉE */
   h2 {
-    font-family: "Inter", sans-serif;
-    font-weight: 500;
+    font-family: var(--site-font);
+    font-weight: var(--site-weight-display);
     font-size: clamp(4.2rem, 7vw, 8.6rem);
     line-height: 0.9;
     white-space: pre-line;
@@ -331,21 +331,21 @@
     z-index: 5;
     max-width: 10ch;
     text-wrap: balance;
-    text-shadow: 0 10px 40px rgba(0,0,0,.22);
+    text-shadow: 0 10px 40px rgba(var(--shade-rgb, 0, 0, 0), .22);
   }
 
   h2 span {
     display: inline;
     will-change: opacity, transform;
-    font-family: "Inter", sans-serif;
-    font-weight: 500;
+    font-family: var(--site-font);
+    font-weight: var(--site-weight);
   }
 
   h2 br + span,
   h2 br + span ~ span {
-    font-family: "Inter", sans-serif;
+    font-family: var(--site-font);
     font-style: normal;
-    font-weight: 500;
+    font-weight: var(--site-weight);
   }
 
   @media (min-width: 1440px) {
@@ -365,10 +365,10 @@
     .overlay {
       background: linear-gradient(
         to top,
-        rgba(0,0,0,.8) 0%,
-        rgba(0,0,0,.56) 28%,
-        rgba(0,0,0,.24) 56%,
-        rgba(0,0,0,.44) 100%
+        rgba(var(--shade-rgb, 0, 0, 0), .8) 0%,
+        rgba(var(--shade-rgb, 0, 0, 0), .56) 28%,
+        rgba(var(--shade-rgb, 0, 0, 0), .24) 56%,
+        rgba(var(--shade-rgb, 0, 0, 0), .44) 100%
       );
     }
 

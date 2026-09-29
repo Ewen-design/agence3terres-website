@@ -101,8 +101,8 @@
   }
 
   .err__code {
-    font-family: var(--site-font, "Inter", sans-serif);
-    font-weight: 500;
+    font-family: var(--site-font);
+    font-weight: var(--site-weight-display);
     font-size: clamp(1.4rem, 2.4vw, 2.1rem);
     letter-spacing: 0.14em;
     color: #f7f3ea;
@@ -111,24 +111,24 @@
 
   .err__title {
     margin: 0;
-    font-family: var(--site-font, "Inter", sans-serif);
+    font-family: var(--site-font);
     font-weight: 600;
     font-size: clamp(2.8rem, 7vw, 5.6rem);
     line-height: 1;
     letter-spacing: var(--site-display-letter-spacing, -0.028em);
     color: #f7f3ea;
     text-wrap: balance;
-    text-shadow: 0 8px 40px rgba(0, 0, 0, 0.35);
+    text-shadow: 0 8px 40px rgba(var(--shade-rgb, 0, 0, 0), 0.35);
   }
 
   .err__text {
     margin: clamp(1.4rem, 2.6vw, 2rem) 0 0;
     max-width: 42ch;
-    font-family: var(--site-font, "Inter", sans-serif);
-    font-weight: 300;
+    font-family: var(--site-font);
+    font-weight: var(--site-weight);
     font-size: clamp(1rem, 1.35vw, 1.2rem);
     line-height: 1.55;
-    color: rgba(244, 239, 230, 0.82);
+    color: rgba(var(--ink-muted-rgb, 245, 241, 232), 0.82);
     text-wrap: pretty;
   }
 
@@ -141,8 +141,8 @@
     height: clamp(3.1rem, 3.8vw, 3.6rem);
     margin-top: clamp(2.2rem, 3.6vw, 3rem);
     padding: 0 1.8rem;
-    font-family: var(--site-font, "Inter", sans-serif);
-    font-weight: 400;
+    font-family: var(--site-font);
+    font-weight: var(--site-weight);
     font-size: clamp(0.95rem, 1.05vw, 1.08rem);
     color: #f7f2e8;
     text-decoration: none;
@@ -152,11 +152,11 @@
     backdrop-filter: blur(20px) saturate(160%) brightness(0.82);
     -webkit-backdrop-filter: blur(20px) saturate(160%) brightness(0.82);
     border-radius: 12px;
-    box-shadow: 0 6px 22px rgba(0, 0, 0, 0.28);
+    box-shadow: 0 6px 22px rgba(var(--shade-rgb, 0, 0, 0), 0.28);
   }
 
   .err__cta:focus-visible {
-    outline: 2px solid rgba(245, 241, 232, 0.9);
+    outline: 2px solid rgba(var(--ink-muted-rgb, 245, 241, 232), 0.9);
     outline-offset: 3px;
   }
 

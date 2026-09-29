@@ -105,10 +105,6 @@
       }
     }
 
-    if (pathname === "/mentions-legales") {
-      if (textColor !== LIGHT_TEXT_COLOR) textColor = LIGHT_TEXT_COLOR;
-      return;
-    }
     if (projectHeaderTone === "dark") {
       if (textColor !== LIGHT_TEXT_COLOR) textColor = LIGHT_TEXT_COLOR;
       return;
@@ -504,8 +500,8 @@
 
   .nav-btn {
     pointer-events: auto;
-    font-family: "Inter", sans-serif;
-    font-weight: 400;
+    font-family: var(--site-font);
+    font-weight: var(--site-weight);
     position: relative;
     height: 40px;
     display: flex;
@@ -525,7 +521,7 @@
     backface-visibility: hidden;
     -webkit-backface-visibility: hidden;
     border-radius: 10px;
-    box-shadow: 0 6px 8px rgba(0, 0, 0, 0);
+    box-shadow: 0 6px 8px rgba(var(--shade-rgb, 0, 0, 0), 0);
     transition:
       color 220ms ease,
       transform 1.2s cubic-bezier(.22,.61,.36,1),
@@ -581,9 +577,9 @@
   }
 
   .menu-text {
-    font-family: "Inter", sans-serif;
+    font-family: var(--site-font);
     font-size: 0.72rem;
-    font-weight: 400;
+    font-weight: var(--site-weight);
     letter-spacing: 0.1em;
     white-space: nowrap;
     max-width: 4rem;

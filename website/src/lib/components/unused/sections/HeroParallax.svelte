@@ -373,8 +373,8 @@ La montagne est exigence et grandeur : elle nous rappelle que le succès se cons
 }
 
 .parallax__title {
-	font-family: "Inter", sans-serif;
-  font-weight: 500;
+	font-family: var(--site-font);
+  font-weight: var(--site-weight);
 	font-size: 11vw;
 	margin: 0;
 	line-height: 1;
@@ -405,8 +405,8 @@ La montagne est exigence et grandeur : elle nous rappelle que le succès se cons
 }
 
 .parallax__section-title h2 {
-	font-family: "Inter", sans-serif;
-  font-weight: 500;
+	font-family: var(--site-font);
+  font-weight: var(--site-weight-display);
 	font-size: clamp(2rem, 5vw, 5rem);
 	letter-spacing: .08em;
 	margin: 0;
@@ -450,9 +450,9 @@ La montagne est exigence et grandeur : elle nous rappelle que le succès se cons
 }
 
 .parallax__content p {
-	font-family: "Inter", sans-serif;
-  font-weight: 500;
-	font-weight: 300;
+	font-family: var(--site-font);
+  font-weight: var(--site-weight);
+	font-weight: var(--site-weight);
 	font-size: 1.15rem;
 	line-height: 1.9;
 	text-align: center;

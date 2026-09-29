@@ -199,15 +199,15 @@
   }
 
   .open__type-label {
-    font-family: "Inter", sans-serif;
+    font-family: var(--site-font);
     font-size: 0.72rem;
     letter-spacing: -0.01em;
     color: rgba(244, 239, 230, 0.5);
   }
 
   .open__type-glyph {
-    font-family: "Inter", sans-serif;
-    font-weight: 500;
+    font-family: var(--site-font);
+    font-weight: var(--site-weight-display);
     font-size: clamp(2.4rem, 4vw, 3.6rem);
     line-height: 0.9;
     letter-spacing: -0.04em;
@@ -255,8 +255,8 @@
     width: min(600px, 86%);
     margin: 0;
     text-align: left;
-    font-family: "Inter", sans-serif;
-    font-weight: 300;
+    font-family: var(--site-font);
+    font-weight: var(--site-weight-display);
     font-size: clamp(1.5rem, 2.5vw, 2.55rem);
     line-height: 1.18;
     letter-spacing: -0.025em;

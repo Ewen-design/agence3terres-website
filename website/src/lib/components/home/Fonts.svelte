@@ -45,7 +45,7 @@
 <style>
   :global(body) {
     margin: 0;
-    background: #090909;
+    background: var(--bg-raised, #090909);
   }
 
   .container {
@@ -55,7 +55,7 @@
     padding: 48px;
     background:
       radial-gradient(circle at top left, rgba(255,255,255,0.045), transparent 34%),
-      #090909;
+      var(--bg-raised, #090909);
   }
 
   .card {
@@ -63,7 +63,7 @@
     border-radius: 24px;
     background: linear-gradient(180deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02));
     border: 1px solid rgba(255,255,255,0.08);
-    box-shadow: 0 18px 50px rgba(0,0,0,0.26);
+    box-shadow: 0 18px 50px rgba(var(--shade-rgb, 0, 0, 0), 0.26);
     display: flex;
     flex-direction: column;
     gap: 6px;
@@ -78,7 +78,7 @@
   /* Light title = General Sans Light but bigger */
   .lightTitle {
     font-family: 'General Sans', sans-serif;
-    font-weight: 300;
+    font-weight: var(--site-weight-display);
     font-size: clamp(1.6rem, 2.5vw, 2.2rem);
     letter-spacing: -0.02em;
     color: rgba(255,255,255,0.9);
@@ -95,7 +95,7 @@
 
   p {
     font-family: 'General Sans', sans-serif;
-    font-weight: 300;
+    font-weight: var(--site-weight);
     font-size: 0.95rem;
     line-height: 1.55;
     color: rgba(255,255,255,0.68);
@@ -126,9 +126,9 @@
   /* Heavy font classes */
   .clash { font-family: 'Clash Display', sans-serif; font-weight: 600; letter-spacing: -0.03em; }
   .melodrama { font-family: 'Melodrama', serif; font-weight: 600; letter-spacing: -0.02em; }
-  .zodiak { font-family: 'Zodiak', serif; font-weight: 500; letter-spacing: -0.02em; }
+  .zodiak { font-family: 'Zodiak', serif; font-weight: var(--site-weight); letter-spacing: -0.02em; }
   .array { font-family: 'Array', sans-serif; font-weight: 600; letter-spacing: -0.03em; }
-  .ranade { font-family: 'Ranade', serif; font-weight: 500; letter-spacing: -0.02em; }
+  .ranade { font-family: 'Ranade', serif; font-weight: var(--site-weight); letter-spacing: -0.02em; }
   .gambarino { font-family: 'Gambarino', serif; font-weight: 600; letter-spacing: -0.02em; }
   .panchang { font-family: 'Panchang', sans-serif; font-weight: 600; letter-spacing: -0.03em; }
   .bonny { font-family: 'Bonny', serif; font-weight: 600; letter-spacing: -0.02em; }

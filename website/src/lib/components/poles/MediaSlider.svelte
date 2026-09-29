@@ -317,8 +317,8 @@
   }
   .ms-title {
     margin: 0;
-    font-family: "Inter", sans-serif;
-    font-weight: 500;
+    font-family: var(--site-font);
+    font-weight: var(--site-weight-display);
     font-size: clamp(1.3rem, 2vw, 1.8rem);
     letter-spacing: -0.025em;
     color: var(--project-surface-ink, #f4efe6);
@@ -396,9 +396,9 @@
     pointer-events: none;
     background: linear-gradient(
       to bottom,
-      rgba(0, 0, 0, 0.55) 0%,
-      rgba(0, 0, 0, 0.16) 28%,
-      rgba(0, 0, 0, 0) 55%
+      rgba(var(--shade-rgb, 0, 0, 0), 0.55) 0%,
+      rgba(var(--shade-rgb, 0, 0, 0), 0.16) 28%,
+      rgba(var(--shade-rgb, 0, 0, 0), 0) 55%
     );
   }
   .ms-card__text {
@@ -416,24 +416,24 @@
   }
   /* Petit titre = le label. */
   .ms-card__cat {
-    font-family: "Inter", sans-serif;
-    font-weight: 500;
+    font-family: var(--site-font);
+    font-weight: var(--site-weight);
     font-size: clamp(0.9rem, 1vw, 1.05rem);
     letter-spacing: 0.01em;
     color: rgba(255, 255, 255, 0.92);
-    text-shadow: 0 2px 14px rgba(0, 0, 0, 0.4);
+    text-shadow: 0 2px 14px rgba(var(--shade-rgb, 0, 0, 0), 0.4);
   }
   /* Gros titre = le petit texte (caption), court et un peu moins large. */
   .ms-card__title {
     max-width: 25rem;
-    font-family: "Inter", sans-serif;
+    font-family: var(--site-font);
     font-weight: 600;
     font-size: clamp(1.4rem, 2vw, 1.85rem);
     line-height: 1.14;
     letter-spacing: -0.02em;
     color: #fff;
     text-wrap: balance;
-    text-shadow: 0 4px 24px rgba(0, 0, 0, 0.42);
+    text-shadow: 0 4px 24px rgba(var(--shade-rgb, 0, 0, 0), 0.42);
   }
 
   /* ── Très grands écrans (moniteurs externes) ── Les cartes font 46vw : sur un

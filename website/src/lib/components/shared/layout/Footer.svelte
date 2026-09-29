@@ -28,11 +28,15 @@
     }
   }
 
+  // Les deux entrées `prisme-*` sont des rendus 3D du prisme de la marque, vus
+  // de très près (voir public/images/prisme-<plan>-<fond>.webp). Chaque plan
+  // existe en trois fonds — `noir`, `nuit`, `aube` — et changer de fond ne
+  // demande que de changer le suffixe ici.
   const footerImages = {
-    "/": "/images/justx-pub2.webp",
+    "/": "/images/prisme-traverse-noir.webp",
     "/services": "/images/montre-justx.webp",
     "/travail": "/images/cartes-visites.webp",
-    "/apropos": "/images/pexels-jack-atkinson-1289771108-24356055.webp",
+    "/apropos": "/images/prisme-eclat-bas-aube.webp",
     "/projet3": "/images/moovy-salon.webp",
     "/projet8": "/images/lybra-affichage.webp",
   };
@@ -132,7 +136,7 @@
     inset: auto 0 0 0;
     bottom: 0;
     overflow: hidden;
-    background: #070707;
+    background: var(--bg-deep, #070707);
     isolation: isolate;
     z-index: 0;
     opacity: var(--footer-reveal);
@@ -207,8 +211,8 @@
   .hero-copy h2 {
     margin: 0;
     max-width: 10ch;
-    font-family: "Inter", sans-serif;
-    font-weight: 500;
+    font-family: var(--site-font);
+    font-weight: var(--site-weight-display);
     font-size: clamp(2.2rem, 5.5vw, 4.8rem);
     line-height: 0.96;
     letter-spacing: -0.04em;
@@ -221,8 +225,8 @@
   }
 
   .nav-btn {
-    font-family: "Inter", sans-serif;
-    font-weight: 400;
+    font-family: var(--site-font);
+    font-weight: var(--site-weight);
     position: relative;
     display: inline-flex;
     align-items: center;
@@ -238,7 +242,7 @@
     backface-visibility: hidden;
     -webkit-backface-visibility: hidden;
     border-radius: 10px;
-    box-shadow: 0 6px 8px rgba(0, 0, 0, 0.04);
+    box-shadow: 0 6px 8px rgba(var(--shade-rgb, 0, 0, 0), 0.04);
     transition:
       color 220ms ease,
       transform 1.2s cubic-bezier(.22,.61,.36,1),
@@ -337,7 +341,7 @@
     color: #fff;
     text-decoration: none;
     font-size: clamp(1.08rem, 1.5vw, 1.26rem);
-    font-weight: 300;
+    font-weight: var(--site-weight);
   }
 
   .contact-button:hover {
@@ -369,8 +373,8 @@
 
   .legal {
     margin: 0;
-    font-family: "Inter", sans-serif;
-    font-weight: 300;
+    font-family: var(--site-font);
+    font-weight: var(--site-weight);
     font-size: 0.76rem;
     color: rgba(255, 255, 255, 0.44);
     line-height: 1.4;

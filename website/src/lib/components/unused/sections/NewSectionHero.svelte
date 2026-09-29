@@ -197,7 +197,7 @@
     font-family: "Aboreto", serif;
     font-size: clamp(4rem, 8vw, 6rem);
     line-height: 0.95;
-    font-weight: 400;
+    font-weight: var(--site-weight-display);
     letter-spacing: 0;
     color: #fff;
     white-space: nowrap;

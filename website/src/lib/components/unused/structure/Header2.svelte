@@ -131,7 +131,7 @@
   background: none;
   border: none;
   font-size: 0.85rem;
-  font-weight: 400;
+  font-weight: var(--site-weight);
   color: #111;
   cursor: pointer;
   position: relative;
@@ -153,7 +153,7 @@
 /* CONTACT */
 
 .contact {
-  font-weight: 500;
+  font-weight: var(--site-weight);
 }
 
 /* THREE DOT MENU */

@@ -77,7 +77,7 @@
   .editorial-role__media {
     margin: 0;
     overflow: hidden;
-    border-radius: 3px;
+    border-radius: var(--project-media-radius, 22px);
     aspect-ratio: 1.55;
     background: var(--project-surface-card, #d9dfd6);
   }
@@ -99,9 +99,9 @@
   .editorial-role__title-wrap h2 {
     margin: 0;
     padding-inline: var(--project-text-inset, 0);
-    font-family: "Inter", sans-serif;
+    font-family: var(--site-font);
     font-style: normal;
-    font-weight: 400;
+    font-weight: var(--site-weight-display);
     font-size: var(--project-display-size, clamp(2.1rem, 3vw, 3.45rem));
     line-height: 0.94;
     letter-spacing: -0.04em;
@@ -122,9 +122,9 @@
 
   .editorial-role__item h3 {
     margin: 0;
-    font-family: "Inter", sans-serif;
+    font-family: var(--site-font);
     font-style: normal;
-    font-weight: 400;
+    font-weight: var(--site-weight-display);
     font-size: var(--project-subtitle-size, clamp(1.3rem, 1.9vw, 2rem));
     line-height: 1.04;
     letter-spacing: -0.03em;
@@ -133,8 +133,8 @@
   .editorial-role__item p {
     margin: 0;
     max-width: 22rem;
-    font-family: "Inter", sans-serif;
-    font-weight: 400;
+    font-family: var(--site-font);
+    font-weight: var(--site-weight);
     font-size: var(--project-body-size, clamp(0.98rem, 1.04vw, 1.08rem));
     line-height: var(--project-body-line-height, 1.52);
     color: var(--project-surface-muted, rgba(18, 18, 18, 0.48));

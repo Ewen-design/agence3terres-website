@@ -9,7 +9,7 @@
 
   const designCards = [
     { image: "/images/lybra-cartes.webp", alt: "Projet Lybra", title: "Lybra", subtitle: "Logo & identité visuelle", href: "projet8", tags: ["Logo & charte", "Identité visuelle", "Direction artistique"] },
-    { image: "/images/ludo.webp", alt: "Projet Ludosphères", title: "Ludosphères", subtitle: "Identité & charte", href: "projet4", tags: ["Logo & charte", "Direction artistique", "Naming"] }
+    { image: "/images/ludo-cartes.webp", alt: "Carte de visite Ludosphères", title: "Ludosphères", subtitle: "Identité & charte", href: "projet4", tags: ["Logo & charte", "Direction artistique", "Naming"] }
   ];
 
   // Design — identité visuelle : logo, charte, typographie, système cohérent (+ naming & stratégie).
@@ -32,7 +32,7 @@
     <AboutEditorialSingleShowcase
       showCue={false}
       showAccent={false}
-      background="#040404"
+      background="var(--bg-deep, #040404)"
       text="Nous concevons des <span class='hl'>systèmes visuels complets</span>, pensés pour représenter la marque dans un univers global cohérent et moderne."
       image="/images/main-justx.webp"
       imageDesktop="/images/main-justx-desktop.webp"

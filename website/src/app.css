@@ -1,14 +1,20 @@
+/* Switzer (Indian Type Foundry) — police unique du site, servie depuis
+   `public/fonts/switzer/`. Les fichiers sont les VARIABLES : un seul fichier
+   par style couvre toutes les graisses de 100 à 900, donc Thin, Extralight,
+   Light, Regular, Medium, Semibold, Bold, Extrabold et Black sont tous
+   disponibles sans charger dix-huit fichiers. La licence est à côté des
+   fichiers (LICENSE.txt). */
 @font-face {
-  font-family: "Inter";
-  src: url("/fonts/inter/InterVariable.woff2") format("woff2-variations");
+  font-family: "Switzer";
+  src: url("/fonts/switzer/Switzer-Variable.woff2") format("woff2-variations");
   font-weight: 100 900;
   font-style: normal;
   font-display: swap;
 }
 
 @font-face {
-  font-family: "Inter";
-  src: url("/fonts/inter/InterVariable-Italic.woff2") format("woff2-variations");
+  font-family: "Switzer";
+  src: url("/fonts/switzer/Switzer-VariableItalic.woff2") format("woff2-variations");
   font-weight: 100 900;
   font-style: italic;
   font-display: swap;
@@ -29,7 +35,10 @@
   --safe-bottom-offset: calc(env(safe-area-inset-bottom, 0px) + 14px);
   --mobile-viewport-overscan-top: 0px;
   --mobile-viewport-overscan-bottom: 0px;
-  --project-side-padding: clamp(0.8rem, 1.8vw, 1.25rem);
+  /* Aligné sur `--site-inset` le 2026-09-03 : les pages projet suivaient leurs
+     propres marges, un peu plus serrées que le reste du site, et le décalage se
+     voyait au passage d'une page à l'autre. */
+  --project-side-padding: var(--site-inset);
   --project-overline-size: clamp(1.08rem, 1.45vw, 1.5rem);
   --project-subtitle-size: clamp(1.3rem, 1.9vw, 2rem);
   --project-title-size: clamp(1.8rem, 2.45vw, 2.7rem);
@@ -40,9 +49,32 @@
   --project-theme-transition: 920ms cubic-bezier(0.16, 1, 0.3, 1);
   --project-band-transition: var(--project-theme-transition);
   --project-text-inset: clamp(0.5rem, 2vw, 1.8rem);
-  /* Nuances de fond : aplat (pas de dégradé). Le noir #161617 vient de la capture,
-     et une variante claire pour la partie blanche. */
-  --nuance-dark: #161617;
+  /* L'arrondi des médias des pages projet — celui du site, 18 px sur petit
+     écran comme partout ailleurs. */
+  --project-media-radius: 22px;
+  /*  ── Palette « bleu nuit » (2026-09-01) ────────────────────────────────
+   *  Relevée dans un dégradé fourni par le client : le haut de l'image donne
+   *  le noir, le palier du milieu les fonds presque noirs, le bas le gris des
+   *  cartes. Essayée d'abord sur la seule home, étendue à tout le site le
+   *  même jour.
+   *
+   *  Les composants ne s'écrivent JAMAIS ces valeurs en dur : ils appellent
+   *  `var(--bg-deep, #000)` & co., avec l'ancienne couleur en repli. Changer
+   *  les six lignes ci-dessous rhabille donc le site entier. */
+  --bg-deep: #050709;      /* le noir des fonds de section */
+  --bg-raised: #0a0e12;    /* les fonds presque noirs : blocs posés sur le noir */
+  --bg-panel: #171b21;     /* le gris foncé des cartes et des sections claires */
+  --bg-panel-hi: #1d222a;  /* la variante d'un cran au-dessus (carte dépliée) */
+  /* Composantes du noir, pour les dégradés et les ombres :
+     `rgba(var(--shade-rgb, 0, 0, 0), .8)`. */
+  --shade-rgb: 5, 7, 9;
+  /* Composantes du gris de texte : le crème du site refroidi à luminance
+     égale — `rgba(var(--ink-muted-rgb, 245, 241, 232), .5)`. */
+  --ink-muted-rgb: 232, 239, 249;
+
+  /* Nuances de fond : aplat (pas de dégradé). Le gris des cartes suit
+     désormais la palette ; une variante claire pour la partie blanche. */
+  --nuance-dark: var(--bg-panel, #161617);
   --nuance-light: #edf0f7;
   /* Hauteur de la barre navigateur mobile (constante : 0 quand la barre est
      déjà rétractée). Sert à garder les éléments du bas au-dessus de la barre
@@ -54,7 +86,14 @@
      viewport et ne « saute » pas quand la barre Safari se rétracte. */
   --dyn-bar: 0px;
   --dyn-bar: calc(100lvh - 100dvh);
-  --site-font: "Inter", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  /* Marge latérale des blocs du site (cadres, cartes, rails). */
+  --site-inset: clamp(0.9rem, 2vw, 1.8rem);
+  --site-font: "Switzer", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  /* Graisses du site : regular pour les textes, medium pour les grands titres
+     et les grands textes éditoriaux. Tout se règle ici — changer ces deux
+     valeurs change la graisse de tout le site. */
+  --site-weight: 400;
+  --site-weight-display: 500;
   --lead-blue-pale: #D0DBFF;
   --lead-blue: #5768FF;
   --lead-black: #17052F;
@@ -68,12 +107,20 @@
   --site-glow-outer: rgba(23, 5, 47, 0.22);
 }
 
+/* Même palier que partout ailleurs sur le site : 18 px sur petit écran. */
+@media (max-width: 900px) {
+  :root {
+    --project-media-radius: 18px;
+  }
+}
+
+
 html {
   margin: 0;
   min-height: 100%;
   scroll-behavior: auto;
   scrollbar-width: none;
-  background: #000;
+  background: var(--bg-deep, #000);
 }
 
 html::-webkit-scrollbar {
@@ -83,12 +130,16 @@ html::-webkit-scrollbar {
 body {
   margin: 0;
   font-family: var(--site-font);
-  font-weight: 300;
-  background: #000;
+  font-weight: var(--site-weight);
+  background: var(--bg-deep, #000);
   color: #fff;
   min-height: 100%;
   min-height: 100svh;
-  overflow-x: hidden;
+  /* `clip` et pas `hidden` : avec `hidden` sur un axe, le navigateur bascule
+     l'autre axe en `auto`, le body devient une zone de défilement, et tout
+     `position: sticky` de la page cesse de tenir. `clip` garde le même
+     garde-fou anti-débordement horizontal sans créer cette zone. */
+  overflow-x: clip;
 
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -335,12 +386,23 @@ html, body {
 }
 
 body {
-  overflow-x: hidden;
+  overflow-x: clip;
 }
 
 body {
   overscroll-behavior-y: none;
-  -webkit-overflow-scrolling: touch;
+}
+
+/* `overflow: clip` n'existe pas avant iOS 16 / Safari 16 : la déclaration y est
+   ignorée et le garde-fou anti-débordement horizontal disparaîtrait. On rétablit
+   l'ancien `hidden` pour ces versions-là uniquement. Il y neutralise
+   `position: sticky` (un axe en `hidden` fait passer l'autre en `auto`, le body
+   devient une zone de défilement) : le paquet de cartes de la home s'y affiche
+   alors comme une pile figée, ce qui reste lisible. */
+@supports not (overflow-x: clip) {
+  body {
+    overflow-x: hidden;
+  }
 }
 
 .section-full {
@@ -357,7 +419,7 @@ body {
 
   html,
   body {
-    background-color: #000;
+    background-color: var(--bg-deep, #000);
     background-image: none;
   }
 
@@ -388,27 +450,27 @@ body {
     background:
       linear-gradient(
         to bottom,
-        rgba(0, 0, 0, 0.96) 0%,
-        rgba(0, 0, 0, 0.82) 20%,
-        rgba(0, 0, 0, 0.48) 38%,
-        rgba(0, 0, 0, 0.14) 56%,
-        rgba(0, 0, 0, 0) 72%
+        rgba(var(--shade-rgb, 0, 0, 0), 0.96) 0%,
+        rgba(var(--shade-rgb, 0, 0, 0), 0.82) 20%,
+        rgba(var(--shade-rgb, 0, 0, 0), 0.48) 38%,
+        rgba(var(--shade-rgb, 0, 0, 0), 0.14) 56%,
+        rgba(var(--shade-rgb, 0, 0, 0), 0) 72%
       ),
       linear-gradient(
         to top,
-        rgba(0, 0, 0, 0.98) 0%,
-        rgba(0, 0, 0, 0.92) 16%,
-        rgba(0, 0, 0, 0.72) 34%,
-        rgba(0, 0, 0, 0.34) 54%,
-        rgba(0, 0, 0, 0.08) 72%,
-        rgba(0, 0, 0, 0) 88%
+        rgba(var(--shade-rgb, 0, 0, 0), 0.98) 0%,
+        rgba(var(--shade-rgb, 0, 0, 0), 0.92) 16%,
+        rgba(var(--shade-rgb, 0, 0, 0), 0.72) 34%,
+        rgba(var(--shade-rgb, 0, 0, 0), 0.34) 54%,
+        rgba(var(--shade-rgb, 0, 0, 0), 0.08) 72%,
+        rgba(var(--shade-rgb, 0, 0, 0), 0) 88%
       ),
       radial-gradient(
         circle at 50% 50%,
-        rgba(0, 0, 0, 0) 0%,
-        rgba(0, 0, 0, 0.04) 44%,
-        rgba(0, 0, 0, 0.12) 72%,
-        rgba(0, 0, 0, 0.28) 100%
+        rgba(var(--shade-rgb, 0, 0, 0), 0) 0%,
+        rgba(var(--shade-rgb, 0, 0, 0), 0.04) 44%,
+        rgba(var(--shade-rgb, 0, 0, 0), 0.12) 72%,
+        rgba(var(--shade-rgb, 0, 0, 0), 0.28) 100%
       ) !important;
     opacity: 1 !important;
   }
@@ -419,12 +481,12 @@ body {
     height: calc(360px + var(--mobile-viewport-overscan-bottom) + var(--mobile-gradient-bleed-bottom)) !important;
     background: linear-gradient(
       to top,
-      rgba(0, 0, 0, 0.99) 0%,
-      rgba(0, 0, 0, 0.92) 18%,
-      rgba(0, 0, 0, 0.72) 38%,
-      rgba(0, 0, 0, 0.36) 58%,
-      rgba(0, 0, 0, 0.12) 76%,
-      rgba(0, 0, 0, 0) 100%
+      rgba(var(--shade-rgb, 0, 0, 0), 0.99) 0%,
+      rgba(var(--shade-rgb, 0, 0, 0), 0.92) 18%,
+      rgba(var(--shade-rgb, 0, 0, 0), 0.72) 38%,
+      rgba(var(--shade-rgb, 0, 0, 0), 0.36) 58%,
+      rgba(var(--shade-rgb, 0, 0, 0), 0.12) 76%,
+      rgba(var(--shade-rgb, 0, 0, 0), 0) 100%
     ) !important;
   }
 
@@ -439,23 +501,23 @@ body {
     background:
       linear-gradient(
         to bottom,
-        rgba(0, 0, 0, 0.72) 0%,
-        rgba(0, 0, 0, 0.28) 26%,
-        rgba(0, 0, 0, 0) 58%
+        rgba(var(--shade-rgb, 0, 0, 0), 0.72) 0%,
+        rgba(var(--shade-rgb, 0, 0, 0), 0.28) 26%,
+        rgba(var(--shade-rgb, 0, 0, 0), 0) 58%
       ),
       linear-gradient(
         to top,
-        rgba(0, 0, 0, 0.9) 0%,
-        rgba(0, 0, 0, 0.58) 24%,
-        rgba(0, 0, 0, 0.18) 52%,
-        rgba(0, 0, 0, 0) 100%
+        rgba(var(--shade-rgb, 0, 0, 0), 0.9) 0%,
+        rgba(var(--shade-rgb, 0, 0, 0), 0.58) 24%,
+        rgba(var(--shade-rgb, 0, 0, 0), 0.18) 52%,
+        rgba(var(--shade-rgb, 0, 0, 0), 0) 100%
       ),
       linear-gradient(
         90deg,
-        rgba(0, 0, 0, 0.56) 0%,
-        rgba(0, 0, 0, 0.32) 28%,
-        rgba(0, 0, 0, 0.12) 55%,
-        rgba(0, 0, 0, 0) 100%
+        rgba(var(--shade-rgb, 0, 0, 0), 0.56) 0%,
+        rgba(var(--shade-rgb, 0, 0, 0), 0.32) 28%,
+        rgba(var(--shade-rgb, 0, 0, 0), 0.12) 55%,
+        rgba(var(--shade-rgb, 0, 0, 0), 0) 100%
       ) !important;
   }
 
@@ -531,7 +593,9 @@ body {
   .hero-cta::before,
   .hero-cta::after,
   .social-link::before,
-  .social-link::after {
+  .social-link::after,
+  .card-plus::before,
+  .card-plus::after {
     display: none !important;
   }
 
@@ -693,6 +757,33 @@ body {
   }
 }
 
+/*  ── Bande SOMBRE ──────────────────────────────────────────────────────────
+ *  Deux par page projet, pour rompre le gris qui tient tout le reste depuis le
+ *  2026-09-01. Contrairement aux autres bandes, celle-ci PEINT son fond : les
+ *  bandes sont transparentes par défaut et ne font que redéfinir les jetons.
+ *  Le fondu de couleur reprend la même durée que le changement de thème, pour
+ *  que le passage d'une bande à l'autre ne claque pas. */
+.project-theme-band.theme-deep {
+  --project-surface-bg: var(--bg-deep, #050709);
+  --project-surface-bg-alt: var(--bg-raised, #0a0e12);
+  --project-surface-bg-soft: var(--bg-panel, #171b21);
+  --project-surface-ink: #f4efe6;
+  --project-surface-muted: rgba(var(--ink-muted-rgb, 245, 241, 232), 0.78);
+  --project-surface-border: rgba(var(--ink-muted-rgb, 245, 241, 232), 0.12);
+  --project-surface-card: var(--bg-raised, #0a0e12);
+  --project-surface-card-strong: var(--bg-deep, #050709);
+
+  background-color: var(--project-surface-bg);
+  color: var(--project-surface-ink);
+  transition:
+    background-color var(--project-theme-transition),
+    color var(--project-theme-transition);
+}
+
+/*  PLUS AUCUNE PAGE NE DÉCLENCHE CE THÈME depuis le 2026-09-01 : les quatre
+ *  pages projet qui passaient au blanc en cours de défilement ont perdu leur
+ *  `<ProjectThemeTrigger theme="light">`. Le bloc est conservé tel quel — c'est
+ *  tout ce qu'il faut pour rallumer le mode clair — mais il ne peint rien. */
 .project-theme-page.theme-light,
 .project-theme-band.theme-light {
   /* Blanc à très légère teinte bleu clair (remplace l'ancien blanc cassé crème).
@@ -704,9 +795,9 @@ body {
   --project-surface-muted: rgba(18, 18, 18, 0.66);
   --project-surface-border: rgba(18, 18, 18, 0.1);
   --project-surface-card: #dce1ec;
-  --project-surface-card-strong: #040404;
-  --project-showcase-bg: #000;
-  --project-showcase-card-bg: #080808;
+  --project-surface-card-strong: var(--bg-deep, #040404);
+  --project-showcase-bg: var(--bg-deep, #000);
+  --project-showcase-card-bg: var(--bg-raised, #080808);
   --project-hero-after-ink: #121212;
   --project-hero-after-muted: rgba(18, 18, 18, 0.58);
   /* Dégradé des grands titres de pôle : teinte visible en haut → couleur du fond en bas. */
@@ -720,8 +811,8 @@ body {
   --project-surface-bg-alt: #14161f;
   --project-surface-bg-soft: #191c27;
   --project-surface-ink: #f4efe6;
-  --project-surface-muted: rgba(244, 239, 230, 0.74);
-  --project-surface-border: rgba(244, 239, 230, 0.16);
+  --project-surface-muted: rgba(var(--ink-muted-rgb, 245, 241, 232), 0.74);
+  --project-surface-border: rgba(var(--ink-muted-rgb, 245, 241, 232), 0.16);
   --project-surface-card: #171a24;
   --project-surface-card-strong: #0e1019;
   --project-showcase-bg: #0e1019;
@@ -733,17 +824,23 @@ body {
 
 .project-theme-page.theme-dark,
 .project-theme-band.theme-dark {
-  --project-surface-bg: #040404;
-  --project-surface-bg-alt: #0d0d0d;
-  --project-surface-bg-soft: #161616;
+  /*  Les pages projet ne basculent plus au blanc (2026-09-01) : elles tiennent
+   *  d'un bout à l'autre sur le GRIS FONCÉ de la palette, pas sur le noir. Ce
+   *  gris allège la page sans l'éclaircir, et le noir ne sert plus qu'aux
+   *  creux : les cadres d'image et les blocs en retrait. Le rapport entre les
+   *  surfaces est conservé, il est seulement décalé d'un cran vers le haut. */
+  --project-surface-bg: var(--bg-panel, #161617);
+  --project-surface-bg-alt: var(--bg-panel-hi, #1d222a);
+  --project-surface-bg-soft: #232a34;
   --project-surface-ink: #f4efe6;
-  --project-surface-muted: rgba(244, 239, 230, 0.78);
-  --project-surface-border: rgba(244, 239, 230, 0.12);
-  --project-surface-card: #121212;
-  --project-surface-card-strong: #080808;
-  --project-showcase-bg: #000;
-  --project-showcase-card-bg: #080808;
+  --project-surface-muted: rgba(var(--ink-muted-rgb, 245, 241, 232), 0.78);
+  --project-surface-border: rgba(var(--ink-muted-rgb, 245, 241, 232), 0.12);
+  /* Les « cartes » sont des cadres d'image : en creux sur le gris. */
+  --project-surface-card: var(--bg-deep, #050709);
+  --project-surface-card-strong: var(--bg-raised, #0a0e12);
+  --project-showcase-bg: var(--bg-panel, #161617);
+  --project-showcase-card-bg: var(--bg-deep, #050709);
   --project-hero-after-ink: #fff;
   --project-hero-after-muted: rgba(255, 255, 255, 0.7);
-  --pole-title-top: #4a4a4a;
+  --pole-title-top: #3f4a5a;   /* même clarté que #4a4a4a, teinte de la palette */
 }

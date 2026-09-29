@@ -50,7 +50,10 @@
     grid-template-columns: minmax(0, 0.9fr) minmax(0, 1fr);
     gap: 2.2rem;
     align-items: start;
-    padding: 0 var(--project-side-padding, 1.25rem) 6.5rem;
+    /* Le haut manquait (2026-09-03) : le titre du bloc — « La demande »,
+       « L'emblème »… — venait se coller au bord de sa bande, sans respiration.
+       La valeur suit le rythme du bas, en plus court. */
+    padding: clamp(3rem, 7vh, 5.5rem) var(--project-side-padding, 1.25rem) 6.5rem;
     background: transparent;
     color: var(--project-surface-ink, #121212);
   }
@@ -70,9 +73,9 @@
 
   .editorial-split__copy h2 {
     margin: 0;
-    font-family: "Inter", sans-serif;
+    font-family: var(--site-font);
     font-style: normal;
-    font-weight: 400;
+    font-weight: var(--site-weight-display);
     font-size: var(--project-title-size, clamp(1.8rem, 2.45vw, 2.7rem));
     line-height: 0.98;
     letter-spacing: -0.03em;
@@ -81,8 +84,8 @@
   .editorial-split__copy p {
     margin: 1rem 0 0;
     max-width: 26rem;
-    font-family: "Inter", sans-serif;
-    font-weight: 400;
+    font-family: var(--site-font);
+    font-weight: var(--site-weight);
     font-size: var(--project-body-size, clamp(0.98rem, 1.04vw, 1.08rem));
     line-height: var(--project-body-line-height, 1.52);
     color: var(--project-surface-muted, rgba(18, 18, 18, 0.5));
@@ -92,7 +95,7 @@
     margin: 0;
     height: var(--editorial-split-media-min-height, 38rem);
     overflow: hidden;
-    border-radius: 0.35rem;
+    border-radius: var(--project-media-radius, 22px);
     background: var(--project-surface-bg-soft, #ded8cf);
   }
 
@@ -112,7 +115,7 @@
     .editorial-split {
       grid-template-columns: 1fr;
       gap: 1.1rem;
-      padding: 0 var(--project-side-padding, 0.8rem) 4rem;
+      padding: clamp(2rem, 5vh, 3.2rem) var(--project-side-padding, 0.8rem) 4rem;
     }
 
     /* Sur mobile le média garde le cadre qu'on lui a donné en desktop, qui est

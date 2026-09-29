@@ -43,7 +43,7 @@
     margin: 0 auto;
     width: 100%;
     text-align: center;
-    font-family: "Inter", sans-serif;
+    font-family: var(--site-font);
     letter-spacing: -0.03em;
     color: var(--project-surface-ink, #f4efe6);
     font-size: clamp(1.5rem, 3.4vw, 3.2rem);
@@ -63,7 +63,7 @@
 
   .sl-pole {
     display: block;
-    font-weight: 300;
+    font-weight: var(--site-weight-display);
     line-height: 1.05;
   }
 
@@ -78,8 +78,8 @@
     /* Même style que le texte des showcases (AboutEditorialSingleShowcase) :
        grande taille, léger, pleine encre du pôle. */
     max-width: 32ch;
-    font-family: "Inter", sans-serif;
-    font-weight: 300;
+    font-family: var(--site-font);
+    font-weight: var(--site-weight-display);
     font-size: clamp(1.5rem, 2.5vw, 2.55rem);
     line-height: 1.18;
     letter-spacing: -0.025em;

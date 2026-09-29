@@ -1,12 +1,13 @@
 <script>
   import ProjectThemePage from "$lib/components/projets/shared/ProjectThemePage.svelte";
-  import ProjectThemeTrigger from "$lib/components/projets/shared/ProjectThemeTrigger.svelte";
   import ProjectHeroProjetsStyle from "$lib/components/projets/shared/ProjectHeroProjetsStyle.svelte";
   import ProjectEditorialRole from "$lib/components/projets/shared/ProjectEditorialRole.svelte";
   import ProjectEditorialSplit from "$lib/components/projets/shared/ProjectEditorialSplit.svelte";
   import ProjectEditorialStatement from "$lib/components/projets/shared/ProjectEditorialStatement.svelte";
   import ProjectEditorialMobileShowcase from "$lib/components/projets/shared/ProjectEditorialMobileShowcase.svelte";
   import ProjectEditorialMosaic from "$lib/components/projets/shared/ProjectEditorialMosaic.svelte";
+  // L'accordéon de verre de la page à propos, réutilisé tel quel.
+  import EditorialAccordionShowcase from "$lib/components/apropos/AboutFocusEditorialShowcase.svelte";
   import ParallaxGallery2 from "$lib/components/home/ParallaxGallery2.svelte";
   import { videoSources } from "$lib/components/shared/media/videoSources.js";
 
@@ -17,7 +18,7 @@
     { title: "JustX", image: "/images/justx.webp", href: "/projet5" },
     { title: "JustX Fitness", image: "/images/justx_app.webp", href: "/projet7" },
     { title: "Mission X", image: "/images/missionX5.webp", href: "/projet6" },
-    { title: "Ludosphères", image: "/images/ludo.webp", href: "/projet4" },
+    { title: "Ludosphères", image: "/images/ludo-tablette.webp", href: "/projet4" },
     { title: "Serein Design", image: "/images/serein_design.webp", href: "/projet1" },
     { title: "Votre projet ?", image: "/images/agence.webp", href: "/contact", cta: "Nous contacter" }
   ];
@@ -44,7 +45,6 @@
     ctaExternal={true}
   />
 
-  <ProjectThemeTrigger theme="light" offset={132} />
 
   <div class="project-theme-band">
     <ProjectEditorialRole
@@ -74,26 +74,39 @@
     />
   </div>
 
-  <div class="project-theme-band">
-    <ProjectEditorialSplit
-      title="Interface mobile"
-      text="Une presence plus simple et plus fluide. Le projet garde sa clarte jusque dans les vues les plus rapprochees."
-      image="/images/moovy_recherche.webp"
-      alt="Vue mobile du projet Moovy"
-      mediaMinHeight="52.5rem"
-    />
-
+  <div class="project-theme-band theme-deep">
     <ProjectEditorialStatement
-      eyebrow="Recommendation"
-      text="Le projet repose sur une <span class='hl'>lecture immediate</span>, quelques choix bien cadres et une <span class='hl'>recommandation</span> qui arrive sans surcharge."
+      eyebrow="Recommandation"
+      text="Le projet repose sur une <span class='hl'>lecture immédiate</span>, quelques choix bien cadrés et une <span class='hl'>recommandation</span> qui arrive sans surcharge."
     />
+  </div>
 
-    <ProjectEditorialSplit
-      title="Vue desktop"
-      text="Sur desktop, la plateforme ouvre davantage le catalogue tout en gardant un chemin tres lisible vers le bon film."
-      image="/images/moovy_mac.webp"
-      alt="Vue desktop du projet Moovy"
-      reverse={true}
+  <!-- Les vues mobile et desktop s'enchaînaient en deux blocs bâtis pareil :
+       elles passent dans l'accordéon de la page à propos, une capture par
+       volet et le texte qui s'ouvre sur place. -->
+  <div class="project-theme-band">
+    <EditorialAccordionShowcase
+      interval={11000}
+      slides={[
+        {
+          label: "Interface mobile",
+          text: "Une présence plus <span class='hl'>simple</span> et plus fluide. Le projet garde sa clarté jusque dans les vues les plus rapprochées.",
+          image: "/images/moovy_recherche.webp",
+          alt: "Vue mobile du projet Moovy"
+        },
+        {
+          label: "Vue desktop",
+          text: "Sur desktop, la plateforme ouvre davantage le <span class='hl'>catalogue</span> tout en gardant un chemin très lisible vers le bon film.",
+          image: "/images/moovy_mac.webp",
+          alt: "Vue desktop du projet Moovy"
+        },
+        {
+          label: "La fiche film",
+          text: "Affiche, durée, genre, synopsis : tout ce qu'il faut pour <span class='hl'>décider</span>, et rien de plus. La recommandation suivante n'est jamais qu'à un geste.",
+          image: "/images/tel_moovy2.webp",
+          alt: "Fiche film de Moovy sur mobile"
+        }
+      ]}
     />
   </div>
 
@@ -109,9 +122,8 @@
     />
   </div>
 
-  <ProjectThemeTrigger theme="dark" />
 
-  <div class="project-theme-band">
+  <div class="project-theme-band theme-deep">
     <ProjectEditorialMosaic
       text="Un <span class='hl'>premier plan large</span> pour ouvrir l'univers, puis deux vues resserrees qui gardent la meme <span class='hl'>clarte</span>."
       feature={{ src: "/images/affiche-moovy.webp", alt: "Grand visuel desktop de Moovy" }}

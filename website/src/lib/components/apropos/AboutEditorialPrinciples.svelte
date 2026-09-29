@@ -243,7 +243,7 @@
 <style>
   .about-editorial-principles {
     position: relative;
-    background: var(--nuance-dark, #000);
+    background: var(--nuance-dark, var(--bg-deep, #000));
     color: #f5f1e8;
     padding: clamp(2.4rem, 4vw, 4.2rem) 0;
     overflow: clip;
@@ -314,8 +314,8 @@
 
   .principle-title {
     display: inline-block;
-    font-family: "Inter", sans-serif;
-    font-weight: 300;
+    font-family: var(--site-font);
+    font-weight: var(--site-weight-display);
     font-size: clamp(1.95rem, 4.35vw, 4.35rem);
     line-height: 0.88;
     letter-spacing: -0.045em;
@@ -383,18 +383,18 @@
   .preview-text {
     margin: 0;
     max-width: 16ch;
-    font-family: "Inter", sans-serif;
-    font-weight: 300;
+    font-family: var(--site-font);
+    font-weight: var(--site-weight);
     font-size: clamp(1.04rem, 1.18vw, 1.24rem);
     line-height: 1.28;
-    color: rgba(245, 241, 232, 0.88);
+    color: rgba(var(--ink-muted-rgb, 245, 241, 232), 0.88);
   }
 
   .preview-media {
     width: 100%;
     aspect-ratio: 1 / 1;
     overflow: hidden;
-    background: #090909;
+    background: var(--bg-raised, #090909);
   }
 
   .preview-media img {
@@ -494,7 +494,7 @@
       border-top: 1.4px solid currentColor;
       border-right: 1.4px solid currentColor;
       transform: rotate(45deg);
-      filter: drop-shadow(0 1px 8px rgba(0, 0, 0, 0.34));
+      filter: drop-shadow(0 1px 8px rgba(var(--shade-rgb, 0, 0, 0), 0.34));
     }
 
     .principles-mobile-nav-btn.is-hidden {
@@ -523,12 +523,12 @@
 
     .principle-mobile-title {
       margin-bottom: 7rem;
-      font-family: "Inter", sans-serif;
-      font-weight: 300;
+      font-family: var(--site-font);
+      font-weight: var(--site-weight-display);
       font-size: clamp(2rem, 9vw, 3rem);
       line-height: 0.96;
       letter-spacing: -0.04em;
-      color: rgba(245, 241, 232, 0.44);
+      color: rgba(var(--ink-muted-rgb, 245, 241, 232), 0.44);
       text-align: left;
       transition: color 0.46s ease;
     }
@@ -560,18 +560,18 @@
 
     .principle-mobile-text {
       margin: 0;
-      font-family: "Inter", sans-serif;
-      font-weight: 300;
+      font-family: var(--site-font);
+      font-weight: var(--site-weight);
       font-size: clamp(1.06rem, 3.9vw, 1.22rem);
       line-height: 1.34;
-      color: rgba(245, 241, 232, 0.28);
+      color: rgba(var(--ink-muted-rgb, 245, 241, 232), 0.28);
       text-align: left;
       width: 100%;
       transition: color 0.46s ease;
     }
 
     .principle-mobile-card.is-active .principle-mobile-text {
-      color: rgba(245, 241, 232, 0.74);
+      color: rgba(var(--ink-muted-rgb, 245, 241, 232), 0.74);
     }
 
     .principle-mobile-media {
@@ -579,7 +579,7 @@
       width: min(100%, 16.9rem);
       aspect-ratio: 1.18 / 0.92;
       overflow: hidden;
-      background: #090909;
+      background: var(--bg-raised, #090909);
       margin-left: auto;
       margin-right: 0;
       align-self: flex-end;
@@ -590,7 +590,7 @@
       content: "";
       position: absolute;
       inset: 0;
-      background: rgba(0, 0, 0, 0.34);
+      background: rgba(var(--shade-rgb, 0, 0, 0), 0.34);
       pointer-events: none;
       z-index: 1;
       will-change: opacity;

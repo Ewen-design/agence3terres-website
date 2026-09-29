@@ -23,23 +23,30 @@
   export let introLead = "";
   // Titre d'intro plus gras et sans le trait bleu au-dessus (pages pôle).
   export let strongIntro = false;
+  // "slider" (défaut) : le rail horizontal des pages pôle, texte DANS l'image.
+  // "grid" : la variante de la home — les cartes tiennent toutes dans l'écran
+  // sur grand écran, et le texte se pose SOUS la carte.
+  export let layout = "slider";
 
   // items: {title, subtitle?, tags?[], image, mobileImage?, href?, cta?, ariaLabel?}[]
   export let items = [
     {
       title: "3 Terres Digital",
+      href: "/services/digital",
       subtitle: "Sites web, applications & développement sur mesure",
       image: "/images/montre-justx.webp",
       mobileImage: "/images/montre-justx.webp"
     },
     {
       title: "3 Terres Design",
+      href: "/services/design",
       subtitle: "Logo, charte, typographie & stratégie de marque",
       image: "/images/ipad-logo.webp",
       mobileImage: "/images/ipad-logo.webp"
     },
     {
       title: "3 Terres Studio",
+      href: "/services/studio",
       subtitle: "Photo, vidéo, réseaux sociaux & événements",
       image: "/images/mobile-photo.webp"
     }
@@ -492,7 +499,7 @@
   });
 </script>
 
-<section class="gallery" class:theme-light={theme === "light"} class:strong-intro={strongIntro} bind:this={galleryEl}>
+<section class="gallery" class:theme-light={theme === "light"} class:strong-intro={strongIntro} class:is-grid={layout === "grid"} bind:this={galleryEl}>
   <div class="gallery-intro-group">
     <div class="gallery-header">
       <div class="intro-card">
@@ -521,30 +528,41 @@
             onmousemove={handleCardMove}
             onclick={(e) => handleCardClick(e, item.href ?? href)}
           >
-            <div class="pc-img">
-              <picture>
-                {#if item.mobileImage}
-                  <source media="(max-width: 900px)" srcset={item.mobileImage} />
-                {/if}
-                <img
-                  src={item.image}
-                  alt={item.title}
-                  loading={index < 2 ? "eager" : "lazy"}
-                  fetchpriority={index < 2 ? "high" : "auto"}
-                  decoding="async"
-                  draggable="false"
-                />
-              </picture>
-            </div>
-            <div class="pc-shade" aria-hidden="true"></div>
-
-            {#if item.tags?.length}
-              <div class="pc-tags" aria-hidden="true">
-                {#each item.tags.slice(0, 3) as tag}
-                  <span class="pc-tag">{tag}</span>
-                {/each}
+            <!-- Le cadre porte l'image et tout ce qui se pose dessus. Le pied,
+                 lui, reste en dehors : posé PAR-DESSUS le cadre en mise en page
+                 « slider », SOUS la carte en mise en page « grid ». -->
+            <div class="pc-frame">
+              <div class="pc-img">
+                <picture>
+                  {#if item.mobileImage}
+                    <source media="(max-width: 900px)" srcset={item.mobileImage} />
+                  {/if}
+                  <img
+                    src={item.image}
+                    alt={item.title}
+                    loading={index < 2 ? "eager" : "lazy"}
+                    fetchpriority={index < 2 ? "high" : "auto"}
+                    decoding="async"
+                    draggable="false"
+                  />
+                </picture>
               </div>
-            {/if}
+              <div class="pc-shade" aria-hidden="true"></div>
+
+              {#if item.tags?.length}
+                <div class="pc-tags" aria-hidden="true">
+                  {#each item.tags.slice(0, 3) as tag}
+                    <span class="pc-tag">{tag}</span>
+                  {/each}
+                </div>
+              {/if}
+
+              <span class="pc-plus" aria-hidden="true">
+                <svg viewBox="0 0 24 24" width="15" height="15" fill="none">
+                  <path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" />
+                </svg>
+              </span>
+            </div>
 
             <div class="pc-foot">
               <span class="pc-title-flip" data-text={item.cta ?? ctaLabel} aria-hidden="true">
@@ -554,12 +572,6 @@
                 <span class="pc-subtitle">{item.subtitle}</span>
               {/if}
             </div>
-
-            <span class="pc-plus" aria-hidden="true">
-              <svg viewBox="0 0 24 24" width="15" height="15" fill="none">
-                <path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" />
-              </svg>
-            </span>
           </a>
         {/each}
       </div>
@@ -579,30 +591,41 @@
             draggable="false"
             onclick={(e) => handleCardClick(e, item.href ?? href)}
           >
-            <div class="pc-img">
-              <picture>
-                {#if item.mobileImage}
-                  <source media="(max-width: 900px)" srcset={item.mobileImage} />
-                {/if}
-                <img
-                  src={item.image}
-                  alt={item.title}
-                  loading={index < 2 ? "eager" : "lazy"}
-                  fetchpriority={index < 2 ? "high" : "auto"}
-                  decoding="async"
-                  draggable="false"
-                />
-              </picture>
-            </div>
-            <div class="pc-shade" aria-hidden="true"></div>
-
-            {#if item.tags?.length}
-              <div class="pc-tags" aria-hidden="true">
-                {#each item.tags.slice(0, 3) as tag}
-                  <span class="pc-tag">{tag}</span>
-                {/each}
+            <!-- Le cadre porte l'image et tout ce qui se pose dessus. Le pied,
+                 lui, reste en dehors : posé PAR-DESSUS le cadre en mise en page
+                 « slider », SOUS la carte en mise en page « grid ». -->
+            <div class="pc-frame">
+              <div class="pc-img">
+                <picture>
+                  {#if item.mobileImage}
+                    <source media="(max-width: 900px)" srcset={item.mobileImage} />
+                  {/if}
+                  <img
+                    src={item.image}
+                    alt={item.title}
+                    loading={index < 2 ? "eager" : "lazy"}
+                    fetchpriority={index < 2 ? "high" : "auto"}
+                    decoding="async"
+                    draggable="false"
+                  />
+                </picture>
               </div>
-            {/if}
+              <div class="pc-shade" aria-hidden="true"></div>
+
+              {#if item.tags?.length}
+                <div class="pc-tags" aria-hidden="true">
+                  {#each item.tags.slice(0, 3) as tag}
+                    <span class="pc-tag">{tag}</span>
+                  {/each}
+                </div>
+              {/if}
+
+              <span class="pc-plus" aria-hidden="true">
+                <svg viewBox="0 0 24 24" width="15" height="15" fill="none">
+                  <path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" />
+                </svg>
+              </span>
+            </div>
 
             <div class="pc-foot">
               <span class="pc-title-flip" data-text={item.cta ?? ctaLabel} aria-hidden="true">
@@ -612,12 +635,6 @@
                 <span class="pc-subtitle">{item.subtitle}</span>
               {/if}
             </div>
-
-            <span class="pc-plus" aria-hidden="true">
-              <svg viewBox="0 0 24 24" width="15" height="15" fill="none">
-                <path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" />
-              </svg>
-            </span>
           </a>
         {/each}
       </div>
@@ -639,14 +656,14 @@
 
 <style>
   .gallery {
-    --section-bg: #000;
+    --section-bg: var(--bg-deep, #000);
     --intro-body: rgba(255,255,255,.64);
     --intro-main: #fff;
     --intro-muted: rgba(255,255,255,.70);
     position: relative;
     z-index: 0;
     width: 100%;
-    background: var(--nuance-dark, var(--section-bg));
+    background: var(--bg-panel, var(--nuance-dark, var(--section-bg)));
     padding: 0 0 clamp(3rem, 5vw, 5rem) 0;
     overflow: clip;
     isolation: isolate;
@@ -659,7 +676,7 @@
   }
   .gallery.theme-light .intro-main { color: rgba(18, 18, 18, 0.5); }
   .gallery.theme-light .intro-muted { color: #121212; }
-  .gallery.theme-light .intro-lead { color: rgba(18, 18, 18, 0.5); }
+  .gallery.theme-light .intro-lead { color: #121212; }
   .gallery.theme-light .intro-lead :global(.hl) { color: #121212; }
 
   .gallery-intro-group,
@@ -674,24 +691,27 @@
     width: min(1500px,100%);
     margin: 0 auto;
     display: flex;
-    justify-content: flex-start;
+    justify-content: center;
+    /* Beaucoup d'air AU-DESSUS, presque rien en dessous : le texte se pose
+       juste avant les cartes. */
     padding:
-      clamp(5rem,10vw,10rem)
-      clamp(1.5rem,3vw,3rem)
-      clamp(5rem,10vw,10rem);
+      clamp(6rem,12vw,12rem)
+      var(--site-inset)
+      clamp(1rem,2vw,2rem);
   }
 
   .intro-card {
     position: relative;
     z-index: 2;
-    width: min(640px, 100%);
+    /* 45rem : la même mesure que les autres textes d'accroche du site. */
+    width: min(45rem, 100%);
   }
 
   .intro-headline {
     margin: 0;
     max-width: 22ch;
-    font-family: "Inter", sans-serif;
-    font-weight: 300;
+    font-family: var(--site-font);
+    font-weight: var(--site-weight-display);
     /* Même taille que le texte juste au-dessus (ProjectEditorialMosaic). */
     font-size: var(--project-lead-size, clamp(1.35rem, 2.7vw, 2.8rem));
     line-height: 0.98;
@@ -711,7 +731,7 @@
 
   /* Titre projet (« Découvrez / nos autres projets. ») : 1ʳᵉ ligne en gris,
      2ᵉ ligne (les mots importants) en blanc. */
-  .intro-main { color: rgba(245, 241, 232, 0.5); }
+  .intro-main { color: rgba(var(--ink-muted-rgb, 245, 241, 232), 0.5); }
   .intro-muted {
     display: block;
     color: #f4efe6;
@@ -723,7 +743,7 @@
   .gallery.strong-intro .intro-headline::before { display: none; }
   .gallery.strong-intro .intro-headline {
     max-width: 14ch;
-    font-weight: 500;
+    font-weight: var(--site-weight-display);
     font-size: clamp(2.2rem, 5.5vw, 4.8rem);
     line-height: 0.96;
     letter-spacing: -0.04em;
@@ -747,35 +767,37 @@
     }
   }
 
-  /* Style identique aux textes des pages projet (ProjectBrief). */
+  /* Deux lignes centrées, la suite en plus petit dessous. */
   .intro-lead {
-    margin: 0;
-    max-width: 24ch;
-    font-family: "Inter", sans-serif;
-    font-weight: 300;
-    font-size: clamp(1.5rem, 2.5vw, 2.55rem);
-    line-height: 1.18;
-    letter-spacing: -0.025em;
-    color: #f4efe6;
-    text-align: left;
-    text-wrap: pretty;
-  }
-
-  /* Texte gris + mots importants (.hl) en blanc (accueil). */
-  .intro-lead:has(:global(.hl)) {
-    color: rgba(245, 241, 232, 0.5);
-  }
-
-  .intro-lead :global(.hl) {
+    margin: 0 auto;
+    width: 45rem;
+    max-width: 100%;
+    font-family: var(--site-font);
+    font-weight: 500;
+    text-align: center;
+    text-wrap: balance;
+    font-size: clamp(1.375rem, 2.9vw, 2.25rem);
+    line-height: 1.2;
+    letter-spacing: -0.01em;
     color: #f4efe6;
   }
+
+  .intro-lead :global(.dim) {
+    color: rgba(var(--ink-muted-rgb, 245, 241, 232), 0.5);
+  }
+
+  .gallery.theme-light .intro-lead :global(.dim) {
+    color: rgba(18, 18, 18, 0.5);
+  }
+
+  
 
   .desktop-stack {
     display: block;
     width: 100%;
     margin: 0 auto;
-    /* Plus d'air au-dessus et en dessous du module de slide (cartes + dock). */
-    padding: clamp(3rem, 6vh, 6rem) 0 clamp(5rem, 8vh, 8rem);
+    /* Le texte d'intro est juste au-dessus : on ne rajoute pas d'air ici. */
+    padding: clamp(1rem, 2vh, 2rem) 0 clamp(5rem, 8vh, 8rem);
     position: relative;
   }
 
@@ -786,11 +808,12 @@
     gap: clamp(0.7rem, 1vw, 1.1rem);
     overflow-x: auto;
     overflow-y: visible;
-    padding: 0 2.5vw 1.5rem;
+    /* Mêmes marges latérales que les blocs de la page à propos. */
+    padding: 0 var(--site-inset) 1.5rem;
     scroll-snap-type: x mandatory;
     scroll-snap-stop: always;
-    scroll-padding-left: 2.5vw;
-    scroll-padding-right: 2.5vw;
+    scroll-padding-left: var(--site-inset);
+    scroll-padding-right: var(--site-inset);
     -webkit-overflow-scrolling: touch;
     touch-action: pan-x pan-y pinch-zoom;
     overscroll-behavior-x: contain;
@@ -799,6 +822,111 @@
 
   .desktop-rail::-webkit-scrollbar {
     display: none;
+  }
+
+  /* ══════════════════════════════════════════════════════════════════════
+     MISE EN PAGE « GRID » — la home, et elle seule.
+     Les trois cartes tiennent dans l'écran sur grand écran (plus de rail qui
+     défile, plus de module de pagination), et le texte se pose SOUS la carte :
+     titre en blanc, sous-titre en gris. Sur téléphone le rail et son module
+     restent, avec ce même format de carte.
+     ══════════════════════════════════════════════════════════════════════ */
+
+  /* Plus de marge sur les côtés que le rail : le bloc respire. */
+  .is-grid .desktop-rail {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: clamp(1rem, 2vw, 2.2rem);
+    overflow: visible;
+    padding: 0 clamp(1.5rem, 10vw, 11rem) 0;
+    scroll-snap-type: none;
+  }
+
+  /* La carte n'est plus une boîte à image : elle empile le cadre et le texte. */
+  .is-grid .pole-card {
+    display: flex;
+    flex-direction: column;
+    gap: clamp(0.85rem, 1.2vw, 1.25rem);
+    overflow: visible;
+    border-radius: 0;
+    background: none;
+  }
+
+  .is-grid .desktop-card {
+    flex: initial;
+    width: auto;
+    height: auto;
+    scroll-snap-align: none;
+  }
+
+  .is-grid .pc-frame {
+    position: relative;
+    inset: auto;
+    aspect-ratio: 1 / 1;
+    border-radius: 22px;
+    overflow: hidden;
+    background: var(--bg-raised, #080808);
+  }
+
+  /* Le pied sort de l'image et se pose dessous. */
+  .is-grid .pc-foot {
+    position: static;
+    left: auto;
+    right: auto;
+    bottom: auto;
+    padding: 0 0.15rem;
+  }
+
+  /* NE PAS toucher à `height`/`line-height` : le doublon du wipe-flip est posé
+     à `translateY(100%)` de SA propre hauteur de ligne. Dès que la boîte est
+     plus haute que la ligne, le libellé de survol dépasse par le bas et se lit
+     en fantôme sous le titre. */
+  .is-grid .pc-title-flip {
+    font-size: clamp(1.08rem, 1.28vw, 1.34rem);
+    font-weight: 500;
+    letter-spacing: -0.012em;
+    color: #f4efe6;
+  }
+
+  .is-grid .pc-subtitle {
+    display: block;
+    margin-top: 0.15rem;
+    /* Le « + » est passé DANS le cadre : le sous-titre n'a plus à lui laisser
+       de place à droite. */
+    padding-right: 0;
+    max-width: 34ch;
+    font-size: clamp(1rem, 1.14vw, 1.18rem);
+    font-weight: var(--site-weight);
+    line-height: 1.45;
+    letter-spacing: -0.006em;
+    color: rgba(var(--ink-muted-rgb, 245, 241, 232), 0.56);
+  }
+
+  /* Le « + » : carré, à l'arrondi du site, dans le coin BAS GAUCHE. */
+  .is-grid .pc-plus {
+    left: clamp(0.9rem, 1.4vw, 1.4rem);
+    right: auto;
+    bottom: clamp(0.9rem, 1.4vw, 1.4rem);
+    width: clamp(40px, 3vw, 48px);
+    height: clamp(40px, 3vw, 48px);
+    border-radius: 10px;
+  }
+
+  /* Sur téléphone le rail et son module restent : seule la carte change de
+     format. Sa hauteur suit son contenu — le cadre carré plus les deux lignes
+     de texte — au lieu d'être fixée à la fenêtre. */
+  .is-grid .mobile-card {
+    height: auto;
+    flex-basis: clamp(280px, 82vw, 400px);
+    width: clamp(280px, 82vw, 400px);
+  }
+
+  /* Plus de module de pagination sur grand écran : tout est déjà à l'écran. */
+  @media (min-width: 901px) {
+    .is-grid :global(.sd-sticky),
+    .is-grid :global(.sd-overlay) {
+      display: none;
+    }
   }
 
   /* ─────────── Carte pôle (base partagée desktop + mobile) ─────────── */
@@ -810,7 +938,7 @@
     -webkit-tap-highlight-color: transparent;
     overflow: hidden;
     border-radius: 22px;
-    background: #080808;
+    background: var(--bg-raised, #080808);
   }
 
   .desktop-card {
@@ -821,13 +949,23 @@
     scroll-snap-stop: always;
   }
 
+  /* En mise en page « slider », le cadre recouvre exactement la carte : rien ne
+     change par rapport à avant. En « grid », il devient un bloc dans le flux et
+     c'est LUI qui porte l'arrondi et le rognage. */
+  .pc-frame {
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    overflow: hidden;
+  }
+
   .pc-img {
     position: absolute;
     inset: 0;
     z-index: 0;
     overflow: hidden;
     border-radius: inherit;
-    background: #080808;
+    background: var(--bg-raised, #080808);
   }
 
   .pc-img picture {
@@ -851,8 +989,8 @@
     inset: 0;
     z-index: 1;
     background:
-      linear-gradient(to top, rgba(0,0,0,.78) 0%, rgba(0,0,0,.30) 32%, rgba(0,0,0,0) 62%),
-      linear-gradient(to bottom, rgba(0,0,0,.42) 0%, rgba(0,0,0,0) 26%);
+      linear-gradient(to top, rgba(var(--shade-rgb, 0, 0, 0), .78) 0%, rgba(var(--shade-rgb, 0, 0, 0), .30) 32%, rgba(var(--shade-rgb, 0, 0, 0), 0) 62%),
+      linear-gradient(to bottom, rgba(var(--shade-rgb, 0, 0, 0), .42) 0%, rgba(var(--shade-rgb, 0, 0, 0), 0) 26%);
     pointer-events: none;
     border-radius: inherit;
   }
@@ -876,9 +1014,9 @@
     align-items: center;
     height: clamp(36px, 3vw, 42px);
     padding: 0 1.15rem;
-    font-family: "Inter", sans-serif;
+    font-family: var(--site-font);
     font-size: clamp(.85rem, .95vw, .96rem);
-    font-weight: 500;
+    font-weight: var(--site-weight);
     letter-spacing: -0.01em;
     white-space: nowrap;
     color: #f7f2e8;
@@ -886,7 +1024,7 @@
     backdrop-filter: blur(20px) saturate(160%) brightness(0.82);
     -webkit-backdrop-filter: blur(20px) saturate(160%) brightness(0.82);
     border-radius: 10px;
-    box-shadow: 0 6px 8px rgba(0, 0, 0, 0.04);
+    box-shadow: 0 6px 8px rgba(var(--shade-rgb, 0, 0, 0), 0.04);
   }
 
   /* Titre + sous-titre : en bas à gauche */
@@ -907,12 +1045,12 @@
     overflow: hidden;
     height: 1.2em;
     line-height: 1.2em;
-    font-family: "Inter", sans-serif;
+    font-family: var(--site-font);
     font-size: clamp(2rem, 2.9vw, 3.1rem);
-    font-weight: 500;
+    font-weight: var(--site-weight-display);
     letter-spacing: -0.03em;
     color: #fff;
-    text-shadow: 0 1px 14px rgba(0,0,0,.42);
+    text-shadow: 0 1px 14px rgba(var(--shade-rgb, 0, 0, 0), .42);
   }
 
   .pc-title-text {
@@ -938,12 +1076,12 @@
   .pc-subtitle {
     display: block;
     margin-top: .55rem;
-    font-family: "Inter", sans-serif;
+    font-family: var(--site-font);
     font-size: clamp(.92rem, 1vw, 1.06rem);
-    font-weight: 400;
+    font-weight: var(--site-weight);
     letter-spacing: -0.01em;
     color: rgba(255,255,255,.6);
-    text-shadow: 0 1px 12px rgba(0,0,0,.4);
+    text-shadow: 0 1px 12px rgba(var(--shade-rgb, 0, 0, 0), .4);
   }
 
   /* Bouton "+" : en bas à droite, arrive au survol / à l'arrivée */
@@ -963,7 +1101,7 @@
     -webkit-backdrop-filter: blur(20px) saturate(160%) brightness(0.82);
     border: 0;
     border-radius: 999px;
-    box-shadow: 0 6px 8px rgba(0, 0, 0, 0.04);
+    box-shadow: 0 6px 8px rgba(var(--shade-rgb, 0, 0, 0), 0.04);
     opacity: 0;
     transform: translateY(10px) scale(.85);
     transition:
@@ -1092,11 +1230,11 @@
     .gallery-header {
       width: min(100%,760px);
       margin: 0 auto;
-      justify-content: flex-start;
-      padding: 4rem 1.25rem 4rem;
+      justify-content: center;
+      padding: 5rem 1.25rem 1rem;
     }
 
-    .intro-card { width: min(90vw, 560px); }
+    .intro-card { width: min(92vw, 45rem); }
 
     .intro-headline {
       font-size: clamp(1.7rem, 8.5vw, 2.55rem);
@@ -1109,12 +1247,6 @@
       font-size: clamp(1.9rem, 9.5vw, 3.2rem);
       max-width: 14ch;
       line-height: 0.96;
-    }
-
-    .intro-lead {
-      font-size: clamp(1.5rem, 6.6vw, 2rem);
-      max-width: 26ch;
-      line-height: 1.2;
     }
 
     .desktop-stack {
@@ -1130,7 +1262,7 @@
 
     .mobile-rail {
       width: 100%;
-      margin: 2.4rem 0 0;
+      margin: 1.2rem 0 0;
       display: flex;
       gap: .9rem;
       overflow-x: auto;
@@ -1193,12 +1325,8 @@
   @media (max-width: 640px) {
     .gallery { padding: 1.75rem 0 8rem 0; }
 
-    .gallery-header { padding: 3.5rem 1.1rem 3.5rem; }
+    .gallery-header { padding: 4.5rem 1.1rem 0.9rem; }
     .intro-card { width: min(88vw, 480px); }
-
-    .intro-lead {
-      font-size: clamp(1.4rem, 6.6vw, 1.9rem);
-    }
 
     .mobile-rail {
       gap: .7rem;

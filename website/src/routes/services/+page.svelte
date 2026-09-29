@@ -36,7 +36,8 @@
 
 <PolesHero
   label="Services"
-  finalText="Nos trois pôles, digital, design et studio, permettent d'offrir un <span class='hl'>accompagnement complet</span> et spécialisé à nos clients."
+  finalText="Digital, design et studio.<br /><span class='dim'>Un accompagnement complet.</span>"
+  finalSub=""
   showAfterImage={false}
 />
 

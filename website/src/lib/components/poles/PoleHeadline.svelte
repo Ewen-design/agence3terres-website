@@ -33,8 +33,8 @@
      (pas de gris), avec un espacement généreux avant le titre — comme la réf. */
   .pole-headline__eyebrow {
     margin: 0 0 clamp(1.2rem, 2.2vw, 2rem);
-    font-family: "Inter", sans-serif;
-    font-weight: 500;
+    font-family: var(--site-font);
+    font-weight: var(--site-weight-display);
     font-size: clamp(1.15rem, 2vw, 1.85rem);
     line-height: 1.2;
     letter-spacing: -0.015em;
@@ -50,7 +50,7 @@
   .pole-headline__title {
     margin: 0 auto;
     /* Retours à la ligne explicites (<br>) → 3 lignes comme la référence. */
-    font-family: "Inter", sans-serif;
+    font-family: var(--site-font);
     font-weight: 600;
     font-size: clamp(2.8rem, 6.8vw, 6rem);
     line-height: 1.05;

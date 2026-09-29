@@ -18,7 +18,8 @@
   <PolesHero
     label="Digital"
     image="/images/montre-justx.webp"
-    finalText="Sites web, applications et développement sur mesure, pensés pour <span class='hl'>toucher durablement</span> votre cible."
+    finalText="Sites web et applications. <span class='dim'>Développement sur mesure.</span>"
+    finalSub="Pensés pour toucher durablement votre cible, sur tous les supports."
     showAfterImage={false}
   />
 

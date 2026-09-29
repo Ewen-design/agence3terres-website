@@ -393,7 +393,7 @@
     top: clamp(6rem, 10vw, 9rem);
     left: clamp(1.5rem, 5.5vw, 5.5rem);
     margin: 0;
-    font-family: var(--site-font, "Inter", sans-serif);
+    font-family: var(--site-font);
     font-weight: 600;
     font-size: clamp(4rem, 7vw, 8.6rem);
     line-height: 0.9;
@@ -466,8 +466,8 @@
   .bfs__caption-line { display: block; }
   .bfs__caption-line > span {
     display: block;
-    font-family: var(--site-font, "Inter", sans-serif);
-    font-weight: 300;
+    font-family: var(--site-font);
+    font-weight: var(--site-weight);
     font-size: clamp(1rem, 1.15vw, 1.2rem);
     line-height: 1.55;
     color: rgba(255,255,255,.88);
@@ -496,8 +496,8 @@
     height: 38px;
     margin-top: 1.1rem;
     padding: 0 1.4rem;
-    font-family: var(--site-font, "Inter", sans-serif);
-    font-weight: 400;
+    font-family: var(--site-font);
+    font-weight: var(--site-weight);
     font-size: .88rem;
     color: #f5f1e8;
     text-decoration: none;
@@ -595,9 +595,9 @@
   .bfs__arrow-cue:focus-visible { outline: 2px solid rgba(245,241,232,.9); outline-offset: 4px; border-radius: 8px; }
   .bfs__arrow-symbol {
     display: block;
-    font-family: var(--site-font, "Inter", sans-serif);
+    font-family: var(--site-font);
     font-size: clamp(1.1rem, 1.1vw, 1.2rem);
-    font-weight: 300;
+    font-weight: var(--site-weight);
     color: #fff;
     line-height: 1;
   }

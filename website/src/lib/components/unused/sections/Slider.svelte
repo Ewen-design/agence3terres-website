@@ -99,7 +99,7 @@
     left: 0;
     right: 0;
     text-align: center;
-    font-family: "Inter", sans-serif;
+    font-family: var(--site-font);
     font-size: 1.6rem;
     color: black;
     display: flex;

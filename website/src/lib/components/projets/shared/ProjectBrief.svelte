@@ -44,8 +44,8 @@
 
   .project-brief__lead {
     margin: 0;
-    font-family: "Inter", sans-serif;
-    font-weight: 300;
+    font-family: var(--site-font);
+    font-weight: var(--site-weight-display);
     font-size: clamp(1.5rem, 2.5vw, 2.55rem);
     line-height: 1.18;
     letter-spacing: -0.025em;
@@ -89,7 +89,7 @@
     position: relative;
     margin: 0;
     overflow: hidden;
-    border-radius: 4px;
+    border-radius: var(--project-media-radius, 22px);
     height: clamp(26rem, 60vh, 50rem);
     background: var(--project-surface-card, #121212);
   }

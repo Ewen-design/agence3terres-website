@@ -245,7 +245,7 @@
   }
 
   .nav-btn {
-    font-family: "Inter", sans-serif;
+    font-family: var(--site-font);
     position: relative;
     width: 56px;
     height: 56px;
@@ -512,21 +512,21 @@
   }
 
   .info h2 {
-    font-family: "Inter", sans-serif;
+    font-family: var(--site-font);
     font-size: 2.6rem;
     margin: 10px 0 20px;
     letter-spacing: 0.5px;
-    font-weight: 400;
+    font-weight: var(--site-weight-display);
   }
 
   .info p {
-    font-family: "Inter", sans-serif;
+    font-family: var(--site-font);
     line-height: 1.6;
     opacity: 0.9;
   }
 
   .date {
-    font-family: "Inter", sans-serif;
+    font-family: var(--site-font);
     font-size: 0.9rem;
     opacity: 0.7;
     letter-spacing: 1px;

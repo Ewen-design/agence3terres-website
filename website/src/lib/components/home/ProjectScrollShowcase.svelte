@@ -435,7 +435,7 @@
   }
   .ps__title {
     margin: 0;
-    font-family: var(--site-font, "Inter", sans-serif);
+    font-family: var(--site-font);
     font-weight: 600;
     font-size: clamp(4rem, 7vw, 8.6rem);
     line-height: 0.9;
@@ -475,8 +475,8 @@
   }
   .ps__cap-line {
     display: block;
-    font-family: var(--site-font, "Inter", sans-serif);
-    font-weight: 300;
+    font-family: var(--site-font);
+    font-weight: var(--site-weight);
     font-size: clamp(1rem, 1.15vw, 1.2rem);
     line-height: 1.55;
     text-wrap: pretty;
@@ -536,8 +536,8 @@
     justify-content: center;
     height: 40px;
     padding: 0 1.5rem;
-    font-family: "Inter", sans-serif;
-    font-weight: 400;
+    font-family: var(--site-font);
+    font-weight: var(--site-weight);
     font-size: 0.9rem;
     color: #fff;
     text-decoration: none;
@@ -675,7 +675,7 @@
       display: block;
       /* Titre au-dessus du texte, écart resserré (bloc compact en haut). */
       margin: 0 0 clamp(1rem, 3.5vw, 1.8rem);
-      font-family: var(--site-font, "Inter", sans-serif);
+      font-family: var(--site-font);
       font-weight: 600;
       font-size: clamp(2.6rem, 12vw, 4.6rem);
       line-height: 0.92;

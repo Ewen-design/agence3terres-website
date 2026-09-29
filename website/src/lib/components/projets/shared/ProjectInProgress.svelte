@@ -78,11 +78,11 @@
     display: flex;
     align-items: stretch;
     overflow: clip;
-    background: #000;
+    background: var(--bg-deep, #000);
     isolation: isolate;
     /* Solid black backstop — paints over any subpixel seam at the very bottom
        edge of the page so no thin line shows under the gradient. */
-    box-shadow: 0 2px 0 0 #000;
+    box-shadow: 0 2px 0 0 var(--bg-deep, #000);
   }
 
   .pip__media {
@@ -109,31 +109,31 @@
     background:
       linear-gradient(
         to top,
-        #000 0%,
-        rgba(0, 0, 0, 0.95) 4%,
-        rgba(0, 0, 0, 0.82) 9%,
-        rgba(0, 0, 0, 0.66) 15%,
-        rgba(0, 0, 0, 0.5) 22%,
-        rgba(0, 0, 0, 0.36) 30%,
-        rgba(0, 0, 0, 0.24) 39%,
-        rgba(0, 0, 0, 0.14) 49%,
-        rgba(0, 0, 0, 0.07) 61%,
-        rgba(0, 0, 0, 0.02) 76%,
-        rgba(0, 0, 0, 0) 100%
+        var(--bg-deep, #000) 0%,
+        rgba(var(--shade-rgb, 0, 0, 0), 0.95) 4%,
+        rgba(var(--shade-rgb, 0, 0, 0), 0.82) 9%,
+        rgba(var(--shade-rgb, 0, 0, 0), 0.66) 15%,
+        rgba(var(--shade-rgb, 0, 0, 0), 0.5) 22%,
+        rgba(var(--shade-rgb, 0, 0, 0), 0.36) 30%,
+        rgba(var(--shade-rgb, 0, 0, 0), 0.24) 39%,
+        rgba(var(--shade-rgb, 0, 0, 0), 0.14) 49%,
+        rgba(var(--shade-rgb, 0, 0, 0), 0.07) 61%,
+        rgba(var(--shade-rgb, 0, 0, 0), 0.02) 76%,
+        rgba(var(--shade-rgb, 0, 0, 0), 0) 100%
       ),
       /* Soft top darkening so the title stays legible over the image. */
       linear-gradient(
         to bottom,
-        rgba(0, 0, 0, 0.6) 0%,
-        rgba(0, 0, 0, 0.34) 12%,
-        rgba(0, 0, 0, 0.12) 26%,
-        rgba(0, 0, 0, 0) 42%
+        rgba(var(--shade-rgb, 0, 0, 0), 0.6) 0%,
+        rgba(var(--shade-rgb, 0, 0, 0), 0.34) 12%,
+        rgba(var(--shade-rgb, 0, 0, 0), 0.12) 26%,
+        rgba(var(--shade-rgb, 0, 0, 0), 0) 42%
       ),
       linear-gradient(
         90deg,
-        rgba(0, 0, 0, 0.34) 0%,
-        rgba(0, 0, 0, 0.1) 36%,
-        rgba(0, 0, 0, 0) 66%
+        rgba(var(--shade-rgb, 0, 0, 0), 0.34) 0%,
+        rgba(var(--shade-rgb, 0, 0, 0), 0.1) 36%,
+        rgba(var(--shade-rgb, 0, 0, 0), 0) 66%
       );
     pointer-events: none;
   }
@@ -154,15 +154,15 @@
   .pip__title {
     margin: 0;
     max-width: 14ch;
-    font-family: "Inter", sans-serif;
-    font-weight: 500;
+    font-family: var(--site-font);
+    font-weight: var(--site-weight-display);
     font-size: clamp(4.6rem, 4vw, 12rem);
     line-height: 1;
     letter-spacing: -0.02em;
     white-space: pre-line;
     text-wrap: balance;
     color: #f7f3ea;
-    text-shadow: 0 8px 40px rgba(0, 0, 0, 0.32);
+    text-shadow: 0 8px 40px rgba(var(--shade-rgb, 0, 0, 0), 0.32);
   }
 
   /* Le bouton se place simplement en bas à gauche. */
@@ -172,16 +172,20 @@
   }
 
   /* Simple bouton verre — comme les autres boutons du site. */
+  /* Au gabarit du bouton du pied de page, et non plus à celui du header
+     (2026-09-03) : c'est le seul appel à l'action de la page, il ne peut pas
+     être une pastille de 40 px de haut. */
   .pip__cta {
     position: relative;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    height: 40px;
-    padding: 0 1.5rem;
-    font-family: "Inter", sans-serif;
-    font-weight: 400;
-    font-size: 0.9rem;
+    min-width: clamp(180px, 20vw, 260px);
+    min-height: clamp(60px, 6.8vw, 78px);
+    padding: 0 2rem;
+    font-family: var(--site-font);
+    font-weight: var(--site-weight);
+    font-size: clamp(1.08rem, 1.5vw, 1.26rem);
     color: #fff;
     text-decoration: none;
     white-space: nowrap;
@@ -190,7 +194,7 @@
     backdrop-filter: blur(20px) saturate(160%) brightness(0.82);
     -webkit-backdrop-filter: blur(20px) saturate(160%) brightness(0.82);
     border-radius: 10px;
-    box-shadow: 0 6px 8px rgba(0, 0, 0, 0.08);
+    box-shadow: 0 6px 8px rgba(var(--shade-rgb, 0, 0, 0), 0.08);
     transition:
       background 0.3s ease,
       transform 0.4s cubic-bezier(0.22, 0.61, 0.36, 1);

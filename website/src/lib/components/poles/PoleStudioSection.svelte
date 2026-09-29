@@ -9,7 +9,7 @@
 
   const studioCards = [
     { image: "/images/justx-pub2.webp", alt: "Projet JustX", title: "JustX", subtitle: "Gestion des réseaux sociaux", href: "projet5", tags: ["Réseaux sociaux", "Contenu & montage"] },
-    { image: "/images/ludo.webp", alt: "Projet Ludosphères", title: "Ludosphères", subtitle: "Gestion des réseaux sociaux et montage vidéo", href: "projet4", tags: ["Événementiel", "Réseaux sociaux"] }
+    { image: "/images/ludo-drapeau.webp", alt: "Visuel Ludosphères publié sur les réseaux", title: "Ludosphères", subtitle: "Gestion des réseaux sociaux et montage vidéo", href: "projet4", tags: ["Événementiel", "Réseaux sociaux"] }
   ];
 
   // Studio — toute l'image de la marque : captation, DA, réseaux, contenu, 3D.
@@ -31,7 +31,7 @@
     <AboutEditorialSingleShowcase
       showCue={false}
       showAccent={false}
-      background="#040404"
+      background="var(--bg-deep, #040404)"
       imageFit="contain"
       imagePosition="right top"
       text="Chaque contenu est produit avec le même soin, pour <span class='hl'>prolonger l'expérience</span> de la marque et renforcer sa présence, de l'événement aux réseaux."

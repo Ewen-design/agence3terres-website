@@ -6,6 +6,14 @@
   const baseProjects = [
     {
       number: "01",
+      title: "Ludosphères",
+      rest: "Un site vitrine imagine pour presenter les oeuvres peintes par Ludovic avec plus d'air, de matiere et de clarte.",
+      image: "/images/ludo-tablette.webp",
+      page: "projet4",
+      button: "Voir le projet"
+    },
+    {
+      number: "02",
       title: "Moovy",
       rest: "Une plateforme de recommandation de films qui aide chacun a trouver rapidement le bon film selon ses gouts, ses envies et quelques questions simples.",
       image: "/images/moovy.webp",
@@ -14,7 +22,7 @@
       button: "Voir le projet"
     },
     {
-      number: "02",
+      number: "03",
       title: "JustX",
       rest: "Une marque de sport qui réunit programmes personnalisés de musculation, nutrition et gamme de vêtements dans un univers direct et affirmé.",
       image: "/images/logo_justx.webp",
@@ -22,7 +30,7 @@
       button: "Voir le projet"
     },
     {
-      number: "03",
+      number: "04",
       title: "JustX Fitness",
       rest: "L'application JustX réunit programmes, suivi de l'effort et progression dans une expérience mobile directe et personnelle.",
       image: "/images/telephone3.webp",
@@ -31,20 +39,12 @@
       button: "Voir le projet"
     },
     {
-      number: "04",
+      number: "05",
       title: "Mission X",
       rest: "Un jeu social mobile où chaque mission secrète peut faire basculer la partie entre détectives et voleurs.",
       image: "/images/missionx-hero-agency.jpg",
       mobileImage: "/images/missionx3.webp",
       page: "projet6",
-      button: "Voir le projet"
-    },
-    {
-      number: "05",
-      title: "Ludosphères",
-      rest: "Un site vitrine imagine pour presenter les oeuvres peintes par Ludovic avec plus d'air, de matiere et de clarte.",
-      image: "/images/carte-copie.webp",
-      page: "projet4",
       button: "Voir le projet"
     },
     {
@@ -441,7 +441,7 @@
   }
 
   .nav-btn {
-    font-family: "Inter", sans-serif;
+    font-family: var(--site-font);
     position: relative;
     height: 40px;
     display: inline-flex;
@@ -449,7 +449,7 @@
     justify-content: center;
     padding: 0 1.5rem;
     font-size: 0.9rem;
-    font-weight: 400;
+    font-weight: var(--site-weight);
     white-space: nowrap;
     color: inherit;
     border: 0px solid rgba(255, 255, 255, 0.15);
@@ -656,9 +656,9 @@
 
   .desktop-card-title {
     display: block;
-    font-family: "Inter", sans-serif;
+    font-family: var(--site-font);
     font-size: clamp(2.2rem, 4.2vw, 4.2rem);
-    font-weight: 500;
+    font-weight: var(--site-weight-display);
     line-height: 0.96;
     max-width: 12ch;
     color: rgba(255,255,255,.98);
@@ -683,8 +683,8 @@
 
   .desktop-card-rest {
     margin: 0;
-    font-family: "Inter", sans-serif;
-    font-weight: 300;
+    font-family: var(--site-font);
+    font-weight: var(--site-weight);
     color: rgba(245,241,232,.82);
     text-shadow: 0 1px 10px rgba(0,0,0,.34);
     font-size: clamp(0.94rem, 1.1vw, 1.04rem);
@@ -868,9 +868,9 @@
 
     .mobile-card-title {
       display: block;
-      font-family: "Inter", sans-serif;
+      font-family: var(--site-font);
       font-size: 1.46rem;
-      font-weight: 400;
+      font-weight: var(--site-weight);
       line-height: 1.04;
       max-width: 15ch;
       color: rgba(255,255,255,.98);
@@ -916,7 +916,7 @@
       text-shadow: 0 1px 8px rgba(0,0,0,.32);
       font-family: "Junicode", serif;
       font-size: 2.45rem;
-      font-weight: 300;
+      font-weight: var(--site-weight-display);
       line-height: 1;
       transition:
         transform .42s cubic-bezier(.22,.61,.36,1),

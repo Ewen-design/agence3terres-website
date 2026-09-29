@@ -22,7 +22,7 @@
   export let ctaHref = "";
   export let showCue = true;
   export let showGradient = true;
-  export let background = "#000";
+  export let background = "var(--bg-deep, #000)";
   export let ink = "#f4efe6";
   export let inkMuted = "rgba(245, 241, 232, 0.62)";
 
@@ -118,7 +118,7 @@
     position: relative;
     width: 100%;
     min-height: max(220vh, var(--about-editorial-single-showcase-media-min-height, 32rem));
-    background: var(--ase-bg, #000);
+    background: var(--ase-bg, var(--bg-deep, #000));
     color: var(--ase-ink, #f5f1e8);
     overflow: clip;
   }
@@ -129,10 +129,10 @@
     height: 150vh;
     margin: 0;
     overflow: hidden;
-    /* Match the section/page background exactly (was #050505, a hair lighter):
+    /* Match the section/page background exactly (was var(--bg-deep, #050505), a hair lighter):
        the media is absolutely positioned, so a 1px sliver of its background can
        show at its bottom edge as a thin line — matching it makes that invisible. */
-    background: var(--ase-bg, #000);
+    background: var(--ase-bg, var(--bg-deep, #000));
   }
 
   .about-editorial-single-showcase__media picture {
@@ -171,8 +171,8 @@
     height: 56vh;
     background: linear-gradient(
       to top,
-      var(--ase-bg, #000) 0%,
-      var(--ase-bg, #000) 30%,
+      var(--ase-bg, var(--bg-deep, #000)) 0%,
+      var(--ase-bg, var(--bg-deep, #000)) 30%,
       transparent 100%
     );
     pointer-events: none;
@@ -185,7 +185,7 @@
     top: 150vh;              /* the media bottom (desktop) */
     height: 8vh;
     margin-top: -4vh;        /* straddle the edge: 4vh above → 4vh below */
-    background: var(--ase-bg, #000);
+    background: var(--ase-bg, var(--bg-deep, #000));
     z-index: 0;              /* over the media, under the content */
     pointer-events: none;
   }
@@ -218,9 +218,9 @@
 
   .about-editorial-single-showcase__scroll-arrow {
     display: block;
-    font-family: "Inter", sans-serif;
+    font-family: var(--site-font);
     font-size: clamp(1.1rem, 1.1vw, 1.2rem);
-    font-weight: 300;
+    font-weight: var(--site-weight);
     line-height: 1;
     color: #fff;
   }
@@ -236,11 +236,11 @@
 
   .about-editorial-single-showcase__label {
     margin: 0 0 clamp(1rem, 1.8vw, 1.5rem);
-    font-family: "Inter", sans-serif;
+    font-family: var(--site-font);
     font-size: var(--project-overline-size, clamp(1.02rem, 1.35vw, 1.4rem));
-    font-weight: 400;
+    font-weight: var(--site-weight);
     letter-spacing: -0.01em;
-    color: var(--ase-muted, rgba(245, 241, 232, 0.62));
+    color: var(--ase-muted, rgba(var(--ink-muted-rgb, 245, 241, 232), 0.62));
   }
 
   .about-editorial-single-showcase__label::before {
@@ -256,7 +256,7 @@
     margin: 0;
     max-width: 23ch;
     font-size: clamp(1.5rem, 2.5vw, 2.55rem);
-    font-weight: 300;
+    font-weight: var(--site-weight-display);
     line-height: 1.18;
     letter-spacing: -0.025em;
     color: var(--ase-ink, #f4efe6);
@@ -267,7 +267,7 @@
      contient des <span class="hl"> (sinon le texte reste inchangé). Adaptatif
      fond sombre/clair via --ase-muted / --ase-ink. */
   .about-editorial-single-showcase__text:has(:global(.hl)) {
-    color: var(--ase-muted, rgba(245, 241, 232, 0.62));
+    color: var(--ase-muted, rgba(var(--ink-muted-rgb, 245, 241, 232), 0.62));
   }
 
   .about-editorial-single-showcase__text :global(.hl) {
@@ -279,7 +279,7 @@
   }
 
   .ase-btn {
-    font-family: "Inter", sans-serif;
+    font-family: var(--site-font);
     position: relative;
     display: inline-flex;
     align-items: center;
@@ -288,7 +288,7 @@
     height: clamp(3rem, 3.6vw, 3.4rem);
     padding: 0 1.4rem;
     font-size: clamp(0.92rem, 1.05vw, 1.05rem);
-    font-weight: 400;
+    font-weight: var(--site-weight);
     color: #f7f2e8;
     border: 0;
     cursor: pointer;
@@ -296,7 +296,7 @@
     backdrop-filter: blur(20px) saturate(160%) brightness(0.82);
     -webkit-backdrop-filter: blur(20px) saturate(160%) brightness(0.82);
     border-radius: 10px;
-    box-shadow: 0 6px 8px rgba(0, 0, 0, 0.04);
+    box-shadow: 0 6px 8px rgba(var(--shade-rgb, 0, 0, 0), 0.04);
     transition:
       transform 1.2s cubic-bezier(.22, .61, .36, 1),
       background 0.3s ease,
@@ -385,7 +385,7 @@
     aspect-ratio: 1.45 / 1;
     overflow: hidden;
     margin: 0;
-    background: #0b0b0b;
+    background: var(--bg-raised, #0b0b0b);
     margin-top: clamp(31rem, 48vh, 40rem);
     margin-left: clamp(-24rem, -21vw, -12rem);
   }
@@ -456,8 +456,8 @@
       height: 52vh;
       background: linear-gradient(
         to top,
-        var(--ase-bg, #000) 0%,
-        var(--ase-bg, #000) 34%,
+        var(--ase-bg, var(--bg-deep, #000)) 0%,
+        var(--ase-bg, var(--bg-deep, #000)) 34%,
         transparent 100%
       );
     }

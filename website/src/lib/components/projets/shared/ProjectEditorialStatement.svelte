@@ -18,14 +18,17 @@
     grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
     gap: 2rem;
     align-items: start;
-    padding: 0 var(--project-side-padding, 1.25rem) 6.5rem;
+    /* Même correction que sur `ProjectEditorialSplit` : le haut manquait, la
+       phrase se collait au bord de sa bande. Se voyait surtout depuis que ce
+       bloc ouvre sa bande sur la page Moovy. */
+    padding: clamp(3rem, 7vh, 5.5rem) var(--project-side-padding, 1.25rem) 6.5rem;
     background: transparent;
     color: var(--project-surface-ink, #121212);
   }
 
   .editorial-statement__eyebrow {
     padding-inline: var(--project-text-inset, 0);
-    font-family: "Inter", sans-serif;
+    font-family: var(--site-font);
     font-style: normal;
     font-size: var(--project-overline-size, clamp(1.08rem, 1.45vw, 1.5rem));
     line-height: 1;
@@ -40,8 +43,8 @@
   .editorial-statement__body p {
     margin: 0;
     max-width: 21ch;
-    font-family: "Inter", sans-serif;
-    font-weight: 300;
+    font-family: var(--site-font);
+    font-weight: var(--site-weight-display);
     font-size: var(--project-lead-size, clamp(1.35rem, 2.7vw, 2.8rem));
     line-height: 0.98;
     letter-spacing: -0.05em;
@@ -61,7 +64,7 @@
     .editorial-statement {
       grid-template-columns: 1fr;
       gap: 1rem;
-      padding: 0 var(--project-side-padding, 0.8rem) 4rem;
+      padding: clamp(2rem, 5vh, 3.2rem) var(--project-side-padding, 0.8rem) 4rem;
     }
 
     .editorial-statement__body {

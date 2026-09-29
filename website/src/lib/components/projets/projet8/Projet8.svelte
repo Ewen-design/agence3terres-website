@@ -1,12 +1,14 @@
 <script>
   import ProjectThemePage from "$lib/components/projets/shared/ProjectThemePage.svelte";
-  import ProjectThemeTrigger from "$lib/components/projets/shared/ProjectThemeTrigger.svelte";
   import ProjectHeroProjetsStyle from "$lib/components/projets/shared/ProjectHeroProjetsStyle.svelte";
   import ProjectEditorialRole from "$lib/components/projets/shared/ProjectEditorialRole.svelte";
   import ProjectEditorialSplit from "$lib/components/projets/shared/ProjectEditorialSplit.svelte";
   import ProjectEditorialStatement from "$lib/components/projets/shared/ProjectEditorialStatement.svelte";
   import ProjectEditorialMobileShowcase from "$lib/components/projets/shared/ProjectEditorialMobileShowcase.svelte";
   import ProjectEditorialMosaic from "$lib/components/projets/shared/ProjectEditorialMosaic.svelte";
+  // L'accordéon de verre de la page à propos — même composant, réutilisé tel
+  // quel : trois volets qui s'ouvrent sur place au-dessus d'une photo.
+  import EditorialAccordionShowcase from "$lib/components/apropos/AboutFocusEditorialShowcase.svelte";
   import ParallaxGallery2 from "$lib/components/home/ParallaxGallery2.svelte";
   import { videoSources } from "$lib/components/shared/media/videoSources.js";
 
@@ -17,7 +19,7 @@
     { title: "JustX", image: "/images/justx.webp", href: "/projet5" },
     { title: "JustX Fitness", image: "/images/justx_app.webp", href: "/projet7" },
     { title: "Mission X", image: "/images/missionX5.webp", href: "/projet6" },
-    { title: "Ludosphères", image: "/images/ludo.webp", href: "/projet4" },
+    { title: "Ludosphères", image: "/images/ludo-tablette.webp", href: "/projet4" },
     { title: "Votre projet ?", image: "/images/agence.webp", href: "/contact", cta: "Nous contacter" }
   ];
 </script>
@@ -40,7 +42,6 @@
     ctaExternal={true}
   />
 
-  <ProjectThemeTrigger theme="light" offset={132} />
 
   <div class="project-theme-band">
     <ProjectEditorialRole
@@ -74,7 +75,7 @@
     />
   </div>
 
-  <div class="project-theme-band">
+  <div class="project-theme-band theme-deep">
     <ProjectEditorialSplit
       title="La demande"
       text="Lybra Systems prend en charge la prospection commerciale de ses clients, de la liste de prospects jusqu'aux rendez-vous qualifiés. La marque avait déjà son colibri, mais un colibri daté. Il fallait le moderniser sans le trahir."
@@ -90,52 +91,41 @@
       text="Un colibri en plein <span class='hl'>envol</span>, comme l'élan que la marque donne à ses clients : de la <span class='hl'>liberté</span>, de la <span class='hl'>confiance</span>, et une <span class='hl'>proximité</span> qui ne se perd jamais en route."
     />
 
-    <ProjectEditorialSplit
-      title="L'emblème"
-      text="Quelques traits, une silhouette. Le colibri final tient dans une forme simple qui reste reconnaissable en favicon comme sur une façade, en aplat comme en réserve."
-      video={videoSources("lybra-embleme")}
-      videoPoster="/videos/lybra-embleme-poster.webp"
-      alt="L'emblème colibri de Lybra qui se dessine, suivi de la signature"
-      mediaAspectRatio="0.8"
-      mediaFit="contain"
-      reverse={true}
-    />
+  </div>
 
-    <ProjectEditorialSplit
-      title="Les couleurs"
-      text="Un bleu nuit pour la confiance, un bleu ciel pour l'envol, un vert pour la croissance. Chaque teinte a sa version du logo et ses fonds autorisés."
-      image="/images/lybra-planche.webp"
-      alt="Planche de marque Lybra : nuancier, applications écran et papier"
-      mediaAspectRatio="0.8"
-      mediaFit="contain"
+  <!-- Les trois volets de la charte tenaient dans trois blocs « titre + image »
+       à la file, tous bâtis pareil : on les lisait comme une liste. Le même
+       contenu passe dans l'accordéon de la page à propos — une photo par volet,
+       le texte qui s'ouvre sur place — et le lecteur choisit par quoi il
+       commence au lieu de tout faire défiler. -->
+  <div class="project-theme-band">
+    <EditorialAccordionShowcase
+      interval={11000}
+      slides={[
+        {
+          label: "L'emblème",
+          text: "Quelques traits, une silhouette. Le colibri final tient dans une forme <span class='hl'>simple</span> qui reste reconnaissable en favicon comme sur une façade, en aplat comme en réserve.",
+          image: "/images/lybra-planche.webp",
+          alt: "Planche de marque Lybra : nuancier, applications écran et papier"
+        },
+        {
+          label: "Les couleurs",
+          text: "Un bleu nuit pour la <span class='hl'>confiance</span>, un bleu ciel pour l'<span class='hl'>envol</span>, un vert pour la <span class='hl'>croissance</span>. Chaque teinte a sa version du logo et ses fonds autorisés.",
+          image: "/images/lybra-fond-ciel.webp",
+          alt: "Logo Lybra en réserve sur fond bleu ciel"
+        },
+        {
+          label: "Le système",
+          text: "Emblème seul ou accompagné du nom, en blanc, en bleu nuit, en bleu ciel ou en vert : chaque combinaison est <span class='hl'>déclinée</span>, nommée et documentée.",
+          image: "/images/lybra-declinaisons.webp",
+          alt: "Planche des déclinaisons du logo Lybra"
+        }
+      ]}
     />
   </div>
 
-  <div class="project-theme-band">
-    <ProjectEditorialMobileShowcase
-      text="Le même colibri, en <span class='hl'>réserve</span> sur chaque fond de la charte."
-      leftImage="/images/lybra-fond-vert.webp"
-      leftAlt="Logo Lybra en réserve sur fond vert"
-      rightImage="/images/lybra-fond-ciel.webp"
-      rightAlt="Logo Lybra en réserve sur fond bleu ciel"
-      mediaMinHeight="26rem"
-      mediaMobileAspectRatio="1.778"
-    />
 
-    <ProjectEditorialSplit
-      title="Le système"
-      text="Emblème seul ou accompagné du nom, en blanc, en bleu nuit, en bleu ciel ou en vert : chaque combinaison est déclinée, nommée et documentée."
-      image="/images/lybra-declinaisons.webp"
-      alt="Planche des déclinaisons du logo Lybra"
-      mediaAspectRatio="0.583"
-      mediaFit="contain"
-      reverse={true}
-    />
-  </div>
-
-  <ProjectThemeTrigger theme="dark" />
-
-  <div class="project-theme-band">
+  <div class="project-theme-band theme-deep">
     <ProjectEditorialMosaic
       text="Une <span class='hl'>marque</span> qui tient à l'écran, sur le papier et en pleine rue."
       feature={{ src: "/images/lybra-macbook.webp", alt: "Identité Lybra appliquée sur un écran" }}

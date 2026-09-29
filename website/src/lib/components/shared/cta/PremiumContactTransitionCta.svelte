@@ -75,7 +75,7 @@
 
 <style>
   .premium-contact-cta {
-    --cta-bg: #000;
+    --cta-bg: var(--bg-deep, #000);
     --cta-fg: #fff;
     --cta-muted: rgba(255,255,255,.48);
     --cta-button-bg: rgba(255, 255, 255, 0.11);
@@ -117,7 +117,7 @@
   }
 
   .premium-contact-cta__eyebrow {
-    font-family: "Inter", sans-serif;
+    font-family: var(--site-font);
     font-size: clamp(2.2rem, 3vw, 3rem);
     line-height: 1;
     color: var(--cta-muted);
@@ -137,9 +137,9 @@
 
   .premium-contact-cta__copy h2 {
     margin: 0;
-    font-family: "Inter", sans-serif;
+    font-family: var(--site-font);
     font-size: clamp(3rem, 5.8vw, 6rem);
-    font-weight: 300;
+    font-weight: var(--site-weight-display);
     line-height: .98;
     letter-spacing: -0.055em;
     max-width: 12ch;
@@ -157,7 +157,7 @@
   }
 
   .premium-contact-cta__button {
-    font-family: "Inter", sans-serif;
+    font-family: var(--site-font);
     position: relative;
     height: 40px;
     display: flex;
@@ -177,7 +177,7 @@
     backface-visibility: hidden;
     -webkit-backface-visibility: hidden;
     border-radius: 10px;
-    box-shadow: 0 6px 8px rgba(0, 0, 0, 0.04);
+    box-shadow: 0 6px 8px rgba(var(--shade-rgb, 0, 0, 0), 0.04);
     transition:
       color 220ms ease,
       background-color .7s cubic-bezier(.22,.61,.36,1),

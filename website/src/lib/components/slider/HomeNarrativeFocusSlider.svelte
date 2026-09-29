@@ -30,7 +30,7 @@
       number: "05",
       title: "Ludosphères",
       description: "Site d'artiste pour oeuvres peintes.",
-      image: "/images/apple_justx.webp"
+      image: "/images/ludo-tablette.webp"
     },
     {
       number: "06",

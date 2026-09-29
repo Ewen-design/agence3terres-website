@@ -248,14 +248,14 @@
 
 <style>
   .services-accordion {
-    --section-bg: #000;
+    --section-bg: var(--bg-deep, #000);
     --section-text: #f4efe6;
     --item-1: #151515;
     --item-2: #111;
-    --item-3: #000;
+    --item-3: var(--bg-deep, #000);
     --project-title: #f4efe6;
     --number-color: #5f6771;
-    --cta-text-color: rgba(244, 239, 230, 0.72);
+    --cta-text-color: rgba(var(--ink-muted-rgb, 245, 241, 232), 0.72);
     --btn-text: #f4efe6;
     --btn-border: rgba(255, 255, 255, 0.15);
     --btn-bg: rgba(255, 255, 255, 0.11);
@@ -309,8 +309,8 @@
 
   .header-title-wrap h2 {
     margin: 0;
-    font-family: "Inter", sans-serif;
-    font-weight: 500;
+    font-family: var(--site-font);
+    font-weight: var(--site-weight-display);
     font-style: normal;
     font-synthesis: none;
     font-size: clamp(2.5rem, 5vw, 5.5rem);
@@ -409,8 +409,8 @@
 
   .title-row h3 {
     margin: 0;
-    font-family: "Inter", sans-serif;
-    font-weight: 500;
+    font-family: var(--site-font);
+    font-weight: var(--site-weight-display);
     font-size: clamp(1.8rem, 3vw, 4rem);
     line-height: 0.96;
     letter-spacing: -0.045em;
@@ -419,7 +419,7 @@
   }
 
   .number {
-    font-family: "Inter", sans-serif;
+    font-family: var(--site-font);
     font-style: normal;
     font-size: clamp(1.6rem, 2.4vw, 3rem);
     line-height: 1;
@@ -452,7 +452,7 @@
   .cta-text {
     margin: 0;
     max-width: 32rem;
-    font-family: "Inter", sans-serif;
+    font-family: var(--site-font);
     font-size: clamp(0.98rem, 1.08vw, 1.15rem);
     line-height: 1.48;
     color: var(--cta-text-color);
@@ -460,7 +460,7 @@
   }
 
   .nav-btn {
-    font-family: "Inter", sans-serif;
+    font-family: var(--site-font);
     position: relative;
     height: 40px;
     display: inline-flex;
@@ -477,7 +477,7 @@
     -webkit-backdrop-filter: blur(20px) saturate(160%) brightness(0.82);
     will-change: transform, opacity;
     border-radius: 10px;
-    box-shadow: 0 6px 8px rgba(0, 0, 0, 0.04);
+    box-shadow: 0 6px 8px rgba(var(--shade-rgb, 0, 0, 0), 0.04);
     transition:
       transform 1.2s cubic-bezier(.22,.61,.36,1),
       box-shadow 1.2s cubic-bezier(.22,.61,.36,1),

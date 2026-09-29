@@ -4,18 +4,16 @@
   import AutoVideo from "$lib/components/shared/media/AutoVideo.svelte";
 
   // ─────────────────────────────────────────────────────────────────────────
-  //  ProjectFocusReveal — slider plein écran (100vh) des projets.
+  //  ProjectFocusReveal — les projets dans un bloc encadré.
   //
-  //  Rotation AUTOMATIQUE (lecture auto), agencement identique à avant : image
-  //  du projet en plein écran + titre / texte centrés + bouton verre, plus le
-  //  module de suivi (pilule de points + lecture/pause) à DROITE (desktop) ou en
-  //  BAS (mobile).
+  //  Même principe qu'AboutValues (page à propos) : un grand bloc arrondi qui
+  //  porte le visuel du projet, et les noms des projets cliquables à côté — ici
+  //  à GAUCHE. Dans le bloc : le module de suivi (pilule de points +
+  //  lecture/pause) qui vivait à droite de l'écran, et dans le coin bas gauche
+  //  un dégradé discret sur lequel se posent le petit texte puis le bouton.
   //
-  //  Le scroll vertical NE change PLUS les slides : le composant est un simple
-  //  bloc de 100vh dans le flux de la page. Sur mobile, on change de slide en
-  //  SWIPANT horizontalement — la transition reste le même fondu doux qu'avant
-  //  (fondu de l'image + arrivée du titre), sans jamais capturer le scroll de la
-  //  page.
+  //  Rotation automatique conservée, comme le swipe horizontal (mobile) et les
+  //  flèches du clavier. Le scroll vertical de la page reste natif.
   // ─────────────────────────────────────────────────────────────────────────
 
   export let slides = [];
@@ -223,137 +221,236 @@
   aria-roledescription="carrousel"
   aria-label="Sélection de projets"
 >
-  <!-- Fond : médias plein écran en fondu doux (piloté par le slide actif) -->
-  <div class="fr__bg" aria-hidden="true">
-    {#each slides as slide, i}
-      {#if slide.video}
-        <!-- Toutes les slides sont empilées : la vidéo reste « visible » pour
-             l'IntersectionObserver même à opacité nulle. D'où le verrou `active`,
-             qui ne la laisse jouer que quand sa slide est réellement à l'écran. -->
-        <div class="fr__bg-media" class:is-shown={activeIndex === i}>
-          <AutoVideo
-            sources={slide.video}
-            mobileSources={slide.mobileVideo ?? []}
-            mobileQuery="(max-width: 900px) and (orientation: portrait)"
-            poster={slide.poster}
-            active={activeIndex === i && sectionInView}
-          />
-        </div>
-      {:else}
-        <img
-          class="fr__bg-img"
-          class:is-shown={activeIndex === i}
-          src={slide.images[0]}
-          alt=""
-          loading={i < 2 ? "eager" : "lazy"}
-          decoding="async"
-          draggable="false"
-        />
-      {/if}
-    {/each}
-  </div>
-
-  <!-- Overlay : halo radial dans le coin du texte (desktop) / voile doux (mobile) -->
-  <div class="fr__focus-overlay" aria-hidden="true"></div>
-
-  <!-- Bloc texte + bouton (coin bas gauche desktop / centré mobile) -->
-  <div class="fr__focus">
-    <div class="fr__content">
-      <div class="fr__copy">
-        {#each slides as slide, i}
-          <div
-            class="fr__focus-slot"
-            class:is-active={activeIndex === i}
-            aria-hidden={activeIndex !== i ? "true" : undefined}
-          >
-            <h2 class="fr__title">{slide.title}</h2>
-            {#if slide.description}
-              <p class="fr__desc">{slide.description}</p>
-            {/if}
-          </div>
-        {/each}
-      </div>
-
-      {#if activeHref}
-        <a
-          href={activeHref}
-          class="fr__btn"
-          data-cursor="button"
-          on:mousemove={handleGlowMove}
-          aria-label={activeCta + " — " + activeTitle}
-        >
-          <span class="fr__btn-inner" data-text={activeCta}>
-            <span class="fr__btn-text">{activeCta}</span>
-          </span>
-        </a>
-      {/if}
-    </div>
-  </div>
-
-  <!-- Barre de suivi — pilule à points + lecture/pause (droite desktop / bas mobile) -->
-  <div class="fr__rail" role="group" aria-label="Progression des projets">
-    <div class="fr__pill" role="tablist" aria-label="projets">
+  <div class="fr__inner">
+    <!-- Les noms des projets, cliquables, à gauche. -->
+    <nav class="fr__nav" aria-label="Choisir un projet">
       {#each slides as slide, i}
         <button
           type="button"
-          class="fr__dot"
+          class="fr__name"
           class:is-active={activeIndex === i}
-          role="tab"
-          aria-selected={activeIndex === i}
-          aria-label={"Projet " + (i + 1) + " : " + slide.title.replace(/\n/g, " ")}
+          data-cursor="button"
+          aria-current={activeIndex === i ? "true" : undefined}
           on:click={() => goTo(i)}
-        ></button>
+        >
+          {slide.title.replace(/\n/g, " ")}
+        </button>
       {/each}
-    </div>
+    </nav>
 
-    {#if N > 1}
-      <button
-        type="button"
-        class="fr__pp"
-        data-no-wipe
-        on:click={togglePlay}
-        aria-label={playing ? "Pause de la lecture automatique" : atEnd() ? "Rejouer la lecture automatique" : "Lecture automatique"}
-      >
-        {#if playing}
-          <svg viewBox="0 0 24 24" width="1em" height="1em" aria-hidden="true"><rect x="7" y="6" width="3.4" height="12" rx="1.1" fill="currentColor"/><rect x="13.6" y="6" width="3.4" height="12" rx="1.1" fill="currentColor"/></svg>
-        {:else if atEnd()}
-          <svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 11a8 8 0 1 0-.6 4"/><polyline points="20 5 20 11 14 11"/></svg>
-        {:else}
-          <svg viewBox="0 0 24 24" width="1em" height="1em" aria-hidden="true"><path d="M8 5.5v13l11-6.5z" fill="currentColor"/></svg>
+    <!-- Le bloc image. -->
+    <div class="fr__panel">
+      <div class="fr__bg" aria-hidden="true">
+        {#each slides as slide, i}
+          {#if slide.video}
+            <!-- Toutes les slides sont empilées : la vidéo reste « visible » pour
+                 l'IntersectionObserver même à opacité nulle. D'où le verrou
+                 `active`, qui ne la laisse jouer que quand sa slide est à
+                 l'écran. -->
+            <div class="fr__bg-media" class:is-shown={activeIndex === i}>
+              <AutoVideo
+                sources={slide.video}
+                mobileSources={slide.mobileVideo ?? []}
+                mobileQuery="(max-width: 900px) and (orientation: portrait)"
+                poster={slide.poster}
+                active={activeIndex === i && sectionInView}
+              />
+            </div>
+          {:else}
+            <img
+              class="fr__bg-img"
+              class:is-shown={activeIndex === i}
+              src={slide.images[0]}
+              alt=""
+              loading={i < 2 ? "eager" : "lazy"}
+              decoding="async"
+              draggable="false"
+            />
+          {/if}
+        {/each}
+      </div>
+
+      <!-- Dégradé de coin : juste ce qu'il faut pour poser le texte. -->
+      <div class="fr__corner" aria-hidden="true"></div>
+
+      <!-- Petit texte + bouton, dans le coin bas gauche du bloc. -->
+      <div class="fr__focus">
+        <div class="fr__copy">
+          {#each slides as slide, i}
+            <div
+              class="fr__focus-slot"
+              class:is-active={activeIndex === i}
+              aria-hidden={activeIndex !== i ? "true" : undefined}
+            >
+              {#if slide.description}
+                <p class="fr__desc">{slide.description}</p>
+              {/if}
+            </div>
+          {/each}
+        </div>
+
+        {#if activeHref}
+          <a
+            href={activeHref}
+            class="fr__btn"
+            data-cursor="button"
+            on:mousemove={handleGlowMove}
+            aria-label={activeCta + " — " + activeTitle}
+          >
+            <span class="fr__btn-inner" data-text={activeCta}>
+              <span class="fr__btn-text">{activeCta}</span>
+            </span>
+          </a>
         {/if}
-      </button>
-    {/if}
+      </div>
+
+      <!-- Le module de suivi, désormais DANS le bloc image. -->
+      <div class="fr__rail" role="group" aria-label="Progression des projets">
+        <div class="fr__pill" role="tablist" aria-label="projets">
+          {#each slides as slide, i}
+            <button
+              type="button"
+              class="fr__dot"
+              class:is-active={activeIndex === i}
+              role="tab"
+              aria-selected={activeIndex === i}
+              aria-label={"Projet " + (i + 1) + " : " + slide.title.replace(/\n/g, " ")}
+              on:click={() => goTo(i)}
+            ></button>
+          {/each}
+        </div>
+
+        {#if N > 1}
+          <button
+            type="button"
+            class="fr__pp"
+            data-no-wipe
+            on:click={togglePlay}
+            aria-label={playing ? "Pause de la lecture automatique" : atEnd() ? "Rejouer la lecture automatique" : "Lecture automatique"}
+          >
+            {#if playing}
+              <svg viewBox="0 0 24 24" width="1em" height="1em" aria-hidden="true"><rect x="7" y="6" width="3.4" height="12" rx="1.1" fill="currentColor"/><rect x="13.6" y="6" width="3.4" height="12" rx="1.1" fill="currentColor"/></svg>
+            {:else if atEnd()}
+              <svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 11a8 8 0 1 0-.6 4"/><polyline points="20 5 20 11 14 11"/></svg>
+            {:else}
+              <svg viewBox="0 0 24 24" width="1em" height="1em" aria-hidden="true"><path d="M8 5.5v13l11-6.5z" fill="currentColor"/></svg>
+            {/if}
+          </button>
+        {/if}
+      </div>
+    </div>
   </div>
 </section>
 {/if}
 
 <style>
+  /* Mêmes marges et mêmes arrondis que les blocs de la page à propos. */
   .fr {
-    position: relative;
-    width: 100%;
-    height: 120vh;
-    height: 120lvh;
-    overflow: hidden;
-    background: #000;
-    isolation: isolate;
-    z-index: 2;
-    /* Le slider ne change de slide qu'au swipe horizontal / points / lecture
-       auto : on laisse le scroll vertical de la page totalement natif. */
-    touch-action: pan-y;
+    --fr-inset: var(--site-inset);
+    --fr-radius: 22px;
+    --fr-ink: #f4efe6;
     --fr-ease: cubic-bezier(0.16, 1, 0.3, 1);
     --fr-ease-soft: cubic-bezier(0.22, 0.61, 0.36, 1);
-    --fr-dur-img: 0.85s;   /* fondu entre deux projets */
-    --bar-inset: 0px;
-    --bar-inset: calc(100lvh - 100svh);
+    --fr-dur-img: 0.85s; /* fondu entre deux projets */
+
+    position: relative;
+    z-index: 2;
+    width: 100%;
+    background: var(--bg-deep, #000);
+    color: var(--fr-ink);
+    padding: clamp(1rem, 2vh, 2rem) var(--fr-inset) clamp(4.5rem, 10vh, 9rem);
+    overflow-x: clip;
+    /* On ne change de slide qu'au swipe horizontal / points / lecture auto :
+       le scroll vertical de la page reste totalement natif. */
+    touch-action: pan-y;
   }
 
-  /* ── Fond : images plein écran en fondu ────────────────────────────────────── */
+  .fr__inner {
+    display: grid;
+    grid-template-columns: minmax(190px, 16vw) minmax(0, 1fr);
+    gap: clamp(1.2rem, 2.5vw, 2.6rem);
+    align-items: stretch;
+  }
+
+  /* ── Noms cliquables (à gauche) ─────────────────────────────────────────── */
+  .fr__nav {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: clamp(0.25rem, 0.5vw, 0.45rem);
+  }
+
+  .fr__name {
+    display: block;
+    width: 100%;
+    padding: clamp(0.7rem, 1.1vw, 0.95rem) clamp(0.9rem, 1.4vw, 1.3rem);
+    border: 0;
+    /* Même arrondi que le bouton menu du header. */
+    border-radius: 10px;
+    background: transparent;
+    font-family: var(--site-font);
+    font-size: clamp(0.95rem, 1.12vw, 1.15rem);
+    font-weight: var(--site-weight);
+    letter-spacing: -0.012em;
+    line-height: 1.25;
+    text-align: left;
+    color: rgba(var(--ink-muted-rgb, 245, 241, 232), 0.44);
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    transition:
+      background-color 0.5s var(--fr-ease-soft),
+      color 0.5s var(--fr-ease-soft);
+  }
+
+  @media (hover: hover) {
+    .fr__name:hover {
+      color: rgba(var(--ink-muted-rgb, 245, 241, 232), 0.78);
+    }
+  }
+
+  /*  Ces pastilles sont posées sur le FOND DE PAGE, pas sur une photo : un voile
+   *  blanc y donne un gris NEUTRE (blanc à 7 % sur le noir bleuté = rgb(23,24,26)),
+   *  qui jure avec les cartes de la palette. Elles prennent donc directement la
+   *  couleur des cartes — même clarté, mais la teinte de la palette. Ailleurs sur
+   *  le site, le repli garde le voile blanc d'origine.
+   *  (Les boutons posés sur les photos, eux — « Voir le projet », le module de
+   *  suivi — restent en verre : là, le voile blanc est le bon outil.) */
+  .fr__name.is-active {
+    background: var(--bg-panel, rgba(255, 255, 255, 0.07));
+    color: #ffffff;
+  }
+
+  .fr__name:focus-visible {
+    outline: 2px solid var(--lead-blue, #5768ff);
+    outline-offset: 3px;
+  }
+
+  /* ── Bloc image ─────────────────────────────────────────────────────────── */
+  .fr__panel {
+    position: relative;
+    height: min(80vh, 880px);
+    border-radius: var(--fr-radius);
+    overflow: hidden;
+    background: var(--bg-raised, #080808);
+    /* Contexte isolé : les boutons verre du bloc floutent le visuel qui est
+       DEDANS (sinon ils n'auraient rien à flouter). */
+    isolation: isolate;
+  }
+
   .fr__bg {
     position: absolute;
     inset: 0;
     z-index: 0;
-    background: #000;
+    background: var(--bg-raised, #080808);
   }
+
+  /* Les sept visuels sont empilés dans le même bloc. Ceux qui ne sont pas à
+     l'écran passent en `visibility: hidden` une fois le fondu terminé : le
+     compositeur cesse alors de les peindre, et le navigateur peut relâcher
+     leur décodage — sur un mobile, sept grandes images peintes en même temps
+     dépassent le budget d'images décodées et le bloc vire au noir. Le retard
+     (`0s ... var(--fr-dur-img)`) laisse le fondu sortant se jouer entièrement
+     avant la bascule. */
   .fr__bg-img {
     position: absolute;
     inset: 0;
@@ -362,12 +459,20 @@
     object-fit: cover;
     display: block;
     opacity: 0;
+    visibility: hidden;
     backface-visibility: hidden;
-    transition: opacity var(--fr-dur-img) var(--fr-ease-soft);
+    transition:
+      opacity var(--fr-dur-img) var(--fr-ease-soft),
+      visibility 0s linear var(--fr-dur-img);
   }
+
   .fr__bg-img.is-shown {
     z-index: 1;
     opacity: 1;
+    visibility: visible;
+    transition:
+      opacity var(--fr-dur-img) var(--fr-ease-soft),
+      visibility 0s linear 0s;
   }
 
   /* Même boîte et même fondu que .fr__bg-img — c'est ce conteneur qui porte
@@ -376,98 +481,92 @@
     position: absolute;
     inset: 0;
     opacity: 0;
+    /* Même bascule que les images : `visibility` ne change rien à
+       l'IntersectionObserver d'AutoVideo (il ne regarde que la géométrie), et
+       la lecture est déjà coupée par `active`. */
+    visibility: hidden;
     backface-visibility: hidden;
-    transition: opacity var(--fr-dur-img) var(--fr-ease-soft);
+    transition:
+      opacity var(--fr-dur-img) var(--fr-ease-soft),
+      visibility 0s linear var(--fr-dur-img);
   }
+
   .fr__bg-media.is-shown {
     z-index: 1;
     opacity: 1;
+    visibility: visible;
+    transition:
+      opacity var(--fr-dur-img) var(--fr-ease-soft),
+      visibility 0s linear 0s;
   }
 
-  /* ── Overlay ────────────────────────────────────────────────────────────────
-     Desktop : UNIQUEMENT un halo radial dans le coin du texte (bas gauche).
-     Mobile (plus bas) : un voile doux, pas trop fort, sur toute l'image. */
-  .fr__focus-overlay {
+  /* Dégradé de coin : discret, et fondu jusqu'à rien avant le milieu du bloc. */
+  .fr__corner {
     position: absolute;
     inset: 0;
     z-index: 2;
     pointer-events: none;
+    /* Assez dense au ras du coin pour tenir sur un visuel clair (les cartes
+       Lybra), et éteint bien avant le milieu du bloc pour rester discret. */
     background: radial-gradient(
-      125% 105% at 0% 100%,
-      rgba(2, 5, 10, 0.74) 0%,
-      rgba(2, 5, 10, 0.44) 24%,
-      rgba(2, 5, 10, 0.16) 44%,
-      rgba(2, 5, 10, 0) 64%
+      84% 80% at 0% 100%,
+      rgba(var(--shade-rgb, 0, 0, 0), 0.82) 0%,
+      rgba(var(--shade-rgb, 0, 0, 0), 0.5) 24%,
+      rgba(var(--shade-rgb, 0, 0, 0), 0.18) 46%,
+      rgba(var(--shade-rgb, 0, 0, 0), 0) 72%
     );
   }
 
-  /* ── Focus : titre + texte + bouton (coin bas gauche sur desktop) ───────────── */
+  /* ── Petit texte + bouton, coin bas gauche ──────────────────────────────── */
   .fr__focus {
     position: absolute;
-    inset: 0;
     z-index: 3;
-    display: flex;
-    align-items: flex-end;
-    justify-content: flex-start;
-    text-align: left;
-    padding: clamp(2.2rem, 5vw, 5.5rem);
-    padding-bottom: clamp(8rem, 20vh, 17rem);
-    pointer-events: none;
-  }
-  .fr__content {
+    left: clamp(1.3rem, 2.4vw, 2.4rem);
+    right: clamp(1.3rem, 2.4vw, 2.4rem);
+    bottom: clamp(1.3rem, 2.4vw, 2.4rem);
     display: flex;
     flex-direction: column;
     align-items: flex-start;
-    gap: clamp(1.4rem, 2.4vw, 2.1rem);
-    max-width: 42rem;
+    gap: clamp(0.9rem, 1.5vw, 1.3rem);
+    pointer-events: none;
   }
+
   .fr__copy {
     display: grid;
   }
+
   .fr__focus-slot {
     grid-area: 1 / 1;
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
     opacity: 0;
-    transform: translate3d(0, 26px, 0) scale(0.985);
-    transition: opacity 0.9s var(--fr-ease-soft),
-      transform 1s var(--fr-ease);
+    transform: translate3d(0, 18px, 0);
+    transition:
+      opacity 0.85s var(--fr-ease-soft),
+      transform 0.95s var(--fr-ease);
     backface-visibility: hidden;
     pointer-events: none;
   }
+
   .fr__focus-slot.is-active {
     opacity: 1;
-    transform: translate3d(0, 0, 0) scale(1);
+    transform: translate3d(0, 0, 0);
     pointer-events: auto;
   }
 
-  .fr__title {
-    margin: 0;
-    font-family: var(--site-font, "Inter", sans-serif);
-    font-weight: 600;
-    font-size: clamp(3.2rem, 6.4vw, 7.6rem);
-    line-height: 0.94;
-    letter-spacing: -0.03em;
-    color: #fff;
-    white-space: pre-line;
-    text-wrap: balance;
-    text-shadow: 0 8px 42px rgba(0, 0, 0, 0.4);
-  }
   .fr__desc {
-    margin: clamp(1rem, 2vw, 1.6rem) 0 0;
-    max-width: 34ch;
-    font-family: var(--site-font, "Inter", sans-serif);
-    font-weight: 300;
-    font-size: clamp(1rem, 1.2vw, 1.25rem);
-    line-height: 1.55;
-    color: rgba(255, 255, 255, 0.9);
+    margin: 0;
+    max-width: 30ch;
+    font-family: var(--site-font);
+    font-weight: var(--site-weight);
+    font-size: clamp(1rem, 1.22vw, 1.28rem);
+    line-height: 1.42;
+    letter-spacing: -0.012em;
+    color: #ffffff;
     white-space: pre-line;
     text-wrap: pretty;
-    text-shadow: 0 4px 24px rgba(0, 0, 0, 0.45);
+    text-shadow: 0 4px 24px rgba(var(--shade-rgb, 0, 0, 0), 0.45);
   }
 
-  /* ── Bouton verre (identique aux autres boutons du site) ───────────────────── */
+  /* ── Bouton verre (identique aux autres boutons du site) ─────────────────── */
   .fr__btn {
     position: relative;
     display: inline-flex;
@@ -475,8 +574,8 @@
     justify-content: center;
     height: 42px;
     padding: 0 1.6rem;
-    font-family: "Inter", sans-serif;
-    font-weight: 400;
+    font-family: var(--site-font);
+    font-weight: var(--site-weight);
     font-size: 0.92rem;
     color: #fff;
     text-decoration: none;
@@ -485,7 +584,7 @@
     backdrop-filter: blur(20px) saturate(160%) brightness(0.82);
     -webkit-backdrop-filter: blur(20px) saturate(160%) brightness(0.82);
     border-radius: 10px;
-    box-shadow: 0 6px 8px rgba(0, 0, 0, 0.08);
+    box-shadow: 0 6px 8px rgba(var(--shade-rgb, 0, 0, 0), 0.08);
     pointer-events: auto;
     will-change: transform, opacity;
     transform: translateZ(0);
@@ -555,17 +654,17 @@
   .fr__btn:hover .fr__btn-text { transform: translateY(-100%); }
   .fr__btn:hover .fr__btn-inner::after { transform: translateY(0); }
 
-  /* ── Barre de suivi (droite) — pilule verticale à points, façon dock ───────── */
+  /* ── Module de suivi : pilule verticale, à droite DANS le bloc ───────────── */
   .fr__rail {
     position: absolute;
-    right: clamp(1rem, 3vw, 2.6rem);
+    right: clamp(0.9rem, 1.8vw, 1.7rem);
     top: 50%;
     transform: translateY(-50%);
     z-index: 6;
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: clamp(0.8rem, 1.4vw, 1.1rem);
+    gap: clamp(0.7rem, 1.2vw, 1rem);
     pointer-events: auto;
   }
   .fr__pill,
@@ -573,7 +672,7 @@
     background: rgba(255, 255, 255, 0.11);
     backdrop-filter: blur(20px) saturate(160%) brightness(0.82);
     -webkit-backdrop-filter: blur(20px) saturate(160%) brightness(0.82);
-    box-shadow: 0 6px 8px rgba(0, 0, 0, 0.08);
+    box-shadow: 0 6px 8px rgba(var(--shade-rgb, 0, 0, 0), 0.08);
     transform: translateZ(0);
     -webkit-backface-visibility: hidden;
     backface-visibility: hidden;
@@ -583,9 +682,9 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: clamp(0.85rem, 1.5vh, 1.25rem);
-    width: clamp(2.5rem, 3vw, 3rem);
-    padding: clamp(1rem, 1.6vw, 1.35rem) 0;
+    gap: clamp(0.8rem, 1.4vh, 1.15rem);
+    width: clamp(2.4rem, 2.8vw, 2.9rem);
+    padding: clamp(0.9rem, 1.5vw, 1.25rem) 0;
     border-radius: 999px;
   }
   .fr__dot {
@@ -606,7 +705,7 @@
     .fr__dot:hover { background: rgba(255, 255, 255, 0.7); }
   }
   .fr__dot.is-active {
-    height: clamp(26px, 3.4vh, 38px);
+    height: clamp(24px, 3vh, 34px);
     background: #ffffff;
   }
   .fr__dot:focus-visible {
@@ -617,12 +716,12 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: clamp(2.5rem, 3vw, 3rem);
-    height: clamp(2.5rem, 3vw, 3rem);
+    width: clamp(2.4rem, 2.8vw, 2.9rem);
+    height: clamp(2.4rem, 2.8vw, 2.9rem);
     border: 0;
     border-radius: 999px;
     color: #f4efe6;
-    font-size: 1.15rem;
+    font-size: 1.1rem;
     cursor: pointer;
     -webkit-tap-highlight-color: transparent;
     transition: background 0.3s ease;
@@ -659,48 +758,70 @@
   .fr__blur-prewarm span:nth-child(1) { width: 200px; }
   .fr__blur-prewarm span:nth-child(2) { width: 56px; }
 
-  /* ── Responsive : barre HORIZONTALE en bas ─────────────────────────────────── */
-  @media (max-width: 900px), (pointer: coarse) and (orientation: landscape) and (max-height: 600px) {
-    /* Mobile : voile doux (pas trop fort) sur toute l'image. */
-    .fr__focus-overlay {
-      background: linear-gradient(
-        to bottom,
-        rgba(3, 6, 12, 0.32) 0%,
-        rgba(3, 6, 12, 0.12) 34%,
-        rgba(3, 6, 12, 0.16) 60%,
-        rgba(3, 6, 12, 0.5) 100%
-      );
+  /* ── Mobile : le bloc d'abord, les noms en dessous ───────────────────────── */
+  @media (max-width: 900px) {
+    .fr {
+      padding: clamp(0.8rem, 2vh, 1.5rem) 1rem clamp(3.5rem, 9vh, 6.5rem);
     }
-    /* Mobile : on recentre le bloc texte + bouton (le coin bas gauche reste
-       desktop). */
-    .fr__focus {
-      align-items: center;
-      justify-content: center;
-      text-align: center;
-      padding: clamp(2.4rem, 12vw, 5rem);
-      padding-bottom: clamp(5rem, 16vh, 8rem);
-    }
-    .fr__content {
-      align-items: center;
-      max-width: 46rem;
-    }
-    .fr__focus-slot { align-items: center; }
 
-    .fr__rail {
-      left: 50%;
-      right: auto;
-      top: auto;
-      bottom: calc(max(clamp(5rem, 13vw, 7.5rem), var(--safe-bottom-offset)) + var(--bar-inset));
-      transform: translateX(-50%);
+    .fr__inner {
+      grid-template-columns: minmax(0, 1fr);
+      gap: clamp(1rem, 3vw, 1.6rem);
+    }
+
+    /* Le DOM garde les noms en premier (colonne de gauche sur grand écran) :
+       sur mobile, c'est l'ordre de grille qui remet le bloc au-dessus. */
+    .fr__panel {
+      order: 1;
+      height: min(72vh, 620px);
+      border-radius: 18px;
+    }
+
+    .fr__nav {
+      order: 2;
       flex-direction: row;
-      gap: clamp(0.5rem, 2vw, 0.75rem);
+      justify-content: flex-start;
+      gap: 0.5rem;
+      overflow-x: auto;
+      scrollbar-width: none;
+      -webkit-overflow-scrolling: touch;
+      /* Les pastilles peuvent filer d'un bord à l'autre de l'écran. */
+      margin-inline: -1rem;
+      padding-inline: 1rem;
+    }
+
+    .fr__nav::-webkit-scrollbar {
+      display: none;
+    }
+
+    .fr__name {
+      width: auto;
+      flex: 0 0 auto;
+      white-space: nowrap;
+      background: var(--bg-raised, rgba(255, 255, 255, 0.04));
+      font-size: 0.95rem;
+      padding: 0.72rem 1.15rem;
+    }
+
+    .fr__name.is-active {
+      background: var(--bg-panel, rgba(255, 255, 255, 0.11));
+    }
+
+    /* Le coin bas gauche est pris par le texte : le module de suivi passe en
+       haut à droite du bloc, à l'horizontale. */
+    .fr__rail {
+      top: clamp(0.9rem, 3vw, 1.4rem);
+      right: clamp(0.9rem, 3vw, 1.4rem);
+      transform: none;
+      flex-direction: row;
+      gap: clamp(0.5rem, 2vw, 0.7rem);
     }
     .fr__pill {
       flex-direction: row;
       width: auto;
-      height: clamp(2.6rem, 8.5vw, 3rem);
-      padding: 0 clamp(1.05rem, 4.5vw, 1.4rem);
-      gap: clamp(0.7rem, 3vw, 1rem);
+      height: clamp(2.4rem, 8vw, 2.8rem);
+      padding: 0 clamp(1rem, 4vw, 1.3rem);
+      gap: clamp(0.65rem, 2.6vw, 0.9rem);
     }
     .fr__dot {
       width: clamp(8px, 2.2vw, 9px);
@@ -709,15 +830,19 @@
         width 0.5s cubic-bezier(0.22, 0.61, 0.36, 1),
         background 0.35s ease;
     }
-    /* Point actif : s'allonge horizontalement. */
     .fr__dot.is-active {
-      width: clamp(24px, 7vw, 32px);
+      width: clamp(22px, 6.5vw, 30px);
       height: clamp(8px, 2.2vw, 9px);
     }
-  }
+    .fr__pp {
+      width: clamp(2.4rem, 8vw, 2.8rem);
+      height: clamp(2.4rem, 8vw, 2.8rem);
+    }
 
-  @media (max-width: 480px) {
-    .fr__title { font-size: clamp(2.6rem, 13vw, 4.2rem); }
+    .fr__desc {
+      font-size: 1.02rem;
+      max-width: 26ch;
+    }
   }
 
   @media (max-width: 768px) {
@@ -727,6 +852,62 @@
     .fr__blur-prewarm span {
       backdrop-filter: blur(12px) saturate(130%);
       -webkit-backdrop-filter: blur(12px) saturate(130%);
+    }
+  }
+
+  /* ── Téléphone en paysage : boîte large et courte, on garde deux colonnes ── */
+  @media (pointer: coarse) and (orientation: landscape) and (max-height: 600px) {
+    .fr {
+      padding: 8svh 1.25rem;
+    }
+
+    .fr__inner {
+      grid-template-columns: minmax(150px, 24vw) minmax(0, 1fr);
+      gap: 1rem;
+    }
+
+    .fr__panel {
+      order: 0;
+      height: min(84svh, 420px);
+    }
+
+    .fr__nav {
+      order: 0;
+      flex-direction: column;
+      overflow: visible;
+      margin-inline: 0;
+      padding-inline: 0;
+      /* La colonne passe sous le bouton de menu du site. */
+      padding-top: clamp(2rem, 14svh, 3.5rem);
+    }
+
+    .fr__name {
+      width: 100%;
+      font-size: 0.9rem;
+      padding: 0.6rem 0.9rem;
+      background: transparent;
+    }
+
+    .fr__rail {
+      top: 50%;
+      right: clamp(0.8rem, 2vw, 1.2rem);
+      transform: translateY(-50%);
+      flex-direction: column;
+    }
+    .fr__pill {
+      flex-direction: column;
+      width: 2.4rem;
+      height: auto;
+      padding: 0.8rem 0;
+    }
+    .fr__dot.is-active {
+      width: clamp(7px, 0.9vw, 9px);
+      height: 22px;
+    }
+
+    .fr__desc {
+      font-size: 0.95rem;
+      max-width: 30ch;
     }
   }
 

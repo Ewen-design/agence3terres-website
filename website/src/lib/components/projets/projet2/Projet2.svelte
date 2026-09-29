@@ -1,6 +1,5 @@
 <script>
   import ProjectThemePage from "$lib/components/projets/shared/ProjectThemePage.svelte";
-  import ProjectThemeTrigger from "$lib/components/projets/shared/ProjectThemeTrigger.svelte";
   import ProjectHeroProjetsStyle from "$lib/components/projets/shared/ProjectHeroProjetsStyle.svelte";
   import ProjectEditorialRole from "$lib/components/projets/shared/ProjectEditorialRole.svelte";
   import ProjectStorySlider from "$lib/components/projets/shared/ProjectStorySlider.svelte";
@@ -32,7 +31,6 @@
     ctaLabel="Visiter le site"
   />
 
-  <ProjectThemeTrigger theme="light" offset={132} />
 
   <div class="project-theme-band">
     <ProjectEditorialRole
@@ -58,7 +56,7 @@
     />
   </div>
 
-  <div class="project-theme-band">
+  <div class="project-theme-band theme-deep">
     <ProjectEditorialSplit
       title="Interface mobile"
       text="Une lecture plus recueillie et plus nette. Le projet garde sa tenue jusque dans les vues les plus rapprochees."
@@ -114,9 +112,8 @@
     />
   </div>
 
-  <ProjectThemeTrigger theme="dark" />
 
-  <div class="project-theme-band">
+  <div class="project-theme-band theme-deep">
     <ProjectEditorialMosaic
       text="Le premier visuel ouvre le recit, puis deux plans plus proches gardent une meme retenue."
       feature={{ src: "/images/parfum4.webp", alt: "Grand visuel projet 2" }}

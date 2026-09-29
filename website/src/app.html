@@ -5,6 +5,15 @@
     <link rel="icon" type="image/webp" href="%sveltekit.assets%/logo_favikon.webp" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <meta name="theme-color" content="#000000" />
+    <!-- Police du site : préchargée pour éviter le saut de rendu au premier
+         écran (le fichier variable couvre toutes les graisses). -->
+    <link
+      rel="preload"
+      href="%sveltekit.assets%/fonts/switzer/Switzer-Variable.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
     %sveltekit.head%
   </head>
 

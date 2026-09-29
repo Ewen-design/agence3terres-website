@@ -18,7 +18,8 @@
   <PolesHero
     label="Design"
     image="/images/ipad-logo.webp"
-    finalText="Logo, charte et typographie : une <span class='hl'>identité claire et durable</span> pour votre marque."
+    finalText="Logo, charte et typographie. <span class='dim'>Une identité claire.</span>"
+    finalSub="Une base solide, tenue dans le temps, sur laquelle toute la marque peut s'appuyer."
     showAfterImage={false}
   />
 

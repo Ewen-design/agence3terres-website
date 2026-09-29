@@ -55,7 +55,7 @@
   const SHARE_IMAGE_PATH = "/images/apercu.webp";
   const PAGE_META = {
     "/": {
-      title: "Agence 3 Terres | Sites web, identité et direction artistique",
+      title: "Agence 3 Terres | Née pour créer",
       description:
         "Agence 3 Terres crée des sites web, identités visuelles et expériences digitales exigeantes pour des marques qui veulent gagner en présence.",
       imageAlt: "Création digitale par Agence 3 Terres"
@@ -104,7 +104,7 @@
     "/projet4": {
       title: "Ludosphères | Projet Agence 3 Terres",
       description:
-        "Site d'artiste, direction artistique et approche éditoriale: découvrez le projet Ludosphères par Agence 3 Terres.",
+        "Identité visuelle, site d'artiste et direction artistique : découvrez le projet Ludosphères par Agence 3 Terres.",
       imageAlt: "Projet Ludosphères par Agence 3 Terres"
     },
     "/projet5": {
@@ -239,7 +239,6 @@
   $: pathname = $page.url.pathname.replace(/\/+$/, "") || "/";
   $: hideFooter = ["/projet1", "/projet4", "/projet5", "/projet6", "/projet7", "/contact"].includes(pathname)
     || ($page.status ?? 200) >= 400;   // no footer on the error / 404 page
-  $: isTravailPage = pathname === "/travail";
   $: isProjectLightTheme = projectTheme === "light";
   $: currentMeta = PAGE_META[pathname] ?? PAGE_META["/"];
   $: canonicalUrl = `${SITE_URL}${pathname === "/" ? "" : `${pathname}/`}`;
@@ -550,7 +549,6 @@
 </svelte:head>
 
 <main
-  class:travail-soft-gradients={isTravailPage}
   class:contact-page={pathname === "/contact"}
   class:project-light-theme={isProjectLightTheme}
   class:legal-route={pathname === "/mentions-legales"}
@@ -582,9 +580,6 @@
 
   <div class="route-transition-layer" bind:this={transitionLayer} aria-hidden="true"></div>
 
-  <div class="top-gradient" aria-hidden="true"></div>
-  <div class="bottom-gradient" aria-hidden="true"></div>
-
   {#if !hideFooter}
     <Footer />
   {/if}
@@ -597,7 +592,7 @@
     isolation: isolate;
     width: 100%;
     overflow-x: clip;
-    background: #000;
+    background: var(--bg-deep, #000);
   }
 
   .ios-top-mask,
@@ -608,10 +603,11 @@
   .page-wrapper {
     position: relative;
     width: 100%;
-    background: #000;
+    background: var(--bg-deep, #000);
     z-index: 2;
     margin-bottom: var(--footer-reserve, 0px);
   }
+
 
   /* Frosted-blur page transition. Resting state = invisible (blur 0, clear);
      the JS animates the blur radius + tint for a clean, ghost-free blur. */
@@ -655,7 +651,7 @@
   }
 
   .site-prism-mark:hover { transform: scale(1.06); }
-  .site-prism-mark:focus-visible { outline: 2px solid rgba(245,241,232,.9); outline-offset: 3px; }
+  .site-prism-mark:focus-visible { outline: 2px solid rgba(var(--ink-muted-rgb, 245, 241, 232), .9); outline-offset: 3px; }
 
   /* Sur la home, le logo ne navigue pas (on y est déjà). */
   .site-prism-mark.is-home { cursor: default; }
@@ -680,10 +676,11 @@
     background: rgba(255, 255, 255, 0.14);
   }
 
-  /* Pages à thème clair → prisme en noir pour rester lisible sur le fond blur. */
-  main.project-light-theme .site-prism-mark,
-  main.legal-route .site-prism-mark {
-    color: #000;
+  /* Pages à thème clair → prisme en noir pour rester lisible sur le fond blur.
+     (Plus aucune route n'est claire depuis le 2026-09-01 ; la règle reste pour
+     le jour où un thème clair reviendra.) */
+  main.project-light-theme .site-prism-mark {
+    color: var(--bg-deep, #000);
   }
 
   @media (hover: none) and (pointer: coarse) {
@@ -701,7 +698,7 @@
       top: 0;
       display: block;
       height: calc(env(safe-area-inset-top, 0px) + 8px);
-      background: #000;
+      background: var(--bg-deep, #000);
       pointer-events: none;
       z-index: 500000;
     }
@@ -713,90 +710,10 @@
       bottom: 0;
       display: block;
       height: calc(env(safe-area-inset-bottom, 0px) + 6px);
-      background: #000;
+      background: var(--bg-deep, #000);
       pointer-events: none;
       z-index: 999999;
     }
-  }
-
-  .top-gradient {
-    position: fixed;
-    top: calc(-1 * (var(--mobile-viewport-overscan-top, 0px) + var(--mobile-gradient-bleed-top, 0px)));
-    left: 0;
-    width: 100%;
-    height: calc(176px + var(--mobile-viewport-overscan-top, 0px) + var(--mobile-gradient-bleed-top, 0px));
-    pointer-events: none;
-    background: linear-gradient(
-      to bottom,
-      rgba(0, 0, 0, 0.14) 0%,
-      rgba(0, 0, 0, 0.095) 18%,
-      rgba(0, 0, 0, 0.055) 38%,
-      rgba(0, 0, 0, 0.022) 58%,
-      rgba(0, 0, 0, 0.006) 80%,
-      rgba(0, 0, 0, 0) 100%
-    );
-    z-index: 99999;
-    opacity: 1;
-    transition: opacity var(--project-theme-transition, 0.35s ease);
-  }
-
-  .bottom-gradient {
-    position: fixed;
-    top: calc(100lvh - 220px);
-    bottom: auto;
-    left: 0;
-    width: 100%;
-    height: calc(220px + var(--mobile-viewport-overscan-bottom, 0px) + var(--mobile-gradient-bleed-bottom, 0px));
-    pointer-events: none;
-    background:
-      radial-gradient(
-        124% 100% at 50% 100%,
-        rgba(0, 0, 0, 0.42) 0%,
-        rgba(0, 0, 0, 0.26) 20%,
-        rgba(0, 0, 0, 0.11) 42%,
-        rgba(0, 0, 0, 0.03) 66%,
-        rgba(0, 0, 0, 0.008) 84%,
-        rgba(0, 0, 0, 0) 100%
-      ),
-      linear-gradient(
-        to top,
-        rgba(0, 0, 0, 0.34) 0%,
-        rgba(0, 0, 0, 0.2) 18%,
-        rgba(0, 0, 0, 0.09) 40%,
-        rgba(0, 0, 0, 0.025) 64%,
-        rgba(0, 0, 0, 0.006) 82%,
-        rgba(0, 0, 0, 0) 100%
-      );
-    z-index: 99999;
-    opacity: 1;
-    transition: opacity var(--project-theme-transition, 0.35s ease);
-  }
-
-  main.project-light-theme .top-gradient,
-  main.project-light-theme .bottom-gradient {
-    opacity: 0;
-  }
-
-  /* Mentions légales is a light/white page → the global darkening gradients
-     would show as dark edges, so remove them on this route. */
-  main.legal-route .top-gradient,
-  main.legal-route .bottom-gradient {
-    opacity: 0;
-  }
-
-  main.travail-soft-gradients .top-gradient {
-    opacity: 0.65;
-  }
-
-  main.travail-soft-gradients .bottom-gradient {
-    opacity: 0.3;
-  }
-
-  /* The "projet en création" glass dock sits flush at the bottom of the
-     viewport; while it is on screen, fade the global bottom vignette so the
-     dock reads in front of it instead of scrolling behind it. */
-  main.pip-dock-active .bottom-gradient {
-    opacity: 0;
   }
 
   @media (max-width: 900px) {
@@ -804,30 +721,16 @@
       display: none;
     }
 
-    .top-gradient {
-      opacity: 0;
-    }
-
-    .bottom-gradient {
-      opacity: 0;
-    }
   }
 
-  /* Phones are keyed on the coarse pointer, NOT on width: the "Max/Plus" iPhones
-     and large Androids exceed 900px in landscape, so a `max-width: 900px` hide
-     alone would let the top/bottom vignettes (and the desktop corner logo)
-     reappear on those phones when rotated. Hide them on every touch device,
-     both orientations, and override the travail/light/pip opacity variants with
-     `!important` so no phone ever shows the fixed-position vignette bands. */
+  /* Le repère du coin est masqué sur tout appareil tactile, pas seulement sous
+     900 px : les iPhone « Max/Plus » et les grands Android dépassent 900 px en
+     paysage. */
   @media (hover: none) and (pointer: coarse) {
     .site-prism-mark {
       display: none;
     }
 
-    .top-gradient,
-    .bottom-gradient {
-      opacity: 0 !important;
-    }
   }
 
   /* Phone in landscape (short viewport). The iOS safe-area caps are horizontal

@@ -52,8 +52,8 @@
   .ef-intro {
     margin: 0 0 clamp(2.4rem, 4.5vw, 4rem);
     max-width: 56ch;
-    font-family: "Inter", sans-serif;
-    font-weight: 400;
+    font-family: var(--site-font);
+    font-weight: var(--site-weight);
     font-size: clamp(1.05rem, 1.4vw, 1.3rem);
     line-height: 1.5;
     color: var(--project-surface-muted, rgba(244, 239, 230, 0.7));
@@ -136,8 +136,8 @@
   .ef-label {
     display: block;
     margin-bottom: 0.7rem;
-    font-family: "Inter", sans-serif;
-    font-weight: 500;
+    font-family: var(--site-font);
+    font-weight: var(--site-weight);
     font-size: clamp(1.1rem, 1.5vw, 1.4rem);
     letter-spacing: -0.02em;
     color: var(--project-surface-ink, #f4efe6);
@@ -146,8 +146,8 @@
 
   .ef-text {
     margin: 0;
-    font-family: "Inter", sans-serif;
-    font-weight: 400;
+    font-family: var(--site-font);
+    font-weight: var(--site-weight);
     font-size: clamp(1.05rem, 1.4vw, 1.3rem);
     line-height: 1.5;
     color: var(--project-surface-muted, rgba(244, 239, 230, 0.7));

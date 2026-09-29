@@ -26,9 +26,9 @@
   .project-text-block__title-wrap h2 {
     margin: 0;
     max-width: 8ch;
-    font-family: "Inter", sans-serif;
+    font-family: var(--site-font);
     font-style: normal;
-    font-weight: 400;
+    font-weight: var(--site-weight-display);
     font-size: clamp(2.8rem, 5vw, 5.2rem);
     line-height: 0.92;
     letter-spacing: -0.06em;
@@ -42,7 +42,7 @@
   .project-text-block__content p {
     margin: 0;
     max-width: 20ch;
-    font-family: "Inter", sans-serif;
+    font-family: var(--site-font);
     font-size: clamp(1.08rem, 1.5vw, 1.3rem);
     line-height: 1.5;
     color: rgba(245, 241, 232, 0.8);

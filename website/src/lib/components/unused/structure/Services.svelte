@@ -84,11 +84,11 @@
 }
 
 .hero h1 {
-  font-family: "Inter", sans-serif;
-  font-weight: 500;
+  font-family: var(--site-font);
+  font-weight: var(--site-weight-display);
   font-size: clamp(3rem, 6vw, 6rem);
   line-height: 1.1;
-  font-weight: 400;
+  font-weight: var(--site-weight-display);
 }
 
 /* SERVICE BLOCK */
@@ -147,8 +147,8 @@
 }
 
 h2 {
-  font-family: "Inter", sans-serif;
-  font-weight: 500;
+  font-family: var(--site-font);
+  font-weight: var(--site-weight-display);
   font-size: clamp(2.5rem, 3.5vw, 4rem);
   margin: 20px 0;
 }

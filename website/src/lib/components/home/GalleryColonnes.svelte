@@ -426,9 +426,9 @@
   }
 
   .gallery-scroll-label {
-    font-family: "Inter", sans-serif;
+    font-family: var(--site-font);
     font-size: clamp(0.82rem, 0.95vw, 0.98rem);
-    font-weight: 300;
+    font-weight: var(--site-weight);
     line-height: 1;
     letter-spacing: 0.02em;
     text-align: left;
@@ -436,10 +436,10 @@
 
   .gallery-scroll-arrow {
     display: block;
-    font-family: "Inter", sans-serif;
+    font-family: var(--site-font);
     font-size: clamp(1.1rem, 1.1vw, 1.2rem);
     line-height: 1;
-    font-weight: 300;
+    font-weight: var(--site-weight);
     color: #fff;
   }
 

@@ -1,6 +1,7 @@
 <script>
   import { onMount, onDestroy } from "svelte";
   import { browser } from "$app/environment";
+  import { heroFrame } from "$lib/actions/heroFrame.js";
   import { reveal } from "$lib/actions/reveal.js";
   import {
     registerParallax,
@@ -52,8 +53,12 @@
     smallImageBlur: -1
   };
 
+  // Deux lignes, la seconde en `.dim` — le gabarit de la page services
+  // (voir le `finalText` passé à `PolesHero` dans routes/services/+page.svelte).
+  // Plus de note en dessous : le titre porte seul, et il est assez long pour ça.
   const finalText =
-    "<span class='hl'>Stratégie</span>, esthétique, exécution. Des projets où <span class='hl'>chaque décision a du sens</span>.";
+    "Ce que nous avons construit.<br /><span class='dim'>Du premier trait à la mise en ligne.</span>";
+  const finalSub = "";
   const activeAfterImage = "/images/apple_justx.webp";
 
   const clamp = (v, min = 0, max = 1) => Math.max(min, Math.min(max, v));
@@ -97,10 +102,14 @@
     const localImageReveal = getLocalRevealFromAbsolute(y, afterImageTop, 0.98, 0.12);
 
     pendingFrame = {
-      imageScale: q(lerp(1.05, 1.0, globalFade), 0.0001),
-      imageBrightness: isMobile ? 1 : q(lerp(1, 0.62, globalFade), 0.001),
-      imageOpacity: isMobile ? 1 : q(lerp(1, 0, globalFade), 0.001),
-      imageDark: isMobile ? 0 : q(lerp(0.08, 0.62, globalFade), 0.001),
+      // L'image ne bouge plus au défilement (2026-09-01) : elle ne se réduit
+      // plus, ne s'assombrit plus et ne s'efface plus. SEUL LE CADRE s'anime.
+      // Les valeurs restent dans la trame pour que le reste du calcul (les
+      // arrivées de texte, plus bas) continue de tourner à l'identique.
+      imageScale: 1,
+      imageBrightness: 1,
+      imageOpacity: 1,
+      imageDark: 0.08,
       textOpacity: q(lerp(0.14, 1, localTextReveal), 0.001),
       textY: q(lerp(18, 0, localTextReveal), 0.1),
       textEdge: q(lerp(0, 118, localTextReveal), 0.1),
@@ -283,7 +292,7 @@
   });
 </script>
 
-<section class="hero-join-clean" bind:this={heroSection}>
+<section class="hero-join-clean" bind:this={heroSection} use:heroFrame>
   <section class="hero-stage">
     <div class="hero-media-sticky" aria-hidden="true">
       <div class="hero-media" class:media-visible={heroMediaVisible} bind:this={heroStage}>
@@ -310,6 +319,9 @@
     <div class="after-grid">
       <div class="after-text" bind:this={afterTextEl}>
         <h2 use:reveal>{@html finalText}</h2>
+        {#if finalSub}
+          <p class="after-sub" use:reveal={{ delay: 120 }}>{finalSub}</p>
+        {/if}
       </div>
     </div>
   </section>
@@ -322,33 +334,45 @@
 
 <style>
   .hero-join-clean {
+    /* `--hero-t` : 0 en haut de page (plein écran), 1 une fois la marge et
+       l'arrondi installés. Basculé par l'action `heroFrame`. */
+    --hero-t: 0;
+    --hero-inset: var(--site-inset);
+    --hero-radius: 22px;
+    --hero-cut: calc(var(--hero-inset) * var(--hero-t));
+
     position: relative;
     width: 100%;
-    background: #000;
+    background: var(--bg-deep, #000);
     color: #f4efe6;
     overflow: clip;
   }
 
   .hero-stage {
     position: relative;
-    min-height: 132svh;
+    height: 100svh;
     z-index: 0;
   }
 
+  /* Le cadre. Il occupe TOUT l'écran ; c'est le découpage qui le referme, et
+     une `transition` qui l'anime. Aucune mise en page n'est refaite : l'image
+     garde sa taille et sa place, seul le contour bouge. */
   .hero-media-sticky {
-    position: sticky;
-    top: 0;
-    height: var(--viewport-height);
-    margin-bottom: calc(-1 * var(--viewport-height));
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    clip-path: inset(var(--hero-cut) round calc(var(--hero-radius) * var(--hero-t)));
+    transition: clip-path 820ms cubic-bezier(0.22, 1, 0.36, 1);
     z-index: 0;
     pointer-events: none;
+    isolation: isolate;
   }
 
   .hero-media {
     position: absolute;
     inset: 0;
-    height: var(--viewport-height);
-    background: #000;
+    height: 100%;
+    background: var(--bg-deep, #000);
     opacity: 0;
     transform: translateZ(0) scale(1.07);
     transition:
@@ -374,10 +398,10 @@
     height: 22svh;
     background: linear-gradient(
       to top,
-      rgba(0, 0, 0, 0.88) 0%,
-      rgba(0, 0, 0, 0.58) 34%,
-      rgba(0, 0, 0, 0.2) 68%,
-      rgba(0, 0, 0, 0) 100%
+      rgba(var(--shade-rgb, 0, 0, 0), 0.88) 0%,
+      rgba(var(--shade-rgb, 0, 0, 0), 0.58) 34%,
+      rgba(var(--shade-rgb, 0, 0, 0), 0.2) 68%,
+      rgba(var(--shade-rgb, 0, 0, 0), 0) 100%
     );
     pointer-events: none;
     z-index: 1;
@@ -409,28 +433,31 @@
     background:
       linear-gradient(
         to top,
-        rgba(0, 0, 0, 1) 0%,
-        rgba(0, 0, 0, 0.96) 16%,
-        rgba(0, 0, 0, 0.78) 34%,
-        rgba(0, 0, 0, 0.42) 52%,
-        rgba(0, 0, 0, 0.12) 66%,
-        rgba(0, 0, 0, 0) 78%
+        rgba(var(--shade-rgb, 0, 0, 0), 1) 0%,
+        rgba(var(--shade-rgb, 0, 0, 0), 0.96) 16%,
+        rgba(var(--shade-rgb, 0, 0, 0), 0.78) 34%,
+        rgba(var(--shade-rgb, 0, 0, 0), 0.42) 52%,
+        rgba(var(--shade-rgb, 0, 0, 0), 0.12) 66%,
+        rgba(var(--shade-rgb, 0, 0, 0), 0) 78%
       ),
       radial-gradient(
         circle at 50% 50%,
-        rgba(0, 0, 0, 0) 0%,
-        rgba(0, 0, 0, 0.03) 44%,
-        rgba(0, 0, 0, 0.12) 72%,
-        rgba(0, 0, 0, 0.34) 100%
+        rgba(var(--shade-rgb, 0, 0, 0), 0) 0%,
+        rgba(var(--shade-rgb, 0, 0, 0), 0.03) 44%,
+        rgba(var(--shade-rgb, 0, 0, 0), 0.12) 72%,
+        rgba(var(--shade-rgb, 0, 0, 0), 0.34) 100%
       );
     pointer-events: none;
     opacity: 0.08;
     will-change: opacity;
   }
 
+  /* Le titre et la flèche vivent HORS du cadre — dedans, le découpage les
+     rognerait — et sont posés à la place qu'ils occupent cadre fermé : le cadre
+     s'ouvre et se referme autour d'eux, ils ne bougent pas. */
   .hero-stage-content {
-    position: relative;
-    min-height: 100svh;
+    position: absolute;
+    inset: var(--hero-inset);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -457,9 +484,9 @@
   }
 
   .hero-scroll-label {
-    font-family: "Inter", sans-serif;
+    font-family: var(--site-font);
     font-size: clamp(7rem, 9vw, 20rem);
-    font-weight: 500;
+    font-weight: var(--site-weight-display);
     line-height: 1;
     letter-spacing: var(--site-display-letter-spacing);
     text-align: left;
@@ -498,10 +525,10 @@
 
   .hero-scroll-arrow {
     display: block;
-    font-family: "Inter", sans-serif;
+    font-family: var(--site-font);
     font-size: clamp(1.1rem, 1.1vw, 1.2rem);
     line-height: 1;
-    font-weight: 300;
+    font-weight: var(--site-weight);
     color: #fff;
   }
 
@@ -531,20 +558,40 @@
 
   /* Même style que les textes des pages projet (ProjectBrief). */
   .after-text h2 {
-    margin: 0;
-    width: 100%;
-    max-width: 24ch;
-    font-family: "Inter", sans-serif;
-    font-weight: 300;
-    font-size: clamp(1.5rem, 2.5vw, 2.55rem);
-    line-height: 1.18;
-    letter-spacing: -0.025em;
-    color: rgba(245, 241, 232, 0.5);
-    text-wrap: pretty;
+    margin: 0 auto;
+    width: 45rem;
+    max-width: 100%;
+    font-family: var(--site-font);
+    /* Échelle et rythme repris de la référence : 36 px au repos, 28 px sous
+       991 px, 22 px sous 767 px, en medium et resserré. */
+    font-weight: 500;
+    font-size: clamp(1.375rem, 2.9vw, 2.25rem);
+    line-height: 1.2;
+    letter-spacing: -0.01em;
+    text-align: center;
+    /* Première phrase en encre pleine, la suite à 50 % — dans le MÊME titre et
+       à la même taille. */
+    color: #f4efe6;
+    text-wrap: balance;
   }
 
-  .after-text h2 :global(.hl) {
-    color: #f4efe6;
+  .after-text h2 :global(.dim) {
+    color: rgba(var(--ink-muted-rgb, 245, 241, 232), 0.5);
+  }
+
+  /* La note sous le titre : moitié de sa taille, à 50 % elle aussi. */
+  .after-sub {
+    margin: 1rem auto 0;
+    width: 45rem;
+    max-width: 100%;
+    font-family: var(--site-font);
+    font-weight: 500;
+    font-size: clamp(1rem, 1.45vw, 1.125rem);
+    line-height: 1.25;
+    letter-spacing: -0.01em;
+    text-align: center;
+    color: rgba(var(--ink-muted-rgb, 245, 241, 232), 0.5);
+    text-wrap: pretty;
   }
 
   .after-image {
@@ -553,7 +600,7 @@
     width: min(100%, 460px);
     aspect-ratio: 1.45 / 1;
     overflow: hidden;
-    background: #0b0b0b;
+    background: var(--bg-raised, #0b0b0b);
     margin-top: clamp(4rem, 6vw, 7rem);
   }
 
@@ -571,19 +618,17 @@
   }
 
   @media (max-width: 900px) {
+    .hero-join-clean {
+      --hero-inset: 1rem;
+      --hero-radius: 18px;
+    }
+
     .after-grid {
       width: min(100%, 760px);
       grid-template-columns: 1fr;
       gap: 0.8rem;
       padding-inline: var(--project-side-padding, 0.8rem);
       box-sizing: border-box;
-    }
-
-    .after-text h2 {
-      font-size: clamp(1.5rem, 6.6vw, 2rem);
-      max-width: 26ch;
-      line-height: 1.2;
-      padding-inline: var(--project-text-inset, 0);
     }
   }
 
@@ -609,8 +654,8 @@
 
     .hero-scroll-cue-mobile {
       position: absolute;
-      left: 1rem;
-      top: calc(100svh - max(7.5rem, calc(var(--safe-bottom-offset) + 6.5rem)));
+      left: calc(1rem + var(--hero-inset));
+      top: calc(100svh - var(--hero-inset) - max(7.5rem, calc(var(--safe-bottom-offset) + 6.5rem)));
       display: flex;
       flex-direction: column;
       align-items: flex-start;
@@ -632,7 +677,7 @@
 
     .after-section {
       padding: 0 0 28vh;
-      background: #000;
+      background: var(--bg-deep, #000);
     }
 
     .after-section::before {
@@ -644,15 +689,15 @@
       height: 68rem;
       background: linear-gradient(
         to bottom,
-        rgba(0, 0, 0, 0) 0%,
-        rgba(0, 0, 0, 0.01) 16%,
-        rgba(0, 0, 0, 0.03) 32%,
-        rgba(0, 0, 0, 0.08) 48%,
-        rgba(0, 0, 0, 0.18) 64%,
-        rgba(0, 0, 0, 0.38) 78%,
-        rgba(0, 0, 0, 0.68) 90%,
-        rgba(0, 0, 0, 0.92) 97%,
-        rgba(0, 0, 0, 1) 100%
+        rgba(var(--shade-rgb, 0, 0, 0), 0) 0%,
+        rgba(var(--shade-rgb, 0, 0, 0), 0.01) 16%,
+        rgba(var(--shade-rgb, 0, 0, 0), 0.03) 32%,
+        rgba(var(--shade-rgb, 0, 0, 0), 0.08) 48%,
+        rgba(var(--shade-rgb, 0, 0, 0), 0.18) 64%,
+        rgba(var(--shade-rgb, 0, 0, 0), 0.38) 78%,
+        rgba(var(--shade-rgb, 0, 0, 0), 0.68) 90%,
+        rgba(var(--shade-rgb, 0, 0, 0), 0.92) 97%,
+        rgba(var(--shade-rgb, 0, 0, 0), 1) 100%
       );
       pointer-events: none;
       z-index: 0;
@@ -664,7 +709,15 @@
       gap: 1rem;
       padding-inline: var(--project-side-padding, 0.8rem);
       box-sizing: border-box;
-      margin-top: -9.5rem;
+      /* PLUS de remontée négative (elle valait -9.5rem jusqu'au 2026-09-03).
+         Le hero fait une hauteur d'écran et porte SON titre tout en bas, à
+         `inset: var(--hero-inset)` : n'importe quelle valeur négative fait
+         atterrir ce paragraphe dessus, et les deux textes se superposaient —
+         « Projets » sur « Stratégie, esthétique, exécution. », « Digital » sur
+         « Sites web et applications ». Sur desktop le décalage ne se voyait pas
+         parce que le titre du hero y est bien plus haut dans le cadre. L'espace
+         au-dessus est donné par le `margin-top` du `h2`, qui suffit. */
+      margin-top: 0;
       position: relative;
       z-index: 1;
     }
@@ -675,10 +728,6 @@
     }
 
     .after-text h2 {
-      max-width: 26ch;
-      font-size: clamp(1.4rem, 6.6vw, 1.9rem);
-      line-height: 1.2;
-      padding-inline: var(--project-text-inset, 0);
       margin-top: clamp(2.5rem, 9vw, 4rem);
     }
 

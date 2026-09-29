@@ -28,7 +28,7 @@
     { label: "Accueil", page: "home", image: "/images/ipad-creation.webp", desktopImage: "/images/ipad-creation2.webp", placement: "home" },
     { label: "Services", page: "services", image: "/images/montre-justx.webp", placement: "services" },
     { label: "Projets", page: "travail", image: "/images/justx-ipads.webp", placement: "projets" },
-    { label: "A propos", page: "apropos", image: "/images/visage.webp", placement: "apropos" },
+    { label: "À propos", page: "apropos", image: "/images/visage.webp", placement: "apropos" },
     { label: "Contact", page: "contact", image: "/images/mobile-photo2.webp", placement: "contact" }
   ];
 
@@ -389,9 +389,10 @@
 </div>
 
 <style>
-  :global(body.menu-open) {
-    overflow: hidden;
-  }
+  /* La page reste défilable derrière le menu (2026-09-03) : ce n'est plus un
+     panneau plein écran mais une carte, et bloquer le défilement derrière une
+     carte qui n'occupe qu'un tiers de l'écran n'a pas de sens. La classe
+     `menu-open` reste posée sur le body — le header s'en sert. */
 
   .fs-menu {
     position: fixed;
@@ -414,7 +415,9 @@
     --menu-scrim-duration: 920ms;
     --menu-blur-strength: 13px;
     --menu-ease: cubic-bezier(.22, 1, .36, 1);
-    --menu-muted-gray: rgb(157, 156, 156);
+    /* Le gris des liens au repos. Refroidi le 2026-09-01 avec la palette : même
+       clarté qu'avant (rgb(157,156,156)), teinte du crème refroidi du site. */
+    --menu-muted-gray: rgb(151, 156, 163);
   }
 
   .fs-menu.is-visible {
@@ -444,7 +447,7 @@
   .menu-scrim {
     z-index: 2;
     opacity: 0;
-    background: rgba(0, 0, 0, 0.84);
+    background: rgba(var(--shade-rgb, 0, 0, 0), 0.58);
     transition: opacity var(--menu-scrim-duration) var(--menu-ease);
   }
 
@@ -459,31 +462,52 @@
       -webkit-backdrop-filter var(--menu-scrim-duration) var(--menu-ease);
   }
 
+  /* ── La carte ─────────────────────────────────────────────────────────
+     Le menu n'occupe plus tout l'écran (2026-09-03) : c'est une carte qui
+     entre par la DROITE en desktop, par le HAUT en mobile, et qui couvre
+     environ un tiers de l'écran. Collée aux bords — pas de marge — donc seuls
+     les angles tournés vers la page sont arrondis.
+
+     C'est `.menu-shell` qui devient la carte, et pas `.fs-menu` : le voile et
+     la zone de fermeture au clic, eux, doivent continuer de couvrir tout
+     l'écran. */
   .menu-shell {
     position: absolute;
-    inset: 0;
+    inset: 0 0 0 auto;
+    width: 50vw;
     z-index: 4;
+    border-radius: 24px 0 0 24px;
+    overflow: hidden;
+    transform: translate3d(100%, 0, 0);
+    transition: transform var(--menu-panel-duration) var(--menu-ease);
+    will-change: transform;
+  }
+
+  .fs-menu.expanded .menu-shell {
+    transform: translate3d(0, 0, 0);
+  }
+
+  .fs-menu.is-closing .menu-shell {
+    transform: translate3d(100%, 0, 0);
   }
 
   /* Fond noir : simple assombrissement progressif très doux (opacité seule, pas de
      blur plein écran → léger et fluide, n'entrave plus l'anim du bouton header). */
+  /* Le fond de la carte est posé d'emblée : il glisse avec elle. */
   .menu-panel {
     position: absolute;
     inset: 0;
-    background: #010101;
-    opacity: 0;
-    will-change: opacity;
-    transition: opacity var(--menu-panel-duration) var(--menu-ease);
+    background: var(--bg-deep, #010101);
+    opacity: 1;
   }
 
+  /* Le contenu ne s'anime plus : c'est la CARTE qui bouge, et elle emmène tout
+     avec elle (2026-09-03). Fondre le contenu par-dessus le glissement donnait
+     deux mouvements superposés — le client n'en veut qu'un. */
   .ui-content {
-    opacity: 0;
-    filter: blur(18px);
-    transform: translate3d(0, 26px, 0);
-    transition:
-      opacity var(--menu-content-duration) var(--menu-ease),
-      filter var(--menu-content-duration) var(--menu-ease),
-      transform var(--menu-content-duration) var(--menu-ease);
+    opacity: 1;
+    filter: none;
+    transform: none;
   }
 
   /* ─────────────── Grande image par page (fond gauche) ─────────────── */
@@ -495,16 +519,7 @@
     z-index: 5;
     pointer-events: none;
     overflow: hidden;
-    opacity: 0;
-    transition: opacity var(--menu-content-duration) var(--menu-ease);
-  }
-
-  .fs-menu.content-visible .menu-media {
     opacity: 1;
-  }
-
-  .fs-menu.is-closing .menu-media {
-    opacity: 0;
   }
 
   .menu-media-stack {
@@ -520,9 +535,12 @@
     inset: 0;
     width: 100%;
     height: 100%;
-    /* Pleinement visible : l'image entière tient dans l'écran, jamais rognée. */
-    object-fit: contain;
-    object-position: left bottom;
+    /* `cover` depuis que le menu est une carte (2026-09-03) : dans un panneau
+       d'un tiers d'écran, un `contain` laissait l'image flotter au milieu du
+       noir, coupée par le bord de la carte. Elle remplit maintenant la carte et
+       fait office de fond, derrière le voile. */
+    object-fit: cover;
+    object-position: center center;
     opacity: 0;
     transform: scale(1.06);
     transition:
@@ -536,21 +554,18 @@
   }
 
   /* Cadrage par page — ancrages demandés. */
-  .placement-home    { object-position: left bottom; }   /* ipad-creation : bas-gauche */
-  .placement-services { object-position: left center; }  /* montre-justx : milieu, collé gauche */
-  .placement-projets { object-position: center center; } /* justx-ipads : pleine largeur, centre */
-  .placement-apropos { object-position: left bottom; }   /* visage : bas-gauche */
-  .placement-contact { object-position: left center; }   /* mobile-photo : pleine hauteur, gauche */
+  /* Cadrage par page, réglé pour la carte étroite : on choisit quelle partie de
+     la photo reste visible une fois `cover` appliqué. */
+  .placement-home    { object-position: 60% 70%; }
+  .placement-services { object-position: 50% 50%; }
+  .placement-projets { object-position: 50% 50%; }
+  .placement-apropos { object-position: 42% 40%; }
+  .placement-contact { object-position: 50% 45%; }
 
   /* Projets sur desktop : pleine LARGEUR au centre. L'image (ratio ~1.43) est plus
      « carrée » que l'écran, donc `contain` la mettait en pleine hauteur (pas pleine
      largeur) → on remplit la largeur en `cover` (léger recadrage haut/bas). */
-  @media (min-width: 901px) {
-    .placement-projets {
-      object-fit: cover;
-      object-position: center center;
-    }
-  }
+
 
   /* Voile de lisibilité : assombrit la DROITE (où sont les noms de pages) et le
      bas (réseaux), en laissant la gauche/le centre bien exposés → l'image se voit
@@ -563,7 +578,7 @@
       linear-gradient(0deg, rgba(1, 1, 1, 0.5) 0%, rgba(1, 1, 1, 0) 30%),
       linear-gradient(180deg, rgba(1, 1, 1, 0.34) 0%, rgba(1, 1, 1, 0) 22%),
       /* voile plat léger → image un peu « dans le fond » (remplace le filtre). */
-      rgba(1, 1, 1, 0.24);
+      rgba(var(--shade-rgb, 1, 1, 1), 0.24);
   }
 
   /* ─────────────── Navigation (noms de pages, à droite) ─────────────── */
@@ -600,32 +615,30 @@
 
   /* Focus-pull arrival lives on the line wrapper so the text element stays free
      to drive its own colour / glow on hover (no filter conflict). */
+  /* Les noms sont posés d'emblée, sans arrivée en cascade : la carte glisse
+     déjà, un fondu par-dessus faisait deux mouvements pour un seul geste. */
   .menu-link-line {
     display: block;
     overflow: visible;
     padding: 0.16em 0 0.2em;
-    opacity: 0;
-    filter: blur(16px);
-    transform: translate3d(0, 26px, 0);
-    transition:
-      opacity 0.55s ease,
-      filter 0.85s var(--menu-ease),
-      transform 0.85s var(--menu-ease);
-    will-change: opacity, filter, transform;
+    opacity: 1;
+    filter: none;
+    transform: none;
     backface-visibility: hidden;
   }
 
   .menu-link-text {
     display: inline-block;
-    font-family: "Inter", sans-serif;
-    font-weight: 300;
+    font-family: var(--site-font);
+    /* Une graisse en dessous des grands titres du site : regular, pas medium. */
+    font-weight: var(--site-weight);
     font-style: normal;
-    font-size: clamp(2.95rem, 4.6vw, 5.4rem);
+    font-size: clamp(2.1rem, 2.9vw, 3.1rem);
     line-height: 0.94;
     letter-spacing: -0.025em;
     color: var(--menu-muted-gray);
     padding-right: 0.02em;
-    text-shadow: 0 2px 16px rgba(0, 0, 0, 0.38);
+    text-shadow: 0 2px 16px rgba(var(--shade-rgb, 0, 0, 0), 0.38);
     transition:
       color 620ms ease,
       filter 720ms ease;
@@ -638,11 +651,6 @@
     filter: drop-shadow(0 0 18px rgba(255, 255, 255, 0.1));
   }
 
-  .menu-nav .menu-link:nth-child(1) .menu-link-line { transition-delay: 90ms; }
-  .menu-nav .menu-link:nth-child(2) .menu-link-line { transition-delay: 155ms; }
-  .menu-nav .menu-link:nth-child(3) .menu-link-line { transition-delay: 210ms; }
-  .menu-nav .menu-link:nth-child(4) .menu-link-line { transition-delay: 255ms; }
-  .menu-nav .menu-link:nth-child(5) .menu-link-line { transition-delay: 290ms; }
 
   /* Balayage de la charte sur les libellés, calé sur la même cascade que les
      lignes ci-dessus (voir brandInkSweep dans app.css). `backwards` et non
@@ -658,19 +666,8 @@
     --sweep-final: #fff;
   }
 
-  .fs-menu.content-visible .menu-link-text {
-    animation: brandInkSweep 900ms var(--menu-ease) backwards;
-  }
 
-  .fs-menu.content-visible .menu-nav .menu-link:nth-child(1) .menu-link-text { animation-delay: 90ms; }
-  .fs-menu.content-visible .menu-nav .menu-link:nth-child(2) .menu-link-text { animation-delay: 155ms; }
-  .fs-menu.content-visible .menu-nav .menu-link:nth-child(3) .menu-link-text { animation-delay: 210ms; }
-  .fs-menu.content-visible .menu-nav .menu-link:nth-child(4) .menu-link-text { animation-delay: 255ms; }
-  .fs-menu.content-visible .menu-nav .menu-link:nth-child(5) .menu-link-text { animation-delay: 290ms; }
 
-  .fs-menu.is-closing .menu-nav .menu-link .menu-link-line {
-    transition-delay: 0ms;
-  }
 
   /* ─────────────── Réseaux / contact (bas droite) ─────────────── */
   .bottom-strip {
@@ -683,13 +680,9 @@
     align-items: flex-end;
     justify-content: flex-end;
     gap: 2rem;
-    opacity: 0;
-    filter: blur(16px);
-    transform: translate3d(0, 26px, 0);
-    transition:
-      opacity var(--menu-footer-duration) var(--menu-ease),
-      filter var(--menu-footer-duration) var(--menu-ease),
-      transform var(--menu-footer-duration) var(--menu-ease);
+    opacity: 1;
+    filter: none;
+    transform: none;
     pointer-events: none;
   }
 
@@ -800,7 +793,7 @@
   }
 
   .bottom-kicker {
-    font-family: "Inter", sans-serif;
+    font-family: var(--site-font);
     font-size: 0.9rem;
     letter-spacing: 0.02em;
     color: var(--menu-muted-gray);
@@ -876,7 +869,7 @@
     }
 
     .menu-link-text {
-      font-size: clamp(2.8rem, 5.5vw, 4.4rem);
+      font-size: clamp(2rem, 3.4vw, 2.7rem);
     }
   }
 
@@ -930,37 +923,69 @@
       filter: none;
     }
 
+    /* La carte entre par le HAUT en portrait, et non par la droite : sur un
+       écran étroit un tiroir latéral ne laisserait presque rien de la page, et
+       le pouce arrive du bas. Collée aux trois bords, arrondie en bas. */
     .menu-shell {
       display: flex;
       flex-direction: column;
-      inset: 0;
+      inset: 0 0 auto 0;
+      width: 100%;
+      height: 50svh;
+      border-radius: 0 0 24px 24px;
+      transform: translate3d(0, -100%, 0);
       padding-top: calc(env(safe-area-inset-top, 0px) + 0.9rem);
-      padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 1.5rem);
+      padding-bottom: 1.2rem;
       gap: 0;
     }
 
-    /* Image plein écran derrière la nav, un peu plus présente sur mobile. */
+    .fs-menu.expanded .menu-shell {
+      transform: translate3d(0, 0, 0);
+    }
+
+    .fs-menu.is-closing .menu-shell {
+      transform: translate3d(0, -100%, 0);
+    }
+
+    /* Image de fond de la carte. */
     .menu-media {
       z-index: 5;
     }
 
+    /* La nav prend toute la hauteur restante de la carte, ses noms centrés. */
+    .menu-upper {
+      flex: 1 1 auto;
+      min-height: 0;
+      height: auto;
+      align-items: center;
+      justify-content: center;
+      padding: 0.6rem 1.25rem;
+    }
+
+    .menu-nav {
+      align-items: center;
+      text-align: center;
+      gap: 0.15rem;
+    }
+
+    .menu-link,
+    .menu-link-line {
+      text-align: center;
+    }
+
     /* Projets & Services : image AU-DESSUS des noms (les noms restent centrés en
        dessous). Décalées un peu plus bas que le tout en haut. */
-    .placement-projets { object-position: center 12%; }
-    .placement-services { object-position: center 24%; }
+    .placement-projets { object-position: 50% 42%; }
+    .placement-services { object-position: 50% 46%; }
 
     /* À propos (visage) : remontée un peu par rapport au bas. */
-    .placement-apropos { object-position: left 82%; }
+    .placement-apropos { object-position: 45% 38%; }
 
     /* Contact : beaucoup plus grande et collée bas-gauche. On sort du plein écran :
        boîte fixée en bas à gauche, PLUS LARGE que l'écran (déborde à droite) → l'image
        est franchement calée à gauche et bien grande. */
     .placement-contact {
-      inset: auto auto 0 0;
-      width: 155%;
-      height: 82%;
-      object-fit: cover;
-      object-position: left bottom;
+      object-position: 50% 45%;
     }
 
     /* Voile mobile : assombrit surtout le CENTRE (derrière les noms) et laisse le
@@ -992,7 +1017,7 @@
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      background: rgba(24, 24, 24, 0.96);
+      background: var(--bg-panel, rgb(24, 24, 24));
       border-radius: 10px;
       padding: 0;
       cursor: pointer;
@@ -1069,12 +1094,18 @@
       transform: scale(1.08);
     }
 
-    /* Boutons contact / réseaux en bas, CENTRÉS (comme desktop mais centré). */
+    /* La carte ne fait plus qu'un tiers d'écran : la barre du bas ne peut plus
+       être posée en absolu, elle chevaucherait les noms de pages. Elle rentre
+       dans le flux, la nav prenant la place restante (voir `.menu-upper`). */
     .bottom-strip {
       display: flex;
-      left: 1rem;
-      right: 1rem;
-      bottom: calc(env(safe-area-inset-bottom, 0px) + 3.25rem);
+      position: static;
+      left: auto;
+      right: auto;
+      bottom: auto;
+      flex: 0 0 auto;
+      order: 2;
+      padding: 0 1.25rem;
       justify-content: center;
       gap: 0;
       filter: none;
@@ -1110,13 +1141,17 @@
     }
 
     .menu-upper {
-      order: 3;
+      /* Les noms d'abord, la barre des réseaux ensuite. Tant que la barre était
+         en absolu cet `order` n'avait aucun effet ; depuis qu'elle est dans le
+         flux, il la faisait remonter au-dessus des noms. */
+      order: 1;
       height: auto;
       flex: 1 1 auto;
+      min-height: 0;
       display: flex;
       align-items: center;
       justify-content: center;
-      padding: 1.5rem 1.25rem;
+      padding: 0.5rem 1.25rem;
     }
 
     .menu-nav {
@@ -1124,7 +1159,7 @@
       max-width: 20rem;
       align-items: center;
       text-align: center;
-      gap: 0.42rem;
+      gap: 0.1rem;
     }
 
     .menu-link,
@@ -1133,7 +1168,7 @@
     }
 
     .menu-link-text {
-      font-size: clamp(2.4rem, 9vw, 3.7rem);
+      font-size: clamp(1.6rem, 6vw, 2.2rem);
       line-height: 0.92;
     }
 

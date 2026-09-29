@@ -115,8 +115,8 @@
 }
 
 h2 {
-  font-family: "Inter", sans-serif;
-  font-weight: 500;
+  font-family: var(--site-font);
+  font-weight: var(--site-weight-display);
   font-size: 3rem;
   margin-bottom: 1rem;
 }

@@ -119,14 +119,14 @@
 }
 
 h2 {
-  font-family: "Inter", sans-serif;
-  font-weight: 500;
+  font-family: var(--site-font);
+  font-weight: var(--site-weight-display);
   font-size: clamp(2.5rem, 4vw, 4rem);
   margin: 20px 0;
 }
 
 h3 {
-  font-weight: 300;
+  font-weight: var(--site-weight-display);
   opacity: 0.7;
   margin-bottom: 20px;
 }

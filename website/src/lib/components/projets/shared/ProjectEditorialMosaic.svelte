@@ -76,7 +76,7 @@
     height: var(--mosaic-tile-height);
     margin: 0;
     overflow: hidden;
-    border-radius: 2px;
+    border-radius: var(--project-media-radius, 22px);
     background: var(--project-surface-card, #121212);
   }
 
@@ -94,8 +94,8 @@
     max-width: 21ch;
     margin: clamp(1.35rem, 2vw, 1.8rem) 0 0;
     padding-inline: var(--project-text-inset, 0);
-    font-family: "Inter", sans-serif;
-    font-weight: 300;
+    font-family: var(--site-font);
+    font-weight: var(--site-weight-display);
     font-size: var(--project-lead-size, clamp(1.35rem, 2.7vw, 2.8rem));
     line-height: 0.98;
     letter-spacing: -0.05em;

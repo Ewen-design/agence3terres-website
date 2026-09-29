@@ -2,6 +2,7 @@
   import { onMount, onDestroy } from "svelte";
   import { browser } from "$app/environment";
   import { reveal } from "$lib/actions/reveal.js";
+  import BlueGrainBackground from "$lib/components/shared/BlueGrainBackground.svelte";
 
   // ── Data ───────────────────────────────────────────────────────────────────
   const quotes = [
@@ -19,6 +20,26 @@
   const angleStep = 360 / quotes.length;
   let radius = 540;
   const radiusDesktop = 540;
+  // Doit rester égal à la `perspective` du wrapper, plus bas dans les styles.
+  const PERSPECTIVE = 2000;
+  const CARD_FALLBACK = 500; // largeur de carte par défaut (desktop, en CSS)
+
+  // Le rayon n'est plus figé : on prend le plus grand qui laisse la carte
+  // voisine ENTIÈREMENT dans le cadre. Avec 540 en dur, dès que la fenêtre
+  // passait sous ~1 200 px le voisin de droite débordait et le bord tranchait
+  // son guillemet fermant — d'où des guillemets « parfois coupés à droite ».
+  // Le voisin est à `angleStep` : après la perspective, son bord extérieur
+  // tombe à `scale × (sin·r + cos·largeur/2)`.
+  function fitRadius(available, cardWidth, start, floor) {
+    const a = (angleStep * Math.PI) / 180;
+    const sin = Math.sin(a);
+    const cos = Math.cos(a);
+    for (let r = start; r >= floor; r -= 10) {
+      const scale = PERSPECTIVE / (PERSPECTIVE - r * cos);
+      if (scale * (sin * r + (cardWidth / 2) * cos) <= available) return r;
+    }
+    return floor;
+  }
   let isMobile = false;
   let startX = 0;
   let deltaX = 0;
@@ -99,48 +120,7 @@
 
   // ── DOM refs ───────────────────────────────────────────────────────────────
   let sectionEl;
-  let bgEl;
-
-  // ── Background visibility ──────────────────────────────────────────────────
-  let rafId = null;
-  let sectionVisible = false;
-
-  let curOpacity = 0;
-
-  const clamp = (v, lo, hi) => Math.min(Math.max(v, lo), hi);
-  const lerp = (a, b, t) => a + (b - a) * t;
-  const round3 = (v) => Math.round(v * 1000) / 1000;
-
-  function tick() {
-    if (!sectionVisible || !sectionEl || !bgEl) { rafId = null; return; }
-
-    const winH = window.innerHeight;
-    const rect = sectionEl.getBoundingClientRect();
-
-    if (rect.bottom < -400 || rect.top > winH + 400) {
-      rafId = requestAnimationFrame(tick);
-      return;
-    }
-
-    const center = rect.top + rect.height / 2;
-    const screenProgress = center / winH;
-
-    let tgtOpacity;
-    if (screenProgress > 0.85) tgtOpacity = 1 - (screenProgress - 0.85) * 6;
-    else if (screenProgress < 0.15) tgtOpacity = screenProgress * 6;
-    else tgtOpacity = 1;
-    tgtOpacity = clamp(tgtOpacity, 0, 1);
-
-    const factor = isMobile ? 0.10 : 0.14;
-    curOpacity = lerp(curOpacity, tgtOpacity, factor);
-
-    bgEl.style.opacity = round3(curOpacity).toString();
-
-    rafId = requestAnimationFrame(tick);
-  }
-
-  function startLoop() { if (!rafId) rafId = requestAnimationFrame(tick); }
-  function stopLoop()  { if (rafId) { cancelAnimationFrame(rafId); rafId = null; } }
+  let frameEl;
 
   let resizeTimeout;
   function checkMobile() {
@@ -155,7 +135,20 @@
       window.matchMedia?.("(orientation: landscape)")?.matches &&
       window.innerHeight <= 600;
     isMobile = window.innerWidth <= 768 || landscapePhone;
-    radius = landscapePhone ? 320 : isMobile ? 260 : radiusDesktop;
+    // L'anneau s'ajuste à la largeur réellement disponible dans le cadre.
+    // Exception : en portrait, aucun rayon tenable ne ferait entrer le voisin
+    // (il faudrait descendre sous 120 px, les cartes se chevaucheraient) — on
+    // garde donc la valeur réglée au doigt, où le voisin disparaît derrière la
+    // carte de devant au lieu d'être tranché.
+    const frameWidth = frameEl?.clientWidth || window.innerWidth;
+    const cardWidth =
+      frameEl?.querySelector(".card")?.offsetWidth || CARD_FALLBACK;
+    const available = frameWidth / 2 - 24;
+    radius = landscapePhone
+      ? fitRadius(available, cardWidth, 320, 220)
+      : isMobile
+        ? 260
+        : fitRadius(available, cardWidth, radiusDesktop, 300);
   }
   function handleResize() {
     clearTimeout(resizeTimeout);
@@ -163,7 +156,6 @@
   }
 
   let resizeObserver;
-  let intersectionObserver;
   let removeSectionClickListener;
 
   onMount(() => {
@@ -174,24 +166,12 @@
 
     resizeObserver = new ResizeObserver(handleResize);
     resizeObserver.observe(sectionEl);
-
-    intersectionObserver = new IntersectionObserver(
-      ([entry]) => {
-        sectionVisible = entry.isIntersecting;
-        if (sectionVisible) startLoop();
-        else stopLoop();
-      },
-      { rootMargin: "300px 0px 300px 0px" }
-    );
-    intersectionObserver.observe(sectionEl);
   });
 
   onDestroy(() => {
     if (!browser) return;
-    stopLoop();
     removeSectionClickListener?.();
     resizeObserver?.disconnect();
-    intersectionObserver?.disconnect();
     clearTimeout(resizeTimeout);
   });
 </script>
@@ -208,90 +188,88 @@
   on:touchend={touchEnd}
   on:touchcancel={touchEnd}
 >
-  <div class="bg" bind:this={bgEl} style="background-image:url('/images/agence2.webp')"></div>
-  <div class="overlay"></div>
-  <div class="nav-zones" aria-hidden={isMobile}>
-    <button
-      class="nav-zone"
-      type="button"
-      aria-label="Citation precedente"
-      on:click|stopPropagation={prev}
-    ></button>
-    <button
-      class="nav-zone"
-      type="button"
-      aria-label="Citation suivante"
-      on:click|stopPropagation={next}
-    ></button>
-  </div>
+  <div class="vision-frame" bind:this={frameEl}>
+    <!-- Halos diffus et grain fixe : le fond reste indépendant du carrousel. -->
+    <BlueGrainBackground />
+    <div class="nav-zones" aria-hidden={isMobile}>
+      <button
+        class="nav-zone"
+        type="button"
+        aria-label="Citation precedente"
+        on:click|stopPropagation={prev}
+      ></button>
+      <button
+        class="nav-zone"
+        type="button"
+        aria-label="Citation suivante"
+        on:click|stopPropagation={next}
+      ></button>
+    </div>
 
-  <div class="vision-header">
-    <h2 use:reveal>Notre vision</h2>
-    <p use:reveal={{ delay: 120 }}>Une collection de principes qui guident <br class="br-m" />chacune de nos créations.</p>
-  </div>
+    <div class="vision-header">
+      <h2 use:reveal>Notre vision</h2>
+      <p use:reveal={{ delay: 120 }}>Une collection de principes qui guident <br class="br-m" />chacune de nos créations.</p>
+    </div>
 
-  <div bind:this={section}></div>
+    <div bind:this={section}></div>
 
-  <div class="carousel-wrapper">
-    <div
-      class="carousel"
-      class:is-dragging={isDragging}
-      style="transform: rotateY({-current * angleStep + dragRotation}deg)"
-    >
-      {#each quotes as quote, i}
-        <div
-          class="card"
-          style="transform: rotateY({i * angleStep}deg) translateZ({radius}px); opacity: {getOpacity(i)};"
-          role="group"
-          on:mousemove={handleMove}
-        >
-          <div class="quote">
-            <span class="mark top" aria-hidden="true">“</span>
-            <!-- L'arrivée est posée sur la citation elle-même, pas sur la carte :
-                 la carte a son opacité pilotée en ligne par l'angle du carrousel,
-                 y ajouter un `reveal` reviendrait à se battre avec lui. Les deux
-                 opacités se multiplient sans se gêner. -->
-            <p use:reveal>{quote.text}</p>
-            <span class="mark bottom" aria-hidden="true">”</span>
+    <div class="carousel-wrapper">
+      <div
+        class="carousel"
+        class:is-dragging={isDragging}
+        style="transform: rotateY({-current * angleStep + dragRotation}deg)"
+      >
+        {#each quotes as quote, i}
+          <div
+            class="card"
+            style="transform: rotateY({i * angleStep}deg) translateZ({radius}px); opacity: {getOpacity(i)};"
+            role="group"
+            on:mousemove={handleMove}
+          >
+            <div class="quote">
+              <span class="mark top" aria-hidden="true">“</span>
+              <!-- L'arrivée est posée sur la citation elle-même, pas sur la carte :
+                   la carte a son opacité pilotée en ligne par l'angle du carrousel,
+                   y ajouter un `reveal` reviendrait à se battre avec lui. Les deux
+                   opacités se multiplient sans se gêner. -->
+              <p use:reveal>{quote.text}</p>
+              <span class="mark bottom" aria-hidden="true">”</span>
+            </div>
+            <div class="author" use:reveal={{ delay: 90 }}>{quote.author}</div>
           </div>
-          <div class="author" use:reveal={{ delay: 90 }}>{quote.author}</div>
-        </div>
-      {/each}
+        {/each}
+      </div>
     </div>
   </div>
 </section>
 
 <style>
+  /* Même gabarit que les autres blocs de la page à propos : fond noir, marge
+     latérale `--site-inset`, et le contenu dans un cadre arrondi de 22 px.
+     Avant, la section était en pleine largeur (100vw) et sans arrondi. */
   .vision-section {
     position: relative;
-    height: 140vh;
-    width: 100vw;
-    margin-left: calc(50% - 50vw);
-    background: #000;
-    overflow: hidden;
+    width: 100%;
+    background: var(--bg-deep, #000);
+    padding: clamp(6rem, 15vh, 12rem) var(--site-inset) clamp(5.5rem, 13vh, 11rem);
+    overflow-x: clip;
+    touch-action: pan-y;
+  }
+
+  .vision-frame {
+    position: relative;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    touch-action: pan-y;
-  }
-
-  .bg {
-    position: absolute;
-    inset: 0;
-    background-size: cover;
-    background-position: right center;
-    opacity: 0;
-    will-change: opacity;
-    z-index: 1;
-  }
-
-  .overlay {
-    position: absolute;
-    inset: 0;
-    z-index: 2;
-    background: rgba(0, 0, 0, 0.42);
-    pointer-events: none;
+    /* Le cadre épouse son contenu : sa hauteur ne dépend plus de celle de
+       l'écran (140vh avant), et rien ne peut se retrouver rogné en haut ou en
+       bas. */
+    padding: clamp(3rem, 7vh, 5.5rem) 0;
+    border-radius: 22px;
+    overflow: hidden;
+    background: #5663ed;
+    isolation: isolate;
   }
 
   .nav-zones {
@@ -316,7 +294,7 @@
   }
 
   .nav-zone:focus-visible {
-    outline: 2px solid rgba(244, 239, 230, 0.9);
+    outline: 2px solid rgba(var(--ink-muted-rgb, 245, 241, 232), 0.9);
     outline-offset: -2px;
   }
 
@@ -327,9 +305,9 @@
   }
 
   .vision-header h2 {
-    font-family: "Inter", sans-serif;
+    font-family: var(--site-font);
     font-size: clamp(2.5rem, 4vw, 4rem);
-    font-weight: 500;
+    font-weight: var(--site-weight-display);
     margin-bottom: 1.5rem;
     line-height: 0.96;
     letter-spacing: -0.04em;
@@ -337,11 +315,11 @@
   }
 
   .vision-header p {
-    font-family: "Inter", sans-serif;
+    font-family: var(--site-font);
     font-size: 1rem;
-    font-weight: 300;
+    font-weight: var(--site-weight);
     line-height: 1.6;
-    color: rgba(255, 255, 255, 0.65);
+    color: rgba(255, 255, 255, 0.9);
   }
 
   .carousel-wrapper {
@@ -377,7 +355,7 @@
     -webkit-backdrop-filter: blur(20px) saturate(160%) brightness(0.82);
     border-radius: 10px;
     box-shadow:
-      0 8px 10px rgba(0,0,0,0.06),
+      0 8px 10px rgba(var(--shade-rgb, 0, 0, 0), 0.06),
       inset 0 0 0 0px rgba(255,255,255,0.4);
     transition: transform 1.6s cubic-bezier(.22,.61,.36,1),
                 opacity 1.2s ease;
@@ -397,8 +375,8 @@
         transparent 75%
       );
     -webkit-mask:
-      linear-gradient(#000 0 0) content-box,
-      linear-gradient(#000 0 0);
+      linear-gradient(var(--bg-deep, #000) 0 0) content-box,
+      linear-gradient(var(--bg-deep, #000) 0 0);
     -webkit-mask-composite: xor;
     mask-composite: exclude;
     opacity: 0;
@@ -417,9 +395,9 @@
   }
 
   .quote p {
-    font-family: "Inter", sans-serif;
+    font-family: var(--site-font);
     font-style: normal;
-    font-weight: 300;
+    font-weight: var(--site-weight);
     font-size: 1.5rem;
     color: #fff;
     line-height: 1.6;
@@ -432,7 +410,7 @@
     font-family: Georgia, "Times New Roman", "Times", serif;
     font-style: italic;
     font-size: 5.4rem;
-    font-weight: 500;
+    font-weight: var(--site-weight-display);
     line-height: 1;
     opacity: 0.3;
     color: #fff;
@@ -459,13 +437,22 @@
   .author {
     margin-top: 2rem;
     text-align: center;
-    font-family: "Inter", sans-serif;
+    font-family: var(--site-font);
     font-size: 0.95rem;
-    font-weight: 300;
-    color: #9b9b9b;
+    font-weight: var(--site-weight);
+    color: rgba(255, 255, 255, 0.85);
   }
 
   @media (max-width: 768px) {
+    .vision-section {
+      padding: clamp(4.5rem, 12vh, 8rem) 1rem clamp(4rem, 10vh, 7rem);
+    }
+
+    .vision-frame {
+      border-radius: 18px;
+      padding: clamp(2.2rem, 5vh, 3.4rem) 0;
+    }
+
     .card {
       backdrop-filter: blur(12px) saturate(130%);
       -webkit-backdrop-filter: blur(12px) saturate(130%);
@@ -513,9 +500,12 @@
      wide viewport instead of overflowing the desktop 550px frame. */
   @media (pointer: coarse) and (orientation: landscape) and (max-height: 600px) {
     .vision-section {
-      height: auto;
-      min-height: 116svh;
-      padding: 9svh 0;
+      padding: 12svh 1.25rem 8svh;
+    }
+
+    .vision-frame {
+      border-radius: 18px;
+      padding: 5svh 0;
     }
 
     .nav-zones {

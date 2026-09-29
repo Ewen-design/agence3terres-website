@@ -46,9 +46,9 @@
 
   .project-fullscreen-title-image__copy h2 {
     margin: 0;
-    font-family: "Inter", sans-serif;
+    font-family: var(--site-font);
     font-style: normal;
-    font-weight: 400;
+    font-weight: var(--site-weight-display);
     font-size: clamp(2.8rem, 5vw, 5.3rem);
     line-height: 0.92;
     letter-spacing: -0.06em;
@@ -58,7 +58,7 @@
   .project-fullscreen-title-image__copy p {
     margin: 0.7rem 0 0;
     max-width: 17rem;
-    font-family: "Inter", sans-serif;
+    font-family: var(--site-font);
     font-size: clamp(0.95rem, 1vw, 1.02rem);
     line-height: 1.45;
     color: rgba(245, 241, 232, 0.78);

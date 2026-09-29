@@ -112,8 +112,8 @@
   bottom: 10%;
   left: 8%;
   max-width: 520px;
-  font-family: "Inter", sans-serif;
-  font-weight: 500;
+  font-family: var(--site-font);
+  font-weight: var(--site-weight-display);
   font-size: 2.2rem;
   line-height: 1.3;
   color: #fff;

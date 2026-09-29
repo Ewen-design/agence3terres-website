@@ -229,21 +229,21 @@
     background: rgba(6, 6, 8, 0.72);
     backdrop-filter: blur(12px) saturate(130%);
     -webkit-backdrop-filter: blur(12px) saturate(130%);
-    box-shadow: 0 14px 24px rgba(0, 0, 0, 0.28);
+    box-shadow: 0 14px 24px rgba(var(--shade-rgb, 0, 0, 0), 0.28);
   }
 
   .cursor-indicator.is-safari.is-view {
     background: rgba(12, 12, 14, 0.9);
     backdrop-filter: none;
     -webkit-backdrop-filter: none;
-    box-shadow: 0 8px 18px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 8px 18px rgba(var(--shade-rgb, 0, 0, 0), 0.2);
   }
 
   .cursor-indicator.is-view span {
     position: relative;
     z-index: 1;
     font-size: 0.76rem;
-    font-weight: 400;
+    font-weight: var(--site-weight);
     line-height: 1;
     letter-spacing: 0.01em;
   }

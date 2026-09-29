@@ -2,6 +2,7 @@
   import { onMount } from "svelte";
   import { browser } from "$app/environment";
   import { revealBlock as reveal } from "$lib/actions/reveal.js";
+  import { heroFrame } from "$lib/actions/heroFrame.js";
   import AutoVideo from "$lib/components/shared/media/AutoVideo.svelte";
   import {
     registerParallax,
@@ -99,18 +100,20 @@
   function computeFrame(y) {
     if (!afterTextEl || !afterActionEl) return;
 
-    const heroScrollable = Math.max(heroHeight - vh, 1);
-    const imageFadeProgress = clamp((y - heroTop) / heroScrollable, 0, 1);
-    const globalFade = imageFadeProgress * imageFadeProgress * (3 - 2 * imageFadeProgress);
-
+    // Les valeurs `image*` sont FIGÉES depuis que le hero tient dans un écran
+    // (2026-09-03) : elles dépendaient de la course de défilement du hero, qui
+    // valait 32svh et vaut maintenant zéro — le calcul renvoyait donc « fondu
+    // terminé » dès la première image, et la photo partait invisible. Même
+    // décision que sur les autres hero du site. La trame continue de tourner
+    // pour les arrivées de texte, qui en ont toujours besoin.
     const textReveal = getLocalRevealFromAbsolute(y, afterTextTop, 0.92, 0.16);
     const actionReveal = getLocalRevealFromAbsolute(y, afterActionTop, 0.96, 0.2);
 
     pendingFrame = {
-      imageScale: q(lerp(1.05, 1.0, globalFade), 0.0001),
-      imageBrightness: isMobile ? 1 : q(lerp(1, 0.62, globalFade), 0.001),
-      imageOpacity: isMobile ? 1 : q(lerp(1, 0, globalFade), 0.001),
-      imageDark: isMobile ? 0 : q(lerp(0.08, 0.62, globalFade), 0.001),
+      imageScale: 1,
+      imageBrightness: 1,
+      imageOpacity: 1,
+      imageDark: 0,
       textOpacity: q(lerp(0.16, 1, textReveal), 0.001),
       textY: q(lerp(22, 0, textReveal), 0.1),
       actionOpacity: q(lerp(0.16, 1, actionReveal), 0.001),
@@ -308,7 +311,7 @@
   });
 </script>
 
-<section class="hero-join-clean" bind:this={heroSection}>
+<section class="hero-join-clean" bind:this={heroSection} use:heroFrame>
   <section class="hero-stage">
     <div class="hero-media-sticky" aria-hidden="true">
       <div class="hero-media" class:media-visible={heroMediaVisible} bind:this={heroStage}>
@@ -405,7 +408,18 @@
 </section>
 
 <style>
+  /* Le cadre des autres hero du site, posé ici aussi (2026-09-03) : plein
+     écran en haut de page, puis une marge `--site-inset` et un arrondi 22 px
+     qui s'installent au premier cran de défilement. C'est l'action `heroFrame`
+     qui bascule `--hero-t` entre 0 et 1 ; le reste est une `transition`.
+     Ce que le hero projet garde en propre : sa traversée en `sticky` sur
+     132svh, et la bande infos + bouton juste en dessous. */
   .hero-join-clean {
+    --hero-t: 0;
+    --hero-inset: var(--site-inset);
+    --hero-radius: 22px;
+    --hero-cut: calc(var(--hero-inset) * var(--hero-t));
+
     position: relative;
     width: 100%;
     background: transparent;
@@ -413,26 +427,33 @@
     overflow: clip;
   }
 
+  /* Une hauteur d'écran, comme tous les autres hero du site (2026-09-03).
+     Avant : 132svh, et un média en `sticky` qui restait épinglé pendant que la
+     bande infos + bouton lui passait DESSUS — d'où l'impression que ces infos
+     étaient dans le cadre. Elles sont maintenant simplement en dessous. */
   .hero-stage {
     position: relative;
-    min-height: 132svh;
+    height: 100svh;
     z-index: 0;
   }
 
+  /* Le découpage referme le cadre. Surtout pas une marge ni une hauteur :
+     redimensionner à chaque image un élément qui porte une vidéo, c'est la
+     recette du défilement qui accroche. Seul le contour bouge. */
   .hero-media-sticky {
-    position: sticky;
-    top: 0;
-    height: var(--viewport-height);
-    margin-bottom: calc(-1 * var(--viewport-height));
+    position: absolute;
+    inset: 0;
     z-index: 0;
     pointer-events: none;
+    clip-path: inset(var(--hero-cut) round calc(var(--hero-radius) * var(--hero-t)));
+    transition: clip-path 820ms cubic-bezier(0.22, 1, 0.36, 1);
   }
 
   .hero-media {
     position: absolute;
     inset: 0;
     height: var(--viewport-height);
-    background: #000;
+    background: var(--bg-deep, #000);
     opacity: 0;
     transform: translateZ(0) scale(1.07);
     transition:
@@ -457,10 +478,10 @@
     height: 22svh;
     background: linear-gradient(
       to top,
-      rgba(0, 0, 0, 0.88) 0%,
-      rgba(0, 0, 0, 0.58) 34%,
-      rgba(0, 0, 0, 0.2) 68%,
-      rgba(0, 0, 0, 0) 100%
+      rgba(var(--shade-rgb, 0, 0, 0), 0.88) 0%,
+      rgba(var(--shade-rgb, 0, 0, 0), 0.58) 34%,
+      rgba(var(--shade-rgb, 0, 0, 0), 0.2) 68%,
+      rgba(var(--shade-rgb, 0, 0, 0), 0) 100%
     );
     pointer-events: none;
     z-index: 1;
@@ -505,28 +526,35 @@
     background:
       linear-gradient(
         to top,
-        rgba(0, 0, 0, 1) 0%,
-        rgba(0, 0, 0, 0.96) 16%,
-        rgba(0, 0, 0, 0.78) 34%,
-        rgba(0, 0, 0, 0.42) 52%,
-        rgba(0, 0, 0, 0.12) 66%,
-        rgba(0, 0, 0, 0) 78%
+        rgba(var(--shade-rgb, 0, 0, 0), 1) 0%,
+        rgba(var(--shade-rgb, 0, 0, 0), 0.96) 16%,
+        rgba(var(--shade-rgb, 0, 0, 0), 0.78) 34%,
+        rgba(var(--shade-rgb, 0, 0, 0), 0.42) 52%,
+        rgba(var(--shade-rgb, 0, 0, 0), 0.12) 66%,
+        rgba(var(--shade-rgb, 0, 0, 0), 0) 78%
       ),
       radial-gradient(
         circle at 50% 50%,
-        rgba(0, 0, 0, 0) 0%,
-        rgba(0, 0, 0, 0.03) 44%,
-        rgba(0, 0, 0, 0.12) 72%,
-        rgba(0, 0, 0, 0.34) 100%
+        rgba(var(--shade-rgb, 0, 0, 0), 0) 0%,
+        rgba(var(--shade-rgb, 0, 0, 0), 0.03) 44%,
+        rgba(var(--shade-rgb, 0, 0, 0), 0.12) 72%,
+        rgba(var(--shade-rgb, 0, 0, 0), 0.34) 100%
       );
     pointer-events: none;
     opacity: 0.08;
     will-change: opacity;
   }
 
+  /* Posé à la place qu'il occupe CADRE FERMÉ, exactement comme les autres hero
+     du site (2026-09-03). Sans cet `inset`, le titre et la flèche restaient
+     collés au bord de l'écran et dépassaient du cadre dès que la marge et
+     l'arrondi s'installaient au premier cran de défilement.
+     L'inset est FIXE et non `calc(… * var(--hero-t))` : une valeur animée
+     referait la mise en page à chaque image. Les deux éléments ne bougent
+     jamais, c'est le cadre qui vient à eux. */
   .hero-stage-content {
-    position: relative;
-    min-height: 100svh;
+    position: absolute;
+    inset: var(--hero-inset);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -554,9 +582,9 @@
 
   .hero-scroll-label {
     margin: 0;
-    font-family: "Inter", sans-serif;
+    font-family: var(--site-font);
     font-size: clamp(7rem, 9vw, 20rem);
-    font-weight: 500;
+    font-weight: var(--site-weight-display);
     line-height: 1;
     letter-spacing: 0.02em;
     text-align: left;
@@ -572,6 +600,13 @@
     color: transparent;
     -webkit-text-fill-color: transparent;
     max-width: 10ch;
+    /* Le dégradé est peint sur la boîte, puis découpé par le texte : ce qui
+       déborde de la boîte n'a plus de fond, donc plus de couleur, et disparaît.
+       `min-content` = la largeur du mot le plus long ; la boîte s'élargit donc
+       juste ce qu'il faut pour un titre en un seul mot trop long pour le
+       `max-width` (« Ludosphères »), sans rien changer aux titres en deux mots,
+       qui continuent de revenir à la ligne au même endroit. */
+    min-width: min-content;
     text-wrap: balance;
     opacity: 0;
     filter: blur(14px);
@@ -597,10 +632,10 @@
 
   .hero-scroll-arrow {
     display: block;
-    font-family: "Inter", sans-serif;
+    font-family: var(--site-font);
     font-size: clamp(1.1rem, 1.1vw, 1.2rem);
     line-height: 1;
-    font-weight: 300;
+    font-weight: var(--site-weight);
     color: #fff;
   }
 
@@ -632,9 +667,9 @@
 
   .after-meta__block h2 {
     margin: 0 0 0.7rem;
-    font-family: "Inter", sans-serif;
+    font-family: var(--site-font);
     font-size: clamp(1.55rem, 2vw, 2rem);
-    font-weight: 300;
+    font-weight: var(--site-weight-display);
     line-height: 0.98;
     
     color: #f7f2e8;
@@ -643,12 +678,12 @@
   .after-meta__block p,
   .after-meta__block li {
     margin: 0;
-    font-family: "Inter", sans-serif;
+    font-family: var(--site-font);
     font-size: clamp(1.28rem, 2vw, 2.05rem);
-    font-weight: 300;
+    font-weight: var(--site-weight-display);
     line-height: 1.14;
     
-    color: rgba(244, 239, 230, 0.72);
+    color: rgba(var(--ink-muted-rgb, 245, 241, 232), 0.72);
   }
 
   .after-meta__block ul {
@@ -666,7 +701,7 @@
   }
 
   .hero-cta {
-    font-family: "Inter", sans-serif;
+    font-family: var(--site-font);
     position: relative;
     min-width: clamp(10.5rem, 16vw, 14rem);
     height: clamp(3.15rem, 4vw, 3.9rem);
@@ -676,7 +711,7 @@
     gap: 0;
     padding: 0 1.2rem;
     font-size: clamp(0.95rem, 1.1vw, 1.12rem);
-    font-weight: 400;
+    font-weight: var(--site-weight);
     color: #f7f2e8;
     border: 0;
     cursor: pointer;
@@ -684,7 +719,7 @@
     backdrop-filter: blur(20px) saturate(160%) brightness(0.82);
     -webkit-backdrop-filter: blur(20px) saturate(160%) brightness(0.82);
     border-radius: 10px;
-    box-shadow: 0 6px 8px rgba(0, 0, 0, 0.04);
+    box-shadow: 0 6px 8px rgba(var(--shade-rgb, 0, 0, 0), 0.04);
     text-decoration: none;
     transition:
       transform 1.2s cubic-bezier(.22,.61,.36,1),
@@ -801,7 +836,7 @@
     }
 
     .hero-stage {
-      min-height: 128svh;
+      height: 100svh;
     }
 
     .hero-media img,
@@ -828,8 +863,8 @@
 
     .hero-scroll-cue-mobile {
       position: absolute;
-      left: 1rem;
-      top: calc(100svh - max(11rem, calc(var(--safe-bottom-offset) + 10rem)));
+      left: calc(1rem + var(--hero-inset));
+      top: calc(100svh - var(--hero-inset) - max(11rem, calc(var(--safe-bottom-offset) + 10rem)));
       display: flex;
       flex-direction: column;
       align-items: flex-start;
@@ -846,7 +881,7 @@
 
     .after-section {
       padding: 10vh 0 12vh;
-      background: #000;
+      background: var(--bg-deep, #000);
     }
 
     .after-section::before {
@@ -858,15 +893,15 @@
       height: 68rem;
       background: linear-gradient(
         to bottom,
-        rgba(0, 0, 0, 0) 0%,
-        rgba(0, 0, 0, 0.01) 16%,
-        rgba(0, 0, 0, 0.03) 32%,
-        rgba(0, 0, 0, 0.08) 48%,
-        rgba(0, 0, 0, 0.18) 64%,
-        rgba(0, 0, 0, 0.38) 78%,
-        rgba(0, 0, 0, 0.68) 90%,
-        rgba(0, 0, 0, 0.92) 97%,
-        rgba(0, 0, 0, 1) 100%
+        rgba(var(--shade-rgb, 0, 0, 0), 0) 0%,
+        rgba(var(--shade-rgb, 0, 0, 0), 0.01) 16%,
+        rgba(var(--shade-rgb, 0, 0, 0), 0.03) 32%,
+        rgba(var(--shade-rgb, 0, 0, 0), 0.08) 48%,
+        rgba(var(--shade-rgb, 0, 0, 0), 0.18) 64%,
+        rgba(var(--shade-rgb, 0, 0, 0), 0.38) 78%,
+        rgba(var(--shade-rgb, 0, 0, 0), 0.68) 90%,
+        rgba(var(--shade-rgb, 0, 0, 0), 0.92) 97%,
+        rgba(var(--shade-rgb, 0, 0, 0), 1) 100%
       );
       pointer-events: none;
       z-index: 0;

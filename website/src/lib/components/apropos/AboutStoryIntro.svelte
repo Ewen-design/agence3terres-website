@@ -21,7 +21,7 @@
 
 <style>
   .story-slider-intro {
-    --section-bg: #000;
+    --section-bg: var(--bg-deep, #000);
     --intro-text: rgba(17, 17, 17, 0.66);
 
     position: relative;
@@ -54,8 +54,8 @@
   .story-slider-intro__text {
     margin: 0;
     max-width: 30ch;
-    font-family: "Inter", sans-serif;
-    font-weight: 300;
+    font-family: var(--site-font);
+    font-weight: var(--site-weight-display);
     font-size: clamp(1.3rem, 2.8vw, 2.8rem);
     line-height: 1;
     letter-spacing: -0.02em;

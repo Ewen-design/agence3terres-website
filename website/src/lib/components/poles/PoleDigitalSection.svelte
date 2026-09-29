@@ -32,7 +32,7 @@
     <AboutEditorialSingleShowcase
       showCue={false}
       showAccent={false}
-      background="#040404"
+      background="var(--bg-deep, #040404)"
       text="Nos projets sont pensés pour <span class='hl'>s'adapter sur tous les supports</span>, de manière à répondre aux besoins de nos clients."
       image="/images/apple_justx.webp"
       alt="Application JustX Fitness"

@@ -48,9 +48,9 @@
 
   .project-intro__title {
     margin: 0;
-    font-family: "Inter", sans-serif;
+    font-family: var(--site-font);
     font-style: normal;
-    font-weight: 500;
+    font-weight: var(--site-weight-display);
     font-size: clamp(2.5rem, 4.4vw, 4.9rem);
     line-height: 0.96;
     letter-spacing: -0.05em;
@@ -74,8 +74,8 @@
   .project-intro__text {
     margin: 0;
     max-width: 28ch;
-    font-family: "Inter", sans-serif;
-    font-weight: 300;
+    font-family: var(--site-font);
+    font-weight: var(--site-weight-display);
     font-size: clamp(1.15rem, 2vw, 1.9rem);
     line-height: 1.14;
     letter-spacing: -0.02em;
@@ -105,14 +105,14 @@
   }
 
   .project-intro__meta-label {
-    font-family: "Inter", sans-serif;
+    font-family: var(--site-font);
     font-size: 0.88rem;
     line-height: 1.4;
     color: rgba(245, 241, 232, 0.46);
   }
 
   .project-intro__meta-value {
-    font-family: "Inter", sans-serif;
+    font-family: var(--site-font);
     font-size: 1rem;
     line-height: 1.55;
     color: rgba(245, 241, 232, 0.84);

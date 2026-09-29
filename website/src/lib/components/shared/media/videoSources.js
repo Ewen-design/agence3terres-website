@@ -14,11 +14,75 @@
 const AV1 = 'video/mp4; codecs="av01.0.05M.08"';
 const H264 = 'video/mp4; codecs="avc1.640028"';
 
-export function videoSources(name, base = "/videos") {
+/**
+ * Une vidéo DÉTOURÉE (canal alpha) ne peut passer par aucun des deux codecs
+ * ci-dessus : ni le H.264 ni notre chaîne AV1 ne transportent de transparence.
+ * Il en faut donc deux autres, un par famille de navigateurs.
+ *
+ * ⚠️ LE MOV EST DÉCLARÉ EN `video/quicktime`, ET C'EST VOLONTAIRE.
+ * C'est ce qui le rend invisible à Chrome, qui répond « » à ce type. Déclaré en
+ * `video/mp4; codecs=hvc1`, un Chrome récent répond « probably » — il sait
+ * décoder l'HEVC — prend le fichier, et affiche le sujet sur un aplat noir : la
+ * couche alpha d'un HEVC n'est lue que par Safari.
+ */
+const HEVC_ALPHA = 'video/quicktime; codecs="hvc1"';
+const VP9_ALPHA = 'video/webm; codecs="vp9"';
+
+/**
+ * `version` — le jeton de cache, à passer dès qu'un média est REMPLACÉ SUR
+ * PLACE (nouveau montage, nouvel encodage, sous le même nom de fichier).
+ *
+ * Les fichiers de `/videos/` gardent volontairement un nom stable : c'est ce
+ * qui permet de les réencoder sans toucher au code, et le Caddyfile s'appuie
+ * dessus (revalidation par ETag plutôt qu'un long max-age). Ça suffit pour un
+ * RECHARGEMENT de page — mais pas pour une navigation interne : le routeur
+ * remonte le composant, l'URL demandée est identique au caractère près, et le
+ * navigateur ressert sa copie en mémoire sans rien redemander au serveur. On
+ * revoyait donc l'ANCIEN montage un instant en revenant sur la home.
+ *
+ * Le jeton fait partie de l'URL : le changer change la clé de cache, et le
+ * remplacement devient immédiat partout — poster compris, alors qu'un poster
+ * est justement l'image qu'on voit AVANT que quoi que ce soit ne soit revalidé.
+ */
+function versionSuffix(version) {
+  return version ? `?v=${encodeURIComponent(version)}` : "";
+}
+
+export function videoSources(name, { base = "/videos", version = "" } = {}) {
+  const v = versionSuffix(version);
   return [
-    { src: `${base}/${name}.av1.mp4`, type: AV1 },
-    { src: `${base}/${name}.h264.mp4`, type: H264 }
+    { src: `${base}/${name}.av1.mp4${v}`, type: AV1 },
+    { src: `${base}/${name}.h264.mp4${v}`, type: H264 }
   ];
+}
+
+/**
+ * Sources d'une vidéo DÉTOURÉE, de la plus répandue à la plus universelle.
+ *
+ * Convention de nommage : `<nom>.hevc.mov` et `<nom>.vp9.webm`.
+ *
+ * L'ORDRE COMPTE ICI PLUS QU'AILLEURS. Safari répond « probably » aux DEUX
+ * types ; à égalité de verdict, AutoVideo garde l'ordre de la liste. L'HEVC
+ * passe donc devant : c'est le seul des deux dont Safari compose réellement la
+ * transparence. Les autres navigateurs ne voient que le WebM.
+ */
+export function alphaVideoSources(name, { base = "/videos", version = "" } = {}) {
+  const v = versionSuffix(version);
+  return [
+    { src: `${base}/${name}.hevc.mov${v}`, type: HEVC_ALPHA },
+    { src: `${base}/${name}.vp9.webm${v}`, type: VP9_ALPHA }
+  ];
+}
+
+/**
+ * Poster d'une vidéo de `/videos/`, même convention de nommage que ci-dessus :
+ * `<nom>-poster.webp`. Il est produit par les scripts d'encodage à partir du
+ * photogramme 0 du fichier livré — poster et début de lecture montrent donc la
+ * même image. Passer le MÊME `version` que la vidéo : les deux sont remplacés
+ * ensemble, ils doivent être invalidés ensemble.
+ */
+export function videoPoster(name, { base = "/videos", version = "" } = {}) {
+  return `${base}/${name}-poster.webp${versionSuffix(version)}`;
 }
 
 export const isAv1Source = (source) => source?.type === AV1;

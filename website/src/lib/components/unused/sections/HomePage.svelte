@@ -270,8 +270,8 @@
 
   .bg-title span {
     display: block;
-    font-family: "Inter", sans-serif;
-  font-weight: 500;
+    font-family: var(--site-font);
+  font-weight: var(--site-weight-display);
     font-style: normal;
     font-size: clamp(4.8rem, 13vw, 12rem);
     line-height: 0.88;
@@ -298,7 +298,7 @@
 
   .intro-card p {
     margin: 0;
-    font-family: "Inter", sans-serif;
+    font-family: var(--site-font);
     font-size: 1rem;
     line-height: 1.8;
     color: rgba(255, 255, 255, 0.62);
@@ -365,8 +365,8 @@
   }
 
   .content h2 {
-    font-family: "Inter", sans-serif;
-  font-weight: 500;
+    font-family: var(--site-font);
+  font-weight: var(--site-weight-display);
     font-size: clamp(2.5rem, 4vw, 4.5rem);
     line-height: 1.05;
     margin-bottom: 2rem;
@@ -394,7 +394,7 @@
     border: 1px solid #fff;
     color: #fff;
     text-decoration: none;
-    font-family: "Inter", sans-serif;
+    font-family: var(--site-font);
     font-size: 0.8rem;
     letter-spacing: 0.2em;
     text-transform: uppercase;

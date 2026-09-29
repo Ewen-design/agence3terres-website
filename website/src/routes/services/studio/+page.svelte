@@ -18,7 +18,8 @@
   <PolesHero
     label="Studio"
     image="/images/mobile-photo.webp"
-    finalText="Photo, vidéo, réseaux sociaux et événements : toute l'<span class='hl'>image de la marque</span>, en mouvement."
+    finalText="Photo, vidéo, réseaux sociaux. <span class='dim'>Et les événements.</span>"
+    finalSub="Toute l'image de la marque, en mouvement, du tournage à la publication."
     showAfterImage={false}
   />
 

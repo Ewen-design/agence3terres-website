@@ -53,7 +53,9 @@
   };
 
   const finalText =
-    "Des services sur mesure, au service d'une présence juste et durable.";
+    "Des services sur mesure. <span class='dim'>Jamais un catalogue.</span>";
+  const finalSub =
+    "Chaque accompagnement est calibré sur vos besoins réels, au service d'une présence juste et durable.";
   const activeAfterImage = "/images/moovy2.webp";
 
   const clamp = (v, min = 0, max = 1) => Math.max(min, Math.min(max, v));
@@ -309,7 +311,8 @@
   <section class="after-section">
     <div class="after-grid">
       <div class="after-text" bind:this={afterTextEl}>
-        <h2 use:reveal>{finalText}</h2>
+        <h2 use:reveal>{@html finalText}</h2>
+        <p class="after-sub" use:reveal={{ delay: 120 }}>{finalSub}</p>
       </div>
 
       <div class="after-image" bind:this={afterImageEl} use:reveal>
@@ -460,9 +463,9 @@
   }
 
   .hero-scroll-label {
-    font-family: "Inter", sans-serif;
+    font-family: var(--site-font);
     font-size: clamp(5.8rem, 5vw, 18rem);
-    font-weight: 500;
+    font-weight: var(--site-weight-display);
     line-height: 1;
     letter-spacing: var(--site-display-letter-spacing);
     text-align: left;
@@ -490,10 +493,10 @@
 
   .hero-scroll-arrow {
     display: block;
-    font-family: "Inter", sans-serif;
+    font-family: var(--site-font);
     font-size: clamp(1.1rem, 1.1vw, 1.2rem);
     line-height: 1;
-    font-weight: 300;
+    font-weight: var(--site-weight);
     color: #fff;
   }
 
@@ -504,12 +507,15 @@
     padding: 12vh 0 18vh;
   }
 
+  /* Le texte est centré sur la page : la petite image passe dessous, centrée
+     elle aussi, au lieu d'occuper une deuxième colonne. */
   .after-grid {
     width: min(1400px, 92%);
     margin: 0 auto;
     display: grid;
-    grid-template-columns: minmax(0, 1.08fr) minmax(320px, 0.78fr);
+    grid-template-columns: minmax(0, 1fr);
     gap: clamp(1.4rem, 4vw, 4.5rem);
+    justify-items: center;
     align-items: start;
   }
 
@@ -523,21 +529,45 @@
 
   /* Même style que les textes des pages projet (ProjectBrief). */
   .after-text h2 {
-    margin: 0;
-    width: 100%;
-    max-width: 24ch;
-    font-family: "Inter", sans-serif;
-    font-weight: 300;
-    font-size: clamp(1.5rem, 2.5vw, 2.55rem);
-    line-height: 1.18;
-    letter-spacing: -0.025em;
+    margin: 0 auto;
+    width: 45rem;
+    max-width: 100%;
+    font-family: var(--site-font);
+    /* Échelle et rythme repris de la référence : 36 px au repos, 28 px sous
+       991 px, 22 px sous 767 px, en medium et resserré. */
+    font-weight: 500;
+    font-size: clamp(1.375rem, 2.9vw, 2.25rem);
+    line-height: 1.2;
+    letter-spacing: -0.01em;
+    text-align: center;
+    /* Première phrase en encre pleine, la suite à 50 % — dans le MÊME titre et
+       à la même taille. */
     color: #f4efe6;
+    text-wrap: balance;
+  }
+
+  .after-text h2 :global(.dim) {
+    color: rgba(244, 239, 230, 0.5);
+  }
+
+  /* La note sous le titre : moitié de sa taille, à 50 % elle aussi. */
+  .after-sub {
+    margin: 1rem auto 0;
+    width: 45rem;
+    max-width: 100%;
+    font-family: var(--site-font);
+    font-weight: 500;
+    font-size: clamp(1rem, 1.45vw, 1.125rem);
+    line-height: 1.25;
+    letter-spacing: -0.01em;
+    text-align: center;
+    color: rgba(244, 239, 230, 0.5);
     text-wrap: pretty;
   }
 
   .after-image {
     position: relative;
-    justify-self: end;
+    justify-self: center;
     width: min(100%, 460px);
     aspect-ratio: 1.45 / 1;
     overflow: hidden;
@@ -565,13 +595,6 @@
       gap: 0.8rem;
       padding-inline: var(--project-side-padding, 0.8rem);
       box-sizing: border-box;
-    }
-
-    .after-text h2 {
-      font-size: clamp(1.5rem, 6.6vw, 2rem);
-      max-width: 26ch;
-      line-height: 1.2;
-      padding-inline: var(--project-text-inset, 0);
     }
   }
 
@@ -652,7 +675,15 @@
       gap: 1rem;
       padding-inline: var(--project-side-padding, 0.8rem);
       box-sizing: border-box;
-      margin-top: -9.5rem;
+      /* PLUS de remontée négative (elle valait -9.5rem jusqu'au 2026-09-03).
+         Le hero fait une hauteur d'écran et porte SON titre tout en bas, à
+         `inset: var(--hero-inset)` : n'importe quelle valeur négative fait
+         atterrir ce paragraphe dessus, et les deux textes se superposaient —
+         « Projets » sur « Stratégie, esthétique, exécution. », « Digital » sur
+         « Sites web et applications ». Sur desktop le décalage ne se voyait pas
+         parce que le titre du hero y est bien plus haut dans le cadre. L'espace
+         au-dessus est donné par le `margin-top` du `h2`, qui suffit. */
+      margin-top: 0;
       position: relative;
       z-index: 1;
     }
@@ -663,10 +694,6 @@
     }
 
     .after-text h2 {
-      max-width: 26ch;
-      font-size: clamp(1.4rem, 6.6vw, 1.9rem);
-      line-height: 1.2;
-      padding-inline: var(--project-text-inset, 0);
       margin-top: clamp(2.5rem, 9vw, 4rem);
     }
 

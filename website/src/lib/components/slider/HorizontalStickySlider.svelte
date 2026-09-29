@@ -504,7 +504,7 @@
   /* ── Title ──────────────────────────────────────────────────────────── */
   .hss__title {
     margin: 0;
-    font-family: var(--site-font, "Inter", sans-serif);
+    font-family: var(--site-font);
     font-weight: 600;
     font-size: clamp(4rem, 7vw, 8.6rem);
     line-height: 0.9;
@@ -545,8 +545,8 @@
   .hss__caption-line { display: block; overflow: hidden; }
   .hss__caption-line > span {
     display: block;
-    font-family: var(--site-font, "Inter", sans-serif);
-    font-weight: 300;
+    font-family: var(--site-font);
+    font-weight: var(--site-weight);
     font-size: clamp(1rem, 1.15vw, 1.2rem);
     line-height: 1.55;
     color: rgba(255,255,255,.88);
@@ -573,8 +573,8 @@
     height: 38px;
     margin-top: 1.1rem;
     padding: 0 1.4rem;
-    font-family: var(--site-font, "Inter", sans-serif);
-    font-weight: 400;
+    font-family: var(--site-font);
+    font-weight: var(--site-weight);
     font-size: .88rem;
     color: #f5f1e8;
     text-decoration: none;
@@ -634,9 +634,9 @@
   }
   .hss__arrow-symbol {
     display: block;
-    font-family: var(--site-font, "Inter", sans-serif);
+    font-family: var(--site-font);
     font-size: clamp(1.1rem, 1.1vw, 1.2rem);
-    font-weight: 300;
+    font-weight: var(--site-weight);
     color: #fff;
     line-height: 1;
   }

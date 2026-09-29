@@ -558,7 +558,7 @@
 
   .title-main {
     font-family: "Titre", serif;
-    font-weight: 400;
+    font-weight: var(--site-weight-display);
     font-size: clamp(2.8rem, 4.25vw, 3rem);
     color: rgba(74, 67, 61, 0.96);
   }
@@ -580,7 +580,7 @@
     margin: 0;
     max-width: 30ch;
     font-family: "General Sans", sans-serif;
-    font-weight: 300;
+    font-weight: var(--site-weight);
     font-size: clamp(1.1rem, 1.6vw, 1.35rem);
     line-height: 1.42;
     letter-spacing: -0.02em;
@@ -841,7 +841,7 @@
 
   .card-title {
     font-size: 0.82rem;
-    font-weight: 500;
+    font-weight: var(--site-weight);
     line-height: 1.1;
   }
 

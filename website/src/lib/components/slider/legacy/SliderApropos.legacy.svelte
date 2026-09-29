@@ -597,16 +597,16 @@
     font-size: 1.2rem;
     position: relative;
     z-index: 5;
-    font-family: "Inter", sans-serif;
+    font-family: var(--site-font);
     font-style: normal;
   }
 
   h2 {
-    font-family: "Inter", sans-serif;
+    font-family: var(--site-font);
     font-style: normal;
     font-size: clamp(4rem, 7vw, 8rem);
     line-height: 0.95;
-    font-weight: 500;
+    font-weight: var(--site-weight-display);
     white-space: pre-line;
     margin: 0 auto;
     color: #f5f1e8;
@@ -692,16 +692,16 @@
   .segment .num {
     flex: 0 0 auto;
     opacity: 0.72;
-    font-family: "Inter", sans-serif;
+    font-family: var(--site-font);
     font-style: normal;
   }
 
   .segment-title {
     display: block;
     min-width: 0;
-    font-family: "Inter", sans-serif;
+    font-family: var(--site-font);
     font-style: normal;
-    font-weight: 400;
+    font-weight: var(--site-weight);
     font-size: clamp(0.62rem, 0.82vw, 0.78rem);
     letter-spacing: 0.04em;
     text-transform: uppercase;
@@ -762,15 +762,15 @@
     flex: 0 0 auto;
     opacity: 0.72;
     font-size: 0.92rem;
-    font-family: "Inter", sans-serif;
+    font-family: var(--site-font);
     font-style: normal;
   }
 
   .mobile-progress-title {
     min-width: 0;
-    font-family: "Inter", sans-serif;
+    font-family: var(--site-font);
     font-size: 0.72rem;
-    font-weight: 400;
+    font-weight: var(--site-weight);
     letter-spacing: 0.04em;
     line-height: 1.1;
     text-transform: uppercase;
@@ -958,7 +958,7 @@
       grid-row: 1;
       color: #fff;
       font-size: 1.3rem;
-      font-family: "Inter", sans-serif;
+      font-family: var(--site-font);
       font-style: normal;
       opacity: 1;
       text-align: left;

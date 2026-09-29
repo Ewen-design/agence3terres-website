@@ -379,8 +379,42 @@
       else currentSrc = "";
     };
 
-    const onVisibility = () => syncPlayback();
-    const onPageShow = () => syncPlayback();
+    // ── Le décodeur perd ses références quand l'onglet passe derrière ──────
+    // Symptôme : on quitte la fenêtre, on revient, et la vidéo part en énormes
+    // blocs violets pendant une à cinq secondes. Ce n'est pas un problème de
+    // lecture — `currentTime` avance normalement, le chien de garde ne voit
+    // donc rien. C'est le décodeur qui a perdu ses images de référence pendant
+    // la mise en arrière-plan (le système suspend le pipeline média, et macOS
+    // récupère la mémoire du décodeur matériel) : il reprend sur des images
+    // intermédiaires sans référence valable et peint du bruit. Le violet vient
+    // des plans de chrominance non initialisés, qui tombent au milieu de leur
+    // échelle.
+    //
+    // Aucune API ne permet de le détecter. La parade est de forcer un VRAI
+    // parcours : on décale `currentTime` d'une image vers l'avant. Le
+    // navigateur reprend alors le décodage à l'image-clé précédente, ce qui
+    // jette l'état corrompu. Vers l'AVANT, jamais vers l'arrière : on ne
+    // rejoue rien, et le déplacement à l'écran est d'une image — invisible.
+    // Les fichiers du site portent une image-clé par seconde exprès pour ça
+    // (voir `-g 30` dans les scripts d'encodage) : le parcours est court et le
+    // décodeur repart propre.
+    function resyncDecoder() {
+      if (!videoEl || !currentSrc || reduceMotion) return;
+      if (videoEl.readyState < 2 || !Number.isFinite(videoEl.duration)) return;
+      const at = videoEl.currentTime + 1 / 30;
+      videoEl.currentTime = at < videoEl.duration ? at : 0;
+    }
+
+    const onVisibility = () => {
+      syncPlayback();
+      // Après le retour au premier plan, pas pendant : on laisse le
+      // compositeur reprendre la main avant de demander un parcours.
+      if (!document.hidden) requestAnimationFrame(() => requestAnimationFrame(resyncDecoder));
+    };
+    const onPageShow = () => {
+      syncPlayback();
+      requestAnimationFrame(() => requestAnimationFrame(resyncDecoder));
+    };
 
     // Un redimensionnement (passage plein écran → fenêtré) recompose la couche
     // vidéo : on réaffirme la lecture une fois le geste terminé.

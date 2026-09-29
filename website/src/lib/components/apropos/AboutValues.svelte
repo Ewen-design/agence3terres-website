@@ -1,401 +1,493 @@
 <script>
   import { reveal } from "$lib/actions/reveal.js";
 
-  // Trois valeurs présentées en éditorial (une grande image + un texte par
-  // partie), dans la même veine que AboutEditorialSingleShowcase de la page
-  // services — mais sans slider. Remplace l'ancien VisionSlider.
+  // ───────────────────────────────────────────────────────────────────────────
+  //  AboutValues — refonte
   //
-  // layout (desktop) :
-  //   "text-left"  → texte à gauche, image à droite
-  //   "text-right" → image à gauche, texte à droite
-  //   "stacked"    → image centrée au-dessus, texte centré en dessous
+  //  Un seul grand bloc (noir foncé, arrondi) posé sur le fond noir clair de la
+  //  section : l'image de la valeur courante vit DANS le fond du bloc, le texte
+  //  est posé par-dessus, et les noms des trois valeurs sont listés à droite,
+  //  cliquables. Un clic change l'image et le texte en fondu.
   //
-  // Fonds : « noir clair » → foncé → clair.
+  //  Les images sont détourées (fond transparent) : elles se posent donc sur le
+  //  noir du bloc sans cadre — d'où le `contain` plutôt qu'un `cover`.
+  // ───────────────────────────────────────────────────────────────────────────
+
+  // Un masque par bord : le noir est gardé, le transparent s'efface — l'image
+  // se dissout donc dans le noir du bloc au lieu de s'arrêter net. Les deux
+  // masques d'une valeur sont croisés (`mask-composite: intersect`).
+  const FADE = {
+    bottom: "linear-gradient(to top, rgba(0,0,0,0) 0%, #000 26%)",
+    top: "linear-gradient(to bottom, rgba(0,0,0,0) 0%, #000 26%)",
+    left: "linear-gradient(to right, rgba(0,0,0,0) 0%, #000 24%)",
+    right: "linear-gradient(to left, rgba(0,0,0,0) 0%, #000 24%)"
+  };
+
   const parts = [
     {
       label: "Créativité enracinée",
       text: "Nous imaginons des idées qui prennent racine dans l'<span class='hl'>identité</span>, les valeurs et la vision de chaque projet afin d'en révéler toute la <span class='hl'>singularité</span>.",
       image: "/images/ipad-creation.webp",
-      alt: "Application JustX sur mobile",
-      layout: "text-left",
-      // Image ancrée au bas du bloc (façon téléphone qui remonte du bord bas).
-      flushBottom: true,
-      background: "#161617",
-      ink: "#f4efe6",
-      inkMuted: "rgba(245, 241, 232, 0.62)"
+      alt: "Création graphique sur tablette — Agence 3 Terres",
+      // Bords où l'image se dissout dans le noir du bloc : bas + droite.
+      fade: [FADE.bottom, FADE.right]
     },
     {
       label: "Proximité et confiance",
       text: "Nous avançons aux côtés de nos clients avec écoute, <span class='hl'>transparence</span> et collaboration pour bâtir des relations solides et <span class='hl'>durables</span>.",
       image: "/images/visage.webp",
-      alt: "Application JustX sur mobile",
-      layout: "text-right",
-      flushBottom: true,
-      background: "#040404",
-      ink: "#f4efe6",
-      inkMuted: "rgba(245, 241, 232, 0.62)"
+      alt: "Portrait de profil — Agence 3 Terres",
+      fade: [FADE.bottom, FADE.left]
     },
     {
       label: "Excellence engagée",
       text: "Nous abordons chaque mission avec <span class='hl'>rigueur</span>, passion et authenticité afin de créer des <span class='hl'>résultats cohérents</span>, porteurs de sens et fidèles à l'image de ceux que nous accompagnons.",
       image: "/images/justx-ipads.webp",
-      alt: "Application JustX sur iPad",
-      layout: "stacked",
-      background: "#161617",
-      ink: "#f4efe6",
-      inkMuted: "rgba(245, 241, 232, 0.62)"
+      alt: "Interfaces JustX sur iPad — Agence 3 Terres",
+      fade: [FADE.left, FADE.right]
     }
   ];
+
+  let active = 0;
+
+  function select(i) {
+    active = i;
+  }
 </script>
 
-<section class="about-values" aria-label="Nos valeurs">
-  {#each parts as part}
-    <div
-      class="value-part value-part--{part.layout}"
-      class:value-part--flush-bottom={part.flushBottom}
-      style={`--av-bg:${part.background}; --av-ink:${part.ink}; --av-muted:${part.inkMuted};`}
-    >
-      <div class="value-inner">
-        <div class="value-text">
-          <h2 class="value-label" use:reveal>{part.label}</h2>
-          <p class="value-copy" use:reveal={{ delay: 90 }}>{@html part.text}</p>
-        </div>
+<section class="values" aria-label="Nos valeurs">
+  <div class="values__inner">
+    <!-- Le bloc : noir foncé, image au fond, texte par-dessus. -->
+    <div class="values__panel">
+      {#each parts as part, i}
+        <img
+          class="values__img"
+          class:is-shown={active === i}
+          src={part.image}
+          alt={active === i ? part.alt : ""}
+          loading={i === 0 ? "eager" : "lazy"}
+          decoding="async"
+          draggable="false"
+          style={`--mask-a:${part.fade[0]}; --mask-b:${part.fade[1]}`}
+        />
+      {/each}
 
-        <figure class="value-media" use:reveal={{ delay: 120 }}>
-          <img
-            src={part.image}
-            alt={part.alt}
-            loading="lazy"
-            decoding="async"
-          />
-        </figure>
+      <div class="values__scrim" aria-hidden="true"></div>
+
+      <div class="values__stage">
+        <div class="values__copy">
+          {#each parts as part, i}
+            <div
+              class="values__slot"
+              class:is-active={active === i}
+              aria-hidden={active !== i ? "true" : undefined}
+            >
+              <h2 class="values__label" use:reveal>{part.label}</h2>
+              <p class="values__text" use:reveal={{ delay: 90 }}>{@html part.text}</p>
+            </div>
+          {/each}
+        </div>
       </div>
     </div>
-  {/each}
+
+    <!-- Les noms, cliquables, à droite. -->
+    <nav class="values__nav" aria-label="Choisir une valeur">
+      {#each parts as part, i}
+        <button
+          type="button"
+          class="values__name"
+          class:is-active={active === i}
+          data-cursor="button"
+          aria-current={active === i ? "true" : undefined}
+          onclick={() => select(i)}
+        >
+          {part.label}
+        </button>
+      {/each}
+    </nav>
+  </div>
 </section>
 
 <style>
-  .about-values {
+  /* ── Fond de section : le noir clair ────────────────────────────────────── */
+  .values {
+    --vl-bg: var(--bg-panel, #161617);      /* noir clair — le fond de la section */
+    --vl-panel: var(--bg-deep, #040404);   /* noir foncé — le bloc */
+    --vl-ink: #f4efe6;
+    --vl-muted: rgba(var(--ink-muted-rgb, 245, 241, 232), 0.5);
+    --vl-radius: 22px;
+    --vl-inset: var(--site-inset);
+
     width: 100%;
-    /* Garde-fou anti-scroll horizontal : posé sur le conteneur (et non sur
-       chaque bloc) pour laisser la 3ᵉ image déborder en pleine largeur. */
+    background: var(--vl-bg);
+    color: var(--vl-ink);
+    padding: clamp(4.5rem, 11vh, 9rem) var(--vl-inset) clamp(5.5rem, 13vh, 11rem);
     overflow-x: clip;
   }
 
-  .value-part {
-    width: 100%;
-    background: var(--av-bg, #000);
-    color: var(--av-ink, #f4efe6);
-    padding: clamp(5rem, 12vh, 11rem) clamp(1.5rem, 3vw, 3rem);
+  .values__inner {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(200px, 17vw);
+    gap: clamp(1.2rem, 2.5vw, 2.6rem);
+    align-items: stretch;
   }
 
-  .value-inner {
-    width: min(1560px, 100%);
-    margin: 0 auto;
+  /* ── Le bloc ────────────────────────────────────────────────────────────── */
+  .values__panel {
+    position: relative;
+    height: min(78vh, 860px);
+    border-radius: var(--vl-radius);
+    overflow: hidden;
+    background: var(--vl-panel);
+    isolation: isolate;
+  }
+
+  /* Images au fond, en fondu croisé. Détourées → `contain`, jamais rognées. */
+  /* Aucune dimension imposée, seulement deux plafonds : un élément remplacé
+     dont `width` ET `height` valent `auto` est alors réduit dans la boîte en
+     gardant son rapport, et sa boîte colle EXACTEMENT au visuel. C'est ce qui
+     rend les masques de bord justes — avec une largeur imposée + `contain`,
+     l'image serait centrée dans une boîte plus grande et les masques
+     tomberaient dans le vide. Ne jamais poser les quatre côtés à la place :
+     `width: auto` reprendrait alors la taille naturelle de l'image. */
+  .values__img {
+    position: absolute;
+    top: 50%;
+    right: clamp(1.2rem, 3vw, 3.2rem);
+    left: auto;
+    bottom: auto;
+    width: auto;
+    height: auto;
+    max-width: 54%;
+    max-height: 84%;
+    object-fit: contain;
+    object-position: center;
+    display: block;
+    z-index: 0;
+    filter: brightness(1.08);
+    opacity: 0;
+    transform: translateY(-50%) scale(1.05);
+    transition:
+      opacity 0.9s ease,
+      transform 1.4s cubic-bezier(0.22, 0.61, 0.36, 1);
+
+    /* Fondu des deux bords, croisé : un pixel n'est gardé que s'il l'est par
+       les deux masques. */
+    -webkit-mask-image: var(--mask-a), var(--mask-b);
+    mask-image: var(--mask-a), var(--mask-b);
+    -webkit-mask-composite: source-in;
+    mask-composite: intersect;
+  }
+
+  .values__img.is-shown {
+    opacity: 1;
+    transform: translateY(-50%) scale(1);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .values__img,
+    .values__img.is-shown {
+      transform: translateY(-50%);
+      transition: opacity 0.25s ease;
+    }
+  }
+
+  /* Voile : garde le texte lisible quelle que soit l'image derrière. */
+  .values__scrim {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    pointer-events: none;
+    background:
+      linear-gradient(to right, rgba(4, 4, 4, 0.92) 0%, rgba(4, 4, 4, 0.68) 34%, rgba(4, 4, 4, 0.12) 62%, rgba(4, 4, 4, 0) 82%),
+      linear-gradient(to top, rgba(4, 4, 4, 0.34) 0%, rgba(4, 4, 4, 0) 34%);
+  }
+
+  .values__stage {
+    position: relative;
+    z-index: 2;
+    height: 100%;
     display: flex;
-    align-items: center;
-    gap: clamp(1.6rem, 3.5vw, 4rem);
+    flex-direction: column;
+    padding: clamp(1.3rem, 2vw, 2.1rem);
   }
 
-  /* ── Layouts desktop ──────────────────────────────────────────────── */
-  /* DOM = [texte][image]. On réordonne uniquement en flex. */
-  .value-part--text-left .value-inner {
-    flex-direction: row;
+  /* Textes empilés dans la même cellule → fondu croisé au clic. */
+  .values__copy {
+    flex: 1 1 auto;
+    display: grid;
+    place-items: center start;
+    min-height: 0;
+    padding: 0 clamp(0.5rem, 2vw, 2.6rem) clamp(1rem, 3vh, 2.5rem);
   }
 
-  .value-part--text-right .value-inner {
-    flex-direction: row-reverse;
+  .values__slot {
+    grid-area: 1 / 1;
+    max-width: 34ch;
+    text-align: left;
+    opacity: 0;
+    transform: translate3d(0, 18px, 0);
+    transition:
+      opacity 0.75s cubic-bezier(0.22, 0.61, 0.36, 1),
+      transform 0.9s cubic-bezier(0.16, 1, 0.3, 1);
+    pointer-events: none;
   }
 
-  .value-part--stacked .value-inner {
-    flex-direction: column-reverse;
-    align-items: center;
-    /* Un peu moins d'espace au-dessus du texte (entre l'image et le texte). */
-    gap: clamp(1.5rem, 2.6vw, 2.4rem);
+  .values__slot.is-active {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+    pointer-events: auto;
   }
 
-  /* Un peu plus d'air sous le texte de la partie 3. */
-  .value-part--stacked {
-    padding-bottom: clamp(7rem, 15vh, 13.5rem);
+  @media (prefers-reduced-motion: reduce) {
+    .values__slot {
+      transform: none;
+      transition-duration: 0.25s;
+    }
   }
 
-  /* ── Bloc texte ───────────────────────────────────────────────────── */
-  .value-text {
-    flex: 1 1 0;
-    min-width: 0;
+  .values__label {
+    margin: 0 0 clamp(0.8rem, 1.4vw, 1.2rem);
+    font-family: var(--site-font);
+    font-size: clamp(1.8rem, 3.2vw, 3.3rem);
+    font-weight: var(--site-weight-display);
+    line-height: 1.08;
+    letter-spacing: var(--site-display-letter-spacing, -0.028em);
+    color: #ffffff;
   }
 
-  .value-part--stacked .value-text {
-    flex: 0 0 auto;
-    max-width: 46ch;
-    text-align: center;
-  }
-
-  /* Titre à la même taille que le texte (plus de trait bleu au-dessus). */
-  .value-label {
-    margin: 0 0 clamp(0.7rem, 1.2vw, 1.1rem);
-    font-family: "Inter", sans-serif;
-    font-size: clamp(1.5rem, 2.5vw, 2.55rem);
-    font-weight: 400;
-    line-height: 1.18;
-    letter-spacing: -0.025em;
-    color: var(--av-ink, #f4efe6);
-  }
-
-  .value-copy {
+  .values__text {
     margin: 0;
-    max-width: 26ch;
-    font-family: "Inter", sans-serif;
-    font-size: clamp(1.5rem, 2.5vw, 2.55rem);
-    font-weight: 300;
-    line-height: 1.18;
-    letter-spacing: -0.025em;
-    /* Texte en gris, mots importants (.hl) en blanc. */
-    color: rgba(245, 241, 232, 0.5);
+    max-width: 32ch;
+    font-family: var(--site-font);
+    font-size: clamp(1rem, 1.28vw, 1.32rem);
+    font-weight: var(--site-weight);
+    line-height: 1.5;
+    letter-spacing: -0.012em;
+    color: var(--vl-muted);
     text-wrap: pretty;
   }
 
-  .value-copy :global(.hl) {
-    color: var(--av-ink, #f4efe6);
+  .values__text :global(.hl) {
+    color: var(--vl-ink);
   }
 
-  .value-part--stacked .value-copy {
-    max-width: 40ch;
-    margin: 0 auto;
+  /* ── Les noms cliquables ────────────────────────────────────────────────── */
+  .values__nav {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: clamp(0.3rem, 0.6vw, 0.5rem);
   }
 
-  /* ── Grande image ─────────────────────────────────────────────────────
-     Aucun cadre : ni fond, ni arrondi, ni hauteur fixe. L'image entière à sa
-     hauteur naturelle, à la manière d'AboutEditorialSingleShowcase. */
-  .value-media {
-    /* Image nettement plus grande que le texte (parties 1 & 2). */
-    flex: 2.6 1 0;
-    min-width: 0;
-    margin: 0;
-  }
-
-  .value-part--stacked .value-media {
-    /* Pleine largeur bord à bord : 100vw, centré par la colonne (align-items:
-       center) → déborde symétriquement jusqu'aux bords de l'écran. */
-    flex: 0 0 auto;
-    width: 100vw;
-  }
-
-  .value-media img {
-    width: 100%;
-    height: auto;
+  .values__name {
     display: block;
+    width: 100%;
+    padding: clamp(0.85rem, 1.3vw, 1.1rem) clamp(1rem, 1.6vw, 1.5rem);
+    border: 0;
+    /* Même arrondi que le bouton menu du header. */
+    border-radius: 10px;
+    background: transparent;
+    font-family: var(--site-font);
+    font-size: clamp(0.95rem, 1.15vw, 1.18rem);
+    font-weight: var(--site-weight);
+    letter-spacing: -0.012em;
+    line-height: 1.25;
+    text-align: center;
+    color: rgba(var(--ink-muted-rgb, 245, 241, 232), 0.44);
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    transition:
+      background-color 0.5s cubic-bezier(0.22, 0.61, 0.36, 1),
+      color 0.5s cubic-bezier(0.22, 0.61, 0.36, 1);
   }
 
-  /* Partie 1 : le bas de l'image épouse le bas du bloc (plus de padding bas,
-     image ancrée tout en bas). */
-  .value-part--flush-bottom {
-    padding-bottom: 0;
-  }
-
-  .value-part--flush-bottom .value-media {
-    align-self: flex-end;
-  }
-
-  /* Desktop : rapproche très légèrement les deux textes vers le centre
-     (part 1 vers la droite, part 2 vers la gauche). */
-  @media (min-width: 901px) {
-    .value-part--text-left .value-text {
-      margin-left: clamp(1rem, 2.2vw, 2.2rem);
-    }
-
-    .value-part--text-right .value-text {
-      margin-right: clamp(1rem, 2.2vw, 2.2rem);
-    }
-
-    /* Part 1 : l'image colle au bord droit de l'écran (déborde du conteneur
-       centré). 50% = moitié de la largeur du conteneur flex (.value-inner). */
-    .value-part--text-left .value-media {
-      margin-right: calc(50% - 50vw);
-    }
-
-    /* Part 2 (photo visage) : miroir de la part 1 → l'image colle au bord GAUCHE
-       de l'écran (sinon, sur grand écran, elle restait calée dans le conteneur
-       centré avec un vide à gauche → « mal justifiée à gauche »). */
-    .value-part--text-right .value-media {
-      margin-left: calc(50% - 50vw);
+  @media (hover: hover) {
+    .values__name:hover {
+      color: rgba(var(--ink-muted-rgb, 245, 241, 232), 0.78);
     }
   }
 
-  /* ── Mobile ───────────────────────────────────────────────────────── */
+  .values__name.is-active {
+    background: rgba(255, 255, 255, 0.07);
+    color: #ffffff;
+  }
+
+  .values__name:focus-visible {
+    outline: 2px solid var(--lead-blue, #5768ff);
+    outline-offset: 3px;
+  }
+
+  /* ── Mobile : le bloc, puis les noms en dessous ─────────────────────────── */
   @media (max-width: 900px) {
-    .value-part {
-      padding: clamp(4rem, 9vh, 6rem) 1.25rem;
+    .values {
+      padding: clamp(3.5rem, 9vh, 6rem) 1rem clamp(4rem, 10vh, 7rem);
     }
 
-    /* Le raccourci `padding` ci-dessus réécrit le bas : on le remet à 0 pour que
-       l'image reste collée au bas du bloc (parties 1 & 2). */
-    .value-part--flush-bottom {
-      padding-bottom: 0;
+    .values__inner {
+      grid-template-columns: minmax(0, 1fr);
+      gap: clamp(1rem, 3vw, 1.6rem);
     }
 
-    /* Un peu plus d'air au-dessus des textes des parties 1 & 2 (texte en haut). */
-    .value-part--text-left,
-    .value-part--text-right {
-      padding-top: clamp(5.5rem, 13vh, 8.5rem);
+    .values__panel {
+      height: min(72vh, 620px);
+      border-radius: 18px;
     }
 
-    /* Un peu plus d'air sous le texte de la partie 3 (le raccourci `padding`
-       ci-dessus l'avait réécrit). */
-    .value-part--stacked {
-      padding-bottom: clamp(5rem, 11vh, 7.5rem);
+    /* L'image descend au bas du bloc et le texte occupe le haut : sur un écran
+       étroit, un visuel centré passerait pile derrière le texte. */
+    /* Les quatre côtés sont posés : la boîte occupe le bas du bloc et
+       `contain` centre le visuel dedans, quelle que soit sa forme (l'iPad
+       debout comme la rangée d'écrans très large). */
+    .values__img {
+      top: auto;
+      bottom: clamp(1rem, 4vw, 1.8rem);
+      left: 50%;
+      right: auto;
+      width: auto;
+      height: auto;
+      max-width: calc(100% - 2 * clamp(1rem, 4vw, 2rem));
+      max-height: 46%;
+      transform: translateX(-50%) scale(1.05);
     }
 
-    .value-inner {
-      gap: clamp(1.8rem, 6vw, 2.6rem);
+    .values__img.is-shown {
+      transform: translateX(-50%) scale(1);
     }
 
-    /* Parties 1 & 2 : texte au-dessus, image en dessous. */
-    .value-part--text-left .value-inner,
-    .value-part--text-right .value-inner {
-      flex-direction: column;
-      align-items: stretch;
+    .values__scrim {
+      background:
+        linear-gradient(to bottom, rgba(4, 4, 4, 0.86) 0%, rgba(4, 4, 4, 0.5) 34%, rgba(4, 4, 4, 0) 62%),
+        linear-gradient(to top, rgba(4, 4, 4, 0.34) 0%, rgba(4, 4, 4, 0) 26%);
     }
 
-    /* Part 2 (« Proximité et confiance ») : un peu plus d'air entre le texte
-       et l'image sur mobile. */
-    .value-part--text-right .value-inner {
-      gap: clamp(3.2rem, 9vw, 4.5rem);
+    .values__copy {
+      place-items: start center;
+      padding: clamp(1.2rem, 5vw, 2.2rem) 0 0;
     }
 
-    /* Partie 3 : image au-dessus, texte en dessous. */
-    .value-part--stacked .value-inner {
-      flex-direction: column-reverse;
+    .values__slot {
+      text-align: center;
+      max-width: 30ch;
     }
 
-    .value-text {
-      width: 100%;
+    .values__text {
+      margin: 0 auto;
     }
 
-    /* Images plus grandes sur mobile : pleine largeur, bord à bord (elles
-       débordent du padding latéral du bloc). */
-    .value-media {
-      width: calc(100% + 2.5rem);
-      margin-inline: -1.25rem;
-    }
-
-    /* Parties 1 & 2 (photos portrait) encore plus grandes : hauteur généreuse,
-       image cadrée pour remplir tout le cadre (aucun cadre/fond visible). */
-    .value-part--text-left .value-media,
-    .value-part--text-right .value-media {
-      height: 82vh;
-    }
-
-    .value-part--text-left .value-media img,
-    .value-part--text-right .value-media img {
-      height: 100%;
-      object-fit: cover;
-    }
-
-    .value-label,
-    .value-copy {
-      max-width: 24ch;
-      font-size: clamp(1.5rem, 6.6vw, 2rem);
-      line-height: 1.2;
-    }
-
-    .value-part--stacked .value-text {
-      max-width: none;
-    }
-
-    .value-part--stacked .value-media {
-      width: 100vw;
-      margin-inline: 0;
-    }
-
-    /* Partie 1 : image pleine largeur, non ancrée à droite en colonne. */
-    .value-part--flush-bottom .value-media {
-      align-self: stretch;
-    }
-  }
-
-  @media (max-width: 640px) {
-    .value-label,
-    .value-copy {
-      font-size: clamp(1.4rem, 6.6vw, 1.9rem);
-    }
-  }
-
-  /* Phone in landscape. Neither the desktop (natural-height images that
-     overflow a 400px viewport) nor the portrait-mobile column (a portrait photo
-     squashed into a wide band) reads well here. Give landscape ONE coherent
-     treatment: text beside the image (uses the wide, short frame), the image
-     constrained to the viewport height and cropped with object-fit. */
-  @media (pointer: coarse) and (orientation: landscape) and (max-height: 600px) {
-    .value-part {
-      padding: 8svh clamp(1.25rem, 3vw, 2.5rem);
-    }
-    .value-part--flush-bottom {
-      padding-bottom: 0;
-    }
-
-    .value-inner {
-      gap: clamp(1.5rem, 4vw, 3rem);
-      align-items: center;
-    }
-    .value-part--text-left .value-inner {
+    .values__nav {
       flex-direction: row;
-    }
-    .value-part--text-right .value-inner {
-      flex-direction: row-reverse;
+      justify-content: flex-start;
+      gap: 0.5rem;
+      overflow-x: auto;
+      scrollbar-width: none;
+      -webkit-overflow-scrolling: touch;
+      /* Les pastilles peuvent filer d'un bord à l'autre de l'écran. */
+      margin-inline: -1rem;
+      padding-inline: 1rem;
     }
 
-    .value-text {
+    .values__nav::-webkit-scrollbar {
+      display: none;
+    }
+
+    .values__name {
       width: auto;
-      flex: 1 1 40%;
+      flex: 0 0 auto;
+      white-space: nowrap;
+      background: rgba(255, 255, 255, 0.04);
+      font-size: 0.95rem;
+      padding: 0.8rem 1.25rem;
     }
 
-    .value-media {
-      flex: 1 1 56%;
-      width: auto;
-      margin-inline: 0;
-    }
-    /* Kill the desktop full-bleed-right on part 1 so the image stays in its
-       column at a controlled height. */
-    .value-part--text-left .value-media {
-      margin-right: 0;
-    }
-    .value-part--text-left .value-media,
-    .value-part--text-right .value-media {
-      height: min(80svh, 420px);
-    }
-    .value-part--text-left .value-media img,
-    .value-part--text-right .value-media img {
-      height: 100%;
-      width: 100%;
-      object-fit: cover;
-      border-radius: 8px;
+    .values__name.is-active {
+      background: rgba(255, 255, 255, 0.11);
     }
 
-    .value-label,
-    .value-copy {
+    .values__label {
+      font-size: clamp(1.6rem, 7vw, 2.3rem);
+    }
+
+    .values__text {
+      font-size: clamp(0.98rem, 4vw, 1.1rem);
       max-width: 32ch;
-      font-size: clamp(1.15rem, 3.1vw, 1.6rem);
-      line-height: 1.2;
+    }
+  }
+
+  /* ── Téléphone en paysage ──────────────────────────────────────────────── */
+  @media (pointer: coarse) and (orientation: landscape) and (max-height: 600px) {
+    .values {
+      padding: 8svh 1.25rem;
     }
 
-    /* Part 3 stays image-over-text, but compact. */
-    .value-part--stacked {
-      padding-bottom: 8svh;
+    .values__inner {
+      grid-template-columns: minmax(0, 1fr) minmax(160px, 26vw);
+      gap: 1rem;
     }
-    .value-part--stacked .value-inner {
-      gap: clamp(1.2rem, 3vw, 2rem);
+
+    .values__panel {
+      height: min(84svh, 420px);
     }
-    .value-part--stacked .value-media {
-      width: 100vw;
+
+    .values__nav {
+      flex-direction: column;
+      overflow: visible;
+      margin-inline: 0;
+      padding-inline: 0;
+      /* En paysage, la colonne des noms passe sous le bouton de menu du site :
+         on la décale vers le bas pour dégager le coin haut-droit. */
+      padding-top: clamp(2rem, 14svh, 3.5rem);
     }
-    .value-part--stacked .value-media img {
-      max-height: 60svh;
+
+    .values__name {
       width: 100%;
-      object-fit: cover;
+      font-size: 0.92rem;
+      padding: 0.7rem 1rem;
+      background: transparent;
     }
-    .value-part--stacked .value-text {
-      max-width: 62ch;
+
+    /* Boîte large et courte : on reprend la composition du bureau (texte à
+       gauche, image à droite) — la version « image en bas » n'a pas la place. */
+    .values__img {
+      top: 50%;
+      bottom: auto;
+      left: auto;
+      right: clamp(0.8rem, 2vw, 1.6rem);
+      width: auto;
+      height: auto;
+      max-width: 48%;
+      max-height: 84%;
+      transform: translateY(-50%) scale(1.05);
+    }
+
+    .values__img.is-shown {
+      transform: translateY(-50%) scale(1);
+    }
+
+    .values__scrim {
+      background:
+        linear-gradient(to right, rgba(4, 4, 4, 0.92) 0%, rgba(4, 4, 4, 0.66) 38%, rgba(4, 4, 4, 0.1) 66%, rgba(4, 4, 4, 0) 84%),
+        linear-gradient(to top, rgba(4, 4, 4, 0.3) 0%, rgba(4, 4, 4, 0) 30%);
+    }
+
+    .values__copy {
+      place-items: center start;
+      padding: 0 clamp(0.4rem, 2vw, 1.4rem) 0 0;
+    }
+
+    .values__slot {
+      text-align: left;
+      max-width: 30ch;
+    }
+
+    .values__label {
+      font-size: clamp(1.4rem, 4vw, 2rem);
+    }
+
+    .values__text {
+      margin: 0;
+      font-size: clamp(0.9rem, 2.4vw, 1.05rem);
+      max-width: 34ch;
     }
   }
 </style>

@@ -1,4 +1,6 @@
 <script>
+  import { onMount, onDestroy } from "svelte";
+  import { browser } from "$app/environment";
   import { reveal } from "$lib/actions/reveal.js";
 
   const items = [
@@ -34,45 +36,78 @@
     }
   ];
 
+  // Arrivée des cartes : montée + fondu en cascade, déclenchée à l'entrée de la
+  // liste dans l'écran. L'arrivée en bloc de `use:reveal` posait un flou de
+  // 12 px sur des cartes de 1180 px de large — c'est ce qui rendait leur
+  // apparition sale. Ici, aucun flou : elles se déposent, l'une après l'autre.
+  let listEl;
+  let listIn = false;
+  let io;
+
   let openIndex = -1;
 
   function toggleItem(index) {
     openIndex = openIndex === index ? -1 : index;
   }
+
+  onMount(() => {
+    if (!browser || !listEl) return;
+
+    const reduce =
+      window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches ?? false;
+    if (reduce) {
+      listIn = true;
+      return;
+    }
+
+    io = new IntersectionObserver(
+      ([entry]) => {
+        if (!entry.isIntersecting) return;
+        listIn = true;
+        io?.disconnect();
+        io = null;
+      },
+      { threshold: 0.12 }
+    );
+    io.observe(listEl);
+  });
+
+  onDestroy(() => {
+    io?.disconnect();
+    io = null;
+  });
 </script>
 
-<section class="faq-section">
-  <div class="faq-title-wrap">
-    <h2 class="faq-title" use:reveal>FAQs</h2>
-  </div>
+<section class="faq" aria-label="Questions fréquentes">
+  <h2 class="faq__title" use:reveal>Nous sommes là pour répondre à toutes vos questions</h2>
 
-  <div class="faq-list">
+  <div class="faq__list" class:is-in={listIn} bind:this={listEl}>
     {#each items as item, index}
-      <article class="faq-item" class:is-open={openIndex === index} use:reveal={{ delay: index * 70 }}>
+      <article
+        class="faq__item"
+        class:is-open={openIndex === index}
+        style={`--i:${index}`}
+      >
         <button
-          class="faq-trigger"
+          class="faq__trigger"
           type="button"
+          data-cursor="button"
           aria-expanded={openIndex === index}
           aria-controls={`faq-panel-${index}`}
           on:click={() => toggleItem(index)}
         >
-          <span class="faq-question">{item.question}</span>
-          <span class="faq-icon" aria-hidden="true">
+          <span class="faq__question">{item.question}</span>
+          <span class="faq__icon" aria-hidden="true">
             <svg viewBox="0 0 24 24" focusable="false">
-              <path class="faq-icon-horizontal" d="M5 12H19" />
-              <path class="faq-icon-vertical" d="M12 5V19" />
+              <path d="M12 4.5v15" />
+              <path d="M5.5 13.2 12 19.7l6.5-6.5" />
             </svg>
           </span>
         </button>
 
-        <div
-          class="faq-panel"
-          class:is-open={openIndex === index}
-          id={`faq-panel-${index}`}
-        >
-          <div class="faq-panel-inner">
-            <div class="faq-answer-spacer" aria-hidden="true"></div>
-            <p class="faq-answer">{item.answer}</p>
+        <div class="faq__panel" class:is-open={openIndex === index} id={`faq-panel-${index}`}>
+          <div class="faq__panel-inner">
+            <p class="faq__answer">{item.answer}</p>
           </div>
         </div>
       </article>
@@ -81,273 +116,225 @@
 </section>
 
 <style>
-  .faq-section {
+  /* Fond noir du site, blocs en gris foncé, mêmes marges et mêmes arrondis que
+     les blocs de la page à propos. */
+  .faq {
+    --faq-inset: var(--site-inset);
+    --faq-card: var(--bg-panel, #161617);
+    --faq-radius: 22px;
+    --faq-ink: #f4efe6;
+
     position: relative;
-    background: #000;
-    color: #f5f1e8;
-    padding: clamp(2.6rem, 5vw, 4.5rem) 0 clamp(5.4rem, 10vw, 8.8rem);
+    width: 100%;
+    background: var(--bg-deep, #000);
+    color: var(--faq-ink);
+    padding: clamp(4.5rem, 11vh, 9rem) var(--faq-inset) clamp(6rem, 14vh, 12rem);
+    overflow-x: clip;
   }
 
-  .faq-title-wrap {
-    padding:
-      clamp(2rem, 4vw, 4rem)
-      clamp(1.5rem, 3vw, 3rem)
-      clamp(1.5rem, 2vw, 2.2rem);
-    display: flex;
-    justify-content: flex-start;
+  .faq__title {
+    margin: 0 auto clamp(2.2rem, 5vh, 3.8rem);
+    max-width: 26ch;
+    font-family: var(--site-font);
+    font-size: clamp(1.85rem, 3.5vw, 3.3rem);
+    font-weight: var(--site-weight-display);
+    line-height: 1.06;
+    letter-spacing: var(--site-display-letter-spacing, -0.028em);
+    text-align: center;
+    color: #ffffff;
+    text-wrap: balance;
   }
 
-  .faq-title {
-    margin: 0;
-    font-family: "Inter", sans-serif;
-    font-style: normal;
-    font-weight: 700;
-    font-size: clamp(2.5rem, 5vw, 5.5rem);
-    line-height: 0.95;
-    color: #f5f1e8;
-    text-align: left;
-  }
-
-  .faq-list {
-    width: min(1220px, calc(100% - 3rem));
+  .faq__list {
+    width: min(1180px, 100%);
     margin: 0 auto;
-    border-top: 1px solid rgba(255, 255, 255, 0.13);
+    display: flex;
+    flex-direction: column;
+    gap: clamp(0.55rem, 0.8vw, 0.85rem);
   }
 
-  .faq-item {
-    position: relative;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.13);
+  /* Le bloc grandit à l'ouverture : la réponse vit dedans, et c'est la ligne de
+     grille (0fr → 1fr) qui l'ouvre — pas une hauteur fixe à deviner. */
+  .faq__item {
+    background: var(--faq-card);
+    border-radius: var(--faq-radius);
+    overflow: hidden;
+    transition: background 0.5s cubic-bezier(0.22, 0.61, 0.36, 1);
+
+    /* Au repos avant l'arrivée. */
+    opacity: 0;
+    transform: translate3d(0, 26px, 0);
   }
 
-  .faq-item::after {
-    content: "";
-    position: absolute;
-    left: 0;
-    right: 0;
-    top: -1px;
-    height: 1px;
-    background: #ffffff;
-    transform: scaleX(0);
-    transform-origin: left center;
-    transition: transform 0.75s cubic-bezier(0.16, 1, 0.3, 1);
-    pointer-events: none;
-    z-index: 2;
+  .faq__list.is-in .faq__item {
+    animation: faqCardIn 0.85s cubic-bezier(0.16, 1, 0.3, 1) both;
+    animation-delay: calc(var(--i, 0) * 70ms);
   }
 
-  .faq-item.is-open::after {
-    transform: scaleX(1);
+  @keyframes faqCardIn {
+    from {
+      opacity: 0;
+      transform: translate3d(0, 26px, 0);
+    }
+    to {
+      opacity: 1;
+      transform: translate3d(0, 0, 0);
+    }
   }
 
-  .faq-trigger {
+  @media (prefers-reduced-motion: reduce) {
+    .faq__item {
+      opacity: 1;
+      transform: none;
+    }
+
+    .faq__list.is-in .faq__item {
+      animation: none;
+    }
+  }
+
+  @media (hover: hover) {
+    .faq__item:hover {
+      background: var(--bg-panel-hi, #1b1b1c);
+    }
+  }
+
+  .faq__trigger {
     width: 100%;
     display: grid;
     grid-template-columns: minmax(0, 1fr) auto;
-    align-items: start;
-    gap: 2rem;
-    padding: 1.55rem 0 1.6rem;
+    align-items: center;
+    gap: clamp(1rem, 2vw, 2rem);
+    padding: clamp(1.25rem, 2vw, 1.75rem) clamp(1.3rem, 2.2vw, 2rem);
     background: transparent;
     border: 0;
     color: inherit;
     text-align: left;
     cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
   }
 
-  .faq-question {
+  .faq__question {
     display: block;
-    margin: 0;
-    font-family: "Inter", sans-serif;
-    font-weight: 300;
-    font-size: clamp(1.2rem, 2.25vw, 2.3rem);
-    line-height: 1.08;
-    letter-spacing: -0.02em;
-    color: #f5f1e8;
+    font-family: var(--site-font);
+    font-size: clamp(1rem, 1.25vw, 1.26rem);
+    font-weight: var(--site-weight);
+    line-height: 1.3;
+    letter-spacing: -0.012em;
+    color: var(--faq-ink);
+    text-wrap: pretty;
   }
 
-  .faq-icon {
-    width: 2rem;
-    height: 2rem;
+  .faq__icon {
+    flex: 0 0 auto;
+    width: clamp(1.25rem, 1.6vw, 1.6rem);
+    height: clamp(1.25rem, 1.6vw, 1.6rem);
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    margin-top: 0.05rem;
-    color: rgba(245, 241, 232, 0.96);
+    color: rgba(var(--ink-muted-rgb, 245, 241, 232), 0.9);
   }
 
-  .faq-icon svg {
+  .faq__icon svg {
     width: 100%;
     height: 100%;
-    overflow: visible;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.5;
+    stroke-linecap: round;
+    stroke-linejoin: round;
     transform: rotate(0deg);
     transition: transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
   }
 
-  .faq-icon path {
-    fill: none;
-    stroke: currentColor;
-    stroke-width: 1.45;
-    stroke-linecap: round;
-    transform-origin: center;
-  }
-
-  .faq-icon-vertical {
-    transform: scaleY(1);
-    opacity: 1;
-    transition:
-      transform 0.55s cubic-bezier(0.16, 1, 0.3, 1),
-      opacity 0.35s ease;
-  }
-
-  .faq-item.is-open .faq-icon svg {
+  .faq__item.is-open .faq__icon svg {
     transform: rotate(180deg);
   }
 
-  .faq-item.is-open .faq-icon-vertical {
-    transform: scaleY(0);
-    opacity: 0;
-  }
-
-  .faq-panel {
+  .faq__panel {
     display: grid;
     grid-template-rows: 0fr;
-    transition: grid-template-rows 0.78s cubic-bezier(0.16, 1, 0.3, 1);
+    transition: grid-template-rows 0.72s cubic-bezier(0.16, 1, 0.3, 1);
   }
 
-  .faq-panel.is-open {
+  .faq__panel.is-open {
     grid-template-rows: 1fr;
   }
 
-  .faq-panel-inner {
+  .faq__panel-inner {
     min-height: 0;
     overflow: hidden;
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(18rem, 0.95fr);
-    gap: 2rem;
-    padding: 0 0 1.75rem;
   }
 
-  .faq-answer-spacer {
-    min-width: 0;
-  }
-
-  .faq-answer {
+  .faq__answer {
     margin: 0;
-    max-width: 32ch;
-    font-family: "Inter", sans-serif;
-    font-weight: 300;
-    font-size: clamp(1rem, 1.45vw, 1.55rem);
-    line-height: 1.12;
-    letter-spacing: -0.02em;
-    color: rgba(245, 241, 232, 0.82);
+    max-width: 76ch;
+    padding: 0 clamp(1.3rem, 2.2vw, 2rem) clamp(1.4rem, 2.2vw, 1.9rem);
+    font-family: var(--site-font);
+    font-size: clamp(0.95rem, 1.08vw, 1.1rem);
+    font-weight: var(--site-weight);
+    line-height: 1.55;
+    letter-spacing: -0.006em;
+    color: rgba(var(--ink-muted-rgb, 245, 241, 232), 0.58);
+    text-wrap: pretty;
     opacity: 0;
-    filter: blur(8px);
-    transform: translate3d(0, -12px, 0);
+    transform: translate3d(0, -10px, 0);
     transition:
       opacity 0.42s ease,
-      filter 0.87s cubic-bezier(0.16, 1, 0.3, 1),
-      transform 0.72s cubic-bezier(0.16, 1, 0.3, 1);
+      transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
   }
 
-  .faq-panel.is-open .faq-answer {
+  .faq__panel.is-open .faq__answer {
     opacity: 1;
-    filter: blur(0);
     transform: translate3d(0, 0, 0);
-    transition-delay: 0.08s;
+    transition-delay: 0.1s;
   }
 
-  @media (max-width: 1100px) {
-    .faq-title {
-      font-size: clamp(4rem, 12vw, 8rem);
+  @media (max-width: 760px) {
+    .faq {
+      padding: clamp(3.5rem, 9vh, 6rem) 1rem clamp(4.5rem, 11vh, 8rem);
     }
 
-    .faq-list {
-      width: min(1220px, calc(100% - 2rem));
-    }
-  }
-
-  @media (max-width: 900px) {
-    .faq-section {
-      padding: 8.5rem 0 13rem;
+    .faq__title {
+      max-width: 18ch;
+      font-size: clamp(1.6rem, 7vw, 2.3rem);
     }
 
-    .faq-title-wrap {
-      padding: 1.5rem 1rem 1rem;
+    .faq__item {
+      border-radius: 18px;
     }
 
-    .faq-title {
-      font-size: clamp(2.4rem, 11vw, 4rem);
-    }
-
-    .faq-list {
-      width: calc(100% - 9.5rem);
-    }
-
-    .faq-trigger {
+    .faq__trigger {
+      padding: 1.15rem 1.15rem;
       gap: 1rem;
-      padding: 1.1rem 0 1.15rem;
     }
 
-    .faq-question {
-      font-size: clamp(1.2rem, 5vw, 1.55rem);
-      line-height: 1.08;
+    .faq__question {
+      font-size: 1.02rem;
     }
 
-    .faq-icon {
-      width: 1.55rem;
-      height: 1.55rem;
-      margin-top: 0.02rem;
-    }
-
-    .faq-panel-inner {
-      grid-template-columns: 1fr;
-      gap: 0;
-      padding: 0 0 1.2rem;
-    }
-
-    .faq-answer-spacer {
-      display: none;
-    }
-
-    .faq-answer {
-      max-width: 28ch;
-      font-size: clamp(1.02rem, 4.1vw, 1.2rem);
-      line-height: 1.12;
-      color: rgba(245, 241, 232, 0.82);
-      padding-right: 2rem;
+    .faq__answer {
+      padding: 0 1.15rem 1.3rem;
+      font-size: 0.98rem;
     }
   }
 
-  @media (max-width: 640px) {
-    .faq-title-wrap {
-      padding: 1.3rem 1rem 0.9rem;
-    }
-  }
-
-  @media (max-width: 420px) {
-    .faq-title-wrap {
-      padding: 1.1rem 1rem 0.85rem;
+  @media (pointer: coarse) and (orientation: landscape) and (max-height: 600px) {
+    .faq {
+      padding: 8svh 1.25rem 10svh;
     }
 
-    .faq-list {
-      width: calc(100% - 7rem);
-    }
-
-    .faq-trigger {
-      padding: 1rem 0 1.05rem;
-    }
-
-    .faq-answer {
-      padding-right: 1rem;
-      max-width: 26ch;
-      font-size: clamp(1rem, 4vw, 1.12rem);
+    .faq__title {
+      font-size: clamp(1.5rem, 4vw, 2.2rem);
+      margin-bottom: 2rem;
     }
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .faq-item::after,
-    .faq-icon svg,
-    .faq-icon-vertical,
-    .faq-panel,
-    .faq-answer {
+    .faq__icon svg,
+    .faq__panel,
+    .faq__answer,
+    .faq__item {
       transition: none;
     }
   }

@@ -313,7 +313,7 @@
       radial-gradient(circle at 15% 0%, rgba(255, 255, 255, 0.9) 0%, rgba(255, 255, 255, 0) 34%),
       linear-gradient(180deg, var(--dna-bg-top) 0%, var(--dna-bg) 100%);
     color: var(--dna-text);
-    font-family: "Inter", sans-serif;
+    font-family: var(--site-font);
     overflow: hidden;
   }
 
@@ -350,7 +350,7 @@
 
   .dna-title-main {
     font-size: clamp(2.9rem, 4.5vw, 4.5rem);
-    font-weight: 300;
+    font-weight: var(--site-weight-display);
     color: rgba(78, 72, 67, 0.96);
   }
 
@@ -359,7 +359,7 @@
     margin-left: clamp(3.6rem, 6vw, 5.4rem);
     font-family: "Cormorant Garamond", serif;
     font-style: italic;
-    font-weight: 400;
+    font-weight: var(--site-weight-display);
     font-size: clamp(3rem, 4.6vw, 4.6rem);
     color: rgba(89, 82, 77, 0.86);
   }
@@ -459,7 +459,7 @@
 
   .dna-card-title {
     font-size: 0.82rem;
-    font-weight: 500;
+    font-weight: var(--site-weight);
     line-height: 1.1;
   }
 

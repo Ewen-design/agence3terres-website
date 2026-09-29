@@ -188,8 +188,8 @@
 }
 
 .bg-text {
-	font-family: "Inter", sans-serif;
-  font-weight: 500;
+	font-family: var(--site-font);
+  font-weight: var(--site-weight-display);
 	color: #1a1a1a;
 	font-size: clamp(3rem, 6vw, 6rem);
 	line-height: 1.05;
@@ -205,8 +205,8 @@
 }
 
 .accent {
-	font-family: "Inter", sans-serif;
-  font-weight: 500;
+	font-family: var(--site-font);
+  font-weight: var(--site-weight);
 	font-style: normal;
 	background: linear-gradient(
 		to right,
@@ -250,8 +250,8 @@
 	align-items: center;
 	justify-content: center;
 	text-align: center;
-	font-family: "Inter", sans-serif;
-  font-weight: 500;
+	font-family: var(--site-font);
+  font-weight: var(--site-weight);
 	font-size: 1.6rem;
 	line-height: 1.4;
 	color: #111;
@@ -259,8 +259,8 @@
 
 .panel.right {
 	padding: 2rem;
-	font-family: "Inter", sans-serif;
-  font-weight: 300;
+	font-family: var(--site-font);
+  font-weight: var(--site-weight);
 	font-size: 1.05rem;
 	line-height: 1.5;
 	color: #505050;
@@ -370,8 +370,8 @@
 		padding: 0;
 		display: block;
 		text-align: center;
-		font-family: "Inter", sans-serif;
-  font-weight: 500;
+		font-family: var(--site-font);
+  font-weight: var(--site-weight);
 		font-size: 1rem;
 		line-height: 1.2;
 		color: #111;

@@ -21,6 +21,14 @@
       button: "Voir le projet"
     },
     {
+      title: "Ludosphères",
+      category: "Site d'artiste",
+      lead: "Un site sobre pour laisser respirer les œuvres.",
+      image: "/images/ludo-tablette.webp",
+      page: "projet4",
+      button: "Voir le projet"
+    },
+    {
       title: "Moovy",
       category: "Plateforme web",
       lead: "Une recommandation de films simple, directe et personnelle.",
@@ -50,14 +58,6 @@
       lead: "Des missions secrètes, un téléphone, deux camps.",
       image: "/images/missionX5.webp",
       page: "projet6",
-      button: "Voir le projet"
-    },
-    {
-      title: "Ludosphères",
-      category: "Site d'artiste",
-      lead: "Un site sobre pour laisser respirer les œuvres.",
-      image: "/images/ludo.webp",
-      page: "projet4",
       button: "Voir le projet"
     },
     {
@@ -126,14 +126,18 @@
 <style>
   .projects-grid {
     width: 100%;
-    background: #000;
-    padding: clamp(4rem, 8vw, 8rem) 0;
+    /* Gris foncé de la page à propos (fond de la section Valeurs). */
+    background: var(--nuance-dark, var(--bg-panel, #161617));
+    /* Mêmes marges latérales que les blocs de la page à propos ; en bas, la
+       même marge que sur les côtés. */
+    padding: clamp(4rem, 8vw, 8rem) var(--site-inset) var(--site-inset);
   }
 
   .grid-inner {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 2px;
+    /* Gouttière identique à la marge avec le bord (--site-inset). */
+    gap: var(--site-inset);
     max-width: 1800px;
     margin: 0 auto;
   }
@@ -145,7 +149,7 @@
     cursor: pointer;
     border: none;
     padding: 0;
-    background: #0a0a0a;
+    background: var(--bg-raised, #0a0a0a);
     text-align: left;
     display: block;
     -webkit-tap-highlight-color: transparent;
@@ -179,9 +183,9 @@
     background:
       linear-gradient(
         to bottom,
-        rgba(0, 0, 0, 0.78) 0%,
-        rgba(0, 0, 0, 0.34) 48%,
-        rgba(0, 0, 0, 0.18) 100%
+        rgba(var(--shade-rgb, 0, 0, 0), 0.78) 0%,
+        rgba(var(--shade-rgb, 0, 0, 0), 0.34) 48%,
+        rgba(var(--shade-rgb, 0, 0, 0), 0.18) 100%
       );
   }
 
@@ -212,9 +216,9 @@
     margin: 0 0 1.4rem;
     max-width: 28ch;
     font-size: clamp(0.88rem, 1.1vw, 1.04rem);
-    font-weight: 400;
+    font-weight: var(--site-weight);
     line-height: 1.48;
-    color: rgba(245, 241, 232, 0.62);
+    color: rgba(var(--ink-muted-rgb, 245, 241, 232), 0.62);
   }
 
   .p-btn {
@@ -225,14 +229,14 @@
     height: 40px;
     padding: 0 1.4rem;
     font-size: 0.88rem;
-    font-weight: 400;
+    font-weight: var(--site-weight);
     white-space: nowrap;
     color: #fff;
     background: rgba(255, 255, 255, 0.11);
     backdrop-filter: blur(20px) saturate(160%) brightness(0.82);
     -webkit-backdrop-filter: blur(20px) saturate(160%) brightness(0.82);
     border-radius: 10px;
-    box-shadow: 0 6px 8px rgba(0, 0, 0, 0.08);
+    box-shadow: 0 6px 8px rgba(var(--shade-rgb, 0, 0, 0), 0.08);
     transition:
       background 0.3s ease,
       transform 0.4s cubic-bezier(0.22, 0.61, 0.36, 1);
@@ -322,7 +326,7 @@
   .p-card:last-child:nth-child(odd) {
     grid-column: 1 / -1;
     justify-self: center;
-    width: calc(50% - 1px);
+    width: calc(50% - var(--site-inset) / 2);
   }
 
   /* Bannière pleine largeur (ex. bloc « Votre projet »). */
@@ -341,30 +345,20 @@
     aspect-ratio: 2 / 1;
   }
 
-  /* Réduit le vide au-dessus du bloc pleine largeur « Votre projet »
-     (cumul du padding-bottom de la grille précédente + padding-top ici). */
-  .projects-grid:not(.is-full) {
-    padding-bottom: clamp(1.5rem, 3vw, 3rem);
+  /* Quand un second bloc suit (page Travail : la bannière « Votre projet »),
+     l'écart entre les deux vaut une gouttière : la moitié de chaque côté. */
+  .projects-grid:has(+ :global(.projects-grid)) {
+    padding-bottom: calc(var(--site-inset) / 2);
   }
 
-  /* Pas de vide sous le bloc pleine largeur, top réduit. */
   .projects-grid.is-full {
-    padding-top: clamp(1.5rem, 3vw, 3rem);
-    padding-bottom: 0;
+    padding-top: calc(var(--site-inset) / 2);
   }
 
   @media (max-width: 768px) {
     .grid-inner {
       grid-template-columns: 1fr;
-      gap: 2px;
-    }
-
-    /* Moins de vide entre le dernier projet et la partie contact sur mobile. */
-    .projects-grid:not(.is-full) {
-      padding-bottom: clamp(1.4rem, 4vw, 2.5rem);
-    }
-    .projects-grid.is-full {
-      padding-top: clamp(1.4rem, 4vw, 2.5rem);
+      gap: var(--site-inset);
     }
 
     .p-card {
