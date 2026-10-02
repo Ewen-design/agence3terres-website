@@ -62,8 +62,40 @@
     });
   }
 
+  /*  ── Le relais « projet suivant » (2026-10-02) ──────────────────────────────
+   *  Pendant le passage silencieux d'une page projet à la suivante
+   *  (`ProjectNextFooter`), le défilement saute du bas de l'ancienne page au
+   *  haut de la nouvelle. Ce saut n'est pas un geste du lecteur : lu comme une
+   *  remontée, il dépliait l'en-tête — « MENU » réapparaissait et le bouton
+   *  s'élargissait pile au changement de page, seul mouvement d'un passage
+   *  censé être invisible. Le pied de page tient donc l'en-tête pendant le
+   *  saut ; relâché, il reprend sa lecture À PARTIR de la nouvelle position,
+   *  dans l'état où il était. */
+  let tenu = false;
+  let tenuTimer;
+
+  function relacher() {
+    clearTimeout(tenuTimer);
+    tenu = false;
+    lastScrollY = window.scrollY || window.pageYOffset || 0;
+    downwardScrollProgress = 0;
+  }
+
+  function handleHold(event) {
+    if (!event.detail?.hold) {
+      relacher();
+      return;
+    }
+    tenu = true;
+    // Filet de sécurité : jamais tenu plus de quelques secondes, quoi qu'il
+    // arrive au passage.
+    clearTimeout(tenuTimer);
+    tenuTimer = setTimeout(relacher, 4000);
+  }
+
   function processScrollState(state) {
     const currentY = state?.y ?? state?.currentY ?? window.scrollY ?? 0;
+    if (tenu) return;
     const delta = currentY - lastScrollY;
     if (atTopOfPage) {
       if (currentY > TOP_LINKS_HIDE_Y) atTopOfPage = false;
@@ -307,6 +339,7 @@
 
     window.addEventListener("preloader:header-reveal", handleHeaderReveal);
     window.addEventListener("project-header-tone", handleProjectHeaderTone);
+    window.addEventListener("header:hold", handleHold);
 
     markHeaderReady();
 
@@ -336,6 +369,7 @@
       unregisterRead(processScrollState);
       window.removeEventListener("preloader:header-reveal", handleHeaderReveal);
       window.removeEventListener("project-header-tone", handleProjectHeaderTone);
+      window.removeEventListener("header:hold", handleHold);
       window.removeEventListener("resize", scheduleThemeSectionsRefresh);
     };
   });
@@ -348,6 +382,7 @@
     clearTimeout(headerIntroCleanup);
     clearTimeout(headerIntroDelay);
     clearTimeout(blurWarmCleanup);
+    clearTimeout(tenuTimer);
     cancelAnimationFrame(tourRaf);
     cancelAnimationFrame(refreshSectionsRaf);
   });

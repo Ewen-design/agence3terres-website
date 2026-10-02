@@ -679,20 +679,16 @@ body {
 
 .project-theme-page {
   position: relative;
-  /*  ── Contexte d'empilement, mais PAS groupe d'isolation ───────────────────
-   *  C'était `isolation: isolate`. L'effet d'empilement est le même — un
-   *  `z-index` posé là-dedans ne va pas se mêler à ce qui vit dehors — mais
-   *  `isolation` déclare en plus un GROUPE D'ISOLATION de fusion, ce que
-   *  WebKit traite comme une raison de donner à l'élément sa propre surface de
-   *  rendu. Or cet élément enveloppe toute la page projet, donc le cadre
-   *  collant de « notre rôle » se retrouvait dans un groupe composé à part,
-   *  entre le calque qui défile et lui. Safari défile de façon asynchrone :
-   *  la position du collant était alors recalée avec une image de retard, et
-   *  le cadre vibrait — le tremblement signalé, absent de la home qui n'a pas
-   *  cette enveloppe. `z-index: 0` donne le contexte d'empilement sans le
-   *  groupe de fusion, et le collant redevient l'affaire du seul fil de
-   *  défilement. */
-  z-index: 0;
+  /*  ── AUCUN contexte d'empilement ici (2026-10-02) ─────────────────────────
+   *  C'était `isolation: isolate`, puis `z-index: 0` : deux façons de faire de
+   *  cette enveloppe — qui porte TOUTE la page projet — un contexte
+   *  d'empilement à elle. La home n'en a pas : le bloc « notre rôle », qui
+   *  tremble ici et pas là-bas, y dépend directement de `.page-wrapper`. Le
+   *  contexte ne servait à rien (`.page-wrapper` en est déjà un, et cette
+   *  enveloppe est son seul enfant ; le seul `z-index` négatif des pages
+   *  projet vit dans le téléphone de `ProjectActionDuo`, qui a le sien) : il
+   *  est retiré pour que la page projet et la home aient enfin la même
+   *  structure au-dessus du bloc collant. */
   background-color: var(--project-surface-bg, #f4f6fc);
   color: var(--project-surface-ink, #121212);
   transition:

@@ -23,6 +23,15 @@
   export let video = [];
   export let mobileVideo = [];
   export let videoPoster = "";
+  /**
+   * Poster de la rendition portrait (`mobileVideo`). Sans lui, le téléphone
+   * affichait l'affiche de BUREAU recadrée en `cover`, puis le premier
+   * photogramme de la vidéo portrait — deux cadrages successifs. Et le pied de
+   * page « projet suivant », qui peint déjà l'affiche portrait, sautait d'une
+   * image à l'autre au changement de page. À renseigner comme `hero.mobileImage`
+   * dans `$lib/data/projets.js`.
+   */
+  export let mobileVideoPoster = "";
   export let metaBlocks = [];
   export let ctaLabel = "Visit Website";
   export let ctaHref = "";
@@ -148,8 +157,14 @@
         // force certains Safari à recomposer la vidéo hors GPU. L'assombrissement
         // est de toute façon porté par .hero-dark-layer, et le média est déjà
         // quasi transparent quand la luminosité descend.
+        // Et à luminosité 1 — la seule valeur depuis que les `image*` sont
+        // figées — PAS de filtre du tout : `brightness(1)` ne change aucune
+        // couleur mais fait passer l'image par le chemin des filtres, qui ne la
+        // rend pas tout à fait comme le pied de page « projet suivant » qui la
+        // peignait juste avant (raccord du changement de page).
         if (!video.length) {
-          heroMediaImgEl.style.filter = `brightness(${frame.imageBrightness})`;
+          heroMediaImgEl.style.filter =
+            frame.imageBrightness === 1 ? "none" : `brightness(${frame.imageBrightness})`;
         }
         heroMediaImgEl.style.opacity = `${frame.imageOpacity}`;
         applied.imageScale = frame.imageScale;
@@ -341,6 +356,7 @@
               sources={video}
               mobileSources={mobileVideo}
               poster={videoPoster || image}
+              mobilePoster={mobileVideoPoster}
               eager
             />
           </div>
@@ -527,8 +543,9 @@
        se contente de suivre le scroll de façon nette. */
     opacity: 1;
     transform: scale(1.05);
-    filter: brightness(1);
-    will-change: transform, opacity, filter;
+    /* Aucun filtre au repos — voir `applyFrame`. */
+    filter: none;
+    will-change: transform, opacity;
     backface-visibility: hidden;
     -webkit-backface-visibility: hidden;
   }
@@ -902,10 +919,16 @@
       display: none;
     }
 
+    /*  Ancré sur 100svh et sur rien qui bouge : la marge de sécurité du bas
+     *  (`--safe-bottom-offset`) varie d'une trentaine de pixels sur Safari iOS
+     *  quand sa barre d'outils se replie, et le titre sautait avec elle. Le
+     *  bas d'un cadre de 100svh est toujours au-dessus de la barre et de
+     *  l'indicateur d'accueil. ⚠️ Même règle dans `ProjectNextFooter`
+     *  (`.nextp__cue`) : le titre doit y être au même pixel. */
     .hero-scroll-cue-mobile {
       position: absolute;
       left: calc(1rem + var(--hero-inset));
-      top: calc(100svh - var(--hero-inset) - max(11rem, calc(var(--safe-bottom-offset) + 10rem)));
+      top: calc(100svh - var(--hero-inset) - 11rem);
       display: flex;
       flex-direction: column;
       align-items: flex-start;

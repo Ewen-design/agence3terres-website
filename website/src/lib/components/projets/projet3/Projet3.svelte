@@ -30,6 +30,7 @@
     video={videoSources("moovy-hero")}
     mobileVideo={videoSources("moovy-hero-mobile")}
     videoPoster="/videos/moovy-hero-poster.webp"
+    mobileVideoPoster="/videos/moovy-hero-mobile-poster.webp"
     metaBlocks={[
       { label: "Date", value: "2025 - Present" },
       { label: "Localisation", value: "Digital" },

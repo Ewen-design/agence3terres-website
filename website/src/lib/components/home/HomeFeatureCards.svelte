@@ -18,10 +18,11 @@
   //    Ce qu'il remplace : quatre cartes plein écran qui se recouvraient au
   //    défilement. Le principe des cartes reste, mais sur téléphone seulement.
   //
-  //  • TÉLÉPHONE (inchangé). Chaque volet est une carte plein écran, collée à
-  //    `top: 0`, qui RECOUVRE la précédente : c'est l'ordre du DOM qui décide de
-  //    l'empilement. Le visuel occupe le haut, la phrase se pose en bas, et le
-  //    fond de la carte est un dégradé du clair au foncé.
+  //  • TÉLÉPHONE. Chaque volet est une carte plein écran, collée à `top: 0`,
+  //    qui RECOUVRE la précédente : c'est l'ordre du DOM qui décide de
+  //    l'empilement. Le visuel occupe le haut de la carte À FRANC-BORD (depuis
+  //    le 2026-10-02 : plus aucune marge au-dessus ni sur les côtés), la phrase
+  //    se pose en bas, et le fond de la carte est un dégradé du clair au foncé.
   //
   //  ── POURQUOI DEUX BLOCS DE BALISES ET PAS UN SEUL ─────────────────────────
   //  Les deux mises en page ne veulent pas le même ARBRE, et aucune feuille de
@@ -68,7 +69,12 @@
    *    `title`      un en-tête au-dessus du bloc (la home n'en a pas) ;
    *    `background` la couleur de la section (la home garde le noir du site) ;
    *    et par carte, `fit` / `bg` pour un visuel qu'il ne faut pas rogner — un
-   *    logotype très large, par exemple, qui perdrait son nom en `cover`. */
+   *    logotype très large, par exemple, qui perdrait son nom en `cover`.
+   *
+   *  Le cadrage par carte vaut pour les deux mises en page : `fit` et
+   *  `position` (grand écran), que `mobileFit` et `mobilePosition` remplacent
+   *  sur téléphone quand le même point de cadrage ne tient plus — le cadre y
+   *  est presque carré, mais pas au même format. */
   export let title = "";
   export let background = "";
 
@@ -170,11 +176,7 @@
   <!-- ── Téléphone : les cartes plein écran qui se recouvrent ──────────────── -->
   <div class="fcards__track">
     {#each cards as card, i}
-      <article
-        class="fcards__card"
-        class:has-photo={card.photo}
-        class:has-video={card.video}
-      >
+      <article class="fcards__card">
         <div class="fcards__media" style={card.bg ? `background:${card.bg};` : undefined}>
           {#if card.video}
             <!-- Le cadrage est passé en variable CSS et non en valeur fixe :
@@ -191,11 +193,14 @@
               objectPosition="var(--fc-media-anchor, center)"
             />
           {:else}
+            <!-- Le visuel REMPLIT le cadre (`cover`) : c'est le point de
+                 cadrage de chaque carte qui garde le sujet dans le champ. Un
+                 visuel qu'il ne faut pas rogner (logotype sur aplat) passe en
+                 `contain`, sur le fond `bg` de sa carte. -->
             <img
               class="fcards__img"
-              class:is-photo={card.photo}
-              style:object-position={card.mobilePosition ?? "center"}
-              style:--fc-photo-fit={card.mobileFit ?? "cover"}
+              style:object-fit={card.mobileFit ?? card.fit ?? "cover"}
+              style:object-position={card.mobilePosition ?? card.position ?? "center"}
               src={card.image}
               alt={card.alt}
               loading="lazy"
@@ -269,12 +274,20 @@
     }
   }
 
+  /*  ── PAS de `overflow-x: clip` ici (retiré le 2026-10-02) ──────────────────
+   *  Cette section est l'ancêtre DIRECT des deux éléments collants du bloc (le
+   *  cadre du grand écran, les cartes du téléphone). Pour un `overflow-x:
+   *  clip`, WebKit fabrique un calque de découpe à part autour du collant :
+   *  c'est la cause du bug 247130 (« sticky qui saute de 1 à 2 px dans un
+   *  conteneur en overflow-x: clip », corrigé dans Safari 16.2), et le même
+   *  montage est encore signalé comme instable sur iOS. Rien ici ne déborde en
+   *  largeur, et le `body` coupe déjà tout débordement horizontal du site :
+   *  la déclaration ne protégeait de rien. */
   .fcards {
     --fc-radius: 18px;
     width: 100%;
     color: #f4efe6;
     background: var(--bg-deep, #050709);
-    overflow-x: clip;
   }
 
   /* ═══════════════════════════════════════════════════════════════════════
@@ -356,6 +369,18 @@
       position: absolute;
       inset: 0;
       opacity: 0;
+      /*  ── ÉTEINT = MASQUÉ, pas seulement transparent (2026-10-02) ──────────
+       *  Un calque à opacité nulle à l'intérieur d'un `sticky` déclenche un
+       *  défaut de WebKit, corrigé seulement dans Safari 18.2 (bug 280316) :
+       *  le défilement et la mise en page ne le jugent pas de la même façon
+       *  (« vide » pour l'un, « visible » pour l'autre), et le calque est
+       *  REPEINT à chaque mise en page qui survient pendant le défilement.
+       *  Trois visuels éteints sur quatre vivaient ainsi en permanence dans le
+       *  cadre collant. `visibility: hidden` les met d'accord : le visuel
+       *  s'efface en fondu, PUIS est masqué ; il est rendu visible dès qu'il
+       *  s'allume, avant son fondu d'entrée. Une image ou une vidéo masquée
+       *  garde sa boîte : elle se charge comme avant. */
+      visibility: hidden;
       /*  ── La couche va ICI, sur le visuel, et surtout PAS sur le cadre ──────
        *  Sur la boîte `position: sticky` elle-même, une couche forcée est
        *  nuisible : elle la sort du chemin rapide du fil de défilement. Sur le
@@ -370,11 +395,17 @@
       transform: translateZ(0);
       /* Un fondu long : les volets font trois quarts d'écran, un fondu court se
          lirait comme une coupe au milieu du défilement. */
-      transition: opacity 620ms cubic-bezier(0.4, 0, 0.2, 1);
+      transition:
+        opacity 620ms cubic-bezier(0.4, 0, 0.2, 1),
+        visibility 0s linear 620ms;
     }
 
     .fcards__shot.is-on {
       opacity: 1;
+      visibility: visible;
+      transition:
+        opacity 620ms cubic-bezier(0.4, 0, 0.2, 1),
+        visibility 0s linear 0s;
     }
 
     /* La vidéo du digital est DÉTOURÉE : au rendu, l'appareil sort déjà par la
@@ -518,43 +549,36 @@
       0 -48px 90px rgba(var(--shade-rgb, 0, 0, 0), 0.32);
   }
 
-  /* Le contenu est calé HAUT (2026-09-03) : moins d'air au-dessus du visuel,
-     plus sous le texte. Les cartes montent pendant qu'on les lit — un contenu
-     calé bas arrive trop tard dans le champ, et sort par le haut avant d'être
-     lu. */
+  /*  ── Le visuel à FRANC-BORD (2026-10-02) ──────────────────────────────────
+   *  Il prend toute la largeur de la carte et part de son bord haut : plus
+   *  aucune marge au-dessus ni sur les côtés, c'est l'arrondi de la carte qui
+   *  le découpe. Il REMPLIT son cadre (`cover`, point de cadrage réglé carte par
+   *  carte) et s'arrête net au-dessus du texte, à une distance fixe : le visuel
+   *  est rogné par le bas plutôt que de venir toucher la phrase. Le cadre prend
+   *  toute la hauteur que le texte laisse libre — une phrase plus longue rogne
+   *  donc un peu plus le visuel, jamais l'inverse.
+   *  Avant : un retrait de 1 rem sur les côtés et d'environ 3,5 vh au-dessus,
+   *  et les formats paysage en `contain`, qui flottaient au milieu d'un vide
+   *  deux fois plus grand que ce retrait. */
   .fcards__media {
-    /* Le cadrage du visuel. En variables parce qu'il ne s'applique pas qu'à
-       l'image : la vidéo les lit aussi, et AutoVideo écrit son `object-fit` et
-       son `object-position` en style EN LIGNE — seul un `var()` laisse la
-       feuille de style décider. */
-    --fc-media-fit: contain;
-    --fc-media-anchor: center bottom;
+    /* Le cadrage de la VIDÉO. En variables parce qu'AutoVideo écrit son
+       `object-fit` et son `object-position` en style EN LIGNE — seul un `var()`
+       laisse la feuille de style décider. Les plans sont des captures d'écran
+       de téléphone : ils remplissent le cadre, calés en haut. */
+    --fc-media-fit: cover;
+    --fc-media-anchor: center top;
     grid-column: 1;
     grid-row: 1;
     position: relative;
     min-width: 0;
-    padding: clamp(1.1rem, 3.5vh, 2.4rem) 1rem 0;
   }
 
-  /* La carte à la vidéo : le plan est recadré à la main pour épouser le cadre
-     portrait, il le remplit donc au lieu de flotter au milieu du vide. */
-  .fcards__card.has-video .fcards__media {
-    --fc-media-fit: cover;
-    --fc-media-anchor: center top;
-  }
-
+  /* Le cadrage des images est posé en ligne, carte par carte (voir le
+     balisage) : ici, seulement la boîte. */
   .fcards__img {
     display: block;
     width: 100%;
     height: 100%;
-    object-fit: var(--fc-media-fit, contain);
-    object-position: var(--fc-media-anchor, center);
-  }
-
-  /* Les photos restent opaques pour préserver les logos et les sujets.
-     Les paysages peuvent être affichés entiers dans le cadre mobile. */
-  .fcards__img.is-photo {
-    object-fit: var(--fc-photo-fit, cover);
   }
 
   .fcards__body {
@@ -566,8 +590,12 @@
     display: flex;
     flex-direction: column;
     justify-content: flex-end;
-    gap: clamp(1rem, 3vh, 1.6rem);
-    padding: 0 1.5rem clamp(4.5rem, 15vh, 8rem);
+    gap: clamp(1rem, 3svh, 1.6rem);
+    /* En haut, la respiration entre le bas du visuel et le texte. En bas,
+       beaucoup d'air, et c'est voulu : les cartes montent pendant qu'on les
+       lit — un texte calé trop bas arriverait tard dans le champ, et
+       sortirait par le haut avant d'être lu. */
+    padding: clamp(1.6rem, 5svh, 2.6rem) 1.5rem clamp(4.5rem, 15svh, 8rem);
   }
 
   .fcards__icon {
@@ -638,6 +666,7 @@
      tient), mais les fondus et l'empilement des cartes du téléphone, si. */
   @media (prefers-reduced-motion: reduce) {
     .fcards__shot,
+    .fcards__shot.is-on,
     .fcards__item {
       transition: none;
     }

@@ -24,9 +24,12 @@
   //  carré à gauche, le texte à sa droite ; sur téléphone il occupe le haut de
   //  la carte et la phrase se pose en bas. Voir `HomeFeatureCards.svelte`.
   //
-  //  Les quatre photos portent leur propre décor. Le cadrage est réglé par
-  //  visuel ; sur téléphone, les formats paysage restent entiers pour garder
-  //  l'ordinateur, le coffret et le panneau dans le champ.
+  //  Les quatre photos portent leur propre décor. Elles REMPLISSENT leur cadre
+  //  sur les deux mises en page (sur téléphone, à franc-bord depuis le
+  //  2026-10-02) : `position` est le point de cadrage, et `mobilePosition` le
+  //  remplace sur téléphone quand le cadre n'a plus le même format. Les trois
+  //  formats paysage y perdent un peu de leurs bords, jamais leur sujet —
+  //  l'ordinateur, le coffret et le panneau restent dans le champ.
   const featureCards = [
     {
       icon: `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.2l2.3 6.5 6.5 2.3-6.5 2.3L12 20.8l-2.3-6.5L3.2 12l6.5-2.3z"/></svg>`,
@@ -35,8 +38,7 @@
       image: "/images/ludo-drapeau.webp",
       alt: "Identité Ludosphères sur une bannière suspendue à une façade",
       position: "62% 70%",
-      mobilePosition: "65% 58%",
-      photo: true
+      mobilePosition: "65% 58%"
     },
     {
       icon: `<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="6.5" y="2.8" width="11" height="18.4" rx="2.4"/><path d="M10.6 5.4h2.8"/></svg>`,
@@ -44,9 +46,7 @@
       text: "Sites et applications sur mesure, du design d'interface au développement, pensés pour durer et tenir sur tous les écrans.",
       image: "/images/moovy-ordi-bleu.webp",
       alt: "Site Moovy sur un ordinateur portable dans un décor bleu",
-      position: "54% 55%",
-      mobileFit: "contain",
-      photo: true
+      position: "54% 55%"
     },
     {
       icon: `<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="2.6" y="6.4" width="13" height="11.2" rx="2.2"/><path d="M15.6 11.2l5.8-3v7.6l-5.8-3z"/></svg>`,
@@ -54,9 +54,7 @@
       text: "Photo, vidéo, montage, réseaux sociaux : l'image de la marque produite chez nous, du tournage à la diffusion.",
       image: "/images/lybra-coffret.webp",
       alt: "Vue d'ensemble du coffret Lybra et de son identité visuelle",
-      position: "58% 50%",
-      mobileFit: "contain",
-      photo: true
+      position: "58% 50%"
     },
     {
       icon: `<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.6"/><path d="M3.6 12h16.8M12 3.4c2.2 2.4 3.3 5.3 3.3 8.6s-1.1 6.2-3.3 8.6c-2.2-2.4-3.3-5.3-3.3-8.6S9.8 5.8 12 3.4z"/></svg>`,
@@ -64,9 +62,7 @@
       text: "Clarifier votre positionnement, définir vos priorités et construire une stratégie sur mesure : nous vous accompagnons dans vos choix et leur mise en œuvre, à chaque étape du projet.",
       image: "/images/affiche-moovy.webp",
       alt: "Panneau publicitaire Moovy : Le film idéal, en quelques clics",
-      position: "54% 42%",
-      mobileFit: "contain",
-      photo: true
+      position: "54% 42%"
     }
   ];
 

@@ -280,6 +280,29 @@ export function forceScrollEngineUpdate() {
   startLoop();
 }
 
+/*  ── Recaler la position lissée, sans glissement ───────────────────────────
+ *  Après un saut de défilement VOULU — le changement de page silencieux du
+ *  pied de page « projet suivant », qui remet la page en haut —, `motionY`
+ *  redescendrait en glissant depuis le bas de l'ancienne page : près de deux
+ *  secondes pendant lesquelles tout ce qui le lit croit encore être là-bas. On
+ *  le pose directement sur la position réelle. */
+export function snapScrollEngine() {
+  if (typeof window === "undefined" || !initialized) return;
+  const now = getNow();
+  const y = clamp(getNativeScrollY(), 0, getMaxScroll(now, true));
+  currentY = y;
+  motionY = y;
+  lastY = y;
+  pendingNativeY = y;
+  delta = 0;
+  direction = 0;
+  velocity = 0;
+  smoothVelocity = 0;
+  viewportDirty = true;
+  lastActivityTime = now;
+  startLoop();
+}
+
 export function updateScrollEngine() {
   if (typeof window === "undefined") return;
   pendingNativeY = getNativeScrollY();

@@ -153,7 +153,13 @@
       syncLayoutTheme();
     });
 
+    // Sans repère de thème (le cas de toutes les pages projet depuis le
+    // 2026-09-01), il n'y a rien à remesurer : chaque image chargée pendant le
+    // défilement réveillait sinon le moteur de scroll pour une mesure de
+    // hauteur de page — du travail de fil principal en plein défilement, que
+    // la home ne fait pas.
     const handleResize = () => {
+      if (!markers.length) return;
       clearTimeout(resizeTimer);
       resizeTimer = setTimeout(scheduleMeasure, 80);
     };
