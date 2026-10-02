@@ -3,6 +3,7 @@
   import { browser } from "$app/environment";
   import { revealBlock as reveal } from "$lib/actions/reveal.js";
   import { heroFrame } from "$lib/actions/heroFrame.js";
+  import { consumeProjectHandoff } from "$lib/projectHandoff.js";
   import AutoVideo from "$lib/components/shared/media/AutoVideo.svelte";
   import {
     registerParallax,
@@ -35,10 +36,18 @@
   let heroMediaImgEl;
   let heroDarkLayerEl;
 
-  let introStarted = false;
+  //  ── Le relais du pied de page « projet suivant » ──────────────────────────
+  //  On arrive de `ProjectNextFooter`, qui peignait DÉJÀ cette image à ce
+  //  cadrage et ce titre à cette place. Rejouer l'arrivée ferait disparaître
+  //  puis revenir une image qui, à l'écran, n'a pas changé. Le drapeau est donc
+  //  consommé À LA CRÉATION du composant, pas dans `onMount` : dans `onMount`
+  //  l'état serait posé après le premier rendu, et l'arrivée aurait commencé.
+  const handedOff = browser ? consumeProjectHandoff() : false;
+
+  let introStarted = handedOff;
   let introVisible = true;
-  let heroMediaVisible = false;
-  let titleVisible = false;
+  let heroMediaVisible = handedOff;
+  let titleVisible = handedOff;
 
   let fallbackTimeout;
   let mediaIntroTimeout;
@@ -220,6 +229,9 @@
     if (!browser) return;
 
     let destroyed = false;
+    // Le relais compte comme une intro déjà jouée : sans ça, le prochain hero
+    // de la session croirait être le premier et attendrait le préchargeur.
+    if (handedOff) window.__homeHeroIntroPlayed = true;
     const shouldDelayIntro = shouldDelayIntroForSession();
 
     const handlePreloaderReveal = () => {
@@ -311,7 +323,12 @@
   });
 </script>
 
-<section class="hero-join-clean" bind:this={heroSection} use:heroFrame>
+<section
+  class="hero-join-clean"
+  class:is-handoff={handedOff}
+  bind:this={heroSection}
+  use:heroFrame
+>
   <section class="hero-stage">
     <div class="hero-media-sticky" aria-hidden="true">
       <div class="hero-media" class:media-visible={heroMediaVisible} bind:this={heroStage}>
@@ -425,6 +442,15 @@
     background: transparent;
     color: #f4efe6;
     overflow: clip;
+  }
+
+  /*  Arrivée par le pied de page « projet suivant » : l'image et le titre sont
+   *  déjà à l'écran, peints à l'identique par `ProjectNextFooter`. Toute
+   *  transition ou animation d'arrivée se verrait comme un clignotement. */
+  .hero-join-clean.is-handoff .hero-media,
+  .hero-join-clean.is-handoff .hero-scroll-label {
+    transition: none;
+    animation: none;
   }
 
   /* Une hauteur d'écran, comme tous les autres hero du site (2026-09-03).
@@ -581,6 +607,20 @@
   }
 
   .hero-scroll-label {
+    /*  ── Pourquoi ce remplissage vertical ───────────────────────────────────
+     *  Le dégradé est peint sur la BOÎTE puis découpé par le texte : un glyphe
+     *  qui déborde de la boîte n'a plus de fond, donc plus de couleur, et
+     *  disparaît. Avec `line-height: 1`, les jambages (le p de Ludosphères, le
+     *  y de Moovy) et les accents (è, é) débordent — c'est ce qui coupait les
+     *  titres en haut et en bas. La boîte est donc étirée par un remplissage,
+     *  et les marges négatives l'annulent dans le flux : rien ne bouge de
+     *  place, la boîte est seulement plus grande que le texte.
+     *  ⚠️ Les mêmes valeurs vivent dans l'autre fichier (hero ↔ pied de page
+     *  « projet suivant ») : le titre doit rester au même endroit au pixel
+     *  près d'une page à l'autre. Les arrêts du dégradé ont été redécalés en
+     *  conséquence (0,24 em de remplissage bas ≈ 17 % de la nouvelle boîte). */
+    padding-block: 0.18em 0.24em;
+    margin-block: -0.18em -0.24em;
     margin: 0;
     font-family: var(--site-font);
     font-size: clamp(7rem, 9vw, 20rem);
@@ -592,8 +632,9 @@
     background: linear-gradient(
       to top,
       #ffffff 0%,
-      #ffffff 40%,
-      rgba(255, 255, 255, 0.28) 100%
+      #ffffff 45%,
+      rgba(255, 255, 255, 0.28) 88%,
+      rgba(255, 255, 255, 0.22) 100%
     );
     -webkit-background-clip: text;
     background-clip: text;

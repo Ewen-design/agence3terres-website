@@ -1,5 +1,12 @@
 <script>
-  import { revealBlock as reveal } from "$lib/actions/reveal.js";
+  //  ── Arrivées : celles de la home ──────────────────────────────────────────
+  //  Les TEXTES passent par `reveal` — la cascade mot à mot, l'effet de
+  //  référence du site (le paragraphe d'ouverture de la home). Les MÉDIAS et
+  //  les blocs passent par `revealBlock` — flou + montée, d'un seul tenant.
+  //  Ce composant employait `revealBlock` pour tout, textes compris : ses
+  //  grandes phrases arrivaient donc en bloc alors que les mêmes gabarits, sur
+  //  la home, se déposent mot à mot.
+  import { reveal, revealBlock } from "$lib/actions/reveal.js";
   import AutoVideo from "$lib/components/shared/media/AutoVideo.svelte";
 
   export let text = "";
@@ -30,7 +37,7 @@
     <figure
       class="editorial-mobile-showcase__media editorial-mobile-showcase__media--dark"
       style={`--editorial-mobile-showcase-media-min-height:${mediaMinHeight};${mediaMobileAspectRatio ? `--editorial-mobile-showcase-media-aspect-mobile:${mediaMobileAspectRatio};` : ""}`}
-      use:reveal
+      use:revealBlock
     >
       {#if leftVideo.length}
         <AutoVideo sources={leftVideo} poster={leftPoster} label={leftAlt} />
@@ -42,7 +49,7 @@
     <figure
       class="editorial-mobile-showcase__media"
       style={`--editorial-mobile-showcase-media-min-height:${mediaMinHeight};${mediaMobileAspectRatio ? `--editorial-mobile-showcase-media-aspect-mobile:${mediaMobileAspectRatio};` : ""}`}
-      use:reveal={{ delay: 100 }}
+      use:revealBlock={{ delay: 100 }}
     >
       {#if rightVideo.length}
         <AutoVideo sources={rightVideo} poster={rightPoster} label={rightAlt} />

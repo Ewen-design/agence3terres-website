@@ -1,6 +1,7 @@
 <script>
   import { navigate } from "$lib/navigate.js";
   import { reveal } from "$lib/actions/reveal.js";
+  import SiteGradient from "$lib/components/shared/SiteGradient.svelte";
 
   export let excludePages = [];
   // Si fourni, n'affiche QUE ces pages (utilisé pour sortir la carte « Votre projet »).
@@ -12,6 +13,14 @@
   export let projects = null;
 
   const baseProjects = [
+    {
+      title: "Harmonia",
+      category: "Centre de médecine esthétique",
+      lead: "Une identité médicale, et un site qui la porte.",
+      image: "/videos/harmonia-univers-poster.webp",
+      page: "projet9",
+      button: "Voir le projet"
+    },
     {
       title: "Lybra",
       category: "Identité de marque",
@@ -37,22 +46,6 @@
       button: "Voir le projet"
     },
     {
-      title: "JustX",
-      category: "Marque de sport",
-      lead: "Un univers sportif plus direct, plus fort et plus personnel.",
-      image: "/images/justx-pub2.webp",
-      page: "projet5",
-      button: "Voir le projet"
-    },
-    {
-      title: "JustX Fitness",
-      category: "Application fitness",
-      lead: "Programmes, suivi et progression dans une expérience directe.",
-      image: "/images/justx_app.webp",
-      page: "projet7",
-      button: "Voir le projet"
-    },
-    {
       title: "Mission X",
       category: "Jeu social mobile",
       lead: "Des missions secrètes, un téléphone, deux camps.",
@@ -72,6 +65,10 @@
       title: "Votre projet ?",
       category: "Collaboration",
       lead: "Une vision à faire naître, clarifier ou amplifier.",
+      // Pas de photographie : cette carte n'illustre aucun projet existant.
+      // « Dunes », porté de la librairie de dégradés et repeint à la palette
+      // du site (voir `shared/SiteGradient.svelte`).
+      gradient: "dunes",
       image: "/images/agence.webp",
       page: "contact",
       button: "Nous contacter"
@@ -105,9 +102,13 @@
         on:click={() => navigate(p.page)}
       >
         <div class="p-card-img">
-          <img src={p.image} alt={p.title} loading="lazy" decoding="async" />
+          {#if p.gradient}
+            <SiteGradient nom={p.gradient} />
+          {:else}
+            <img src={p.image} alt={p.title} loading="lazy" decoding="async" />
+          {/if}
         </div>
-        <div class="p-shade"></div>
+        <div class="p-shade" class:is-grad={Boolean(p.gradient)}></div>
 
         <div class="p-content">
           <h2 class="p-title">{p.title}</h2>
@@ -160,6 +161,17 @@
     position: absolute;
     inset: 0;
     z-index: 0;
+  }
+
+  /* Un dégradé n'a pas besoin d'être autant assombri qu'une photographie : le
+     voile n'y sert qu'à tenir le texte du bas. */
+  .p-shade.is-grad {
+    background: linear-gradient(
+      to top,
+      rgba(var(--shade-rgb, 5, 7, 9), 0.72) 0%,
+      rgba(var(--shade-rgb, 5, 7, 9), 0.22) 38%,
+      rgba(var(--shade-rgb, 5, 7, 9), 0) 66%
+    );
   }
 
   .p-card-img img {

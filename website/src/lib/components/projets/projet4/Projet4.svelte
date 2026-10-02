@@ -1,27 +1,25 @@
 <script>
+  // ── Ludosphères — identité et site d'artiste ──────────────────────────────
+  //  Même trame que les autres pages projet. Les deux blocs qui lui sont
+  //  propres : les trois cartes à légende (l'accrochage, le geste, la matière)
+  //  et la double vue mobile, qui montre le site en mouvement.
   import ProjectThemePage from "$lib/components/projets/shared/ProjectThemePage.svelte";
   import ProjectHeroProjetsStyle from "$lib/components/projets/shared/ProjectHeroProjetsStyle.svelte";
-  import ProjectEditorialRole from "$lib/components/projets/shared/ProjectEditorialRole.svelte";
-  import ProjectEditorialSplit from "$lib/components/projets/shared/ProjectEditorialSplit.svelte";
   import ProjectEditorialStatement from "$lib/components/projets/shared/ProjectEditorialStatement.svelte";
   import ProjectEditorialMobileShowcase from "$lib/components/projets/shared/ProjectEditorialMobileShowcase.svelte";
   import ProjectEditorialMosaic from "$lib/components/projets/shared/ProjectEditorialMosaic.svelte";
-  // L'accordéon de verre de la page à propos, réutilisé tel quel.
-  import EditorialAccordionShowcase from "$lib/components/apropos/AboutFocusEditorialShowcase.svelte";
-  import ParallaxGallery2 from "$lib/components/home/ParallaxGallery2.svelte";
-  import { videoSources } from "$lib/components/shared/media/videoSources.js";
 
-  // Mêmes visuels (optimisés .webp) que la page Travail, en excluant
-  // Ludosphères (le projet courant).
-  const otherProjects = [
-    { title: "Moovy", image: "/images/tel_moovy2.webp", href: "/projet3" },
-    { title: "Lybra", image: "/images/lybra-cartes.webp", href: "/projet8" },
-    { title: "JustX", image: "/images/justx.webp", href: "/projet5" },
-    { title: "JustX Fitness", image: "/images/justx_app.webp", href: "/projet7" },
-    { title: "Mission X", image: "/images/missionX5.webp", href: "/projet6" },
-    { title: "Serein Design", image: "/images/serein_design.webp", href: "/projet1" },
-    { title: "Votre projet ?", image: "/images/agence.webp", href: "/contact", cta: "Nous contacter" }
-  ];
+  import ProjectEditoBadge from "$lib/components/projets/blocks/ProjectEditoBadge.svelte";
+  // « Notre rôle » en volets : c'est le composant de la HOME, réutilisé tel
+  // quel. Une copie vivait un temps dans `blocks/` et tremblait sur Safari là
+  // où l'original ne tremble pas — elle a été jetée plutôt que rafistolée.
+  import ProjectFlaps from "$lib/components/home/HomeFeatureCards.svelte";
+  import ProjectCaptionCards from "$lib/components/projets/blocks/ProjectCaptionCards.svelte";
+  import ProjectActionDuo from "$lib/components/projets/blocks/ProjectActionDuo.svelte";
+  import ProjectWall from "$lib/components/projets/blocks/ProjectWall.svelte";
+
+  import { videoSources } from "$lib/components/shared/media/videoSources.js";
+  import { autresProjets } from "$lib/data/projets.js";
 </script>
 
 <ProjectThemePage>
@@ -42,96 +40,82 @@
     ctaExternal={true}
   />
 
-
   <div class="project-theme-band">
-    <ProjectEditorialRole
-      title="Notre rôle"
-      images={[
-        {
-          src: "/images/ludo-logo-peintures.webp",
-          alt: "Toiles de Ludosphères accrochées autour de l'emblème gravé",
-          mobileAspectRatio: "1.6"
-        },
-        {
-          src: "/images/carte-ludo.webp",
-          alt: "Cartes de visite Ludosphères, bleu nuit et kraft gaufré",
-          mobileAspectRatio: "1.53"
-        }
-      ]}
-      items={[
+    <ProjectEditoBadge
+      text="<span class='hl'>Ludovic Cocqueret peint depuis des années sans vitrine à lui.</span> Il fallait une marque et un site capables de montrer les toiles telles qu'elles sont : en grand, sans décor, sans bruit autour."
+      image="/images/ludo-drapeau.webp"
+      alt="Bannière Ludosphères accrochée à la façade d'un bâtiment"
+      aspect="1.6"
+      mobileAspect="1.1"
+      position="62% 60%"
+    />
+
+    <ProjectFlaps
+      background="var(--project-surface-bg, var(--bg-deep, #050709))"
+      title="Une marque faite de<br />l'œuvre, pas posée dessus."
+      cards={[
         {
           title: "Un emblème taillé dans la matière",
-          text: "Les initiales de Ludovic Cocqueret tiennent dans un carré plein, découpé directement dans ses coulées de peinture. La marque est faite de l'œuvre, pas posée dessus."
+          text: "Les initiales de Ludovic tiennent dans un carré plein, <span class='hl'>découpé directement</span> dans ses coulées de peinture. La forme tient en favicon comme en grand, et son remplissage change avec les toiles.",
+          image: "/images/ludo-logo-peintures.webp",
+          alt: "L'emblème Ludosphères rempli par les toiles"
+        },
+        {
+          title: "Trois teintes, pas une de plus",
+          text: "Un blanc cassé pour laisser la <span class='hl'>peinture</span> parler, un beige rosé pour la chaleur, un bleu profond pour tenir l'ensemble. Aucune ne vient concurrencer les toiles.",
+          image: "/images/ludo-couleurs.webp",
+          alt: "Nuancier Ludosphères : blanc cassé, beige rosé, bleu nuit"
         },
         {
           title: "Un site pensé comme un accrochage",
-          text: "Les toiles occupent le centre, le texte se retire sur les bords. On avance d'une collection à l'autre comme on traverse une salle."
+          text: "Les toiles occupent le centre, le texte se retire sur les bords. On avance d'une collection à l'autre <span class='hl'>comme on traverse une salle</span>.",
+          video: videoSources("ludo-site"),
+          poster: "/videos/ludo-site-poster.webp",
+          alt: "Défilement de la collection Ondes sur le site Ludosphères"
         },
         {
           title: "Des contenus pour la suite",
-          text: "Photos, mockups et posts déclinés depuis le même système, pour que la marque continue de vivre une fois le site en ligne."
+          text: "Photos, mockups et posts déclinés depuis le même système, pour que la marque <span class='hl'>continue de vivre</span> une fois le site en ligne.",
+          image: "/images/carte-ludo.webp",
+          alt: "Cartes de visite Ludosphères, bleu nuit et kraft gaufré"
         }
       ]}
     />
   </div>
 
   <div class="project-theme-band theme-deep">
-    <ProjectEditorialSplit
-      title="La demande"
-      text="Ludovic Cocqueret peint depuis des années sans vitrine à lui. Il fallait une marque et un site capables de montrer les toiles telles qu'elles sont : en grand, sans décor, sans bruit autour."
-      image="/images/ludo-artiste.webp"
-      alt="Ludovic Cocqueret devant deux de ses toiles"
-      mediaAspectRatio="0.707"
-    />
-
     <ProjectEditorialStatement
-      eyebrow="Intention"
-      text="« L'art comme <span class='hl'>empreinte du vivant</span> » : une identité qui ne raconte rien d'autre que la <span class='hl'>matière</span>, la <span class='hl'>couleur</span> et le <span class='hl'>geste</span> qui l'ont produite."
+      text="<span class='hl'>L'art comme empreinte du vivant.</span> Une identité qui ne raconte rien d'autre que la matière, la couleur et le geste qui l'ont produite."
     />
 
-  </div>
-
-  <!-- Trois volets d'identité qui s'enchaînaient en autant de blocs bâtis
-       pareil : ils passent dans l'accordéon de la page à propos, une photo par
-       volet et le texte qui s'ouvre sur place. -->
-  <div class="project-theme-band">
-    <EditorialAccordionShowcase
-      interval={11000}
-      slides={[
+    <ProjectCaptionCards
+      titleMain="Trois façons de"
+      titleMuted="regarder une toile."
+      cards={[
         {
-          label: "L'emblème",
-          text: "Un L et un S enlacés dans un carré. La forme tient en <span class='hl'>favicon</span> comme en grand, et son remplissage change avec les toiles : un seul signe, autant de variations qu'il y a d'œuvres.",
-          image: "/images/ludo-logo-peintures.webp",
-          alt: "L'emblème Ludosphères rempli par les toiles"
+          title: "L'accrochage",
+          text: "Le site montre l'œuvre en grand avant d'en dire un mot. Le texte attend son tour.",
+          image: "/images/ludo-tablette.webp",
+          alt: "Le site Ludosphères affiché sur une tablette"
         },
         {
-          label: "Les couleurs",
-          text: "Un blanc cassé pour laisser la <span class='hl'>peinture</span> parler, un beige rosé pour la chaleur, un bleu profond pour tenir l'ensemble. Trois teintes seulement, dont aucune ne vient concurrencer les toiles.",
-          image: "/images/ludo-couleurs.webp",
-          alt: "Nuancier Ludosphères : blanc cassé, beige rosé, bleu nuit"
+          title: "Le geste",
+          text: "Derrière chaque collection, une main, un atelier et des années de matière accumulée.",
+          image: "/images/ludo-artiste.webp",
+          alt: "Ludovic Cocqueret devant deux de ses toiles",
+          position: "50% 32%"
         },
         {
-          label: "Hors de l'écran",
-          text: "L'emblème ne dépend pas de son fond. Sur une bannière de rue comme sur une carte gaufrée, il reste <span class='hl'>lisible</span> et reconnaissable au premier coup d'œil.",
-          image: "/images/ludo-drapeau.webp",
-          alt: "Bannière Ludosphères accrochée à la façade d'un bâtiment"
+          title: "La matière",
+          text: "Kraft gaufré, cire, bleu profond : l'identité se touche autant qu'elle se regarde.",
+          image: "/images/ludo-cartes.webp",
+          alt: "Papeterie Ludosphères"
         }
       ]}
     />
   </div>
 
   <div class="project-theme-band">
-    <ProjectEditorialSplit
-      title="Le site en mouvement"
-      text="Chaque collection s'ouvre sur son nom en très grand, puis les toiles défilent et viennent se poser. Le titre se lit d'abord, l'œuvre s'installe ensuite."
-      video={videoSources("ludo-site")}
-      videoPoster="/videos/ludo-site-poster.webp"
-      alt="Défilement de la collection Ondes sur le site Ludosphères"
-      mediaAspectRatio="1.6"
-      mediaMobileAspectRatio="1.6"
-      reverse={true}
-    />
-
     <ProjectEditorialMobileShowcase
       text="Sur téléphone, l'œuvre garde <span class='hl'>toute la largeur</span> : on la voit avant de la lire."
       leftVideo={videoSources("ludo-collections")}
@@ -145,10 +129,9 @@
     />
   </div>
 
-
   <div class="project-theme-band theme-deep">
     <ProjectEditorialMosaic
-      text="Une <span class='hl'>marque</span> qui tient à l'écran, sur le papier et sur la toile."
+      text="<span class='hl'>Une marque qui tient à l'écran</span>, sur le papier et sur la toile."
       feature={{
         src: "/images/ipad-ludo.webp",
         alt: "Le site Ludosphères affiché sur deux tablettes",
@@ -171,13 +154,29 @@
       ]}
     />
 
-    <ParallaxGallery2
-      items={otherProjects}
-      ctaLabel="Voir le projet"
-      ariaLabelPrefix="Voir le projet"
-      introMain="Découvrez "
-      introMuted={"nos<br>autres projets."}
-      strongIntro
+    <ProjectActionDuo
+      tint="#3c5473"
+      primary={{
+        label: "En ligne",
+        title: "Traverser les collections, une à une.",
+        href: "https://ludospheres.fr",
+        external: true,
+        phone: { image: "/images/ludo.webp", fit: "contain", bg: "#f3f1ee" }
+      }}
+      secondary={{
+        label: "Parlons-en",
+        title: "Votre travail mérite d'être vu en grand.",
+        href: "/contact"
+      }}
+    />
+  </div>
+
+  <!-- Le mur vit sur le NOIR de la palette, pas sur le gris de la page :
+       sans sa bande, ses marges laisseraient voir le gris tout autour. -->
+  <div class="project-theme-band theme-deep">
+    <ProjectWall
+      title="Le reste du <span class='dim'>travail.</span>"
+      projects={autresProjets("projet4")}
     />
   </div>
 </ProjectThemePage>

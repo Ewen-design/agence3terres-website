@@ -3,6 +3,12 @@
   import { browser } from "$app/environment";
   import { page } from "$app/stores";
   import { reveal } from "$lib/actions/reveal.js";
+  import SiteGradient from "$lib/components/shared/SiteGradient.svelte";
+  import {
+    registerRead,
+    unregisterRead,
+    forceScrollEngineUpdate
+  } from "$lib/scrollEngine.js";
 
   let footerEl;
   let resizeObserver;
@@ -41,11 +47,29 @@
     "/projet8": "/images/lybra-affichage.webp",
   };
 
+  /*  ── Les pieds de page à DÉGRADÉ ────────────────────────────────────────
+   *  Portés de la librairie de dégradés (voir `shared/SiteGradient.svelte`) et
+   *  repeints à la palette du site. Là où une route en a un, il REMPLACE la
+   *  photographie de fond : le prisme reste pour toutes les autres. Chaque
+   *  pôle a le sien, pour qu'on ne lise pas trois fois le même bas de page. */
+  const footerGradients = {
+    "/": "aura-spectre",
+    // Le même que la home : « Halo bleu » n'allait pas ici. Il reste porté dans
+    // `SiteGradient` et prêt à servir ailleurs, il n'est simplement plus posé.
+    "/apropos": "aura-spectre",
+    "/services/design": "arete",
+    "/services/digital": "ellipses",
+    "/services/studio": "dunes"
+  };
+
   $: pathname = $page.url.pathname.replace(/\/+$/, "") || "/";
+  // Page suivante = hauteur de document différente : la course du fondu change.
+  $: if (browser && pathname) scheduleMeasure();
+  $: footerGradient = footerGradients[pathname] ?? null;
   $: footerImage = footerImages[pathname] ?? footerImages["/"];
   $: footerThemeClass =
     pathname === "/services" ? "theme-services" :
-    ["/travail", "/projet1", "/projet3", "/projet4", "/projet5", "/projet6", "/projet7", "/projet8"].includes(pathname) ? "theme-projets" :
+    ["/travail", "/projet1", "/projet3", "/projet4", "/projet6", "/projet8"].includes(pathname) ? "theme-projets" :
     pathname === "/apropos" ? "theme-apropos" :
     pathname === "/contact" ? "theme-contact" :
     "theme-home";
@@ -57,35 +81,84 @@
     btn.style.setProperty("--my", `${event.clientY - rect.top}px`);
   }
 
-  function computeReveal() {
+  /*  ── Pourquoi la mesure est séparée de la lecture ─────────────────────────
+   *  Cette fonction écrivait `--footer-reserve` puis lisait `scrollHeight` dans
+   *  la foulée, à CHAQUE événement de défilement. Or la variable écrite change
+   *  la marge basse de `.page-wrapper`, donc la hauteur du document : la lecture
+   *  qui suit forçait un recalcul de mise en page synchrone, sur une valeur que
+   *  l'écriture venait de salir, soixante fois par seconde. C'est cher partout
+   *  et ruineux sur Firefox — c'est l'autre moitié du défilement qui tremble.
+   *
+   *  Les hauteurs sont donc mesurées À PART, seulement quand quelque chose a pu
+   *  les changer, et la lecture de défilement ne fait plus que de l'arithmétique
+   *  sur des valeurs déjà connues. */
+  let besoinMesure = true;
+  let hFooter = 0;
+  let debutReveal = 0;
+  let courseReveal = 1;
+
+  function measure() {
     if (!browser || !footerEl) return;
-    const footerHeight = footerEl.offsetHeight;
-    document.documentElement.style.setProperty("--footer-reserve", `${footerHeight}px`);
-    const viewportHeight = window.innerHeight;
-    const scrollTop = window.scrollY;
-    const docHeight = Math.max(document.documentElement.scrollHeight, document.body.scrollHeight);
-    const revealStart = Math.max(docHeight - viewportHeight - footerHeight * 1.05, 0);
-    const revealDistance = Math.max(footerHeight * 0.82, 1);
-    tgtReveal = Math.min(Math.max((scrollTop - revealStart) / revealDistance, 0), 1);
+    const h = footerEl.offsetHeight;
+    const vh = window.innerHeight;
+    const docH = Math.max(document.documentElement.scrollHeight, document.body.scrollHeight);
+
+    // L'écriture ne part que si la valeur a vraiment changé : sinon elle salit
+    // la mise en page pour rien, et la mesure suivante la refait calculer.
+    if (h !== hFooter) {
+      hFooter = h;
+      document.documentElement.style.setProperty("--footer-reserve", `${h}px`);
+    }
+
+    debutReveal = Math.max(docH - vh - h * 1.05, 0);
+    courseReveal = Math.max(h * 0.82, 1);
+  }
+
+  function scheduleMeasure() {
+    besoinMesure = true;
+    forceScrollEngineUpdate();
+  }
+
+  function handleRead(y) {
+    if (!footerEl) return;
+
+    if (besoinMesure) {
+      besoinMesure = false;
+      measure();
+    }
+
+    const cible = Math.min(Math.max((y - debutReveal) / courseReveal, 0), 1);
+    if (cible === tgtReveal) return;
+
+    tgtReveal = cible;
     if (!rafId) rafId = requestAnimationFrame(revealLoop);
   }
 
   onMount(() => {
     if (!browser || !footerEl) return;
 
-    resizeObserver = new ResizeObserver(computeReveal);
+    // Le pied de page change de hauteur (texte qui se replie, barre d'adresse
+    // mobile) : seul CET élément est observé, jamais la racine du document.
+    resizeObserver = new ResizeObserver(scheduleMeasure);
     resizeObserver.observe(footerEl);
 
-    computeReveal();
-    window.addEventListener("scroll", computeReveal, { passive: true });
-    window.addEventListener("resize", computeReveal, { passive: true });
+    /*  La lecture passe par le moteur de scroll du site, comme tout le reste :
+     *  une seule boucle d'images, une phase de lecture avant les écritures, et
+     *  la position du défilement lue au début de l'image plutôt que reprise
+     *  d'un écouteur qui, sur Firefox, arrive quand ça l'arrange. */
+    registerRead(handleRead, { priority: 4 });
+    forceScrollEngineUpdate();
+
+    window.addEventListener("resize", scheduleMeasure, { passive: true });
+    window.addEventListener("orientationchange", scheduleMeasure, { passive: true });
 
     return () => {
       if (rafId) cancelAnimationFrame(rafId);
+      unregisterRead(handleRead);
       resizeObserver?.disconnect();
       document.documentElement.style.removeProperty("--footer-reserve");
-      window.removeEventListener("scroll", computeReveal);
-      window.removeEventListener("resize", computeReveal);
+      window.removeEventListener("resize", scheduleMeasure);
+      window.removeEventListener("orientationchange", scheduleMeasure);
     };
   });
 </script>
@@ -94,8 +167,14 @@
   class={`footer section-full ${footerThemeClass}`}
   bind:this={footerEl}
 >
-  <div class="footer-bg" style={`background-image: url('${footerImage}')`}></div>
-  <div class="footer-overlay"></div>
+  {#if footerGradient}
+    <div class="footer-bg footer-bg--grad">
+      <SiteGradient nom={footerGradient} />
+    </div>
+  {:else}
+    <div class="footer-bg" style={`background-image: url('${footerImage}')`}></div>
+  {/if}
+  <div class="footer-overlay" class:is-grad={Boolean(footerGradient)}></div>
 
   <div class="footer-content">
     <div class="footer-shell">
@@ -140,6 +219,14 @@
     isolation: isolate;
     z-index: 0;
     opacity: var(--footer-reveal);
+    /*  L'opacité varie à chaque image pendant l'apparition du pied de page.
+     *  Sans promotion, le navigateur REPEINT tout ce qu'il contient à chaque
+     *  fois — et depuis qu'il contient un dégradé (plusieurs rampes plus un
+     *  grain fondu), ça coûtait douze millisecondes par image sur Firefox.
+     *  Promu, l'opacité passe au compositeur, sans repeindre.
+     *  ⚠️ Ce `will-change` ne change rien au verre des boutons : `.footer`
+     *  était DÉJÀ leur racine de fond (il porte `opacity` et `isolation`). */
+    will-change: opacity;
   }
 
   .footer-bg,
@@ -147,6 +234,19 @@
     position: absolute;
     inset: 0;
     pointer-events: none;
+  }
+
+  /*  Le dégradé n'est pas une photographie : il n'a ni à être assombri ni à
+   *  être dessaturé, et il porte son propre grain. Il garde seulement le fondu
+   *  d'apparition du pied de page. */
+  /*  Le dégradé ne fait PAS varier sa propre opacité : le fondu est déjà porté
+   *  par `.footer`, et deux opacités animées l'une dans l'autre font repeindre
+   *  la couche intérieure à chaque image. */
+  .footer-bg--grad {
+    filter: none;
+    transform: none;
+    opacity: 1;
+    will-change: auto;
   }
 
   .footer-bg {
@@ -169,6 +269,18 @@
     );
     opacity: calc(0.2 + (0.8 * var(--footer-reveal)));
     will-change: opacity;
+  }
+
+  /* Sur un dégradé, le voile ne sert qu'à tenir le texte : deux fois moins
+     appuyé que sur une photographie, sinon il éteint la couleur. */
+  .footer-overlay.is-grad {
+    background: linear-gradient(
+      to bottom,
+      rgba(2, 4, 6, 0.58) 0%,
+      rgba(4, 6, 9, 0.16) 36%,
+      rgba(4, 6, 9, 0.1) 58%,
+      rgba(2, 4, 6, 0.62) 100%
+    );
   }
 
   .footer-content {
@@ -418,6 +530,10 @@
 
     .footer-bg {
       filter: brightness(0.52) contrast(1.02) saturate(0.92);
+    }
+
+    .footer-bg--grad {
+      filter: none;
     }
 
     .footer-content {

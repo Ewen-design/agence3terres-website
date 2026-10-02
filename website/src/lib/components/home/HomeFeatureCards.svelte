@@ -2,6 +2,7 @@
   import { onMount } from "svelte";
   import { browser } from "$app/environment";
   import AutoVideo from "$lib/components/shared/media/AutoVideo.svelte";
+  import { reveal } from "$lib/actions/reveal.js";
 
   // ───────────────────────────────────────────────────────────────────────────
   //  HomeFeatureCards — ce que fait l'agence, en quatre volets.
@@ -56,6 +57,21 @@
 
   export let cards = [];
 
+  /*  ── Les trois props ajoutées pour les pages projet (2026-10-01) ───────────
+   *  Ce composant n'est plus seulement celui de la home : les pages projet
+   *  l'emploient tel quel pour leur « notre rôle ». Elles avaient d'abord une
+   *  COPIE, qui tremblait sur Safari là où l'original ne tremble pas — on l'a
+   *  jetée plutôt que de chercher ce qui différait.
+   *
+   *  Les trois réglages sont donc là pour ça, et tous trois sont sans effet
+   *  tant qu'on ne les passe pas : la home n'en passe aucun.
+   *    `title`      un en-tête au-dessus du bloc (la home n'en a pas) ;
+   *    `background` la couleur de la section (la home garde le noir du site) ;
+   *    et par carte, `fit` / `bg` pour un visuel qu'il ne faut pas rogner — un
+   *    logotype très large, par exemple, qui perdrait son nom en `cover`. */
+  export let title = "";
+  export let background = "";
+
   const rank = (i) => String(i + 1).padStart(2, "0");
 
   let active = 0;
@@ -85,12 +101,26 @@
   });
 </script>
 
-<section class="fcards" aria-label="Ce que nous faisons">
+<section
+  class="fcards"
+  aria-label={title || "Ce que nous faisons"}
+  style={background ? `background:${background};` : undefined}
+>
+  {#if title}
+    <header class="fcards__head">
+      <h2 class="fcards__head-title" use:reveal>{@html title}</h2>
+    </header>
+  {/if}
+
   <!-- ── Grand écran : le visuel collant, puis la liste ────────────────────── -->
   <div class="fcards__desk">
     <div class="fcards__stage">
       {#each cards as card, i}
-        <div class="fcards__shot" class:is-on={i === active}>
+        <div
+          class="fcards__shot"
+          class:is-on={i === active}
+          style={card.bg ? `background:${card.bg};` : undefined}
+        >
           {#if card.video}
             <!-- `active` : la vidéo ne tourne que quand son volet est courant.
                  Les autres restent chargées mais en pause — une opacité nulle
@@ -109,6 +139,7 @@
           {:else}
             <img
               class="fcards__img"
+              style:object-fit={card.fit ?? "cover"}
               style:object-position={card.position ?? "center"}
               src={card.image}
               alt={card.alt}
@@ -144,7 +175,7 @@
         class:has-photo={card.photo}
         class:has-video={card.video}
       >
-        <div class="fcards__media">
+        <div class="fcards__media" style={card.bg ? `background:${card.bg};` : undefined}>
           {#if card.video}
             <!-- Le cadrage est passé en variable CSS et non en valeur fixe :
                  AutoVideo pose `object-position` en style EN LIGNE, qu'aucune
@@ -175,7 +206,14 @@
         </div>
 
         <div class="fcards__body">
-          <span class="fcards__icon" aria-hidden="true">{@html card.icon}</span>
+          {#if card.icon}
+            <span class="fcards__icon" aria-hidden="true">{@html card.icon}</span>
+          {:else if card.title}
+            <!-- Sans pictogramme, c'est le titre qui ouvre la carte : sur la
+                 home le dessin tient ce rôle, sur une page projet il n'y en a
+                 pas et la carte serait sans en-tête. -->
+            <h3 class="fcards__ctitle">{card.title}</h3>
+          {/if}
           <!-- Pas d'arrivée mot à mot ici (retirée le 2026-09-03) : le texte
                est déjà porté par le défilement, qui fait monter chaque carte
                par-dessus la précédente. Deux mouvements sur le même élément se
@@ -188,6 +226,49 @@
 </section>
 
 <style>
+  .fcards__head {
+    padding:
+      clamp(6rem, 11vw, 10rem)
+      var(--project-side-padding, var(--site-inset))
+      clamp(2.5rem, 4.5vw, 4rem);
+  }
+
+  .fcards__head-title {
+    margin: 0;
+    max-width: 18ch;
+    padding-inline: var(--project-text-inset, 0);
+    font-family: var(--site-font);
+    font-weight: var(--site-weight-display);
+    font-size: var(--project-display-size, clamp(2.1rem, 3vw, 3.45rem));
+    line-height: 1;
+    letter-spacing: -0.04em;
+    text-wrap: balance;
+  }
+
+  .fcards__ctitle {
+    margin: 0;
+    font-family: var(--site-font);
+    font-weight: var(--site-weight-display);
+    font-size: clamp(1.5rem, 6.5vw, 2rem);
+    line-height: 1.04;
+    letter-spacing: -0.03em;
+    color: #f4efe6;
+  }
+
+  @media (max-width: 760px) {
+    .fcards__head {
+      padding:
+        clamp(4.5rem, 15vw, 7rem)
+        var(--project-side-padding, var(--site-inset))
+        clamp(1.8rem, 6vw, 2.8rem);
+    }
+
+    .fcards__head-title {
+      max-width: 13ch;
+      font-size: clamp(1.9rem, 9vw, 2.8rem);
+    }
+  }
+
   .fcards {
     --fc-radius: 18px;
     width: 100%;
@@ -231,14 +312,24 @@
     .fcards__stage {
       position: sticky;
       top: var(--fc-inset);
-      /* Garder le visuel sur une couche de rendu stable avant, pendant et
-         après l'accroche sticky, y compris son masque arrondi. La translation
-         reste constante : le navigateur seul positionne le cadre au scroll. */
-      transform: translateZ(0);
-      backface-visibility: hidden;
-      -webkit-backface-visibility: hidden;
+      /*  Le point d'accroche et la hauteur sont RAMENÉS AU PIXEL ENTIER. Aux
+       *  valeurs calculées ils tombent sur des fractions (28,8 px d'accroche,
+       *  842,4 px de haut en 1440×900) : la boîte occupe alors des rangées de
+       *  pixels à moitié, et le navigateur doit arbitrer cet arrondi à chaque
+       *  image. Les navigateurs sans `round()` gardent la ligne du dessus. */
+      top: round(var(--fc-inset), 1px);
+      /*  AUCUNE couche forcée ici — ni `translateZ(0)`, ni `will-change`, ni
+       *  `backface-visibility`. C'était censé stabiliser le rendu du masque
+       *  arrondi ; en pratique, sur une boîte `position: sticky`, forcer une
+       *  couche la sort du chemin rapide du fil de défilement : Safari défile
+       *  de façon asynchrone et la boîte est alors repositionnée avec une
+       *  image de retard, ce qui se voit comme une vibration d'un demi-pixel
+       *  sur le seul élément censé rester immobile. Le collant nu est posé par
+       *  le fil de défilement lui-même, et ne bouge pas. Le masque arrondi
+       *  tient très bien avec `overflow: hidden` + `border-radius`. */
       flex: 0 0 auto;
       height: calc(100svh - 2 * var(--fc-inset));
+      height: round(calc(100svh - 2 * var(--fc-inset)), 1px);
       aspect-ratio: 1.06 / 1;
       /* 64 % et pas 56 % : le plafond se calcule sur la LARGEUR du conteneur,
          pas sur celle de l'écran. À 56 % il mordait sur un écran 1512x900 —
@@ -265,6 +356,18 @@
       position: absolute;
       inset: 0;
       opacity: 0;
+      /*  ── La couche va ICI, sur le visuel, et surtout PAS sur le cadre ──────
+       *  Sur la boîte `position: sticky` elle-même, une couche forcée est
+       *  nuisible : elle la sort du chemin rapide du fil de défilement. Sur le
+       *  visuel QUI EST DEDANS, elle est exactement ce qu'il faut — le visuel
+       *  est alors rastérisé une fois pour toutes, et le défilement ne fait
+       *  plus que le COMPOSER. Sans elle, le navigateur le repeint à chaque
+       *  image à un décalage sous-pixel légèrement différent : invisible sur
+       *  une photographie, très visible sur un logotype blanc posé sur un
+       *  aplat, où les bords francs se mettent à grouiller. C'est ce que les
+       *  pages projet affichent (et pas la home, qui n'a que des photos), et
+       *  c'est pour ça que le tremblement ne se voyait que là. */
+      transform: translateZ(0);
       /* Un fondu long : les volets font trois quarts d'écran, un fondu court se
          lirait comme une coupe au milieu du défilement. */
       transition: opacity 620ms cubic-bezier(0.4, 0, 0.2, 1);

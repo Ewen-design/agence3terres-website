@@ -1,79 +1,77 @@
 <script>
-  import { revealBlock as reveal } from "$lib/actions/reveal.js";
+  //  Le surtitre (« Intention », « Recommandation ») a été RETIRÉ : il annonçait
+  //  une phrase qui se suffit à elle-même, et la grille en deux colonnes qu'il
+  //  imposait bridait la largeur du texte. Le bloc est maintenant une seule
+  //  colonne, et la phrase peut respirer.
+  //
+  //  La couleur suit la convention du site : ce qui est enveloppé dans
+  //  `<span class="hl">` reste en pleine encre, le reste passe en gris. Pour ce
+  //  gabarit, on enveloppe la PREMIÈRE PHRASE — pas des mots isolés : c'est
+  //  l'ouverture qui doit porter, la suite se lit en retrait.
+  //  ── Arrivées : celles de la home ──────────────────────────────────────────
+  //  Les TEXTES passent par `reveal` — la cascade mot à mot, l'effet de
+  //  référence du site (le paragraphe d'ouverture de la home). Les MÉDIAS et
+  //  les blocs passent par `revealBlock` — flou + montée, d'un seul tenant.
+  //  Ce composant employait `revealBlock` pour tout, textes compris : ses
+  //  grandes phrases arrivaient donc en bloc alors que les mêmes gabarits, sur
+  //  la home, se déposent mot à mot.
+  import { reveal } from "$lib/actions/reveal.js";
 
-  export let eyebrow = "";
   export let text = "";
 </script>
 
 <section class="editorial-statement">
-  <div class="editorial-statement__eyebrow" use:reveal>{eyebrow}</div>
-  <div class="editorial-statement__body">
-    <p use:reveal={{ delay: 90 }}>{@html text}</p>
-  </div>
+  <p class="editorial-statement__text" use:reveal>{@html text}</p>
 </section>
 
 <style>
   .editorial-statement {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
-    gap: 2rem;
-    align-items: start;
-    /* Même correction que sur `ProjectEditorialSplit` : le haut manquait, la
-       phrase se collait au bord de sa bande. Se voyait surtout depuis que ce
-       bloc ouvre sa bande sur la page Moovy. */
-    padding: clamp(3rem, 7vh, 5.5rem) var(--project-side-padding, 1.25rem) 6.5rem;
+    padding:
+      clamp(6rem, 11vw, 10rem)
+      var(--project-side-padding, 1.25rem)
+      clamp(6rem, 11vw, 10rem);
     background: transparent;
     color: var(--project-surface-ink, #121212);
   }
 
-  .editorial-statement__eyebrow {
+  /*  Le bloc n'est plus une grille en deux colonnes (le surtitre est parti),
+   *  mais la phrase ne revient pas pour autant coller au bord : elle garde le
+   *  retrait qu'elle avait quand elle occupait la seconde colonne — un peu
+   *  moins, pour ne pas l'écraser contre la marge droite. */
+  .editorial-statement__text {
+    margin: 0 0 0 clamp(0rem, 18vw, 16rem);
+    /* Bien plus large qu'avant (21ch) : la phrase tenait sur six lignes très
+       courtes, ce qui la faisait lire comme une liste. */
+    max-width: 36ch;
     padding-inline: var(--project-text-inset, 0);
-    font-family: var(--site-font);
-    font-style: normal;
-    font-size: var(--project-overline-size, clamp(1.08rem, 1.45vw, 1.5rem));
-    line-height: 1;
-    letter-spacing: -0.03em;
-  }
-
-  .editorial-statement__body {
-    display: flex;
-    justify-content: flex-start;
-  }
-
-  .editorial-statement__body p {
-    margin: 0;
-    max-width: 21ch;
     font-family: var(--site-font);
     font-weight: var(--site-weight-display);
     font-size: var(--project-lead-size, clamp(1.35rem, 2.7vw, 2.8rem));
-    line-height: 0.98;
-    letter-spacing: -0.05em;
+    line-height: 1.02;
+    letter-spacing: -0.045em;
+    text-wrap: pretty;
   }
 
-  /* Texte gris + mots importants (.hl) en pleine encre — n'agit que si le texte
-     contient des <span class="hl"> (sinon le texte reste inchangé). */
-  .editorial-statement__body p:has(:global(.hl)) {
+  /* Première phrase en pleine encre (elle porte `.hl`), la suite en gris. */
+  .editorial-statement__text:has(:global(.hl)) {
     color: color-mix(in srgb, var(--project-surface-ink, #121212) 50%, transparent);
   }
 
-  .editorial-statement__body p :global(.hl) {
+  .editorial-statement__text :global(.hl) {
     color: var(--project-surface-ink, #121212);
   }
 
   @media (max-width: 900px) {
     .editorial-statement {
-      grid-template-columns: 1fr;
-      gap: 1rem;
-      padding: clamp(2rem, 5vh, 3.2rem) var(--project-side-padding, 0.8rem) 4rem;
+      padding:
+        clamp(4.5rem, 15vw, 7rem)
+        var(--project-side-padding, 0.9rem)
+        clamp(4.5rem, 15vw, 7rem);
     }
 
-    .editorial-statement__body {
-      justify-content: flex-start;
-    }
-
-    .editorial-statement__body p {
-      max-width: 12ch;
-      padding-inline: var(--project-text-inset, 0);
+    .editorial-statement__text {
+      margin-left: 0;
+      max-width: 18ch;
       font-size: clamp(1.7rem, 8.5vw, 2.55rem);
     }
   }

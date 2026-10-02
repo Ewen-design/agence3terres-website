@@ -65,6 +65,24 @@ export async function navigate(target, options = {}) {
       keepFocus: false
     });
 
+    /*  ── Pourquoi la remise à zéro TARDIVE saute en mode silencieux ──────────
+     *  Ces rappels échelonnés existent pour la transition ordinaire : l'écran
+     *  y est flouté et masqué pendant un demi-tour de seconde, donc remettre le
+     *  défilement à zéro à 320 ms ne se voit pas, et ça rattrape les mises en
+     *  page qui finissent de s'installer.
+     *
+     *  En mode SILENCIEUX, rien n'est masqué : le pied de page « projet
+     *  suivant » passe à la page d'après sans le moindre fondu, et le lecteur
+     *  est justement EN TRAIN DE DÉFILER — c'est son défilement qui a déclenché
+     *  le passage. Il reprend donc la nouvelle page en main immédiatement, et le
+     *  rappel de 320 ms le ramenait d'un coup en haut. C'est la saccade.
+     *
+     *  Le défilement est donc remis à zéro une seule fois, dans la première
+     *  image, et plus jamais ensuite : passé là, la page appartient au lecteur.
+     *  Les verrous de défilement, eux, continuent d'être nettoyés — les lever
+     *  ne déplace rien. */
+    const tardif = !options.silent;
+
     clearGlobalScrollLocks();
     resetScrollPosition();
     requestAnimationFrame(() => {
@@ -79,7 +97,7 @@ export async function navigate(target, options = {}) {
     setTimeout(() => {
       clearGlobalScrollLocks();
       stopWheelDamping();
-      resetScrollPosition();
+      if (tardif) resetScrollPosition();
     }, 320);
     setTimeout(() => {
       clearGlobalScrollLocks();

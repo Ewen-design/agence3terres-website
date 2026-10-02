@@ -9,7 +9,8 @@
 
   const digitalCards = [
     { image: "/images/tel_moovy.webp", alt: "Plateforme Moovy", title: "Moovy", subtitle: "Plateforme web", href: "projet3", tags: ["Site web", "Design d'interface", "Développement"] },
-    { image: "/images/app-justx.webp", alt: "Application JustX Fitness", title: "JustX Fitness", subtitle: "Application mobile", href: "projet7", tags: ["Application mobile", "Design d'interface", "Développement"] }
+    // Remplace la carte JustX Fitness, dont la page n'existe plus.
+    { image: "/images/jeu_mockup.webp", alt: "Interface mobile de Mission X", title: "Mission X", subtitle: "Interface mobile", href: "projet6", tags: ["Application mobile", "Design d'interface", "Game design"] }
   ];
 
   // Digital — sites web & applications : parcours, interface, responsive, dev.

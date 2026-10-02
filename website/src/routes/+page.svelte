@@ -72,6 +72,16 @@
 
   const hsliderSlides = [
     {
+      title: "Harmonia",
+      description: "Médecine esthétique,\nidentité et site.",
+      images: [
+        "/videos/harmonia-univers-poster.webp",
+        "/images/harmonia-vitrine.webp",
+        "/images/harmonia-moodboard.webp"
+      ],
+      href: "/projet9"
+    },
+    {
       title: "Lybra",
       description: "Identité de marque,\ncolibri et charte.",
       images: ["/images/lybra-cartes.webp", "/images/lybra-macbook.webp", "/images/lybra-affichage.webp"],
@@ -93,18 +103,6 @@
       mobileVideo: videoSources("moovy-parcours-slider-mobile"),
       poster: "/videos/moovy-parcours-poster.webp",
       href: "/projet3"
-    },
-    {
-      title: "JustX",
-      description: "Marque sport, programmes\net gamme textile.",
-      images: ["/images/justx-pub2.webp", "/images/apple_justx.webp", "/images/tel_justx.webp"],
-      href: "/projet5"
-    },
-    {
-      title: "JustX\nFitness",
-      description: "Planifier séances, suivre\neffort et progression.",
-      images: ["/images/justx_app.webp", "/images/justx-tel.webp", "/images/justx_couleurs.webp"],
-      href: "/projet7"
     },
     {
       title: "Mission X",

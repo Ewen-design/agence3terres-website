@@ -652,9 +652,47 @@ body {
   }
 }
 
+/*  ── La dérive des fonds dégradés ──
+ *  Portée depuis la librairie de dégradés, avec `SiteGradient.svelte`. Elle vit
+ *  ICI et non dans le composant : Svelte renomme les images clés déclarées dans
+ *  un composant, et les règles du composant sont marquées `:global()` (leurs
+ *  classes sont posées dynamiquement) — la référence ne suivrait donc pas.
+ *
+ *  Une TRANSLATION, et surtout pas une position de fond : déplacer un fond
+ *  REPEINT la couche à chaque image, et ces fonds sont chers (plusieurs rampes
+ *  plus un grain fondu en `overlay`) — mesuré à douze millisecondes par image
+ *  sur Firefox. En `transform`, la couche est peinte une fois et le compositeur
+ *  ne fait plus que la déplacer. Le fond déborde de six pour cent dans
+ *  `SiteGradient` : c'est la réserve dans laquelle la translation se promène. */
+@keyframes deg-derive-peint {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0);
+  }
+  33% {
+    transform: translate3d(-2.1%, 1.7%, 0);
+  }
+  66% {
+    transform: translate3d(1.9%, -1.5%, 0);
+  }
+}
+
 .project-theme-page {
   position: relative;
-  isolation: isolate;
+  /*  ── Contexte d'empilement, mais PAS groupe d'isolation ───────────────────
+   *  C'était `isolation: isolate`. L'effet d'empilement est le même — un
+   *  `z-index` posé là-dedans ne va pas se mêler à ce qui vit dehors — mais
+   *  `isolation` déclare en plus un GROUPE D'ISOLATION de fusion, ce que
+   *  WebKit traite comme une raison de donner à l'élément sa propre surface de
+   *  rendu. Or cet élément enveloppe toute la page projet, donc le cadre
+   *  collant de « notre rôle » se retrouvait dans un groupe composé à part,
+   *  entre le calque qui défile et lui. Safari défile de façon asynchrone :
+   *  la position du collant était alors recalée avec une image de retard, et
+   *  le cadre vibrait — le tremblement signalé, absent de la home qui n'a pas
+   *  cette enveloppe. `z-index: 0` donne le contexte d'empilement sans le
+   *  groupe de fusion, et le collant redevient l'affaire du seul fil de
+   *  défilement. */
+  z-index: 0;
   background-color: var(--project-surface-bg, #f4f6fc);
   color: var(--project-surface-ink, #121212);
   transition:

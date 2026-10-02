@@ -28,11 +28,56 @@ function isNativeWheelZone(target) {
   return target instanceof Element && !!target.closest("[data-native-wheel='true']");
 }
 
-function getMaxScroll() {
-  return Math.max(
+/*  ── La hauteur de course est mise en cache ────────────────────────────────
+ *  `scrollHeight` force un calcul de mise en page. Le lire à chaque image
+ *  pendant toute la course, c'est imposer une mise en page synchrone par image
+ *  AU MILIEU du défilement — la cause de tremblement déjà retirée du moteur de
+ *  défilement, restée ici. Cette valeur ne sert qu'à borner la course : un
+ *  cache court suffit, et il est vidé dès que la fenêtre change. */
+let maxScrollCache = -1;
+let maxScrollStamp = 0;
+const MAX_SCROLL_TTL_MS = 300;
+
+function getMaxScroll(frais = false) {
+  const now = performance.now();
+
+  if (!frais && maxScrollCache >= 0 && now - maxScrollStamp < MAX_SCROLL_TTL_MS) {
+    return maxScrollCache;
+  }
+
+  maxScrollCache = Math.max(
     0,
     document.documentElement.scrollHeight - window.innerHeight
   );
+  maxScrollStamp = now;
+  return maxScrollCache;
+}
+
+function invalidateMaxScroll() {
+  maxScrollCache = -1;
+}
+
+/*  ── La position est ENGAGÉE sur la grille de pixels de l'écran ─────────────
+ *  Ce module ne laisse pas le navigateur défiler seul : il intercepte la
+ *  molette et pose lui-même la position, image par image. La valeur calculée
+ *  est fractionnaire — c'est ce qui rend la course douce — mais elle ne doit
+ *  pas être engagée telle quelle.
+ *
+ *  Un élément `position: sticky` est posé par le fil de défilement à partir de
+ *  DEUX termes : la position du calque qui défile, et le rattrapage collant qui
+ *  l'annule exactement. Chacun est arrondi au pixel de l'écran, de son côté.
+ *  Quand la position engagée tombe sur la grille, les deux arrondis s'annulent
+ *  et le cadre collant est parfaitement immobile. Avec une valeur fractionnaire
+ *  ils se contredisent d'une image à l'autre, et le cadre vibre d'un demi-pixel
+ *  — invisible sur du contenu qui défile, flagrant sur le seul élément censé ne
+ *  pas bouger. C'était le tremblement du visuel collant.
+ *
+ *  L'arrondi se fait sur la grille de l'ÉCRAN et non sur le pixel CSS : sur un
+ *  écran Retina c'est un demi-pixel CSS, soit le pas le plus fin que l'écran
+ *  sache peindre. La douceur de la course est intacte, l'arrondi devient exact. */
+function engagerY(y) {
+  const grille = window.devicePixelRatio || 1;
+  return Math.round(y * grille) / grille;
 }
 
 function clamp(value, min, max) {
@@ -63,11 +108,11 @@ export function installDesktopWheelDamping({
     wheelCurrentY += diff * dynamicLerp;
     wheelCurrentY = clamp(wheelCurrentY, 0, maxScroll);
 
-    window.scrollTo(0, wheelCurrentY);
+    window.scrollTo(0, engagerY(wheelCurrentY));
 
     if (Math.abs(diff) < snapThreshold) {
       wheelCurrentY = wheelTargetY;
-      window.scrollTo(0, wheelTargetY);
+      window.scrollTo(0, engagerY(wheelTargetY));
       stopWheelDampingInternal();
       return;
     }
@@ -90,7 +135,7 @@ export function installDesktopWheelDamping({
     if (isEditableElement(activeEl)) return;
     if (isNativeWheelZone(e.target)) return;
 
-    const maxScroll = getMaxScroll();
+    const maxScroll = getMaxScroll(!wheelActive);
     if (maxScroll <= 1) {
       stopWheelDampingInternal();
       return;
@@ -127,6 +172,8 @@ export function installDesktopWheelDamping({
     stopWheelDampingInternal();
   }
 
+  window.addEventListener("resize", invalidateMaxScroll, { passive: true });
+  window.addEventListener("orientationchange", invalidateMaxScroll, { passive: true });
   window.addEventListener("wheel", handleWheel, { passive: false });
   window.addEventListener("mousedown", cancelOnDirectUserAction, { passive: true });
   window.addEventListener("keydown", cancelOnDirectUserAction, { passive: true });
@@ -138,6 +185,8 @@ export function installDesktopWheelDamping({
       stopWheelDampingInternal();
     },
     destroy() {
+      window.removeEventListener("resize", invalidateMaxScroll);
+      window.removeEventListener("orientationchange", invalidateMaxScroll);
       window.removeEventListener("wheel", handleWheel);
       window.removeEventListener("mousedown", cancelOnDirectUserAction);
       window.removeEventListener("keydown", cancelOnDirectUserAction);

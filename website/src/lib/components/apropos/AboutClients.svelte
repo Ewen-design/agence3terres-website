@@ -1,4 +1,13 @@
 <script>
+  //  ── Pourquoi des visuels « -w1800 » ───────────────────────────────────────
+  //  Ces photos font 2 500 à 4 500 px de large et s'affichent dans des boîtes de
+  //  600 à 900 px. Un navigateur RÉ-ÉCHANTILLONNE l'image à chaque repeint, et
+  //  le coût suit la taille de la SOURCE : mesuré sur Firefox, ce bloc et celui
+  //  des clients tombaient à 44-51 ms par image au défilement (16,7 ms partout
+  //  ailleurs), contre 16-19 ms sur Chromium. Les variantes plafonnées à
+  //  1 800 px sur le grand côté couvrent le double de la taille affichée — donc
+  //  les écrans à deux fois la densité — et divisent le travail par cinq.
+  //  Les originaux restent en place, d'autres blocs s'en servent.
   import { onMount } from "svelte";
   import { browser } from "$app/environment";
   import { reveal } from "$lib/actions/reveal.js";
@@ -44,7 +53,7 @@
       name: "Lybra",
       logo: "/images/logos-clients/lybra.svg",
       scale: 1,
-      image: "/images/lybra-affichage.webp",
+      image: "/images/lybra-affichage-w1800.webp",
       alt: "Affichage urbain Lybra — Agence 3 Terres"
     },
     {
@@ -60,7 +69,7 @@
       name: "Moovy",
       logo: "/images/logos-clients/moovy.webp",
       scale: 0.78,
-      image: "/images/moovy-phone.webp",
+      image: "/images/moovy-phone-w1800.webp",
       alt: "Interface Moovy sur téléphone — Agence 3 Terres"
     }
   ];

@@ -6,6 +6,8 @@
 
   import Header from "$lib/components/shared/layout/Header.svelte";
   import Footer from "$lib/components/shared/layout/Footer.svelte";
+  import ProjectNextFooter from "$lib/components/shared/layout/ProjectNextFooter.svelte";
+  import { estPageProjet, projetSuivant } from "$lib/data/projets.js";
   import CustomCursor from "$lib/components/shared/layout/CustomCursor.svelte";
   import SiteIntroLoader from "$lib/components/shared/layout/SiteIntroLoader.svelte";
 
@@ -107,23 +109,17 @@
         "Identité visuelle, site d'artiste et direction artistique : découvrez le projet Ludosphères par Agence 3 Terres.",
       imageAlt: "Projet Ludosphères par Agence 3 Terres"
     },
-    "/projet5": {
-      title: "JustX | Projet Agence 3 Terres",
-      description:
-        "Marque de sport, programmes personnalisés et gamme textile: découvrez le projet JustX par Agence 3 Terres.",
-      imageAlt: "Projet JustX par Agence 3 Terres"
-    },
     "/projet6": {
       title: "Mission X | Projet Agence 3 Terres",
       description:
         "Jeu de stratégie, game design et direction artistique: découvrez le projet Mission X par Agence 3 Terres.",
       imageAlt: "Projet Mission X par Agence 3 Terres"
     },
-    "/projet7": {
-      title: "JustX Fitness | Projet Agence 3 Terres",
+    "/projet9": {
+      title: "Centre Harmonia | Projet Agence 3 Terres",
       description:
-        "Application fitness, product design et UX/UI: découvrez JustX Fitness par Agence 3 Terres.",
-      imageAlt: "Application JustX Fitness par Agence 3 Terres"
+        "Identité visuelle, site web et direction artistique : découvrez le Centre Harmonia, médecine esthétique et capillaire à Paris, par Agence 3 Terres.",
+      imageAlt: "Projet Centre Harmonia par Agence 3 Terres"
     },
     "/projet8": {
       title: "Lybra | Projet Agence 3 Terres",
@@ -237,7 +233,14 @@
   }
 
   $: pathname = $page.url.pathname.replace(/\/+$/, "") || "/";
-  $: hideFooter = ["/projet1", "/projet4", "/projet5", "/projet6", "/projet7", "/contact"].includes(pathname)
+  /*  ── Le pied de page des pages projet ────────────────────────────────────
+   *  Une page projet ne finit pas sur « parlons de votre projet » mais sur le
+   *  projet SUIVANT, atteint au défilement (`ProjectNextFooter`). Le pied de
+   *  page ordinaire y est donc remplacé, pas seulement masqué. */
+  $: isProjectPage = estPageProjet(pathname) && ($page.status ?? 200) < 400;
+  $: nextProject = isProjectPage ? projetSuivant(pathname.replace(/^\//, "")) : null;
+  $: hideFooter = pathname === "/contact"
+    || isProjectPage
     || ($page.status ?? 200) >= 400;   // no footer on the error / 404 page
   $: isProjectLightTheme = projectTheme === "light";
   $: currentMeta = PAGE_META[pathname] ?? PAGE_META["/"];
@@ -580,7 +583,9 @@
 
   <div class="route-transition-layer" bind:this={transitionLayer} aria-hidden="true"></div>
 
-  {#if !hideFooter}
+  {#if isProjectPage}
+    <ProjectNextFooter project={nextProject} />
+  {:else if !hideFooter}
     <Footer />
   {/if}
 

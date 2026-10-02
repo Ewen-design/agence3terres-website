@@ -22,23 +22,6 @@
       button: "Voir le projet"
     },
     {
-      number: "03",
-      title: "JustX",
-      rest: "Une marque de sport qui réunit programmes personnalisés de musculation, nutrition et gamme de vêtements dans un univers direct et affirmé.",
-      image: "/images/logo_justx.webp",
-      page: "projet5",
-      button: "Voir le projet"
-    },
-    {
-      number: "04",
-      title: "JustX Fitness",
-      rest: "L'application JustX réunit programmes, suivi de l'effort et progression dans une expérience mobile directe et personnelle.",
-      image: "/images/telephone3.webp",
-      mobileImage: "/images/telephone2.webp",
-      page: "projet7",
-      button: "Voir le projet"
-    },
-    {
       number: "05",
       title: "Mission X",
       rest: "Un jeu social mobile où chaque mission secrète peut faire basculer la partie entre détectives et voleurs.",
@@ -264,9 +247,7 @@
     if (pathname.includes("/projet1")) detectedCurrentPage = "projet1";
     else if (pathname.includes("/projet3")) detectedCurrentPage = "projet3";
     else if (pathname.includes("/projet4")) detectedCurrentPage = "projet4";
-    else if (pathname.includes("/projet5")) detectedCurrentPage = "projet5";
     else if (pathname.includes("/projet6")) detectedCurrentPage = "projet6";
-    else if (pathname.includes("/projet7")) detectedCurrentPage = "projet7";
     else if (pathname.includes("/contact")) detectedCurrentPage = "contact";
 
     const mq = window.matchMedia("(prefers-reduced-motion: reduce)");

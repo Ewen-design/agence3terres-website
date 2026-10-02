@@ -49,13 +49,37 @@ function getNativeScrollY() {
   return window.scrollY || window.pageYOffset || 0;
 }
 
-function getMaxScroll() {
+/*  ── La hauteur défilable est MISE EN CACHE ────────────────────────────────
+ *  `scrollHeight` force un recalcul de mise en page. Lu à chaque image — et la
+ *  page écrit des styles à la fin de l'image précédente, donc la mise en page
+ *  est toujours sale — ça faisait un recalcul SYNCHRONE par image de
+ *  défilement. C'est cher partout et ruineux sur Firefox, dont la mise en page
+ *  coûte plus cher que celle de WebKit : c'est l'une des deux causes du
+ *  défilement qui tremble là-bas.
+ *
+ *  Elle ne sert qu'à borner la position (rebond élastique d'iOS, où `scrollY`
+ *  sort de l'intervalle) : une valeur vieille d'un demi-tour de seconde suffit
+ *  largement, et elle est rafraîchie dès qu'une mesure de viewport change. */
+let cachedMaxScroll = 0;
+let maxScrollStamp = -1e9;
+const MAX_SCROLL_TTL_MS = 500;
+
+function readMaxScroll() {
   const doc = document.documentElement;
   const body = document.body;
-  return Math.max(
+  cachedMaxScroll = Math.max(
     0,
     (doc.scrollHeight || body.scrollHeight || 0) - (window.innerHeight || 0)
   );
+  return cachedMaxScroll;
+}
+
+function getMaxScroll(now, force = false) {
+  if (force || now - maxScrollStamp > MAX_SCROLL_TTL_MS) {
+    maxScrollStamp = now;
+    return readMaxScroll();
+  }
+  return cachedMaxScroll;
 }
 
 function readViewport() {
@@ -98,8 +122,19 @@ function runRegistry(list, y, ctx) {
 }
 
 function emitFrame(now) {
-  const maxScroll = getMaxScroll();
-  const nextY = clamp(pendingNativeY, 0, maxScroll);
+  /*  ── La position est lue ICI, au début de l'image ─────────────────────────
+   *  Elle était reprise de `pendingNativeY`, c'est-à-dire de l'écouteur de
+   *  défilement ou de la FIN de l'image précédente : dans les deux cas, une
+   *  image de retard. Chrome et WebKit le masquent souvent — ils émettent
+   *  l'événement de défilement juste avant l'image ; Firefox, lui, défile sur
+   *  le compositeur et livre l'événement quand ça l'arrange. Tout ce que le
+   *  JavaScript positionne y traînait donc d'une image derrière le contenu de
+   *  la page, et c'est exactement ce qui se lit comme un tremblement.
+   *  Lire la position au début de l'image la met d'accord avec ce que le
+   *  navigateur est en train de composer. */
+  const nativeY = getNativeScrollY();
+  const maxScroll = getMaxScroll(now, viewportDirty);
+  const nextY = clamp(nativeY, 0, maxScroll);
   const dt = Math.min(34, Math.max(16, now - (lastFrameTime || now - 16)));
 
   delta = nextY - lastY;
@@ -132,12 +167,9 @@ function emitFrame(now) {
 
   lastY = currentY;
   lastFrameTime = now;
-
-  const nativeY = getNativeScrollY();
-  const moved = Math.abs(nativeY - pendingNativeY) > STABLE_EPSILON;
   pendingNativeY = nativeY;
 
-  if (moved || viewportDirty || Math.abs(delta) > STABLE_EPSILON) {
+  if (viewportDirty || Math.abs(delta) > STABLE_EPSILON) {
     lastActivityTime = now;
   }
 
@@ -179,6 +211,8 @@ function handleResize() {
     const prevVw = cachedVw;
 
     readViewport();
+    readMaxScroll();
+    maxScrollStamp = getNow();
     pendingNativeY = getNativeScrollY();
 
     const viewportChanged = prevVh !== cachedVh || prevVw !== cachedVw;

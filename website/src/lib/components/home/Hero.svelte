@@ -28,7 +28,7 @@
   //  par-dessus la nouvelle vidéo — rien n'a été redemandé au serveur.
   //
   //  À CHANGER À CHAQUE PASSAGE DE media-source/encode-home-hero-reel.sh.
-  const REEL_VERSION = "2026-09-05";
+  const REEL_VERSION = "2026-10-01";
 
   // Le point de rupture desktop/portrait, écrit UNE seule fois et partagé avec
   // AutoVideo. Les deux doivent basculer au même pixel : le calque poster était

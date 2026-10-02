@@ -2,7 +2,7 @@
   import { onMount, onDestroy } from "svelte";
   import { browser } from "$app/environment";
   import { reveal } from "$lib/actions/reveal.js";
-  import BlueGrainBackground from "$lib/components/shared/BlueGrainBackground.svelte";
+  import SiteGradient from "$lib/components/shared/SiteGradient.svelte";
 
   // ── Data ───────────────────────────────────────────────────────────────────
   const quotes = [
@@ -189,8 +189,13 @@
   on:touchcancel={touchEnd}
 >
   <div class="vision-frame" bind:this={frameEl}>
-    <!-- Halos diffus et grain fixe : le fond reste indépendant du carrousel. -->
-    <BlueGrainBackground />
+    <!-- Le fond reste indépendant du carrousel : c'est maintenant « Ellipses »,
+         porté de la librairie de dégradés et repeint à la palette du site
+         (voir `shared/SiteGradient.svelte`). Il remplace les halos bleus
+         dessinés à la main qui tenaient ce cadre jusqu'ici. -->
+    <div class="vision-bg">
+      <SiteGradient nom="ellipses" />
+    </div>
     <div class="nav-zones" aria-hidden={isMobile}>
       <button
         class="nav-zone"
@@ -268,8 +273,15 @@
     padding: clamp(3rem, 7vh, 5.5rem) 0;
     border-radius: 22px;
     overflow: hidden;
-    background: #5663ed;
+    background: var(--bg-deep, #050709);
     isolation: isolate;
+  }
+
+  .vision-bg {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    pointer-events: none;
   }
 
   .nav-zones {

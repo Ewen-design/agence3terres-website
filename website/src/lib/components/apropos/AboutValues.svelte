@@ -1,4 +1,13 @@
 <script>
+  //  ── Pourquoi des visuels « -w1800 » ───────────────────────────────────────
+  //  Ces photos font 2 500 à 4 500 px de large et s'affichent dans des boîtes de
+  //  600 à 900 px. Un navigateur RÉ-ÉCHANTILLONNE l'image à chaque repeint, et
+  //  le coût suit la taille de la SOURCE : mesuré sur Firefox, ce bloc et celui
+  //  des clients tombaient à 44-51 ms par image au défilement (16,7 ms partout
+  //  ailleurs), contre 16-19 ms sur Chromium. Les variantes plafonnées à
+  //  1 800 px sur le grand côté couvrent le double de la taille affichée — donc
+  //  les écrans à deux fois la densité — et divisent le travail par cinq.
+  //  Les originaux restent en place, d'autres blocs s'en servent.
   import { reveal } from "$lib/actions/reveal.js";
 
   // ───────────────────────────────────────────────────────────────────────────
@@ -27,7 +36,7 @@
     {
       label: "Créativité enracinée",
       text: "Nous imaginons des idées qui prennent racine dans l'<span class='hl'>identité</span>, les valeurs et la vision de chaque projet afin d'en révéler toute la <span class='hl'>singularité</span>.",
-      image: "/images/ipad-creation.webp",
+      image: "/images/ipad-creation-w1800.webp",
       alt: "Création graphique sur tablette — Agence 3 Terres",
       // Bords où l'image se dissout dans le noir du bloc : bas + droite.
       fade: [FADE.bottom, FADE.right]
@@ -35,14 +44,14 @@
     {
       label: "Proximité et confiance",
       text: "Nous avançons aux côtés de nos clients avec écoute, <span class='hl'>transparence</span> et collaboration pour bâtir des relations solides et <span class='hl'>durables</span>.",
-      image: "/images/visage.webp",
+      image: "/images/visage-w1800.webp",
       alt: "Portrait de profil — Agence 3 Terres",
       fade: [FADE.bottom, FADE.left]
     },
     {
       label: "Excellence engagée",
       text: "Nous abordons chaque mission avec <span class='hl'>rigueur</span>, passion et authenticité afin de créer des <span class='hl'>résultats cohérents</span>, porteurs de sens et fidèles à l'image de ceux que nous accompagnons.",
-      image: "/images/justx-ipads.webp",
+      image: "/images/justx-ipads-w1800.webp",
       alt: "Interfaces JustX sur iPad — Agence 3 Terres",
       fade: [FADE.left, FADE.right]
     }

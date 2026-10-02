@@ -8,7 +8,8 @@
   export let id = "pole-studio";
 
   const studioCards = [
-    { image: "/images/justx-pub2.webp", alt: "Projet JustX", title: "JustX", subtitle: "Gestion des réseaux sociaux", href: "projet5", tags: ["Réseaux sociaux", "Contenu & montage"] },
+    // Remplace la carte JustX, dont la page n'existe plus.
+    { image: "/images/affiche-moovy.webp", alt: "Campagne d'affichage Moovy", title: "Moovy", subtitle: "Campagne et mise en situation", href: "projet3", tags: ["Contenu & montage", "Direction artistique"] },
     { image: "/images/ludo-drapeau.webp", alt: "Visuel Ludosphères publié sur les réseaux", title: "Ludosphères", subtitle: "Gestion des réseaux sociaux et montage vidéo", href: "projet4", tags: ["Événementiel", "Réseaux sociaux"] }
   ];
 

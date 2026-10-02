@@ -4,6 +4,7 @@
   import { navigate } from "$lib/navigate.js";
   import { reveal } from "$lib/actions/reveal.js";
   import SliderDock from "$lib/components/shared/SliderDock.svelte";
+  import SiteGradient from "$lib/components/shared/SiteGradient.svelte";
   import { animateScrollLeft } from "$lib/scroll/smoothScrollLeft.js";
 
   // Reusable: the home page presents the 3 poles with the defaults; project
@@ -41,6 +42,10 @@
       title: "3 Terres Design",
       href: "/services/design",
       subtitle: "Logo, charte, typographie & stratégie de marque",
+      // « Arête », porté de la librairie de dégradés et repeint à la palette
+      // du site : la carte du pôle Design montre une couleur plutôt qu'un
+      // objet (voir `shared/SiteGradient.svelte`).
+      gradient: "arete",
       image: "/images/ipad-logo.webp",
       mobileImage: "/images/ipad-logo.webp"
     },
@@ -533,6 +538,9 @@
                  « slider », SOUS la carte en mise en page « grid ». -->
             <div class="pc-frame">
               <div class="pc-img">
+                {#if item.gradient}
+                  <SiteGradient nom={item.gradient} />
+                {:else}
                 <picture>
                   {#if item.mobileImage}
                     <source media="(max-width: 900px)" srcset={item.mobileImage} />
@@ -546,6 +554,7 @@
                     draggable="false"
                   />
                 </picture>
+                {/if}
               </div>
               <div class="pc-shade" aria-hidden="true"></div>
 
@@ -596,6 +605,9 @@
                  « slider », SOUS la carte en mise en page « grid ». -->
             <div class="pc-frame">
               <div class="pc-img">
+                {#if item.gradient}
+                  <SiteGradient nom={item.gradient} />
+                {:else}
                 <picture>
                   {#if item.mobileImage}
                     <source media="(max-width: 900px)" srcset={item.mobileImage} />
@@ -609,6 +621,7 @@
                     draggable="false"
                   />
                 </picture>
+                {/if}
               </div>
               <div class="pc-shade" aria-hidden="true"></div>
 

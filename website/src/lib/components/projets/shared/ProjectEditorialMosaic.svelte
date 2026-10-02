@@ -1,5 +1,12 @@
 <script>
-  import { revealBlock as reveal } from "$lib/actions/reveal.js";
+  //  ── Arrivées : celles de la home ──────────────────────────────────────────
+  //  Les TEXTES passent par `reveal` — la cascade mot à mot, l'effet de
+  //  référence du site (le paragraphe d'ouverture de la home). Les MÉDIAS et
+  //  les blocs passent par `revealBlock` — flou + montée, d'un seul tenant.
+  //  Ce composant employait `revealBlock` pour tout, textes compris : ses
+  //  grandes phrases arrivaient donc en bloc alors que les mêmes gabarits, sur
+  //  la home, se déposent mot à mot.
+  import { reveal, revealBlock } from "$lib/actions/reveal.js";
   import AutoVideo from "$lib/components/shared/media/AutoVideo.svelte";
 
   export let text = "";
@@ -10,6 +17,10 @@
    * `mobileAspectRatio` remplace le cadre imposé sur mobile, tuile par tuile :
    * les cadres par défaut sont pensés pour des images cadrées exprès, une vidéo
    * y perd une bande de chaque côté.
+   *
+   * `position` est le point de visée du rognage (`object-position`) : les
+   * tuiles sont hautes, une photographie en paysage y est donc rognée sur les
+   * côtés, et son sujet n'est pas toujours au milieu.
    */
   export let feature = { src: "", alt: "" };
   export let items = [];
@@ -22,12 +33,18 @@
       style={feature.mobileAspectRatio
         ? `--mosaic-media-aspect-mobile:${feature.mobileAspectRatio};`
         : undefined}
-      use:reveal
+      use:revealBlock
     >
       {#if feature.video}
         <AutoVideo sources={feature.video} poster={feature.poster} label={feature.alt} />
       {:else}
-        <img src={feature.src} alt={feature.alt} loading="lazy" decoding="async" />
+        <img
+          src={feature.src}
+          alt={feature.alt}
+          style:object-position={feature.position ?? "center"}
+          loading="lazy"
+          decoding="async"
+        />
       {/if}
     </figure>
 
@@ -37,12 +54,18 @@
         style={item.mobileAspectRatio
           ? `--mosaic-media-aspect-mobile:${item.mobileAspectRatio};`
           : undefined}
-        use:reveal={{ delay: i * 90 + 90 }}
+        use:revealBlock={{ delay: i * 90 + 90 }}
       >
         {#if item.video}
           <AutoVideo sources={item.video} poster={item.poster} label={item.alt} />
         {:else}
-          <img src={item.src} alt={item.alt} loading="lazy" decoding="async" />
+          <img
+            src={item.src}
+            alt={item.alt}
+            style:object-position={item.position ?? "center"}
+            loading="lazy"
+            decoding="async"
+          />
         {/if}
       </figure>
     {/each}
@@ -56,9 +79,9 @@
 <style>
   .project-editorial-mosaic {
     padding:
-      clamp(4.5rem, 7vw, 7rem)
+      clamp(6.5rem, 11vw, 10rem)
       max(0.45rem, calc(var(--project-side-padding, 1.25rem) * 0.55))
-      clamp(5rem, 8vw, 8rem);
+      clamp(6.5rem, 11vw, 10rem);
     background: transparent;
     color: var(--project-surface-ink, #f4efe6);
     transition: color var(--project-theme-transition);
@@ -113,9 +136,9 @@
   @media (max-width: 900px) {
     .project-editorial-mosaic {
       padding:
-        clamp(3.6rem, 12vw, 5rem)
+        clamp(5rem, 16vw, 7.5rem)
         clamp(0.35rem, 1.8vw, 0.45rem)
-        clamp(3.8rem, 12vw, 5rem);
+        clamp(5rem, 16vw, 7.5rem);
     }
 
     .project-editorial-mosaic__grid {
