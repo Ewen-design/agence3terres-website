@@ -63,8 +63,22 @@
   export let rootMargin = "300px";
   /** Exposé pour que le parent puisse animer/mesurer l'élément. */
   export let element = null;
+  /**
+   * Calque poster AU-DESSUS de la vidéo, effacé à la première image réellement
+   * affichée — la recette du hero de la home, qui a fait disparaître ses bugs
+   * (2026-10-09, étendue à toutes les vidéos). Deux raisons :
+   *   • en mode économie d'énergie, Safari iOS refuse l'autoplay et pose un
+   *     gros bouton de lecture sur la vidéo, qu'aucun CSS ne masque plus : un
+   *     calque par-dessus le cache toujours ;
+   *   • au moment où le `src` est posé, Safari peut effacer l'attribut `poster`
+   *     avant d'avoir décodé une image : un cadre vide ou noir s'intercale. Le
+   *     calque tient le cadre jusqu'à ce que le temps ait VRAIMENT avancé.
+   * `false` pour un parent qui gère déjà son propre calque (le hero).
+   */
+  export let posterLayer = true;
 
   let videoEl;
+  let layerEl;
   let currentSrc = "";
   let inView = false;
   let reduceMotion = false;
@@ -79,6 +93,37 @@
   let blockedRetries = 0;
   /** Une image a-t-elle déjà été montrée ? (voir onGesture) */
   let hasPlayed = false;
+
+  // L'image du calque : la même rendition que la vidéo, décidée au même point
+  // de rupture (voir syncPoster). Vide dans le HTML prérendu quand il y a un
+  // poster mobile, pour ne jamais télécharger le mauvais des deux.
+  let layerPoster = mobilePoster ? "" : poster;
+  let layerHidden = false;
+  // Le calque est un FRÈRE de la vidéo (pas d'enveloppe : les parents ciblent
+  // `:global(video)` et la positionnent eux-mêmes). Il se cale donc sur le même
+  // bloc conteneur ; si la mise en page du parent ne le permet pas (vidéo hors
+  // de son bloc positionné), on le retire plutôt que de le laisser déborder.
+  let layerFits = true;
+
+  // Retiré sur `timeupdate` et non sur `play`/`playing` : ces événements
+  // arrivent avant la première image décodée, et retirer le calque là
+  // découvrirait la vidéo encore vide.
+  function onTimeUpdate() {
+    if (layerHidden || !videoEl || videoEl.currentTime <= 0.04) return;
+    layerHidden = true;
+  }
+
+  function checkLayerFit() {
+    if (!layerEl || !videoEl) return;
+    const a = layerEl.getBoundingClientRect();
+    const b = videoEl.getBoundingClientRect();
+    if (!b.width || !b.height) return;
+    layerFits =
+      Math.abs(a.left - b.left) < 2 &&
+      Math.abs(a.top - b.top) < 2 &&
+      Math.abs(a.width - b.width) < 2 &&
+      Math.abs(a.height - b.height) < 2;
+  }
 
   // Chien de garde. Safari peut laisser l'élément dans un état « ni en pause
   // ni en train d'avancer » après un redimensionnement, un retour sur la page
@@ -352,6 +397,7 @@
       if (!videoEl || !mobilePoster) return;
       const wanted = mobileMedia?.matches ? mobilePoster : poster;
       if (wanted && videoEl.poster !== wanted) videoEl.poster = wanted;
+      if (wanted) layerPoster = wanted;
     };
 
     reduceMotion = motionQuery.matches;
@@ -424,6 +470,7 @@
       resizeTimer = setTimeout(() => {
         stuckTicks = 0;
         syncPlayback();
+        if (!layerHidden) checkLayerFit();
       }, 180);
     };
 
@@ -453,6 +500,7 @@
 
     if (videoEl) playObserver.observe(videoEl);
     mounted = true;
+    if (posterLayer) requestAnimationFrame(checkLayerFit);
 
     motionQuery.addEventListener?.("change", onMotionChange);
     mobileMedia?.addEventListener?.("change", onBreakpointChange);
@@ -500,8 +548,18 @@
   on:stalled={recover}
   on:emptied={syncPlayback}
   on:play={enforceGate}
+  on:timeupdate={onTimeUpdate}
   on:error={handleError}
 ></video>
+{#if posterLayer && layerFits && layerPoster}
+  <span
+    bind:this={layerEl}
+    class="auto-video-poster"
+    class:is-hidden={layerHidden}
+    style={`background-image:url("${layerPoster}");background-size:${objectFit === "fill" ? "100% 100%" : objectFit};background-position:${objectPosition};`}
+    aria-hidden="true"
+  ></span>
+{/if}
 
 <style>
   video {
@@ -519,6 +577,25 @@
     transform: translateZ(0);
     backface-visibility: hidden;
     -webkit-backface-visibility: hidden;
+  }
+
+  /* Même cadrage que la vidéo (taille et point d'ancrage repris de
+     `objectFit`/`objectPosition`) : son effacement ne fait glisser aucune image.
+     Pas de `z-index` : posé après la vidéo, il la recouvre déjà, et il reste
+     sous tout ce que le parent superpose (légendes, voiles). */
+  .auto-video-poster {
+    position: absolute;
+    inset: 0;
+    display: block;
+    background-repeat: no-repeat;
+    opacity: 1;
+    transition: opacity 380ms ease;
+    pointer-events: none;
+    transform: translateZ(0);
+  }
+
+  .auto-video-poster.is-hidden {
+    opacity: 0;
   }
 
   /* iOS pose un bouton « lecture » plein cadre sur toute vidéo en ligne qu'il

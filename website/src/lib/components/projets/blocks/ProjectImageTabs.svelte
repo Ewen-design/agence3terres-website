@@ -236,8 +236,8 @@
     font-family: var(--site-font);
     font-weight: var(--site-weight-display);
     font-size: var(--project-display-size, clamp(2.1rem, 3vw, 3.45rem));
-    line-height: 1;
-    letter-spacing: -0.04em;
+    line-height: var(--project-lead-line-height, 1.2);
+    letter-spacing: var(--project-lead-tracking, -0.01em);
     text-wrap: balance;
   }
 
@@ -428,8 +428,7 @@
     }
 
     .tabs__title {
-      max-width: 13ch;
-      font-size: clamp(1.9rem, 9vw, 2.8rem);
+      max-width: 24ch;
     }
 
     .tabs__row {

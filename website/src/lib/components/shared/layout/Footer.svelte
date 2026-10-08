@@ -41,7 +41,7 @@
   const footerImages = {
     "/": "/images/prisme-traverse-noir.webp",
     "/services": "/images/montre-justx.webp",
-    "/travail": "/images/cartes-visites.webp",
+    "/travail": "/images/travail-mockups-1920.webp",
     "/apropos": "/images/prisme-eclat-bas-aube.webp",
     "/projet3": "/images/moovy-salon.webp",
     "/projet8": "/images/lybra-affichage.webp",
@@ -235,6 +235,15 @@
     position: absolute;
     inset: 0;
     pointer-events: none;
+  }
+
+  /*  La page Projets a pour fond les maquettes du hero (2026-10-08), une image
+   *  très claire : à l'assombrissement commun, la moitié grise du titre
+   *  (« de votre projet. ») tombait sous 3:1. Un cran plus sombre ici seulement
+   *  — `theme-projets` ne vise que /travail, les pages projet ont leur propre
+   *  pied de page. */
+  .footer.theme-projets .footer-bg {
+    filter: brightness(0.42) contrast(1.02) saturate(0.92);
   }
 
   /*  Le dégradé n'est pas une photographie : il n'a ni à être assombri ni à

@@ -69,6 +69,7 @@
     snapScrollEngine
   } from "$lib/scrollEngine.js";
   import { navigate } from "$lib/navigate.js";
+  import { fitTitle } from "$lib/actions/fitTitle.js";
   import { markProjectHandoff } from "$lib/projectHandoff.js";
 
   /** Le projet annoncé — une entrée de `$lib/data/projets.js`. */
@@ -550,7 +551,7 @@
       <!-- Le titre : mêmes règles que `.hero-scroll-label` du hero projet, au
            pixel près — c'est ce qui rend le passage invisible. -->
       <div class="nextp__cue" class:is-open={ouvert}>
-        <p class="nextp__label">{affiche.title}</p>
+        <p class="nextp__label" use:fitTitle={affiche.title}>{affiche.title}</p>
         <!--  La flèche du hero, et pas un intitulé : la pile du hero d'arrivée
               est exactement « titre + flèche », donc le titre se pose ici à la
               même hauteur au pixel près. Elle RESTE au départ : elle est déjà
@@ -749,7 +750,8 @@
     margin-block: -0.18em -0.24em;
     margin: 0;
     font-family: var(--site-font);
-    font-size: clamp(7rem, 9vw, 20rem);
+    /* Même réduction que le titre du hero (action `fitTitle`). */
+    font-size: calc(clamp(7rem, 9vw, 20rem) * var(--title-fit, 1));
     font-weight: var(--site-weight-display);
     line-height: 1;
     letter-spacing: 0.02em;
@@ -971,7 +973,7 @@
      Recopiées telles quelles — voir l'en-tête. */
   @media (max-width: 900px) {
     .nextp__label {
-      font-size: clamp(5rem, 12vw, 9rem);
+      font-size: calc(clamp(5rem, 12vw, 9rem) * var(--title-fit, 1));
       max-width: 9ch;
     }
   }
@@ -1028,7 +1030,7 @@
     }
 
     .nextp__label {
-      font-size: clamp(3.4rem, 15vw, 5.6rem);
+      font-size: calc(clamp(3.4rem, 15vw, 5.6rem) * var(--title-fit, 1));
       line-height: 0.95;
       max-width: 8ch;
     }

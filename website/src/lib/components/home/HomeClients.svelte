@@ -42,6 +42,19 @@
 
   export let brands = [
     {
+      name: "Centre Harmonia",
+      logo: "/images/logos-clients/harmonia.webp",
+      // Deux lignes (« CENTRE » au-dessus de « HARMONIA ») : à hauteur égale
+      // le mot est plus petit que celui de Lybra, mais plus large — il garde
+      // la hauteur commune.
+      scale: 1,
+      // Le visuel « vitrine » du client (le site posé sur un visage) : jamais
+      // montré ailleurs sur le site, et son coin bas droit est sombre — le
+      // logo blanc s'y lit sans renforcer le voile.
+      image: "/images/harmonia-clients-vitrine-w1800.webp",
+      alt: "Le site du Centre Harmonia posé sur un visage — Agence 3 Terres"
+    },
+    {
       name: "Lybra",
       logo: "/images/logos-clients/lybra.svg",
       scale: 1,
@@ -142,6 +155,7 @@
         <img
           class="home-clients__shot"
           class:is-on={i === active}
+          style:object-position={brand.position ?? "center"}
           src={brand.image}
           alt={brand.alt}
           loading="lazy"

@@ -46,9 +46,9 @@
     margin: 0;
     font-family: var(--site-font);
     font-weight: var(--site-weight-display);
-    font-size: clamp(1.5rem, 2.5vw, 2.55rem);
-    line-height: 1.18;
-    letter-spacing: -0.025em;
+    font-size: var(--project-lead-size, clamp(1.5rem, 2.5vw, 2.55rem));
+    line-height: var(--project-lead-line-height, 1.2);
+    letter-spacing: var(--project-lead-tracking, -0.01em);
     color: var(--project-surface-ink, #f4efe6);
     text-wrap: pretty;
   }
@@ -121,9 +121,7 @@
       padding: clamp(3rem, 7vh, 5rem) 0 clamp(3.5rem, 8vh, 6rem);
     }
 
-    .project-brief__lead {
-      font-size: clamp(1.5rem, 6.6vw, 2rem);
-    }
+
 
     .project-brief__lead--top,
     .project-brief__lead--bottom {

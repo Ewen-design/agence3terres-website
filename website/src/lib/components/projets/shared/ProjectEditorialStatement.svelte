@@ -47,8 +47,8 @@
     font-family: var(--site-font);
     font-weight: var(--site-weight-display);
     font-size: var(--project-lead-size, clamp(1.35rem, 2.7vw, 2.8rem));
-    line-height: 1.02;
-    letter-spacing: -0.045em;
+    line-height: var(--project-lead-line-height, 1.2);
+    letter-spacing: var(--project-lead-tracking, -0.01em);
     text-wrap: pretty;
   }
 
@@ -71,8 +71,7 @@
 
     .editorial-statement__text {
       margin-left: 0;
-      max-width: 18ch;
-      font-size: clamp(1.7rem, 8.5vw, 2.55rem);
+      max-width: none;
     }
   }
 </style>

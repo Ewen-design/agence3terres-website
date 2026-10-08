@@ -22,10 +22,9 @@
   import ProjectImageTabs from "$lib/components/projets/blocks/ProjectImageTabs.svelte";
   import ProjectCaptionCards from "$lib/components/projets/blocks/ProjectCaptionCards.svelte";
   import ProjectActionDuo from "$lib/components/projets/blocks/ProjectActionDuo.svelte";
-  import ProjectWall from "$lib/components/projets/blocks/ProjectWall.svelte";
+  import ProjectQuote from "$lib/components/projets/blocks/ProjectQuote.svelte";
 
   import { videoSources } from "$lib/components/shared/media/videoSources.js";
-  import { autresProjets } from "$lib/data/projets.js";
 </script>
 
 <ProjectThemePage>
@@ -63,8 +62,14 @@
         {
           title: "Une identité médicale",
           text: "Un bleu nuit pour l'<span class='hl'>autorité</span>, un bleu pâle pour le soin, une typographie classique pour la durée. Rien de cosmétique : c'est une marque de santé.",
-          image: "/images/harmonia-moodboard.webp",
-          alt: "Planche d'identité du Centre Harmonia : palette, logotype, lieu"
+          // L'affiche grand format : le logotype, la typographie classique et
+          // la lumière douce de la marque, d'un seul regard. Paysage : le
+          // cadre presque carré du bureau garde tout le panneau, la carte
+          // plein écran du téléphone se centre sur le logotype.
+          image: "/images/harmonia-affiche.webp",
+          position: "47% 50%",
+          mobilePosition: "50% 45%",
+          alt: "Affiche Harmonia grand format : le logotype posé sur un visage, en plein ciel"
         },
         {
           title: "Un site qui respire",
@@ -102,13 +107,17 @@
       tabs={[
         {
           label: "L'accueil",
-          image: "/images/harmonia-site-accueil.webp",
-          alt: "La page d'accueil du Centre Harmonia : « L'harmonie comme signature »"
+          // Toute la largeur de la source : l'iPad garde de l'air autour et
+          // ne touche plus le haut du cadre (il en sortait en bureau).
+          image: "/images/harmonia-ipad-large.webp",
+          mobileImage: "/images/harmonia-ipad-mobile.webp",
+          alt: "La page d'accueil du Centre Harmonia sur tablette : « L'harmonie comme signature »"
         },
         {
           label: "Le récit",
-          image: "/images/harmonia-site-naturel.webp",
-          alt: "La section « Le naturel prend tout son sens au Centre Harmonia »"
+          image: "/images/harmonia-macbook.webp",
+          mobileImage: "/images/harmonia-macbook-mobile.webp",
+          alt: "La section « L'harmonie débute par le lieu » sur ordinateur portable"
         },
         {
           label: "Un univers",
@@ -140,29 +149,32 @@
   </div>
 
   <div class="project-theme-band">
+    <!-- Ce que fait le centre, en trois soins (photos et textes repris du
+         site du Centre Harmonia, ramenés à l'essentiel). -->
     <ProjectCaptionCards
-      titleMain="L'identité ne s'arrête pas"
-      titleMuted="à l'écran."
+      titleMain="Ce que soigne"
+      titleMuted="le centre."
       cards={[
         {
-          title: "La brochure",
-          text: "Le bleu nuit, la typographie classique, le même souffle que le site.",
-          image: "/images/harmonia-brochure.webp",
-          position: "30% center",
-          alt: "La brochure du Centre Harmonia posée sur une table en bois"
+          title: "Le cheveu",
+          text: "Greffe FUE et DHI, médecine du cheveu : tout commence par un bilan trichologique.",
+          image: "/images/harmonia-soin-cheveux.webp",
+          position: "50% 24%",
+          alt: "Portrait d'homme aux cheveux mouillés, en lumière douce"
         },
         {
-          title: "Le textile",
-          text: "Peignoir et accessoires de soin, marqués au même logotype.",
-          image: "/images/harmonia-accessoires.webp",
-          alt: "Peignoir et accessoires à l'identité du Centre Harmonia"
+          title: "Les technologies",
+          text: "LED, HIFU, HydraFacial : des appareils médicaux en complément du geste.",
+          image: "/images/harmonia-soin-led.webp",
+          position: "46% 50%",
+          alt: "Séance de luminothérapie LED du visage, lumière rouge"
         },
         {
-          title: "L'enseigne",
-          text: "Posée sur la pierre, elle dit le centre avant qu'on entre.",
-          image: "/images/harmonia-enseigne.webp",
-          position: "26% center",
-          alt: "L'enseigne du Centre Harmonia sur la façade en pierre"
+          title: "L'épilation",
+          text: "Définitive : le laser pour les poils foncés, l'électrolyse pour les clairs.",
+          image: "/images/harmonia-soin-epilation.webp",
+          position: "50% 55%",
+          alt: "Jambes au repos dans une lumière rasante, deux carnations"
         }
       ]}
     />
@@ -172,8 +184,10 @@
     <ProjectEditorialMosaic
       text="<span class='hl'>Une marque de santé</span>, qui tient à l'écran comme dans la main."
       feature={{
-        src: "/images/harmonia-mockup-large.webp",
-        alt: "Le site du Centre Harmonia sur ordinateur, posé sur l'eau",
+        // L'enseigne plutôt que le mockup sur l'eau, déjà en tête de page.
+        src: "/images/harmonia-enseigne.webp",
+        position: "26% center",
+        alt: "L'enseigne du Centre Harmonia sur la façade en pierre",
         mobileAspectRatio: "1.6"
       }}
       items={[
@@ -198,9 +212,8 @@
         title: "Voir le centre tel qu'on le découvre.",
         href: "https://centreharmonia.fr",
         external: true,
-        // Le poster de l'ouverture est le photogramme 0, donc l'écran de
-        // chargement : presque blanc. Celui des univers montre une vraie page.
-        phone: { image: "/videos/harmonia-univers-poster.webp", position: "50% 50%" }
+        // Une capture du site sur iPhone (2026-10-09), au format de l'écran.
+        phone: { image: "/images/harmonia-tel-accueil.webp", position: "50% 50%" }
       }}
       secondary={{
         label: "Parlons-en",
@@ -210,9 +223,16 @@
     />
   </div>
 
-  <!-- Le mur vit sur le NOIR de la palette, pas sur le gris de la page :
-       sans sa bande, ses marges laisseraient voir le gris tout autour. -->
+  <!-- Le mot du client, sur le NOIR de la palette (bande sombre), à la place
+       du mur des autres projets — le pied de page « projet suivant » assure la
+       suite de la visite.
+       ⚠️ TEXTE PROVISOIRE : remplacer `quote`, `author` et `role` par la vraie
+       citation du client. -->
   <div class="project-theme-band theme-deep">
-    <ProjectWall projects={autresProjets("projet9")} />
+    <ProjectQuote
+      quote="<span class='hl'>La citation du client prendra place ici.</span> Une ou deux phrases, dans ses mots."
+      author="Prénom Nom"
+      role="Fonction, Centre Harmonia"
+    />
   </div>
 </ProjectThemePage>

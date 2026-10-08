@@ -14,9 +14,8 @@
   import ProjectFlaps from "$lib/components/home/HomeFeatureCards.svelte";
   import ProjectImageTabs from "$lib/components/projets/blocks/ProjectImageTabs.svelte";
   import ProjectActionDuo from "$lib/components/projets/blocks/ProjectActionDuo.svelte";
-  import ProjectWall from "$lib/components/projets/blocks/ProjectWall.svelte";
+  import ProjectQuote from "$lib/components/projets/blocks/ProjectQuote.svelte";
 
-  import { autresProjets } from "$lib/data/projets.js";
 </script>
 
 <ProjectThemePage>
@@ -106,7 +105,8 @@
         label: "Le travail",
         title: "Voir ce que nous avons déjà livré.",
         href: "/travail",
-        phone: { image: "/images/missionx3.webp", position: "50% 44%" }
+        // Capture du jeu sur iPhone (2026-10-09), au format de l'écran.
+        phone: { image: "/images/missionx-tel-victoire.webp", position: "50% 50%" }
       }}
       secondary={{
         label: "Parlons-en",
@@ -116,12 +116,16 @@
     />
   </div>
 
-  <!-- Le mur vit sur le NOIR de la palette, pas sur le gris de la page :
-       sans sa bande, ses marges laisseraient voir le gris tout autour. -->
+  <!-- Le mot du client, sur le NOIR de la palette (bande sombre), à la place
+       du mur des autres projets — le pied de page « projet suivant » assure la
+       suite de la visite.
+       ⚠️ TEXTE PROVISOIRE : remplacer `quote`, `author` et `role` par la vraie
+       citation du client. -->
   <div class="project-theme-band theme-deep">
-    <ProjectWall
-      title="Le reste du <span class='dim'>travail.</span>"
-      projects={autresProjets("projet6")}
+    <ProjectQuote
+      quote="<span class='hl'>La citation du client prendra place ici.</span> Une ou deux phrases, dans ses mots."
+      author="Prénom Nom"
+      role="Fonction, Mission X"
     />
   </div>
 </ProjectThemePage>

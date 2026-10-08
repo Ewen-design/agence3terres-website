@@ -694,6 +694,17 @@ body {
   transition:
     background-color var(--project-theme-transition),
     color var(--project-theme-transition);
+  /*  ── Les grands textes des pages projet (2026-10-09) ──────────────────────
+   *  Calés sur le gabarit d'accroche de la page à propos (« Notre façon de
+   *  faire… ») : 36 px au repos, 22 px sur téléphone, interligne 1,2. Ils
+   *  montaient à 45 px en bureau et à 33–35 px sur téléphone — trop grands,
+   *  surtout là. Posés ICI et non sur `:root` : la home lit aussi ces jetons
+   *  (ParallaxGallery2) et ne doit pas bouger. Le titre de section et la
+   *  phrase d'accroche prennent la même taille, comme sur la page à propos. */
+  --project-lead-size: clamp(1.375rem, 2.9vw, 2.25rem);
+  --project-display-size: clamp(1.375rem, 2.9vw, 2.25rem);
+  --project-lead-line-height: 1.2;
+  --project-lead-tracking: -0.01em;
 }
 
 .project-theme-band {

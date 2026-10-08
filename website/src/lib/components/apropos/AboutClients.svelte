@@ -50,6 +50,17 @@
 
   export let brands = [
     {
+      name: "Centre Harmonia",
+      logo: "/images/logos-clients/harmonia.webp",
+      scale: 1,
+      image: "/images/harmonia-clients-vitrine-w1800.webp",
+      // Cadre PORTRAIT ici : calé à gauche, il garde le titre du site en
+      // entier (« L'harmonie comme signature. ») à côté du visage — centré,
+      // il le coupait au milieu d'un mot.
+      position: "0% center",
+      alt: "Le site du Centre Harmonia posé sur un visage — Agence 3 Terres"
+    },
+    {
       name: "Lybra",
       logo: "/images/logos-clients/lybra.svg",
       scale: 1,
@@ -123,6 +134,7 @@
       <img
         class="clients__shot"
         class:is-on={i === active}
+        style:object-position={brand.position ?? "center"}
         src={brand.image}
         alt={brand.alt}
         loading={i === 0 ? "eager" : "lazy"}

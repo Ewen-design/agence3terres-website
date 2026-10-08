@@ -103,8 +103,8 @@
     font-style: normal;
     font-weight: var(--site-weight-display);
     font-size: var(--project-display-size, clamp(2.1rem, 3vw, 3.45rem));
-    line-height: 0.94;
-    letter-spacing: -0.04em;
+    line-height: var(--project-lead-line-height, 1.2);
+    letter-spacing: var(--project-lead-tracking, -0.01em);
   }
 
   .editorial-role__list {
@@ -181,7 +181,7 @@
     }
 
     .editorial-role__title-wrap h2 {
-      max-width: 8ch;
+      max-width: 16ch;
     }
 
     .editorial-role__item {

@@ -16,10 +16,9 @@
   import ProjectFlaps from "$lib/components/home/HomeFeatureCards.svelte";
   import ProjectCaptionCards from "$lib/components/projets/blocks/ProjectCaptionCards.svelte";
   import ProjectActionDuo from "$lib/components/projets/blocks/ProjectActionDuo.svelte";
-  import ProjectWall from "$lib/components/projets/blocks/ProjectWall.svelte";
+  import ProjectQuote from "$lib/components/projets/blocks/ProjectQuote.svelte";
 
   import { videoSources } from "$lib/components/shared/media/videoSources.js";
-  import { autresProjets } from "$lib/data/projets.js";
 </script>
 
 <ProjectThemePage>
@@ -63,15 +62,20 @@
         {
           title: "Trois teintes, pas une de plus",
           text: "Un blanc cassé pour laisser la <span class='hl'>peinture</span> parler, un beige rosé pour la chaleur, un bleu profond pour tenir l'ensemble. Aucune ne vient concurrencer les toiles.",
-          image: "/images/ludo-couleurs.webp",
-          alt: "Nuancier Ludosphères : blanc cassé, beige rosé, bleu nuit"
+          // Le livret ouvert porte les trois teintes d'un coup : couverture
+          // bleu profond, pages blanc cassé, fond beige rosé.
+          image: "/images/ludo-magazine.webp",
+          position: "50% 50%",
+          mobilePosition: "47% 50%",
+          alt: "Livret Ludosphères ouvert : couverture bleu profond, toile Cosmos en pleine page"
         },
         {
           title: "Un site pensé comme un accrochage",
           text: "Les toiles occupent le centre, le texte se retire sur les bords. On avance d'une collection à l'autre <span class='hl'>comme on traverse une salle</span>.",
-          video: videoSources("ludo-site"),
-          poster: "/videos/ludo-site-poster.webp",
-          alt: "Défilement de la collection Ondes sur le site Ludosphères"
+          image: "/images/ludo-iphone.webp",
+          position: "56% 50%",
+          mobilePosition: "57% 50%",
+          alt: "Le site Ludosphères sur un iPhone tenu à la main, une toile au centre de l'écran"
         },
         {
           title: "Des contenus pour la suite",
@@ -95,8 +99,10 @@
         {
           title: "L'accrochage",
           text: "Le site montre l'œuvre en grand avant d'en dire un mot. Le texte attend son tour.",
-          image: "/images/ludo-tablette.webp",
-          alt: "Le site Ludosphères affiché sur une tablette"
+          // La toile seule au mur, comme on la découvre : le mockup des deux
+          // tablettes revenait déjà dans le hero et la mosaïque.
+          image: "/images/ludo.webp",
+          alt: "Une toile rouge et rose de Ludovic Cocqueret, accrochée sur un mur blanc"
         },
         {
           title: "Le geste",
@@ -133,9 +139,12 @@
     <ProjectEditorialMosaic
       text="<span class='hl'>Une marque qui tient à l'écran</span>, sur le papier et sur la toile."
       feature={{
-        src: "/images/ipad-ludo.webp",
-        alt: "Le site Ludosphères affiché sur deux tablettes",
-        mobileAspectRatio: "1.333"
+        // Le défilement du site (déplacé depuis les volets, où l'iPhone a
+        // pris sa place). Format réel de la vidéo sur mobile : rien de rogné.
+        video: videoSources("ludo-site"),
+        poster: "/videos/ludo-site-poster.webp",
+        alt: "Défilement de la collection Ondes sur le site Ludosphères",
+        mobileAspectRatio: "1.6"
       }}
       items={[
         {
@@ -161,7 +170,8 @@
         title: "Traverser les collections, une à une.",
         href: "https://ludospheres.fr",
         external: true,
-        phone: { image: "/images/ludo.webp", fit: "contain", bg: "#f3f1ee" }
+        // Une capture du site sur iPhone (2026-10-09), au format de l'écran.
+        phone: { image: "/images/ludo-tel-cosmos.webp", position: "50% 50%" }
       }}
       secondary={{
         label: "Parlons-en",
@@ -171,12 +181,16 @@
     />
   </div>
 
-  <!-- Le mur vit sur le NOIR de la palette, pas sur le gris de la page :
-       sans sa bande, ses marges laisseraient voir le gris tout autour. -->
+  <!-- Le mot du client, sur le NOIR de la palette (bande sombre), à la place
+       du mur des autres projets — le pied de page « projet suivant » assure la
+       suite de la visite.
+       ⚠️ TEXTE PROVISOIRE : remplacer `quote`, `author` et `role` par la vraie
+       citation du client. -->
   <div class="project-theme-band theme-deep">
-    <ProjectWall
-      title="Le reste du <span class='dim'>travail.</span>"
-      projects={autresProjets("projet4")}
+    <ProjectQuote
+      quote="<span class='hl'>La citation du client prendra place ici.</span> Une ou deux phrases, dans ses mots."
+      author="Prénom Nom"
+      role="Fonction, Ludosphères"
     />
   </div>
 </ProjectThemePage>

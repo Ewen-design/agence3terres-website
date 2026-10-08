@@ -18,10 +18,9 @@
   import ProjectImageTabs from "$lib/components/projets/blocks/ProjectImageTabs.svelte";
   import ProjectFigures from "$lib/components/projets/blocks/ProjectFigures.svelte";
   import ProjectActionDuo from "$lib/components/projets/blocks/ProjectActionDuo.svelte";
-  import ProjectWall from "$lib/components/projets/blocks/ProjectWall.svelte";
+  import ProjectQuote from "$lib/components/projets/blocks/ProjectQuote.svelte";
 
   import { videoSources } from "$lib/components/shared/media/videoSources.js";
-  import { autresProjets } from "$lib/data/projets.js";
 </script>
 
 <ProjectThemePage>
@@ -45,8 +44,9 @@
   <div class="project-theme-band">
     <ProjectEditoBadge
       text="<span class='hl'>La marque avait déjà son colibri, mais un colibri daté.</span> Il fallait le moderniser sans le trahir, et lui donner tout ce qui lui manquait autour."
-      image="/images/lybra-planche.webp"
-      alt="Planche de marque Lybra : nuancier, applications écran et papier"
+      image="/images/lybra-sac.webp"
+      mobileImage="/images/lybra-sac-mobile.webp"
+      alt="Un sac de voyage bleu Lybra, porté à bout de bras dans le ciel"
       aspect="1.6"
       mobileAspect="1.15"
     />
@@ -69,14 +69,18 @@
         {
           title: "Une identité complète",
           text: "Palette, contrastes, associations de couleurs et règles de composition : un <span class='hl'>système cohérent</span> de la carte de visite à l'affichage grand format.",
-          image: "/images/lybra-couleurs.webp",
-          alt: "Nuancier Lybra : bleu nuit, bleu ciel, vert"
+          // Le livre ouvert montre le système en vrai : bleu en couverture,
+          // vert en pleine page, le colibri en blanc.
+          image: "/images/lybra-livre.webp",
+          position: "50% 50%",
+          alt: "Un livre carré Lybra ouvert entre deux mains : pages bleue et verte"
         },
         {
           title: "Une charte livrée",
           text: "Versions monochromes, fonds autorisés, déclinaisons documentées et fichiers <span class='hl'>prêts à l'emploi</span> en SVG, PNG et WebP.",
-          image: "/images/lybra-declinaisons.webp",
-          alt: "Planche des déclinaisons du logo Lybra"
+          image: "/images/lybra-sachet.webp",
+          position: "42% 50%",
+          alt: "Un sac en dégradé bleu frappé du colibri, porté dans la rue"
         },
         {
           title: "Une marque en main",
@@ -197,12 +201,16 @@
     />
   </div>
 
-  <!-- Le mur vit sur le NOIR de la palette, pas sur le gris de la page :
-       sans sa bande, ses marges laisseraient voir le gris tout autour. -->
+  <!-- Le mot du client, sur le NOIR de la palette (bande sombre), à la place
+       du mur des autres projets — le pied de page « projet suivant » assure la
+       suite de la visite.
+       ⚠️ TEXTE PROVISOIRE : remplacer `quote`, `author` et `role` par la vraie
+       citation du client. -->
   <div class="project-theme-band theme-deep">
-    <ProjectWall
-      title="Le reste du <span class='dim'>travail.</span>"
-      projects={autresProjets("projet8")}
+    <ProjectQuote
+      quote="<span class='hl'>La citation du client prendra place ici.</span> Une ou deux phrases, dans ses mots."
+      author="Prénom Nom"
+      role="Fonction, Lybra"
     />
   </div>
 </ProjectThemePage>

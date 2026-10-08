@@ -13,9 +13,8 @@
   // où l'original ne tremble pas — elle a été jetée plutôt que rafistolée.
   import ProjectFlaps from "$lib/components/home/HomeFeatureCards.svelte";
   import ProjectActionDuo from "$lib/components/projets/blocks/ProjectActionDuo.svelte";
-  import ProjectWall from "$lib/components/projets/blocks/ProjectWall.svelte";
+  import ProjectQuote from "$lib/components/projets/blocks/ProjectQuote.svelte";
 
-  import { autresProjets } from "$lib/data/projets.js";
 </script>
 
 <ProjectThemePage>
@@ -90,12 +89,16 @@
     />
   </div>
 
-  <!-- Le mur vit sur le NOIR de la palette, pas sur le gris de la page :
-       sans sa bande, ses marges laisseraient voir le gris tout autour. -->
+  <!-- Le mot du client, sur le NOIR de la palette (bande sombre), à la place
+       du mur des autres projets — le pied de page « projet suivant » assure la
+       suite de la visite.
+       ⚠️ TEXTE PROVISOIRE : remplacer `quote`, `author` et `role` par la vraie
+       citation du client. -->
   <div class="project-theme-band theme-deep">
-    <ProjectWall
-      title="Le reste du <span class='dim'>travail.</span>"
-      projects={autresProjets("projet1")}
+    <ProjectQuote
+      quote="<span class='hl'>La citation du client prendra place ici.</span> Une ou deux phrases, dans ses mots."
+      author="Prénom Nom"
+      role="Fonction, Serein Design"
     />
   </div>
 </ProjectThemePage>

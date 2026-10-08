@@ -113,8 +113,8 @@
     font-family: var(--site-font);
     font-weight: var(--site-weight-display);
     font-size: var(--project-lead-size, clamp(1.35rem, 2.7vw, 2.8rem));
-    line-height: 0.98;
-    letter-spacing: -0.05em;
+    line-height: var(--project-lead-line-height, 1.2);
+    letter-spacing: var(--project-lead-tracking, -0.01em);
   }
 
   /* Texte gris + mots importants (.hl) en pleine encre. */
@@ -167,9 +167,8 @@
     }
 
     .editorial-mobile-showcase__text-grid p {
-      max-width: 12ch;
+      max-width: none;
       grid-column: auto;
-      font-size: clamp(1.7rem, 8.5vw, 2.55rem);
       padding-inline: var(--project-text-inset, 0);
     }
   }

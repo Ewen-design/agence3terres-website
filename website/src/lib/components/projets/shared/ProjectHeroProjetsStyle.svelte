@@ -3,6 +3,7 @@
   import { browser } from "$app/environment";
   import { revealBlock as reveal } from "$lib/actions/reveal.js";
   import { heroFrame } from "$lib/actions/heroFrame.js";
+  import { fitTitle } from "$lib/actions/fitTitle.js";
   import { consumeProjectHandoff } from "$lib/projectHandoff.js";
   import AutoVideo from "$lib/components/shared/media/AutoVideo.svelte";
   import {
@@ -380,7 +381,7 @@
 
     <div class="hero-stage-content">
       <div class="hero-scroll-cue" class:intro-visible={introVisible} class:title-visible={titleVisible}>
-        <h1 class="hero-scroll-label">{title}</h1>
+        <h1 class="hero-scroll-label" use:fitTitle={title}>{title}</h1>
         <span class="hero-scroll-arrow" aria-hidden="true">↓</span>
       </div>
     </div>
@@ -435,7 +436,7 @@
   </section>
 
   <div class="hero-scroll-cue-mobile" class:title-visible={titleVisible} aria-hidden="true">
-    <h1 class="hero-scroll-label">{title}</h1>
+    <h1 class="hero-scroll-label" use:fitTitle={title}>{title}</h1>
     <span class="hero-scroll-arrow">↓</span>
   </div>
 </section>
@@ -640,7 +641,10 @@
     margin-block: -0.18em -0.24em;
     margin: 0;
     font-family: var(--site-font);
-    font-size: clamp(7rem, 9vw, 20rem);
+    /* `--title-fit` : réduction posée par l'action `fitTitle` quand le mot le
+       plus long ne tiendrait pas dans l'écran (« Ludosphères » sur téléphone).
+       Même facteur dans le pied de page « projet suivant ». */
+    font-size: calc(clamp(7rem, 9vw, 20rem) * var(--title-fit, 1));
     font-weight: var(--site-weight-display);
     line-height: 1;
     letter-spacing: 0.02em;
@@ -883,7 +887,7 @@
     }
 
     .hero-scroll-label {
-      font-size: clamp(5rem, 12vw, 9rem);
+      font-size: calc(clamp(5rem, 12vw, 9rem) * var(--title-fit, 1));
       max-width: 9ch;
     }
   }
@@ -910,7 +914,7 @@
     }
 
     .hero-scroll-label {
-      font-size: clamp(3.4rem, 15vw, 5.6rem);
+      font-size: calc(clamp(3.4rem, 15vw, 5.6rem) * var(--title-fit, 1));
       line-height: 0.95;
       max-width: 8ch;
     }

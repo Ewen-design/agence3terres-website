@@ -90,8 +90,8 @@
     font-family: var(--site-font);
     font-weight: var(--site-weight-display);
     font-size: var(--project-lead-size, clamp(1.35rem, 2.7vw, 2.8rem));
-    line-height: 1.02;
-    letter-spacing: -0.045em;
+    line-height: var(--project-lead-line-height, 1.2);
+    letter-spacing: var(--project-lead-tracking, -0.01em);
     text-wrap: pretty;
   }
 
@@ -136,8 +136,9 @@
     }
 
     .edito-badge__lead {
-      max-width: 18ch;
-      font-size: clamp(1.7rem, 8.5vw, 2.55rem);
+      /* Même taille qu'en bureau (le jeton descend à 22 px) : sur toute la
+         largeur, comme les accroches de la page à propos. */
+      max-width: none;
     }
 
     .edito-badge__figure {

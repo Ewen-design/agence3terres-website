@@ -9,26 +9,40 @@
 
   export let title =
     "Nous sommes 3 Terres, <span class='dim'>l'agence dans l'ombre des projets qui durent.</span>";
-  export let image = "/images/iphone-ambition.webp";
-  export let alt = "Écran d'application dessiné par l'agence, sur iPhone";
+  // La main en silhouette qui tient un téléphone couché (2026-10-09). Le fichier
+  // garde TOUTE la largeur de sa toile : le téléphone y est centré et le bras
+  // sort par le bord droit — posée en pleine largeur d'écran, l'image garde
+  // donc le téléphone au milieu de la page et le bras qui file hors champ.
+  // Seul le vide transparent du haut et du bas a été retiré.
+  // Téléphone (≤ 640px) : même image recadrée serré autour du téléphone, sinon
+  // la pleine largeur d'un écran étroit le ramène à 190 px de haut.
+  export let image = "/images/statement-silhouette-1600.webp";
+  export let srcset =
+    "/images/statement-silhouette-960.webp 960w, /images/statement-silhouette-1600.webp 1600w, /images/statement-silhouette-2560.webp 2560w";
+  export let mobileSrcset =
+    "/images/statement-silhouette-mobile-800.webp 800w, /images/statement-silhouette-mobile-1200.webp 1200w";
+  export let alt = "Une main tient un téléphone couché, l'écran affiche « Née pour briller »";
 </script>
 
 <section class="hstmt">
   <div class="hstmt__inner">
     <h2 class="hstmt__title" use:reveal>{@html title}</h2>
 
-    <!-- Le mockup est détouré : aucune dimension imposée, seulement deux
-         plafonds. Un élément remplacé dont `width` ET `height` valent `auto` se
-         réduit dans la boîte en gardant son rapport, et sa boîte colle
-         exactement au visuel — c'est ce qui garde l'ombre portée juste. -->
-    <img
-      class="hstmt__img"
-      src={image}
-      {alt}
-      loading="lazy"
-      decoding="async"
-      draggable="false"
-    />
+    <!-- Pleine largeur d'ÉCRAN, quel que soit l'écran : l'image sort des
+         marges du bloc (voir `.hstmt__img`). -->
+    <picture class="hstmt__picture">
+      <source media="(max-width: 640px)" srcset={mobileSrcset} sizes="100vw" />
+      <img
+        class="hstmt__img"
+        src={image}
+        {srcset}
+        sizes="100vw"
+        {alt}
+        loading="lazy"
+        decoding="async"
+        draggable="false"
+      />
+    </picture>
   </div>
 </section>
 
@@ -68,19 +82,27 @@
     color: rgba(var(--ink-muted-rgb, 245, 241, 232), 0.5);
   }
 
+  /* Pleine largeur d'écran : l'image ignore les marges du bloc
+     (`margin-inline` négatif jusqu'aux bords de la fenêtre ; les barres de
+     défilement du site sont masquées, donc 100vw est bien la largeur visible,
+     et `.hstmt` rogne tout débordement horizontal). La hauteur suit. */
+  .hstmt__picture {
+    display: contents;
+  }
+
   .hstmt__img {
     display: block;
-    width: auto;
+    width: 100vw;
+    max-width: none;
     height: auto;
-    max-width: 100%;
-    /* L'image est recadrée au ras de l'appareil ET centrée sur lui : le fichier
-       d'origine portait 18 % de vide transparent en haut, et son ombre portée
-       débordait à droite — l'appareil se retrouvait 120 px à gauche du centre.
-       Ce plafond est donc bien la hauteur RÉELLE du téléphone à l'écran, et son
-       milieu tombe pile sur celui du titre. */
-    max-height: min(88svh, 58rem);
-    /* L'appareil est détouré : une ombre douce le décolle du fond. */
-    filter: drop-shadow(0 32px 60px rgba(var(--shade-rgb, 0, 0, 0), 0.55));
+    margin-inline: calc(50% - 50vw);
+    aspect-ratio: 2560 / 1252;
+  }
+
+  @media (max-width: 640px) {
+    .hstmt__img {
+      aspect-ratio: 1200 / 960;
+    }
   }
 
   @media (max-width: 900px) {
@@ -90,10 +112,6 @@
 
     .hstmt__inner {
       gap: clamp(2rem, 4.4vh, 3rem);
-    }
-
-    .hstmt__img {
-      max-height: min(72svh, 40rem);
     }
   }
 </style>

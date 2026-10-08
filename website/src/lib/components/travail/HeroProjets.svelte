@@ -296,13 +296,23 @@
   <section class="hero-stage">
     <div class="hero-media-sticky" aria-hidden="true">
       <div class="hero-media" class:media-visible={heroMediaVisible} bind:this={heroStage}>
-        <img
-          bind:this={heroMediaImgEl}
-          src="/images/cartes-visites.webp"
-          alt=""
-          fetchpriority="high"
-          decoding="async"
-        />
+        <!-- Les maquettes de projets (2026-10-08). Trois largeurs pour le bureau
+             (le navigateur prend celle qui suffit à l'écran) et un recadrage
+             PORTRAIT pour le téléphone, où un plan paysage en `cover` ne
+             garderait qu'une bande du milieu. Même point de bascule que les
+             règles mobiles de ce hero (640 px). -->
+        <picture>
+          <source media="(max-width: 640px)" srcset="/images/travail-mockups-mobile.webp" />
+          <img
+            bind:this={heroMediaImgEl}
+            src="/images/travail-mockups-1920.webp"
+            srcset="/images/travail-mockups-1280.webp 1280w, /images/travail-mockups-1920.webp 1920w, /images/travail-mockups-2560.webp 2560w"
+            sizes="100vw"
+            alt=""
+            fetchpriority="high"
+            decoding="async"
+          />
+        </picture>
         <div class="hero-dark-layer" bind:this={heroDarkLayerEl}></div>
       </div>
     </div>
