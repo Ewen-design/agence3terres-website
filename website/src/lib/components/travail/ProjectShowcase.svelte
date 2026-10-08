@@ -17,7 +17,7 @@
       title: "Harmonia",
       category: "Centre de médecine esthétique",
       lead: "Une identité médicale, et un site qui la porte.",
-      image: "/videos/harmonia-univers-poster.webp",
+      image: "/images/harmonia-mockup.webp",
       page: "projet9",
       button: "Voir le projet"
     },

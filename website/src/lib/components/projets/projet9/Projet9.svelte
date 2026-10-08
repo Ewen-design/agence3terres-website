@@ -31,8 +31,8 @@
 <ProjectThemePage>
   <ProjectHeroProjetsStyle
     title="Harmonia"
-    image="/images/harmonia-vitrine.webp"
-    mobileImage="/videos/harmonia-ouverture-poster.webp"
+    image="/images/harmonia-mockup-large.webp"
+    mobileImage="/images/harmonia-mockup-tel.webp"
     metaBlocks={[
       { label: "Date", value: "2026" },
       { label: "Localisation", value: "Paris" },

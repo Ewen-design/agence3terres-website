@@ -764,14 +764,6 @@
       display: flex;
     }
 
-    /* Menu open → the menu shows the contact button on the left, so free that
-       corner by hiding the header logo (only the X close stays, on the right). */
-    .menu-open .mobile-logo {
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity 0.3s ease;
-    }
-
     .nav-wrapper {
       transition:
         color 150ms ease,

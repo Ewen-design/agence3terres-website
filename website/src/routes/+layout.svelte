@@ -42,6 +42,8 @@
   let projectTheme = null;
   let removeProjectThemeListener;
   let pipDockVisible = false;
+  // Le logo du coin apparaît AVEC le header (et non sous le préchargement).
+  let prismReady = false;
 
   let transitionLayer;
   let pageWrapper;
@@ -395,11 +397,18 @@
       pipDockVisible = Boolean(event.detail?.visible);
     };
 
+    const handleHeaderIntro = () => {
+      prismReady = true;
+    };
+
     window.addEventListener("project-theme-change", handleProjectThemeChange);
     window.addEventListener("pip-dock-visible", handlePipDockVisible);
+    window.addEventListener("header:intro-visible", handleHeaderIntro);
+    if (document.querySelector(".nav-wrapper.intro-visible")) prismReady = true;
     removeProjectThemeListener = () => {
       window.removeEventListener("project-theme-change", handleProjectThemeChange);
       window.removeEventListener("pip-dock-visible", handlePipDockVisible);
+      window.removeEventListener("header:intro-visible", handleHeaderIntro);
     };
 
     const init = async () => {
@@ -562,7 +571,7 @@
   {/if}
 
   <a
-    class="site-prism-mark {pathname === '/' ? 'is-home' : ''}"
+    class="site-prism-mark {pathname === '/' ? 'is-home' : ''} {prismReady ? 'is-ready' : ''}"
     href="/"
     aria-label="Accueil — Agence 3 Terres"
     aria-disabled={pathname === "/"}
@@ -577,17 +586,23 @@
   <Header />
   <SiteIntroLoader />
 
-  <div class="page-wrapper" bind:this={pageWrapper}>
-    <slot />
+  <!-- `.page-stage` : tout ce qui est LA PAGE — son contenu et son pied de
+       page. C'est ce bloc qui recule en carte quand le menu s'ouvre
+       (FullscreenMenu, « menu sous la page ») : le menu est posé dessous.
+       Au repos il n'a ni transform ni contexte d'empilement. -->
+  <div class="page-stage">
+    <div class="page-wrapper" bind:this={pageWrapper}>
+      <slot />
+    </div>
+
+    {#if isProjectPage}
+      <ProjectNextFooter project={nextProject} />
+    {:else if !hideFooter}
+      <Footer />
+    {/if}
   </div>
 
   <div class="route-transition-layer" bind:this={transitionLayer} aria-hidden="true"></div>
-
-  {#if isProjectPage}
-    <ProjectNextFooter project={nextProject} />
-  {:else if !hideFooter}
-    <Footer />
-  {/if}
 
 </main>
 
@@ -603,6 +618,14 @@
   .ios-top-mask,
   .ios-bottom-mask {
     display: none;
+  }
+
+  /* `flow-root` garde la marge basse de `.page-wrapper` (la réserve du pied
+     de page) À L'INTÉRIEUR du bloc : quand la page recule en carte, cette
+     zone reste peinte du fond de page au lieu de laisser voir le menu. */
+  .page-stage {
+    display: flow-root;
+    background: var(--bg-deep, #000);
   }
 
   .page-wrapper {
@@ -629,18 +652,27 @@
     backdrop-filter: blur(0px);
   }
 
+  /*  ── Le logo du coin, pièce du header (2026-10-08) ────────────────────────
+   *  Il faisait 49 px de haut contre 40 pour le bouton MENU, et sa taille
+   *  suivait la largeur de la fenêtre (vw) : décalé du bouton d'en face, il
+   *  avait l'air détaché du header. Il prend maintenant le gabarit des boutons
+   *  du header (40 px de haut, même haut, même arrondi) et les proportions du
+   *  logo mobile, en rem : il suit le bouton MENU à n'importe quel zoom.
+   *  Au-dessus du préchargement (comme le header), il apparaît AVEC le header
+   *  (`header:intro-visible`) au lieu d'attendre caché dessous. */
   .site-prism-mark {
-    --logo-cut-size: clamp(1.8rem, 2.9vw, 2.7rem);
-    --logo-button-size: calc(var(--logo-cut-size) + 0.44rem);
+    --logo-cut-size: 1.45rem;
+    --logo-button-width: calc(var(--logo-cut-size) + 2rem);
     position: fixed;
     top: 1rem;
     left: 1rem;
-    z-index: 5000;
-    pointer-events: auto;
+    z-index: 600000;
+    pointer-events: none;
     cursor: pointer;
     display: block;
-    width: var(--logo-button-size);
-    height: var(--logo-button-size);
+    width: var(--logo-button-width);
+    height: 40px;
+    opacity: 0;
     padding: 0;
     border-radius: 10px;
     overflow: hidden;
@@ -651,8 +683,36 @@
     -webkit-backdrop-filter: blur(20px) saturate(160%) brightness(0.82);
     color: #fff;
     transform: translateZ(0);
-    transition: transform .3s cubic-bezier(.22,.61,.36,1), background 1.2s cubic-bezier(.22,.61,.36,1);
+    transition:
+      opacity 0.9s ease,
+      transform .3s cubic-bezier(.22,.61,.36,1),
+      background 1.2s cubic-bezier(.22,.61,.36,1);
     -webkit-tap-highlight-color: transparent;
+  }
+
+  /* Même arrivée que le header (`headerIntroReveal`). `backwards` : une fois
+     arrivé, le survol garde la main sur le transform. */
+  .site-prism-mark.is-ready {
+    opacity: 1;
+    pointer-events: auto;
+    animation: prismIntroReveal 680ms cubic-bezier(.22,1,.36,1) backwards;
+  }
+
+  @keyframes prismIntroReveal {
+    from {
+      opacity: 0;
+      transform: translate3d(0, -8px, 0);
+    }
+    to {
+      opacity: 1;
+      transform: translateZ(0);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .site-prism-mark.is-ready {
+      animation: none;
+    }
   }
 
   .site-prism-mark:hover { transform: scale(1.06); }

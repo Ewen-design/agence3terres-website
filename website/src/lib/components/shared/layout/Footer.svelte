@@ -57,6 +57,7 @@
     // Le même que la home : « Halo bleu » n'allait pas ici. Il reste porté dans
     // `SiteGradient` et prêt à servir ailleurs, il n'est simplement plus posé.
     "/apropos": "aura-spectre",
+    "/mentions-legales": "aura-spectre",
     "/services/design": "arete",
     "/services/digital": "ellipses",
     "/services/studio": "dunes"

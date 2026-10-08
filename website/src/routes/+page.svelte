@@ -70,11 +70,10 @@
     {
       title: "Harmonia",
       description: "Médecine esthétique,\nidentité et site.",
-      images: [
-        "/videos/harmonia-univers-poster.webp",
-        "/images/harmonia-vitrine.webp",
-        "/images/harmonia-moodboard.webp"
-      ],
+      // Le mockup sur l'eau : paysage dans le bloc large du bureau, portrait
+      // entier dans le bloc haut du téléphone.
+      images: ["/images/harmonia-mockup-large.webp"],
+      mobileImage: "/images/harmonia-mockup.webp",
       href: "/projet9"
     },
     {

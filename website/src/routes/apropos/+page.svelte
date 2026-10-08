@@ -6,9 +6,10 @@
   // import AboutEditorialPrinciples from "$lib/components/apropos/AboutEditorialPrinciples.svelte";
   import AboutValues from "$lib/components/apropos/AboutValues.svelte";
   import HeroApropos from "$lib/components/apropos/HeroApropos.svelte";
-  // Fusion des anciens AboutFocusSlider + AboutEditorialSingleShowcase :
-  // un seul slider éditorial (look/texte du 2e, module de slider du 1er).
-  import AboutFocusEditorialShowcase from "$lib/components/apropos/AboutFocusEditorialShowcase.svelte";
+  // Reflet / Création / Ambition : le « Slider séquence collée » de la
+  // librairie (2026-10-08). Il remplace l'accordéon de verre
+  // AboutFocusEditorialShowcase — fichier conservé.
+  import AboutStickySequence from "$lib/components/apropos/AboutStickySequence.svelte";
   // Sous le slider éditorial : une seule image, très grande, et la promesse
   // dans son coin. Remplace AboutBentoWindows (grille de six blocs percés dans
   // une image commune), retiré le 2026-09-03 — le fichier est conservé.
@@ -18,25 +19,28 @@
   // droite — visuel et logo basculent ensemble toutes les deux secondes.
   import AboutClients from "$lib/components/apropos/AboutClients.svelte";
 
-  // Les trois volets de l'accordéon. Les textes sont plus longs qu'avant :
-  // ils ne se posent plus sur la photo mais DANS la pastille, qui s'ouvre pour
-  // les livrer — le format supporte deux ou trois lignes de plus.
+  // Les trois volets de la séquence : une image et une phrase par tour
+  // d'écran. Le libellé nomme le volet dans la colonne de repères, à droite.
+  // Environ DEUX LIGNES ET DEMIE en pleine encre (mesuré en 1440), coupées à
+  // une articulation de la phrase, la suite en gris. La ponctuation de la
+  // coupe va DANS le `.hl` : laissée après `</span>`, elle deviendrait un mot
+  // à part à l'arrivée mot à mot.
   const showcaseSlides = [
     {
       label: "Un reflet",
-      text: "Avant de dessiner quoi que ce soit, nous <span class='hl'>écoutons</span>. Une marque arrive rarement les mains vides : elle a ses mots, ses gestes, sa manière. Notre travail commence par les <span class='hl'>reconnaître</span>, pour que tout ce qui suivra lui ressemble vraiment.",
+      text: "<span class='hl'>Avant de dessiner quoi que ce soit, nous écoutons. Une marque arrive rarement les mains vides :</span> elle a ses mots, ses gestes, sa manière. Notre travail commence par les reconnaître, pour que tout ce qui suivra lui ressemble vraiment.",
       image: "/images/lac copie.webp",
       alt: "Reflet — identité de marque Agence 3 Terres"
     },
     {
       label: "Une création",
-      text: "Vient la forme. Identité, site, image : chaque pièce est <span class='hl'>dessinée pour cette marque-là</span>, jamais reprise d'un modèle. Et pensée pour <span class='hl'>tenir dans le temps</span>, pas pour une saison.",
+      text: "<span class='hl'>Vient la forme. Identité, site, image : chaque pièce est dessinée pour cette marque-là,</span> jamais reprise d'un modèle. Et pensée pour tenir dans le temps, pas pour une saison.",
       image: "/images/pexels-erich-naufal-52024210-7920814.webp",
       alt: "Tours de verre vues du sol — création Agence 3 Terres"
     },
     {
       label: "Une ambition",
-      text: "Reste à viser juste. Nous bâtissons une <span class='hl'>stratégie sur mesure</span> et nous restons là pour la mener, jusqu'à ce que la marque occupe la <span class='hl'>place qu'elle mérite</span>.",
+      text: "<span class='hl'>Reste à viser juste. Nous bâtissons une stratégie sur mesure et nous restons là pour la mener,</span> jusqu'à ce que la marque occupe la place qu'elle mérite.",
       image: "/images/pexels-jack-atkinson-1289771108-24356055.webp",
       alt: "Ambition — stratégie de marque Agence 3 Terres"
     }
@@ -46,7 +50,7 @@
 <h1 class="seo-page-title">À propos - Vision et approche Agence 3 Terres</h1>
 <HeroApropos />
 
-<AboutFocusEditorialShowcase slides={showcaseSlides} interval={10000} />
+<AboutStickySequence slides={showcaseSlides} />
 <AboutBrandReveal
   lead="Notre façon de faire. <span class='dim'>Une méthode tenue d'un bout à l'autre du projet.</span>"
 />

@@ -855,7 +855,7 @@
   .nextp__bar {
     position: relative;
     width: clamp(9rem, 16vw, 15rem);
-    height: 6px;
+    height: 3px;
     overflow: hidden;
     border-radius: 999px;
     background: rgba(255, 255, 255, 0.14);

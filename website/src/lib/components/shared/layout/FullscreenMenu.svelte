@@ -1,237 +1,750 @@
 <script>
-  import { tick, onMount, onDestroy } from "svelte";
-  import { browser } from "$app/environment";
-  import { page } from "$app/stores";
+  /*  ── Le menu « sous la page » et la transition de page (2026-10-08) ───────
+   *  Porté du composant « Menu sous la page » de la librairie. Le menu ne se
+   *  pose pas PAR-DESSUS le site : il vit DESSOUS. Ouvrir fait reculer la page
+   *  — `.page-stage` du layout, qui porte le contenu ET le pied de page — :
+   *  elle descend, se réduit et s'arrondit comme une carte qu'on écarte.
+   *
+   *  Le même moteur joue DEUX gestes sur la page :
+   *  - « menu » : la carte descend et découvre le menu ;
+   *  - « cadre » : la transition de page. La carte recule SUR PLACE en prenant
+   *    les marges et l'arrondi du cadre du hero de la home (`--site-inset` /
+   *    22 px, 1rem / 18 px sous 900 px), un voile au noir de la page la couvre,
+   *    la navigation a lieu dessous, le voile se lève sur la nouvelle page et la
+   *    carte revient plein
+   *    écran. Les navigations SILENCIEUSES (liens du menu, pied de page
+   *    « projet suivant ») n'y passent pas : celle du menu a son propre geste,
+   *    celle des projets sa transition spéciale, qu'on ne touche pas.
+   *
+   *  Le voile est un aplat posé exactement sur la carte (sa découpe reprend sa
+   *  forme en coordonnées d'écran), dont seule l'opacité s'anime. Un flou a été
+   *  essayé à sa place le 2026-10-08, puis retiré à la demande du client.
+   *
+   *  Le header n'est PAS touché : son bouton pilote `open` (bind).
+   *
+   *  Ce qui tient au défilement du DOCUMENT :
+   *  - la carte est une découpe (`clip-path: inset(...)`) de `.page-stage` à la
+   *    fenêtre courante, en coordonnées du document, et l'origine du transform
+   *    est le centre de cette fenêtre ;
+   *  - le pied de page est en `position: fixed` : sous un ancêtre transformé il
+   *    irait se recaler au bas du document — il est épinglé le temps du geste ;
+   *  - le défilement est verrouillé SEULEMENT menu ouvert, par `overflow:
+   *    hidden` sur <html>. Surtout pas de `preventDefault` sur la molette :
+   *    dans le WebKit de Safari 18.1, une molette annulée laisse le défilement
+   *    de la page BLOQUÉ même après le retrait de l'écouteur.
+   *
+   *  Le transform de la carte est une TRANSITION CSS (compositeur) ; la
+   *  découpe et les voiles suivent le transform RÉEL image par image. */
+  import { onMount, untrack } from "svelte";
+  import { afterNavigate, beforeNavigate, onNavigate } from "$app/navigation";
+  import { page } from "$app/state";
   import { navigate } from "$lib/navigate.js";
+  import {
+    clearSilentNavigation,
+    isSilentNavigationPending,
+    markNextNavigationSilent
+  } from "$lib/routeTransitionState.js";
 
-  export let open = false;
-  export let origin = { x: 0, y: 0, width: 44, height: 40 };
+  let { open = $bindable(false) } = $props();
 
+  // Chaque mot porte son rang dans tout le menu : la cascade de la home
+  // (38 ms d'un mot au suivant) court d'un nom à l'autre.
+  let wordCount = 0;
+  const pages = [
+    { label: "Accueil", path: "/" },
+    { label: "Services", path: "/services" },
+    { label: "Projets", path: "/travail" },
+    { label: "À propos", path: "/apropos" },
+    { label: "Contact", path: "/contact" }
+  ].map((item, index) => ({
+    ...item,
+    index,
+    words: item.label.split(" ").map((text) => ({ text, i: wordCount++ }))
+  }));
+
+  // Les boutons réseaux du menu précédent, tels quels.
   const socialLinks = [
-    {
-      href: "https://www.instagram.com/agence_3terres/",
-      label: "Instagram",
-      icon: "/images/instagram.png",
-      className: "icon-instagram"
-    },
-    {
-      href: "mailto:contact@agence3terres.fr",
-      label: "Mail",
-      icon: "/images/mail.png",
-      className: "icon-mail"
-    }
+    { href: "https://www.instagram.com/agence_3terres/", label: "Instagram", icon: "/images/instagram.png", className: "icon-instagram" },
+    { href: "mailto:contact@agence3terres.fr", label: "Mail", icon: "/images/mail.png", className: "icon-mail" }
   ];
 
-  // Une image par page (change au survol du nom de page). `placement` pilote le
-  // cadrage / l'ancrage plein écran de chaque image (voir .placement-* en CSS).
-  const links = [
-    { label: "Accueil", page: "home", image: "/images/ipad-creation.webp", desktopImage: "/images/ipad-creation2.webp", placement: "home" },
-    { label: "Services", page: "services", image: "/images/montre-justx.webp", placement: "services" },
-    { label: "Projets", page: "travail", image: "/images/justx-ipads.webp", placement: "projets" },
-    { label: "À propos", page: "apropos", image: "/images/visage.webp", placement: "apropos" },
-    { label: "Contact", page: "contact", image: "/images/mobile-photo2.webp", placement: "contact" }
-  ];
+  const EASE_CARD = "cubic-bezier(0.76, 0, 0.24, 1)"; // power3.inOut
+  // Un geste INTERROMPU (refermer pendant l'ouverture, rouvrir pendant la
+  // fermeture) repart vite : en `inOut`, la carte restait figée un quart de
+  // seconde avant de revenir.
+  const EASE_TURN = "cubic-bezier(0.22, 1, 0.36, 1)";
+  // Les deux temps du voile — les MÊMES que `.page-fade` en CSS.
+  const FADE_IN_MS = 200;
+  const FADE_OUT_MS = 450;
+  // L'arrivée des noms : départ à 28 % du recul, 0,75 s par mot, 38 ms d'écart.
+  const WORD_START = 0.28;
+  const WORD_MS = 750;
+  const WORD_STAGGER_MS = 38;
 
-  let visible = false;
-  let expanded = false;
-  let contentVisible = false;
-  let mediaVisible = false;
-  let footerVisible = false;
-  let closing = false;
+  const pathname = $derived(page.url.pathname.replace(/\/+$/, "") || "/");
+
+  // La rubrique de la page courante : ses sous-pages (pôles, projets) gardent
+  // le nom de leur rubrique en blanc.
+  const sectionIndex = $derived.by(() => {
+    if (pathname.startsWith("/services")) return 1;
+    if (pathname === "/travail" || /^\/projet\d+$/.test(pathname)) return 2;
+    if (pathname === "/apropos") return 3;
+    if (pathname === "/contact") return 4;
+    return 0;
+  });
+
+  let visible = $state(false); //  le menu est à l'écran (ouvert ou en mouvement)
+  let opened = $state(false); //   la cible : ouvert ou refermé
+  let veiled = $state(false); //   la carte est voilée (changement de page)
+  let backdrop = $state(false); // le fond du menu sert de fond à la carte (cadre)
+  let revealed = $state(false); // les noms arrivent
+  let settled = $state(false); //  les noms sont arrivés : plus d'animation en cours
+
+  let rootEl;
+  let veilEl;
+  let fadeEl;
+  let probeEl;
+
+  // Hors réactivité : l'état de la carte.
+  /** @type {null | "menu" | "frame"} */
+  let mode = null;
+  let stage = null;
+  let geo = null;
+  let cfg = { recede: 0.5, scale: 0.95, radius: 22, duration: 1 };
+  let frame = { inset: 24, radius: 22, out: 0.62, back: 0.78 };
+  let pinned = new Set();
+  let finishTimer = 0;
+  let geometryRaf = 0;
   let navigating = false;
-  let isMobile = false;
-  let previewIndex = 0;
-  let mobileActionsOpen = false;
+  let navigatedUnder = false;
+  let scrollLocked = false;
+  let startRaf = 0;
+  let moveCount = 0;
+  let trackRaf = 0;
+  // La cible du DERNIER mouvement lancé (true = reculée, false = à plat) : une
+  // fin de transition ne compte que si elle est celle de ce mouvement-là.
+  let lastTarget = false;
+  // Appelé quand le recul de la transition de page est réellement fini.
+  let onOutCardDone = null;
+  let settleTimer = 0;
 
-  let openPanelTimer;
-  let openContentTimer;
-  let openFooterTimer;
-  let closePanelTimer;
-  let finishTimer;
-  let resizeHandler;
+  // La transition de page en cours : sa phase et la promesse que SvelteKit
+  // attend avant de changer la page (`onNavigate`).
+  /** @type {null | "out" | "in"} */
+  let pagePhase = null;
+  let outPromise = null;
+  let pageTimers = [];
 
-  function getMotionProfile() {
-    if (isMobile) {
-      return {
-        openPanelDelay: 0,
-        openContentDelay: 150,
-        openFooterDelay: 240,
-        closeFinishMs: 420
-      };
-    }
+  const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+  const reducedMotion = () => window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ?? false;
 
-    return {
-      openPanelDelay: 0,
-      openContentDelay: 220,
-      openFooterDelay: 340,
-      closeFinishMs: 760
+  function readConfig() {
+    const cs = getComputedStyle(rootEl);
+    const num = (name, fallback) => {
+      const v = parseFloat(cs.getPropertyValue(name));
+      return Number.isFinite(v) ? v : fallback;
+    };
+    cfg = {
+      recede: num("--menu-recede", 0.5),
+      scale: num("--menu-scale", 0.95),
+      radius: num("--menu-radius", 22),
+      duration: num("--menu-duration", 1)
+    };
+    // La marge du cadre est une longueur CSS (`clamp(...)`) : mesurée par une
+    // sonde, pas relue comme un nombre.
+    frame = {
+      inset: probeEl?.getBoundingClientRect().width || 24,
+      radius: num("--frame-radius", 22),
+      out: num("--frame-out", 0.62),
+      back: num("--frame-back", 0.78)
     };
   }
 
-  function getPageIndex(pathname) {
-    const clean = pathname?.replace(/\/+$/, "") || "/";
-
-    if (clean === "/") return 0;
-
-    const match = links.findIndex((link) => `/${link.page}` === clean);
-    return match >= 0 ? match : 0;
+  // Position dans le document, transform ignoré (offsetTop ne le voit pas).
+  function docTop(el) {
+    let y = 0;
+    for (let n = el; n; n = n.offsetParent) y += n.offsetTop;
+    return y;
   }
 
-  function syncViewportMode() {
-    isMobile = window.innerWidth <= 900;
+  function measure() {
+    stage = document.querySelector(".page-stage");
+    if (!stage) return false;
+    const vh = window.innerHeight;
+    const y = window.scrollY - docTop(stage);
+    const footer = [...stage.children].find((el) => getComputedStyle(el).position === "fixed") ?? null;
+    geo = {
+      y,
+      vh,
+      vw: document.documentElement.clientWidth,
+      // La découpe couvre au moins toute la fenêtre visible, barre d'outils
+      // comprise : un liseré de menu sous la carte se verrait au départ.
+      h: Math.max(vh, document.documentElement.clientHeight),
+      footer,
+      footerTop: footer ? y + vh - footer.offsetHeight : 0
+    };
+    return true;
   }
 
-  function clearAsync() {
-    clearTimeout(openPanelTimer);
-    clearTimeout(openContentTimer);
-    clearTimeout(openFooterTimer);
-    clearTimeout(closePanelTimer);
+  // L'échelle du cadre : celle qui laisse la marge du hero de chaque côté.
+  const frameScale = () => (geo ? 1 - (2 * frame.inset) / geo.vw : 1);
+  const targetScale = () => (mode === "frame" ? frameScale() : cfg.scale);
+
+  // Où en est la carte, lu sur le transform RÉEL (celui que la transition est
+  // en train de jouer) : 0 = à plat, 1 = reculée.
+  function cardProgress() {
+    const full = targetScale();
+    if (!stage || full >= 1) return 0;
+    const m = getComputedStyle(stage).transform;
+    if (!m || m === "none") return 0;
+    const a = parseFloat(m.slice(m.indexOf("(") + 1));
+    if (!Number.isFinite(a)) return 0;
+    return Math.min(1, Math.max(0, (1 - a) / (1 - full)));
+  }
+
+  const px = (n) => `${n.toFixed(2)}px`;
+
+  // La carte à l'écran pour une avancée `p` : la découpe de la page (dans ses
+  // coordonnées, AVANT le transform), et la même forme en coordonnées d'écran
+  // pour les deux voiles, qui ne sont pas transformés.
+  function render(p) {
+    if (!stage || !geo) return;
+    const { y, vh, vw, h } = geo;
+    let stageClip;
+    let screenClip;
+
+    if (mode === "frame") {
+      // Recul sur place : la marge du hero tout autour, l'arrondi du hero.
+      const s = 1 - (1 - frameScale()) * p;
+      const m = frame.inset * p;
+      const r = frame.radius * p;
+      const half = (vh / 2 - m) / s;
+      stageClip = `inset(${px(y + vh / 2 - half)} 0px calc(100% - ${px(y + vh / 2 + half)}) 0px round ${px(r / s)})`;
+      screenClip = `inset(${px(m)} round ${px(r)})`;
+    } else {
+      // La découpe descend d'un écran SOUS la fenêtre : le bas de la carte est
+      // toujours hors champ, ses coins du bas ne se voient jamais.
+      const s = 1 - (1 - cfg.scale) * p;
+      const r = cfg.radius * p;
+      const rl = px(r / s);
+      stageClip = `inset(${px(y)} 0px calc(100% - ${px(y + h * 2)}) 0px round ${rl} ${rl} 0px 0px)`;
+      const top = cfg.recede * vh * p + (vh * (1 - s)) / 2;
+      const side = (vw * (1 - s)) / 2;
+      screenClip = `inset(${px(top)} ${px(side)} 0px ${px(side)} round ${px(r)} ${px(r)} 0px 0px)`;
+    }
+
+    stage.style.clipPath = stageClip;
+    if (fadeEl) fadeEl.style.clipPath = screenClip;
+    if (veilEl) veilEl.style.clipPath = screenClip;
+  }
+
+  function unpin(el) {
+    el.style.top = "";
+    el.style.bottom = "";
+    pinned.delete(el);
+  }
+
+  function writeGeometry() {
+    if (!stage || !geo) return;
+    stage.style.transformOrigin = `50% ${px(geo.y + geo.vh / 2)}`;
+
+    for (const el of [...pinned]) if (el !== geo.footer) unpin(el);
+    if (geo.footer) {
+      geo.footer.style.top = px(geo.footerTop);
+      geo.footer.style.bottom = "auto";
+      pinned.add(geo.footer);
+    }
+
+    rootEl.style.setProperty("--menu-vh", `${geo.vh}px`);
+  }
+
+  // Une cible jamais identique au point de départ du geste précédent : sinon le
+  // navigateur y voit un aller-retour et RACCOURCIT encore la durée qu'on a
+  // déjà calculée (la carte sautait en une image). Un décalage différent à
+  // chaque geste, d'un millième à un dixième de pixel : invisible.
+  function moveCard(toFull, { instant = false, duration = cfg.duration, ease = EASE_CARD } = {}) {
+    if (!stage || !geo) return;
+    const nudge = ((++moveCount % 97) + 1) * 0.001;
+    let transform;
+    if (!toFull) transform = `translate3d(0px, ${nudge.toFixed(3)}px, 0px) scale(1)`;
+    else if (mode === "frame") transform = `translate3d(0px, ${nudge.toFixed(3)}px, 0px) scale(${frameScale().toFixed(5)})`;
+    else transform = `translate3d(0px, ${(cfg.recede * geo.vh + nudge).toFixed(3)}px, 0px) scale(${cfg.scale})`;
+    stage.style.transition = instant || duration < 0.01 ? "none" : `transform ${duration.toFixed(3)}s ${ease}`;
+    stage.style.transform = transform;
+    lastTarget = toFull;
+  }
+
+  // La découpe et les voiles suivent le transform RÉEL de la carte,
+  // image par image : une seule horloge pour tout.
+  function track() {
+    cancelAnimationFrame(trackRaf);
+    const step = () => {
+      if (!mode || !stage) return;
+      render(cardProgress());
+      trackRaf = requestAnimationFrame(step);
+    };
+    trackRaf = requestAnimationFrame(step);
+  }
+
+  function stopTrack() {
+    cancelAnimationFrame(trackRaf);
+    trackRaf = 0;
+  }
+
+  /* ── Le défilement : verrouillé menu ouvert, libre dès qu'on referme ── */
+
+  function onTouchMove(event) {
+    if (opened && visible) event.preventDefault();
+  }
+
+  function lockScroll() {
+    if (scrollLocked) return;
+    scrollLocked = true;
+    // `scrollLocks.js` (observateur du layout) retire tout `overflow: hidden`
+    // posé sur <html> s'il ne voit pas de menu ouvert : la classe doit donc être
+    // là AVANT le verrou.
+    rootEl?.classList.add("is-visible");
+    document.documentElement.style.overflow = "hidden";
+    if (window.matchMedia?.("(pointer: coarse)").matches) {
+      document.addEventListener("touchmove", onTouchMove, { passive: false });
+    }
+  }
+
+  function unlockScroll() {
+    document.removeEventListener("touchmove", onTouchMove);
+    if (!scrollLocked) return;
+    scrollLocked = false;
+    if (document.documentElement.style.overflow === "hidden") {
+      document.documentElement.style.overflow = "";
+    }
+  }
+
+  // Le layout lève tous les verrous quand l'onglet redevient visible : menu
+  // toujours ouvert, on remet le nôtre.
+  function onVisibilityChange() {
+    if (document.visibilityState !== "visible" || !opened || !visible) return;
+    scrollLocked = false;
+    lockScroll();
+  }
+
+  function focusMenuButton() {
+    document.querySelector(".header-nav-btn")?.focus?.();
+  }
+
+  function onKeyDown(event) {
+    if (event.key !== "Escape" || !visible || !opened) return;
+    event.preventDefault();
+    open = false;
+    focusMenuButton();
+  }
+
+  // Une barre de défilement tirée, une inertie qui finit sa course : la
+  // découpe suit la fenêtre, sans transition.
+  function onScroll() {
+    cancelAnimationFrame(geometryRaf);
+    geometryRaf = requestAnimationFrame(() => {
+      if (!mode || !measure()) return;
+      writeGeometry();
+      render(cardProgress());
+    });
+  }
+
+  function onResize() {
+    cancelAnimationFrame(geometryRaf);
+    geometryRaf = requestAnimationFrame(() => {
+      if (!mode) return;
+      if (mode === "menu" && !opened) {
+        finishSession();
+        return;
+      }
+      readConfig();
+      if (!measure()) return;
+      writeGeometry();
+      if (mode === "menu") moveCard(true, { instant: true });
+      render(cardProgress());
+    });
+  }
+
+  // La carte a fini son mouvement.
+  // Chaque fin est rapportée au mouvement qui l'a produite (`lastTarget`) :
+  // la fin tardive d'un RECUL arrivée pendant le retour ne doit pas rendre la
+  // page d'un coup (c'était le recul qui « sautait » au lieu de glisser).
+  function onTransitionEnd(event) {
+    if (event.target !== stage || event.propertyName !== "transform") return;
+    if (mode === "menu") {
+      if (lastTarget && opened) {
+        stopTrack();
+        render(1);
+      } else if (!lastTarget && !opened) {
+        finishSession();
+      }
+    } else if (mode === "frame") {
+      if (lastTarget && pagePhase === "out") {
+        stopTrack();
+        render(1);
+        onOutCardDone?.();
+      } else if (!lastTarget && pagePhase === "in") {
+        finishSession();
+      }
+    }
+  }
+
+  function addListeners() {
+    document.addEventListener("visibilitychange", onVisibilityChange);
+    window.addEventListener("keydown", onKeyDown);
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", onResize, { passive: true });
+    stage?.addEventListener("transitionend", onTransitionEnd);
+  }
+
+  function removeListeners() {
+    document.removeEventListener("visibilitychange", onVisibilityChange);
+    window.removeEventListener("keydown", onKeyDown);
+    window.removeEventListener("scroll", onScroll);
+    window.removeEventListener("resize", onResize);
+    for (const el of document.querySelectorAll(".page-stage")) {
+      el.removeEventListener("transitionend", onTransitionEnd);
+    }
+    stage?.removeEventListener("transitionend", onTransitionEnd);
+  }
+
+  /* ── Une séance : la page prise en main, puis rendue ── */
+
+  function beginSession(nextMode) {
+    if (!rootEl) return false;
+    // Arrête une inertie en cours : la carte est prise à CETTE position.
+    window.scrollTo(window.scrollX, window.scrollY);
+    mode = nextMode;
+    if (!measure()) {
+      mode = null;
+      return false;
+    }
+    readConfig();
+    writeGeometry();
+    // La carte devient un calque AVANT de bouger, à plat : rien ne change à
+    // l'écran, et le navigateur a le temps de le peindre — sinon la première
+    // image du mouvement le peint en catastrophe (accroc, bas d'écran vide).
+    moveCard(false, { instant: true });
+    render(0);
+    // Pas d'`inert` ni de `pointer-events` sur la page : les basculer
+    // recalcule le style de TOUTE la page au premier instant du geste.
+    addListeners();
+    if (nextMode === "menu") visible = true;
+    else backdrop = true;
+    return true;
+  }
+
+  // Rend la page telle qu'elle était, quoi qu'il arrive : appelée à la fin de
+  // la séance, et au démontage même si rien n'était en cours.
+  function releasePage() {
+    unlockScroll();
     clearTimeout(finishTimer);
+    clearTimeout(settleTimer);
+    cancelAnimationFrame(startRaf);
+    startRaf = 0;
+    stopTrack();
+    cancelAnimationFrame(geometryRaf);
+    removeListeners();
+    for (const t of pageTimers) clearTimeout(t);
+    pageTimers = [];
+
+    for (const el of new Set([stage, ...document.querySelectorAll(".page-stage")])) {
+      if (!el) continue;
+      el.style.transition = "";
+      el.style.transform = "";
+      el.style.transformOrigin = "";
+      el.style.clipPath = "";
+      el.style.pointerEvents = "";
+      el.inert = false;
+    }
+    for (const el of [...pinned]) unpin(el);
+    if (fadeEl) fadeEl.style.clipPath = "";
+    if (veilEl) veilEl.style.clipPath = "";
   }
 
-  function finishClose() {
+  function finishSession() {
+    releasePage();
+    stage = null;
+    geo = null;
+    mode = null;
+    pagePhase = null;
+    outPromise = null;
+    onOutCardDone = null;
+    lastTarget = false;
+    veiled = false;
+    backdrop = false;
+    revealed = false;
+    settled = false;
     visible = false;
-    expanded = false;
-    contentVisible = false;
-    mediaVisible = false;
-    footerVisible = false;
-    closing = false;
-    navigating = false;
-    open = false;
-    mobileActionsOpen = false;
-    document.body.classList.remove("menu-open");
+
+    // La page suivante s'est montée SOUS la carte transformée : ce qu'elle a
+    // mesuré au montage (getBoundingClientRect) était réduit et décalé. Un
+    // `resize` fait tout remesurer, maintenant qu'elle est à plat.
+    if (navigatedUnder) {
+      navigatedUnder = false;
+      requestAnimationFrame(() => window.dispatchEvent(new Event("resize")));
+    }
   }
 
-  function startOpen() {
-    clearAsync();
-    const motion = getMotionProfile();
+  /* ── Le menu ── */
 
-    visible = true;
-    expanded = false;
-    contentVisible = false;
-    mediaVisible = false;
-    footerVisible = false;
-    closing = false;
-    navigating = false;
-    mobileActionsOpen = false;
-    previewIndex = getPageIndex($page.url.pathname);
-
-    document.body.classList.add("menu-open");
-
-    openPanelTimer = setTimeout(() => {
-      expanded = true;
-    }, motion.openPanelDelay);
-
-    openContentTimer = setTimeout(() => {
-      contentVisible = true;
-      mediaVisible = true;
-    }, motion.openContentDelay);
-
-    openFooterTimer = setTimeout(() => {
-      footerVisible = true;
-    }, motion.openFooterDelay);
+  // L'arrivée des noms part avec la carte, pas avant : une seule horloge, et
+  // une fin certaine — passé la cascade, l'animation est RETIRÉE (`settled`),
+  // le mot reste net à sa couleur quoi qu'il arrive au rendu.
+  function startReveal() {
+    clearTimeout(settleTimer);
+    settled = false;
+    revealed = true;
+    const total = cfg.duration * WORD_START * 1000 + WORD_MS + (wordCount - 1) * WORD_STAGGER_MS + 80;
+    settleTimer = setTimeout(() => {
+      if (revealed) settled = true;
+    }, total);
   }
 
-  function startClose() {
-    if (!visible || closing) return;
+  function show() {
+    if (opened) return;
+    // Une transition de page est en cours : le menu attendra.
+    if (mode === "frame") {
+      queueMicrotask(() => (open = false));
+      return;
+    }
+    const fresh = !visible;
+    if (fresh && !beginSession("menu")) return;
+    clearTimeout(finishTimer);
+    cancelAnimationFrame(startRaf);
+    opened = true;
+    lockScroll();
 
-    clearAsync();
-    const motion = getMotionProfile();
-
-    closing = true;
-    contentVisible = false;
-    mediaVisible = false;
-    footerVisible = false;
-
-    closePanelTimer = setTimeout(() => {
-      expanded = false;
-    }, 0);
-
-    finishTimer = setTimeout(() => {
-      finishClose();
-    }, motion.closeFinishMs);
-  }
-
-  $: if (open && !visible) {
-    startOpen();
-  }
-
-  $: if (open && visible && closing) {
-    startOpen();
-  }
-
-  $: if (!open && visible && !closing && !navigating) {
-    startClose();
-  }
-
-  onMount(() => {
-    if (!browser) return;
-
-    syncViewportMode();
-    resizeHandler = () => syncViewportMode();
-    window.addEventListener("resize", resizeHandler, { passive: true });
-  });
-
-  onDestroy(() => {
-    if (!browser) return;
-    clearAsync();
-    window.removeEventListener("resize", resizeHandler);
-    document.body.classList.remove("menu-open");
-  });
-
-  async function close() {
-    if (closing || navigating) return;
-    open = false;
-    await tick();
-  }
-
-  async function handlePath(path) {
-    if (closing || navigating) return;
-
-    const currentPath = ($page.url.pathname || "/").replace(/\/+$/, "") || "/";
-
-    if (path === currentPath) {
-      close();
+    if (fresh) {
+      // Deux images d'attente : le calque est prêt quand la carte part.
+      startRaf = requestAnimationFrame(() => {
+        startRaf = requestAnimationFrame(() => {
+          startRaf = 0;
+          if (!opened) return;
+          moveCard(true);
+          track();
+          startReveal();
+        });
+      });
       return;
     }
 
-    clearAsync();
+    // Rouvert pendant qu'il se refermait : la carte repart d'où elle est.
+    const p = cardProgress();
+    moveCard(true, { duration: Math.max(0.3, (1 - p) * cfg.duration), ease: EASE_TURN });
+    track();
+    if (!revealed) startReveal();
+  }
 
-    navigating = true;
+  function hide() {
+    if (!opened) return;
+    opened = false;
+    // Le défilement revient dès que la carte remonte, pas à la fin du geste.
+    unlockScroll();
+    clearTimeout(finishTimer);
 
-    // Mark the navigation "silent": the full-screen menu already covers the page
-    // swap, so the layout's page-level fade transition is redundant here — it only
-    // added latency (goto used to wait on the ~300ms enter fade playing behind the
-    // opaque menu, then a ~520ms exit fade after). Silent nav skips both, so the
-    // route changes near-instantly, client-side.
-    try {
-      await navigate(path === "/" ? "home" : path.replace(/^\//, ""), { silent: true });
-    } catch {
-      // navigate() logs its own errors.
+    // Refermé avant même d'avoir bougé : rien à animer.
+    if (startRaf) {
+      finishSession();
+      return;
     }
 
-    // The destination is now rendered underneath the (still-covering) menu, so the
-    // user never sees the previous page. Only now play the smooth close animation,
-    // which wipes the menu away to reveal the new page. Silent nav keeps the wait
-    // above short, so this stays fast and reactive.
+    const p = cardProgress();
+    const full = p > 0.98;
+    const duration = full ? cfg.duration : Math.max(0.28, p * cfg.duration);
+    moveCard(false, { duration, ease: full ? EASE_CARD : EASE_TURN });
+    track();
+    // Filet si `transitionend` ne vient pas (onglet en arrière-plan…).
+    finishTimer = setTimeout(finishSession, duration * 1000 + 200);
+  }
+
+  $effect(() => {
+    const wanted = open;
+    untrack(() => (wanted ? show() : hide()));
+  });
+
+  /* ── La transition de page (geste « cadre ») ── */
+
+  function later(fn, ms) {
+    pageTimers.push(setTimeout(fn, ms));
+  }
+
+  // Recul sur place, puis voile. Chaque étape part de l'état RÉEL de la carte,
+  // pas d'une minuterie à part : si le navigateur est occupé au moment du clic
+  // (la page suivante se charge), le départ de la carte peut prendre du
+  // retard, et un voile parti à l'heure couvrait alors tout l'écran, marges
+  // comprises. La promesse ne tombe que quand la carte a FINI de reculer et
+  // que le voile est posé : la page ne change jamais hors de l'aperçu.
+  function startPageOut() {
+    const reprise = mode === "frame";
+    if (!reprise && !beginSession("frame")) return null;
+    pagePhase = "out";
+    navigatedUnder = true;
+    for (const t of pageTimers) clearTimeout(t);
+    pageTimers = [];
+
+    let resolveOut;
+    const ready = new Promise((resolve) => (resolveOut = resolve));
+    let cardDone = false;
+    let veilDone = false;
+    const settle = () => {
+      if (cardDone && veilDone && pagePhase === "out") resolveOut();
+    };
+    const cardFinished = () => {
+      if (cardDone) return;
+      cardDone = true;
+      settle();
+    };
+    onOutCardDone = cardFinished;
+
+    const go = () => {
+      startRaf = 0;
+      const p = cardProgress();
+      const outMs = frame.out * 1000 * (1 - p);
+      if (outMs < 20) {
+        render(1);
+        cardFinished();
+      } else {
+        moveCard(true, { duration: outMs / 1000, ease: reprise ? EASE_TURN : EASE_CARD });
+        track();
+        // Filet si `transitionend` ne vient pas (onglet en arrière-plan…).
+        later(cardFinished, outMs + 200);
+      }
+      // Le voile part une fois la carte bien engagée, DANS l'aperçu.
+      later(() => {
+        render(cardProgress());
+        veiled = true;
+        later(() => {
+          veilDone = true;
+          settle();
+        }, FADE_IN_MS + 20);
+      }, outMs * 0.55);
+    };
+    if (reprise) go();
+    else startRaf = requestAnimationFrame(() => (startRaf = requestAnimationFrame(go)));
+
+    // Filet : une navigation annulée ne laisse pas la page reculée et voilée.
+    later(() => {
+      if (pagePhase === "out") {
+        clearSilentNavigation();
+        runPageIn();
+      }
+    }, 8000);
+    return ready;
+  }
+
+  // La nouvelle page est en place sous le voile : il se lève, puis la carte
+  // revient plein écran sur la courbe du menu.
+  function runPageIn() {
+    if (mode !== "frame") return;
+    for (const t of pageTimers) clearTimeout(t);
+    pageTimers = [];
+    cancelAnimationFrame(startRaf);
+    startRaf = 0;
+    onOutCardDone = null;
+    pagePhase = "in";
+    if (measure()) writeGeometry();
+    render(cardProgress());
+    veiled = false;
+    later(() => {
+      const p = cardProgress();
+      const backMs = frame.back * 1000 * Math.max(0.35, p);
+      moveCard(false, { duration: backMs / 1000, ease: EASE_CARD });
+      track();
+      // Filet seulement : c'est la fin RÉELLE du retour qui rend la page.
+      finishTimer = setTimeout(finishSession, backMs + 400);
+    }, FADE_OUT_MS * 0.5);
+  }
+
+  const samePath = (a, b) => (a.pathname.replace(/\/+$/, "") || "/") === (b.pathname.replace(/\/+$/, "") || "/");
+
+  beforeNavigate((nav) => {
+    if (!nav.to || nav.willUnload || nav.to.url.origin !== window.location.origin) return;
+    if (nav.from && samePath(nav.from.url, nav.to.url)) return;
+    // Liens du menu, pied de page « projet suivant » : leur geste à eux.
+    if (isSilentNavigationPending()) return;
+
+    // Menu ouvert et changement de page venu d'ailleurs (le logo) : la carte
+    // se voile, la page change dessous, puis le menu se referme.
+    if (mode === "menu") {
+      if (opened && !navigating) {
+        markNextNavigationSilent();
+        navigatedUnder = true;
+        veiled = true;
+        outPromise = wait(FADE_IN_MS);
+      }
+      return;
+    }
+
+    if (reducedMotion() || !rootEl) return;
+    const out = startPageOut();
+    if (!out) return;
+    // Le layout ne joue pas son propre fondu par-dessus.
+    markNextNavigationSilent();
+    outPromise = out;
+  });
+
+  // SvelteKit attend la fin du recul et du voile avant de changer la page.
+  onNavigate(() => {
+    if (outPromise) return outPromise;
+  });
+
+  afterNavigate(() => {
+    outPromise = null;
+    if (mode === "frame") {
+      runPageIn();
+      return;
+    }
+    if (mode !== "menu" || !visible) return;
+    // Le document vient de revenir en haut : la découpe le suit, dans la même
+    // image.
+    if (measure()) {
+      writeGeometry();
+      render(cardProgress());
+      stage.addEventListener("transitionend", onTransitionEnd);
+    }
+    // Changement de page venu d'ailleurs que du menu (le logo) : le voile se
+    // lève et la carte remonte sur la nouvelle page.
+    if (opened && !navigating) {
+      veiled = false;
+      setTimeout(() => (open = false), 120);
+      return;
+    }
+    // `navigate()` vient de lever les verrous : menu encore ouvert, on remet
+    // le nôtre jusqu'à ce que la carte remonte.
+    if (opened) {
+      scrollLocked = false;
+      lockScroll();
+    }
+  });
+
+  async function go(event, item) {
+    if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+    event.preventDefault();
+    if (navigating || !opened) return;
+
+    if (item.path === pathname) {
+      open = false;
+      return;
+    }
+
+    // La carte se voile, la page change dessous, le voile se lève sur la
+    // nouvelle page et le menu se referme.
+    navigating = true;
+    veiled = true;
+    await wait(reducedMotion() ? 0 : FADE_IN_MS);
+
+    navigatedUnder = true;
+    try {
+      await navigate(item.path === "/" ? "home" : item.path.slice(1), { silent: true });
+    } catch {
+      // navigate() journalise ses propres erreurs.
+    }
+
     navigating = false;
+    veiled = false;
+    await wait(reducedMotion() ? 0 : 120);
     open = false;
-    startClose();
-  }
-
-  async function handleClick(link) {
-    const targetPath = link.page === "home" ? "/" : `/${link.page}`;
-    await handlePath(targetPath);
-  }
-
-  function handleEnter(index) {
-    if (isMobile || closing) return;
-    previewIndex = index;
-  }
-
-  function handleLeave() {
-    if (isMobile || closing) return;
-    previewIndex = getPageIndex($page.url.pathname);
   }
 
   function handleGlowMove(event) {
@@ -241,451 +754,277 @@
     el.style.setProperty("--my", `${event.clientY - rect.top}px`);
   }
 
-  function toggleMobileActions() {
-    mobileActionsOpen = !mobileActionsOpen;
-  }
-
-  $: originStyle = `
-    --origin-x:${origin?.x ?? 0}px;
-    --origin-y:${origin?.y ?? 0}px;
-    --origin-w:${origin?.width ?? 44}px;
-    --origin-h:${origin?.height ?? 40}px;
-  `;
+  onMount(() => {
+    return () => {
+      opened = false;
+      finishSession();
+    };
+  });
 </script>
 
 <div
-  class="fs-menu {visible ? 'is-visible' : ''} {expanded ? 'expanded' : ''} {contentVisible ? 'content-visible' : ''} {mediaVisible ? 'media-visible' : ''} {footerVisible ? 'footer-visible' : ''} {closing ? 'is-closing' : ''} {navigating ? 'is-navigating' : ''} {isMobile ? 'mobile' : ''}"
-  style={originStyle}
+  class="fs-menu"
+  class:is-visible={visible}
+  class:is-open={opened}
+  class:is-backdrop={backdrop && !visible}
+  class:is-revealed={revealed}
+  class:is-settled={settled}
+  bind:this={rootEl}
   aria-hidden={!visible}
 >
-  <div
-    class="bg-hit"
-    role="button"
-    tabindex="0"
-    aria-label="Fermer le menu"
-    on:click={close}
-    on:keydown={(event) => {
-      if (event.key === "Enter" || event.key === " ") close();
-    }}
-  ></div>
+  <!-- Sonde : la marge du cadre est une longueur CSS (`clamp`), mesurée ici. -->
+  <span class="frame-probe" bind:this={probeEl} aria-hidden="true"></span>
 
-  <div class="menu-scrim"></div>
-  <div class="menu-blur"></div>
-
-  <div class="menu-shell">
-    <div class="menu-panel"></div>
-
-    <!-- Grande image par page : ancrée à gauche / en bas, en très grand et
-         pleinement visible (object-fit: contain), un peu en retrait dans le fond.
-         Change au survol du nom de page (previewIndex). -->
-    <div class="menu-media" aria-hidden="true">
-      <div class="menu-media-stack">
-        {#each links as link, i}
-          <img
-            class="menu-media-image placement-{link.placement}"
-            class:is-active={previewIndex === i}
-            src={!isMobile && link.desktopImage ? link.desktopImage : link.image}
-            alt=""
-            loading="lazy"
-            decoding="async"
-            draggable="false"
-          />
-        {/each}
-      </div>
-      <div class="menu-media-scrim"></div>
-    </div>
-
-    <div class="mobile-topbar ui-content">
-      <button
-        class="mobile-square-btn mobile-close-btn"
-        type="button"
-        aria-label="Fermer le menu"
-        on:mousemove={handleGlowMove}
-        on:click|stopPropagation={close}
-      >
-        <svg class="mobile-topbar-icon mobile-close-icon" viewBox="0 0 24 24" aria-hidden="true">
-          <path d="M6 6L18 18" />
-          <path d="M18 6L6 18" />
-        </svg>
-      </button>
-
-      <div class="mobile-actions">
-        <button
-          class="mobile-square-btn mobile-actions-toggle"
-          type="button"
-          aria-label="Ouvrir les actions"
-          aria-expanded={mobileActionsOpen}
-          on:mousemove={handleGlowMove}
-          on:click|stopPropagation={toggleMobileActions}
-        >
-          <img class="mobile-action-mail-icon" src="/images/mail.png" alt="" aria-hidden="true" />
-        </button>
-
-        <div class="mobile-actions-panel" class:is-open={mobileActionsOpen}>
-          <div class="mobile-socials">
-            {#each socialLinks as social}
-              <a
-                class="social-link"
-                href={social.href}
-                target={social.href.startsWith("http") ? "_blank" : undefined}
-                rel={social.href.startsWith("http") ? "noopener noreferrer" : undefined}
-                aria-label={social.label}
-                data-cursor="button"
-                on:mousemove={handleGlowMove}
-                on:click={(e) => { if (social.href === "/") e.preventDefault(); }}
-              >
-                <img src={social.icon} alt={social.label} class={`icon ${social.className}`} />
-              </a>
-            {/each}
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div class="menu-upper">
-      <nav class="menu-nav" aria-label="Navigation principale">
-        {#each links as link, i}
-          <button
+  <nav class="menu-content" aria-label="Navigation principale">
+    <ul class="menu-list">
+      {#each pages as item (item.path)}
+        <li>
+          <a
             class="menu-link"
-            class:is-current={previewIndex === i}
-            type="button"
-            aria-current={(link.page === "home" ? "/" : `/${link.page}`) === (($page.url.pathname || "/").replace(/\/+$/, "") || "/") ? "page" : undefined}
-            on:mouseenter={() => handleEnter(i)}
-            on:mouseleave={handleLeave}
-            on:focus={() => handleEnter(i)}
-            on:blur={handleLeave}
-            on:click={() => handleClick(link)}
+            class:is-section={sectionIndex === item.index}
+            href={item.path}
+            aria-current={pathname === item.path ? "page" : undefined}
+            data-sveltekit-preload-data="hover"
+            onclick={(event) => go(event, item)}
           >
-            <span class="menu-link-line">
-              <span class="menu-link-text">{link.label}</span>
-            </span>
-          </button>
-        {/each}
-      </nav>
-    </div>
+            {#each item.words as word, w (word.i)}{#if w > 0}{" "}{/if}<span class="menu-word" style:--i={word.i}>{word.text}</span>{/each}
+          </a>
+        </li>
+      {/each}
+    </ul>
+  </nav>
 
-    <div class="bottom-strip ui-bottom">
-      <div class="menu-socials">
-        <div class="bottom-kicker">nous suivre</div>
-        <div class="socials-group">
-          {#each socialLinks as social}
-            <a
-              class="social-link"
-              href={social.href}
-              target={social.href.startsWith("http") ? "_blank" : undefined}
-              rel={social.href.startsWith("http") ? "noopener noreferrer" : undefined}
-              aria-label={social.label}
-              data-cursor="button"
-              on:mousemove={handleGlowMove}
-              on:click={(e) => { if (social.href === "/") e.preventDefault(); }}
-            >
-              <img src={social.icon} alt={social.label} class={`icon ${social.className}`} />
-            </a>
-          {/each}
-        </div>
-      </div>
-    </div>
+  <div class="menu-socials">
+    {#each socialLinks as social (social.href)}
+      <a
+        class="social-link"
+        href={social.href}
+        target={social.href.startsWith("http") ? "_blank" : undefined}
+        rel={social.href.startsWith("http") ? "noopener noreferrer" : undefined}
+        aria-label={social.label}
+        data-cursor="button"
+        onmousemove={handleGlowMove}
+      >
+        <img src={social.icon} alt="" class="icon {social.className}" draggable="false" />
+      </a>
+    {/each}
   </div>
 </div>
 
-<style>
-  /* La page reste défilable derrière le menu (2026-09-03) : ce n'est plus un
-     panneau plein écran mais une carte, et bloquer le défilement derrière une
-     carte qui n'occupe qu'un tiers de l'écran n'a pas de sens. La classe
-     `menu-open` reste posée sur le body — le header s'en sert. */
+<!-- Les deux voiles de la carte. Frères du menu, pas enfants : ils doivent
+     passer AU-DESSUS de la page, que le menu a sous lui. Ni l'un ni l'autre
+     n'est transformé : leur découpe reprend, en coordonnées d'écran, la forme
+     exacte de la carte. Le voile prend les clics sur la carte menu ouvert (et
+     referme) ; l'autre la couvre pendant un changement de page. -->
+<!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_static_element_interactions -->
+<div
+  class="menu-card-veil"
+  class:is-catching={visible && opened}
+  bind:this={veilEl}
+  aria-hidden="true"
+  onclick={() => (open = false)}
+></div>
 
+<div class="page-fade" class:is-on={veiled} bind:this={fadeEl} aria-hidden="true"></div>
+
+<style>
+  /* ── Réglages ─────────────────────────────────────────────────────────────
+     Le recul, la réduction, l'arrondi et la durée sont lus ICI par le script :
+     les ajuster par écran se fait dans les media queries, pas dans le JS. */
   .fs-menu {
+    --menu-recede: 0.5;   /* la carte descend de la moitié de l'écran */
+    --menu-scale: 0.95;
+    --menu-radius: 22;    /* px, l'arrondi des médias du site */
+    --menu-duration: 1;   /* s, entraîne tous les temps */
+    --menu-vh: 100svh;    /* posé en px par le script à l'ouverture */
+    --menu-band: calc(var(--menu-vh) * var(--menu-recede));
+    /* Bord haut de la carte, une fois réduite autour du centre de l'écran. */
+    --menu-card-top: calc(var(--menu-vh) * (var(--menu-recede) + (1 - var(--menu-scale)) / 2));
+    /* Les marges latérales s'alignent sur les bords de la carte. */
+    --menu-gutter: max(var(--site-inset, 1.25rem), calc((1 - var(--menu-scale)) * 50vw));
+    /* Le gris des noms au repos — celui du menu précédent, refroidi avec la
+       palette bleu nuit. */
+    --menu-muted: rgb(151, 156, 163);
+    /* Le verre des boutons du site (blanc à 11 % sur un fond passé en
+       `saturate(160%) brightness(0.82)`), calculé une fois pour le fond uni du
+       menu : sur un aplat, le flou ne change rien, et un vrai `backdrop-filter`
+       sous la carte qui glisse par-dessus laisse un rectangle clair sur WebKit
+       (voir la note sur les boutons en verre). Même rendu que le bouton du
+       header posé sur ce fond. */
+    --menu-glass: rgb(43, 48, 55);
+    --menu-glass-hover: rgb(60, 64, 71);
+    /* La transition de page : le cadre du hero de la home (marge et arrondi,
+       voir `Hero.svelte`), le temps du recul et celui du retour (s). */
+    --frame-inset: var(--site-inset, 1.25rem);
+    --frame-radius: 22;
+    --frame-out: 0.62;
+    --frame-back: 0.78;
+
+    /* SOUS la page : `main` est un contexte d'empilement (isolation), le menu
+       s'y peint au-dessus de son fond et sous tout le reste. */
     position: fixed;
-    inset: 0 auto auto 0;
-    width: 100%;
-    height: 100vh;
-    height: 100lvh;
-    min-height: 100vh;
-    min-height: 100lvh;
-    z-index: 500000;
-    opacity: 0;
+    inset: 0;
+    z-index: -1;
+    /* Un aplat, un cran au-dessus du noir des pages : la carte s'en détache. */
+    background: var(--bg-panel, #171b21);
+    color: #fff;
     visibility: hidden;
     pointer-events: none;
-    color: #fff;
-    overflow: hidden;
-    --menu-panel-duration: 920ms;
-    --menu-content-duration: 800ms;
-    --menu-footer-duration: 760ms;
-    --menu-media-duration: 1100ms;
-    --menu-scrim-duration: 920ms;
-    --menu-blur-strength: 13px;
-    --menu-ease: cubic-bezier(.22, 1, .36, 1);
-    /* Le gris des liens au repos. Refroidi le 2026-09-01 avec la palette : même
-       clarté qu'avant (rgb(157,156,156)), teinte du crème refroidi du site. */
-    --menu-muted-gray: rgb(151, 156, 163);
   }
 
   .fs-menu.is-visible {
-    opacity: 1;
     visibility: visible;
     pointer-events: auto;
   }
 
-  .bg-hit {
-    position: absolute;
-    inset: 0;
-    z-index: 1;
-    background: transparent;
+  /* Transition de page : seul le fond du menu se montre autour de la carte. */
+  .fs-menu.is-backdrop {
+    visibility: visible;
   }
 
-  .mobile-topbar {
-    display: none;
+  .fs-menu.is-backdrop .menu-content,
+  .fs-menu.is-backdrop .menu-socials {
+    visibility: hidden;
   }
 
-  .menu-scrim,
-  .menu-blur {
+  .frame-probe {
     position: absolute;
-    inset: 0;
+    top: 0;
+    left: 0;
+    width: var(--frame-inset);
+    height: 0;
+    visibility: hidden;
     pointer-events: none;
   }
 
-  .menu-scrim {
-    z-index: 2;
-    opacity: 0;
-    background: rgba(var(--shade-rgb, 0, 0, 0), 0.58);
-    transition: opacity var(--menu-scrim-duration) var(--menu-ease);
-  }
+  /* ── Les noms de pages, centrés dans la bande découverte ── */
 
-  .menu-blur {
+  .menu-content {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
     z-index: 3;
-    opacity: 0;
-    backdrop-filter: blur(0px);
-    -webkit-backdrop-filter: blur(0px);
-    transition:
-      opacity var(--menu-scrim-duration) var(--menu-ease),
-      backdrop-filter var(--menu-scrim-duration) var(--menu-ease),
-      -webkit-backdrop-filter var(--menu-scrim-duration) var(--menu-ease);
-  }
-
-  /* ── La carte ─────────────────────────────────────────────────────────
-     Le menu n'occupe plus tout l'écran (2026-09-03) : c'est une carte qui
-     entre par la DROITE en desktop, par le HAUT en mobile, et qui couvre
-     environ un tiers de l'écran. Collée aux bords — pas de marge — donc seuls
-     les angles tournés vers la page sont arrondis.
-
-     C'est `.menu-shell` qui devient la carte, et pas `.fs-menu` : le voile et
-     la zone de fermeture au clic, eux, doivent continuer de couvrir tout
-     l'écran. */
-  .menu-shell {
-    position: absolute;
-    inset: 0 0 0 auto;
-    width: 50vw;
-    z-index: 4;
-    border-radius: 24px 0 0 24px;
-    overflow: hidden;
-    transform: translate3d(100%, 0, 0);
-    transition: transform var(--menu-panel-duration) var(--menu-ease);
-    will-change: transform;
-  }
-
-  .fs-menu.expanded .menu-shell {
-    transform: translate3d(0, 0, 0);
-  }
-
-  .fs-menu.is-closing .menu-shell {
-    transform: translate3d(100%, 0, 0);
-  }
-
-  /* Fond noir : simple assombrissement progressif très doux (opacité seule, pas de
-     blur plein écran → léger et fluide, n'entrave plus l'anim du bouton header). */
-  /* Le fond de la carte est posé d'emblée : il glisse avec elle. */
-  .menu-panel {
-    position: absolute;
-    inset: 0;
-    background: var(--bg-deep, #010101);
-    opacity: 1;
-  }
-
-  /* Le contenu ne s'anime plus : c'est la CARTE qui bouge, et elle emmène tout
-     avec elle (2026-09-03). Fondre le contenu par-dessus le glissement donnait
-     deux mouvements superposés — le client n'en veut qu'un. */
-  .ui-content {
-    opacity: 1;
-    filter: none;
-    transform: none;
-  }
-
-  /* ─────────────── Grande image par page (fond gauche) ─────────────── */
-  /* L'image apparaît en simple fondu d'opacité (léger, GPU) — PAS de blur/translate
-     plein écran (trop lourd → saccadait l'ouverture). */
-  .menu-media {
-    position: absolute;
-    inset: 0;
-    z-index: 5;
-    pointer-events: none;
-    overflow: hidden;
-    opacity: 1;
-  }
-
-  .menu-media-stack {
-    position: absolute;
-    inset: 0;
-  }
-
-  /* Apparition : fondu + léger dézoom (scale 1.06 → 1). Aucun `filter` sur l'image
-     (5 filtres plein écran = coûteux, saccadait l'ouverture) — l'effet « dans le
-     fond » vient du voile .menu-media-scrim. */
-  .menu-media-image {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    /* `cover` depuis que le menu est une carte (2026-09-03) : dans un panneau
-       d'un tiers d'écran, un `contain` laissait l'image flotter au milieu du
-       noir, coupée par le bord de la carte. Elle remplit maintenant la carte et
-       fait office de fond, derrière le voile. */
-    object-fit: cover;
-    object-position: center center;
-    opacity: 0;
-    transform: scale(1.06);
-    transition:
-      opacity var(--menu-media-duration) var(--menu-ease),
-      transform var(--menu-media-duration) var(--menu-ease);
-  }
-
-  .menu-media-image.is-active {
-    opacity: 1;
-    transform: scale(1);
-  }
-
-  /* Cadrage par page — ancrages demandés. */
-  /* Cadrage par page, réglé pour la carte étroite : on choisit quelle partie de
-     la photo reste visible une fois `cover` appliqué. */
-  .placement-home    { object-position: 60% 70%; }
-  .placement-services { object-position: 50% 50%; }
-  .placement-projets { object-position: 50% 50%; }
-  .placement-apropos { object-position: 42% 40%; }
-  .placement-contact { object-position: 50% 45%; }
-
-  /* Projets sur desktop : pleine LARGEUR au centre. L'image (ratio ~1.43) est plus
-     « carrée » que l'écran, donc `contain` la mettait en pleine hauteur (pas pleine
-     largeur) → on remplit la largeur en `cover` (léger recadrage haut/bas). */
-
-
-  /* Voile de lisibilité : assombrit la DROITE (où sont les noms de pages) et le
-     bas (réseaux), en laissant la gauche/le centre bien exposés → l'image se voit
-     pleinement, le texte reste lisible. */
-  .menu-media-scrim {
-    position: absolute;
-    inset: 0;
-    background:
-      linear-gradient(270deg, rgba(1, 1, 1, 0.86) 0%, rgba(1, 1, 1, 0.6) 20%, rgba(1, 1, 1, 0.22) 44%, rgba(1, 1, 1, 0) 66%),
-      linear-gradient(0deg, rgba(1, 1, 1, 0.5) 0%, rgba(1, 1, 1, 0) 30%),
-      linear-gradient(180deg, rgba(1, 1, 1, 0.34) 0%, rgba(1, 1, 1, 0) 22%),
-      /* voile plat léger → image un peu « dans le fond » (remplace le filtre). */
-      rgba(var(--shade-rgb, 1, 1, 1), 0.24);
-  }
-
-  /* ─────────────── Navigation (noms de pages, à droite) ─────────────── */
-  .menu-upper {
-    position: relative;
-    z-index: 8;
-    height: 100%;
+    height: var(--menu-band);
     display: flex;
     align-items: center;
-    justify-content: flex-end;
-    padding: clamp(1.25rem, 2vw, 1.75rem) clamp(1.75rem, 5vw, 6rem);
+    justify-content: center;
+    /* Sous le bouton du header (1rem + 40 px). */
+    padding: calc(1rem + 40px + clamp(0.75rem, 2vh, 1.5rem)) var(--menu-gutter) clamp(1rem, 3vh, 2rem);
     pointer-events: none;
   }
 
-  .menu-nav {
+  .menu-list {
     display: flex;
     flex-direction: column;
-    align-items: flex-end;
-    gap: clamp(0.6rem, 1.2vh, 1.2rem);
-    text-align: right;
+    align-items: center;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    text-align: center;
     pointer-events: auto;
   }
 
   .menu-link {
-    position: relative;
-    width: auto;
-    padding: 0;
-    border: 0;
-    background: transparent;
-    color: #fff;
-    text-align: right;
-    cursor: pointer;
-  }
-
-  /* Focus-pull arrival lives on the line wrapper so the text element stays free
-     to drive its own colour / glow on hover (no filter conflict). */
-  /* Les noms sont posés d'emblée, sans arrivée en cascade : la carte glisse
-     déjà, un fondu par-dessus faisait deux mouvements pour un seul geste. */
-  .menu-link-line {
-    display: block;
-    overflow: visible;
-    padding: 0.16em 0 0.2em;
-    opacity: 1;
-    filter: none;
-    transform: none;
-    backface-visibility: hidden;
-  }
-
-  .menu-link-text {
+    /* Couleur d'arrivée de l'effet mot à mot (voir `revealWordIn`). */
+    --reveal-final: var(--menu-muted);
     display: inline-block;
+    color: var(--menu-muted);
+    text-decoration: none;
     font-family: var(--site-font);
-    /* Une graisse en dessous des grands titres du site : regular, pas medium. */
-    font-weight: var(--site-weight);
-    font-style: normal;
-    font-size: clamp(2.1rem, 2.9vw, 3.1rem);
-    line-height: 0.94;
+    font-weight: var(--site-weight-display, 500);
+    /* Les cinq noms tiennent dans la bande, même sur un écran bas. */
+    font-size: min(clamp(2rem, 3vw, 3.4rem), calc((var(--menu-band) - 6.5rem) / 5.8));
+    line-height: 1.12;
     letter-spacing: -0.025em;
-    color: var(--menu-muted-gray);
-    padding-right: 0.02em;
-    text-shadow: 0 2px 16px rgba(var(--shade-rgb, 0, 0, 0), 0.38);
-    transition:
-      color 620ms ease,
-      filter 720ms ease;
+    transition: color 0.5s ease;
+    -webkit-tap-highlight-color: transparent;
   }
 
-  .menu-link.is-current .menu-link-text,
-  .menu-link:hover .menu-link-text,
-  .menu-link:focus-visible .menu-link-text {
+  .menu-link.is-section,
+  .menu-link:hover,
+  .menu-link:focus-visible {
+    --reveal-final: #fff;
     color: #fff;
-    filter: drop-shadow(0 0 18px rgba(255, 255, 255, 0.1));
   }
 
-
-  /* Balayage de la charte sur les libellés, calé sur la même cascade que les
-     lignes ci-dessus (voir brandInkSweep dans app.css). `backwards` et non
-     `both` : la couleur reprend sa valeur normale dès l'animation finie, donc
-     le lien courant et le survol repassent bien au blanc. */
-  .menu-link-text {
-    --sweep-final: var(--menu-muted-gray);
+  /* Survoler un autre nom éteint celui de la rubrique : un seul nom blanc. */
+  .menu-list:has(.menu-link:hover) .menu-link.is-section:not(:hover) {
+    --reveal-final: var(--menu-muted);
+    color: var(--menu-muted);
   }
 
-  .menu-link.is-current .menu-link-text,
-  .menu-link:hover .menu-link-text,
-  .menu-link:focus-visible .menu-link-text {
-    --sweep-final: #fff;
+  .menu-link:focus-visible {
+    outline: 2px solid currentColor;
+    outline-offset: 6px;
+    border-radius: 4px;
   }
 
+  /* L'arrivée des textes de la home (`revealWordIn`, app.css) : chaque mot
+     sort du flou l'un après l'autre, 38 ms d'écart, en traversant le violet
+     puis l'indigo de la charte. Elle part AVEC la carte (classe posée par le
+     script au départ du recul), à 28 % de sa course. Une fois la cascade
+     finie, `is-settled` RETIRE l'animation : le mot est net, à sa couleur,
+     quoi qu'il arrive au rendu — c'est ce qui le laissait parfois flou. */
+  .menu-word {
+    display: inline-block;
+    opacity: 0;
+  }
 
+  .fs-menu.is-revealed .menu-word {
+    animation: revealWordIn 0.75s cubic-bezier(0.22, 0.61, 0.36, 1) both;
+    animation-delay: calc(var(--menu-duration) * 0.28s + var(--i) * 38ms);
+    will-change: opacity, filter, transform;
+  }
 
-
-  /* ─────────────── Réseaux / contact (bas droite) ─────────────── */
-  .bottom-strip {
-    position: absolute;
-    left: clamp(1rem, 2vw, 2rem);
-    right: clamp(1.75rem, 5vw, 6rem);
-    bottom: clamp(1rem, 2.4vw, 2rem);
-    z-index: 14;
-    display: flex;
-    align-items: flex-end;
-    justify-content: flex-end;
-    gap: 2rem;
+  .fs-menu.is-settled .menu-word {
+    animation: none;
     opacity: 1;
     filter: none;
     transform: none;
-    pointer-events: none;
+    will-change: auto;
   }
 
+  /* ── Les boutons réseaux du menu précédent, coin bas droit ── */
+
+  .menu-socials {
+    --social-size: clamp(3.2rem, 4vw, 4.1rem);
+    --social-gap: clamp(0.75rem, 2.2vh, 1.4rem);
+    position: absolute;
+    z-index: 4;
+    right: var(--menu-gutter);
+    /* Juste au-dessus du coin haut droit de la carte. */
+    top: calc(var(--menu-card-top) - var(--social-size) - var(--social-gap));
+    display: flex;
+    align-items: center;
+    gap: clamp(0.8rem, 1.2vw, 1.1rem);
+  }
+
+  .social-link {
+    position: relative;
+    width: var(--social-size);
+    height: var(--social-size);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--menu-glass);
+    border-radius: 10px;
+    transition:
+      transform 0.35s cubic-bezier(.22, .61, .36, 1),
+      background 0.35s ease;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .social-link:hover {
+    background: var(--menu-glass-hover);
+  }
+
+  .social-link:focus-visible {
+    outline: 2px solid rgba(var(--ink-muted-rgb, 245, 241, 232), 0.9);
+    outline-offset: 3px;
+  }
+
+  /* Le halo de contour qui suit la souris (`--mx`/`--my`). */
   .social-link::before,
   .social-link::after {
     content: "";
@@ -723,58 +1062,18 @@
     transition: opacity 0.25s ease;
   }
 
-  .social-link:hover::before,
-  .social-link:hover::after {
-    opacity: 1;
-  }
-
-  .menu-socials {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-  }
-
-  .socials-group {
-    display: flex;
-    align-items: center;
-    gap: clamp(0.8rem, 1.2vw, 1.1rem);
-  }
-
-  .social-link {
-    position: relative;
-    width: clamp(3.2rem, 4vw, 4.1rem);
-    height: clamp(3.2rem, 4vw, 4.1rem);
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    border: 0px solid rgba(255, 255, 255, 0.14);
-    background: rgba(255, 255, 255, 0.11);
-    backdrop-filter: blur(20px) saturate(160%) brightness(0.82);
-    -webkit-backdrop-filter: blur(20px) saturate(160%) brightness(0.82);
-    border-radius: 10px;
-    /* Mêmes hints GPU que les boutons verre du site (header/footer/contact) : init
-       propre du backdrop-filter. Le translateZ sur le bouton LUI-MÊME est sans
-       danger (seul un transform sur un ANCÊTRE casserait le blur). */
-    will-change: transform, opacity;
-    transform: translateZ(0);
-    backface-visibility: hidden;
-    -webkit-backface-visibility: hidden;
-    transition:
-      transform 0.35s cubic-bezier(.22, .61, .36, 1),
-      background 0.35s ease,
-      border-color 0.35s ease;
-    pointer-events: auto;
-  }
-
-  .social-link:hover {
-    background: rgba(255, 255, 255, 0.18);
-    border-color: rgba(255, 255, 255, 0.24);
+  @media (hover: hover) and (pointer: fine) {
+    .social-link:hover::before,
+    .social-link:hover::after {
+      opacity: 1;
+    }
   }
 
   .icon {
     display: block;
     object-fit: contain;
     filter: brightness(0) invert(1);
+    user-select: none;
   }
 
   .icon-instagram {
@@ -787,468 +1086,121 @@
     height: clamp(1.32rem, 1.72vw, 1.62rem);
   }
 
-  .icon-x {
-    width: clamp(1.26rem, 1.65vw, 1.55rem);
-    height: clamp(1.26rem, 1.65vw, 1.55rem);
+  /* ── Les voiles de la carte ── */
+
+  .menu-card-veil {
+    position: fixed;
+    inset: 0;
+    z-index: 1;
+    pointer-events: none;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
   }
 
-  .bottom-kicker {
-    font-family: var(--site-font);
-    font-size: 0.9rem;
-    letter-spacing: 0.02em;
-    color: var(--menu-muted-gray);
-    margin-bottom: 0.8rem;
-    text-align: right;
+  .menu-card-veil.is-catching {
+    pointer-events: auto;
   }
 
-  /* ─────────────── États d'ouverture / fermeture ─────────────── */
-  .fs-menu.expanded .menu-scrim {
-    opacity: 1;
-  }
-
-  .fs-menu.expanded .menu-blur {
-    opacity: 1;
-    backdrop-filter: blur(var(--menu-blur-strength));
-    -webkit-backdrop-filter: blur(var(--menu-blur-strength));
-  }
-
-  .fs-menu.expanded .menu-panel {
-    opacity: 1;
-  }
-
-  .fs-menu.content-visible .ui-content {
-    opacity: 1;
-    filter: blur(0);
-    transform: translate3d(0, 0, 0);
-  }
-
-  .fs-menu.content-visible .menu-link-line {
-    opacity: 1;
-    filter: blur(0);
-    transform: translate3d(0, 0, 0);
-  }
-
-  .fs-menu.footer-visible .bottom-strip {
-    opacity: 1;
-    filter: blur(0);
-    transform: translate3d(0, 0, 0);
-  }
-
-  .fs-menu.is-closing .ui-content,
-  .fs-menu.is-closing .bottom-strip {
+  /* Le voile du changement de page : le noir de la page, en fondu (les durées
+     sont celles du script, FADE_IN_MS / FADE_OUT_MS). */
+  .page-fade {
+    position: fixed;
+    inset: 0;
+    z-index: 1;
+    pointer-events: none;
+    visibility: hidden;
     opacity: 0;
-    filter: blur(18px);
-    transform: translate3d(0, -18px, 0);
+    background: var(--bg-deep, #050709);
+    transition:
+      opacity 0.45s ease,
+      visibility 0s linear 0.45s;
   }
 
-  .fs-menu.is-closing .menu-link-line {
-    opacity: 0;
-    filter: blur(14px);
-    transform: translate3d(0, -14px, 0);
-    transition-delay: 0ms;
+  .page-fade.is-on {
+    visibility: visible;
+    opacity: 1;
+    transition:
+      opacity 0.2s ease,
+      visibility 0s;
   }
 
-  .fs-menu.is-closing .menu-panel {
-    opacity: 0;
-  }
-
-  .fs-menu.is-closing .menu-scrim {
-    opacity: 0;
-  }
-
-  .fs-menu.is-closing .menu-blur {
-    opacity: 0;
-    backdrop-filter: blur(0px);
-    -webkit-backdrop-filter: blur(0px);
-  }
-
-  /* ─────────────── Tablette ─────────────── */
-  @media (max-width: 1100px) and (min-width: 901px) {
-    .menu-upper {
-      padding-right: clamp(1.5rem, 4vw, 3rem);
-    }
-
-    .menu-link-text {
-      font-size: clamp(2rem, 3.4vw, 2.7rem);
-    }
-  }
-
-  /* ─────────────── Mobile ─────────────── */
+  /* Le verre des boutons mobiles du site (`saturate(130%)`, sans
+     assombrissement), même seuil que le header. */
+  /* Le cadre du hero sur petit écran : 1rem de marge, 18 px d'arrondi. */
   @media (max-width: 900px) {
-    .social-link {
-      backdrop-filter: blur(12px) saturate(130%);
-      -webkit-backdrop-filter: blur(12px) saturate(130%);
-    }
-
     .fs-menu {
-      --menu-panel-duration: 460ms;
-      --menu-content-duration: 420ms;
-      --menu-footer-duration: 380ms;
-      --menu-media-duration: 560ms;
-      --menu-scrim-duration: 460ms;
-      --menu-blur-strength: 0px;
+      --frame-inset: 1rem;
+      --frame-radius: 18;
     }
 
-    .menu-blur {
-      display: none;
+  }
+
+  @media (max-width: 768px) {
+    .fs-menu {
+      --menu-glass: rgb(47, 52, 59);
+      --menu-glass-hover: rgb(64, 68, 75);
+    }
+  }
+
+  /* ── Tablette et mobile : la carte descend plus bas ── */
+
+  @media (max-width: 999px) {
+    .fs-menu {
+      --menu-recede: 0.65;
+      --menu-scale: 0.85;
+      --menu-radius: 18;
+      --menu-duration: 0.85;
     }
 
-    /* Solid black surface: drop the blur/translate on mobile (costly on GPU). */
-    .menu-panel {
-      transform: none;
-      filter: none;
-      will-change: opacity;
-      transition: opacity var(--menu-panel-duration) var(--menu-ease);
+    .menu-content {
+      padding-top: calc(0.85rem + 40px + 1rem);
+      padding-bottom: 1.25rem;
     }
 
-    .fs-menu.expanded .menu-panel {
-      transform: none;
-      filter: none;
-      opacity: 1;
+    .menu-link {
+      font-size: min(clamp(2.1rem, 9.5vw, 2.9rem), calc((var(--menu-band) - 6rem) / 5.6));
+      line-height: 1.1;
+    }
+  }
+
+  /* ── Téléphone couché : écran bas, les noms sur une ligne ── */
+
+  @media (pointer: coarse) and (orientation: landscape) and (max-height: 600px) {
+    .fs-menu {
+      --menu-recede: 0.6;
+      --menu-scale: 0.9;
     }
 
-    .fs-menu.is-closing .menu-panel {
-      transform: none;
-      filter: none;
-      opacity: 0;
+    .menu-content {
+      padding-top: calc(0.85rem + 40px + 0.25rem);
+      padding-bottom: 0.5rem;
     }
 
-    .ui-content,
-    .mobile-topbar {
-      filter: none;
-    }
-
-    .fs-menu.is-closing .ui-content,
-    .fs-menu.is-closing .bottom-strip {
-      filter: none;
-    }
-
-    /* La carte entre par le HAUT en portrait, et non par la droite : sur un
-       écran étroit un tiroir latéral ne laisserait presque rien de la page, et
-       le pouce arrive du bas. Collée aux trois bords, arrondie en bas. */
-    .menu-shell {
-      display: flex;
-      flex-direction: column;
-      inset: 0 0 auto 0;
-      width: 100%;
-      height: 50svh;
-      border-radius: 0 0 24px 24px;
-      transform: translate3d(0, -100%, 0);
-      padding-top: calc(env(safe-area-inset-top, 0px) + 0.9rem);
-      padding-bottom: 1.2rem;
-      gap: 0;
-    }
-
-    .fs-menu.expanded .menu-shell {
-      transform: translate3d(0, 0, 0);
-    }
-
-    .fs-menu.is-closing .menu-shell {
-      transform: translate3d(0, -100%, 0);
-    }
-
-    /* Image de fond de la carte. */
-    .menu-media {
-      z-index: 5;
-    }
-
-    /* La nav prend toute la hauteur restante de la carte, ses noms centrés. */
-    .menu-upper {
-      flex: 1 1 auto;
-      min-height: 0;
-      height: auto;
-      align-items: center;
+    .menu-list {
+      flex-direction: row;
+      flex-wrap: wrap;
       justify-content: center;
-      padding: 0.6rem 1.25rem;
+      column-gap: clamp(1rem, 3vw, 2rem);
     }
 
-    .menu-nav {
-      align-items: center;
-      text-align: center;
-      gap: 0.15rem;
+    .menu-link {
+      font-size: min(clamp(1.3rem, 3.2vw, 1.9rem), calc(var(--menu-band) * 0.14));
     }
 
-    .menu-link,
-    .menu-link-line {
-      text-align: center;
-    }
-
-    /* Projets & Services : image AU-DESSUS des noms (les noms restent centrés en
-       dessous). Décalées un peu plus bas que le tout en haut. */
-    .placement-projets { object-position: 50% 42%; }
-    .placement-services { object-position: 50% 46%; }
-
-    /* À propos (visage) : remontée un peu par rapport au bas. */
-    .placement-apropos { object-position: 45% 38%; }
-
-    /* Contact : beaucoup plus grande et collée bas-gauche. On sort du plein écran :
-       boîte fixée en bas à gauche, PLUS LARGE que l'écran (déborde à droite) → l'image
-       est franchement calée à gauche et bien grande. */
-    .placement-contact {
-      object-position: 50% 45%;
-    }
-
-    /* Voile mobile : assombrit surtout le CENTRE (derrière les noms) et laisse le
-       haut / le bas plus clairs → les images calées en haut (projets/services) ou en
-       bas (contact/accueil/à propos) restent bien visibles. */
-    .menu-media-scrim {
-      background:
-        linear-gradient(180deg,
-          rgba(1, 1, 1, 0.26) 0%,
-          rgba(1, 1, 1, 0.52) 38%,
-          rgba(1, 1, 1, 0.52) 62%,
-          rgba(1, 1, 1, 0.26) 100%),
-        rgba(1, 1, 1, 0.18);
-    }
-
-    /* Le contact passe désormais par la barre du bas (centrée) → on retire tout le
-       système d'en haut à gauche. La fermeture reste assurée par la croix du header. */
-    .mobile-topbar {
-      display: none;
-    }
-
-    .mobile-square-btn {
-      position: relative;
-      overflow: hidden;
-      border: 0;
-      color: inherit;
-      width: 2.75rem;
-      height: 2.75rem;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      background: var(--bg-panel, rgb(24, 24, 24));
-      border-radius: 10px;
-      padding: 0;
-      cursor: pointer;
-      transition:
-        transform 0.35s cubic-bezier(.22, .61, .36, 1),
-        background 0.35s ease,
-        border-color 0.35s ease;
-    }
-
-    /* The header X (top-right) closes the menu now → drop the in-menu close. */
-    .mobile-close-btn {
-      display: none;
-    }
-
-    /* Contact button (mail) in the LEFT corner. */
-    .mobile-actions {
-      position: relative;
-      justify-self: start;
-      grid-column: 1;
-    }
-
-    .mobile-actions-panel {
-      position: absolute;
-      top: calc(100% + 0.55rem);
-      left: 0;
-      right: auto;
-      width: 2.75rem;
-      padding: 0;
-      display: flex;
-      flex-direction: column;
-      align-items: flex-start;
-      opacity: 0;
-      pointer-events: none;
-      transform: translate3d(0, -8px, 0);
-      transition:
-        opacity 260ms ease,
-        transform 260ms ease;
-    }
-
-    .mobile-actions-panel.is-open {
-      opacity: 1;
-      pointer-events: auto;
-      transform: translate3d(0, 0, 0);
-    }
-
-    .mobile-socials {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 0.5rem;
-    }
-
-    .mobile-topbar-icon {
-      width: 1rem;
-      height: 1rem;
-      stroke: currentColor;
-      stroke-width: 1.8;
-      fill: none;
-      transition: transform 0.5s ease;
-    }
-
-    .mobile-action-mail-icon {
-      width: 1.45rem;
-      height: 1.45rem;
-      object-fit: contain;
-      filter: brightness(0) invert(1);
-      transition: transform 0.35s ease;
-    }
-
-    .mobile-actions-toggle:hover .mobile-action-mail-icon,
-    .mobile-actions-toggle:focus-visible .mobile-action-mail-icon,
-    .mobile-actions-toggle:active .mobile-action-mail-icon,
-    .mobile-actions-toggle[aria-expanded="true"] .mobile-action-mail-icon {
-      transform: scale(1.08);
-    }
-
-    /* La carte ne fait plus qu'un tiers d'écran : la barre du bas ne peut plus
-       être posée en absolu, elle chevaucherait les noms de pages. Elle rentre
-       dans le flux, la nav prenant la place restante (voir `.menu-upper`). */
-    .bottom-strip {
-      display: flex;
-      position: static;
-      left: auto;
-      right: auto;
-      bottom: auto;
-      flex: 0 0 auto;
-      order: 2;
-      padding: 0 1.25rem;
-      justify-content: center;
-      gap: 0;
-      filter: none;
-      /* PAS de transform ici : un ancêtre transformé casserait le backdrop-filter
-         des boutons (ils ne bluraient pas). Arrivée en opacité seule. */
-      transform: none;
-      transition: opacity var(--menu-footer-duration) var(--menu-ease);
-    }
-
-    /* AUCUN `filter` sur la barre (même `blur(0)` créerait un backdrop root qui
-       casse le blur des boutons enfants). On force `none` dans tous les états. */
-    .fs-menu.footer-visible .bottom-strip {
-      transform: none;
-      filter: none;
-    }
-
-    .fs-menu.is-closing .bottom-strip {
-      transform: none;
-      filter: none;
-      opacity: 0;
-    }
-
-    .bottom-strip .menu-socials {
-      align-items: center;
-    }
-
-    .bottom-strip .bottom-kicker {
-      text-align: center;
-    }
-
-    .bottom-strip .socials-group {
-      justify-content: center;
-    }
-
-    .menu-upper {
-      /* Les noms d'abord, la barre des réseaux ensuite. Tant que la barre était
-         en absolu cet `order` n'avait aucun effet ; depuis qu'elle est dans le
-         flux, il la faisait remonter au-dessus des noms. */
-      order: 1;
-      height: auto;
-      flex: 1 1 auto;
-      min-height: 0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 0.5rem 1.25rem;
-    }
-
-    .menu-nav {
-      width: 100%;
-      max-width: 20rem;
-      align-items: center;
-      text-align: center;
-      gap: 0.1rem;
-    }
-
-    .menu-link,
-    .menu-link-text {
-      text-align: center;
-    }
-
-    .menu-link-text {
-      font-size: clamp(1.6rem, 6vw, 2.2rem);
-      line-height: 0.92;
-    }
-
-    .menu-link-line {
-      display: flex;
-      justify-content: center;
-      opacity: 1;
-      filter: none;
-      transform: none;
-      transition: none;
-    }
-
-    /* Mobile drives the lightweight reveal on the text itself (no blur, for perf). */
-    .menu-link-text {
-      opacity: 0;
-      transform: translate3d(0, 14px, 0);
-      transition:
-        opacity var(--menu-content-duration) var(--menu-ease),
-        transform var(--menu-content-duration) var(--menu-ease);
-    }
-
-    .fs-menu.content-visible .menu-link-text {
-      opacity: 1;
-      transform: translate3d(0, 0, 0);
-    }
-
-    .fs-menu.is-closing .menu-link-text {
-      opacity: 0;
-      transform: translate3d(0, -10px, 0);
-      transition-delay: 0ms;
-    }
-
-    .menu-nav .menu-link:nth-child(1) .menu-link-text { transition-delay: 40ms; }
-    .menu-nav .menu-link:nth-child(2) .menu-link-text { transition-delay: 80ms; }
-    .menu-nav .menu-link:nth-child(3) .menu-link-text { transition-delay: 110ms; }
-    .menu-nav .menu-link:nth-child(4) .menu-link-text { transition-delay: 135ms; }
-    .menu-nav .menu-link:nth-child(5) .menu-link-text { transition-delay: 155ms; }
-
-    .fs-menu.is-closing .menu-nav .menu-link .menu-link-text {
-      transition-delay: 0ms;
+    .menu-socials {
+      --social-size: 2.9rem;
+      --social-gap: 0.6rem;
     }
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .menu-scrim,
-    .menu-blur,
-    .menu-panel,
-    .menu-media,
-    .menu-media-image,
-    .ui-content,
-    .menu-link-text,
-    .menu-link-line,
-    .bottom-strip,
-    .social-link {
-      transition: none !important;
-      animation: none !important;
-      filter: none !important;
+    .fs-menu {
+      --menu-duration: 0.001;
     }
 
-    .fs-menu.content-visible .menu-link-line {
+    .fs-menu.is-revealed .menu-word {
+      animation: none;
       opacity: 1;
-      transform: none;
-    }
-
-    .fs-menu.is-visible,
-    .fs-menu.expanded,
-    .fs-menu.content-visible,
-    .fs-menu.media-visible,
-    .fs-menu.footer-visible {
-      opacity: 1;
-      visibility: visible;
-    }
-  }
-
-  @media (pointer: coarse) and (orientation: landscape) and (max-height: 600px) {
-    .menu-link-text { font-size: clamp(1.5rem, 6vw, 2.4rem); }
-    .menu-nav { gap: clamp(0.15rem, 1vh, 0.5rem); }
-    .menu-upper {
-      max-height: 100%;
-      overflow-y: auto;
     }
   }
 </style>

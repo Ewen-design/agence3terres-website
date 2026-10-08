@@ -14,6 +14,10 @@
  * quel projet vient après quel autre, et la chaîne boucle (le dernier renvoie
  * au premier). Déplacer une entrée suffit à changer tout l'enchaînement.
  *
+ * `mur` (facultatif) prime sur `hero.image` dans le mur des autres projets,
+ * pour un hero dont le visuel ne tient pas en PLEIN CADRE sur un écran large.
+ * Sans lui, le mur reprend l'image du hero.
+ *
  * `listed: false` — une page projet qui existe mais ne figure dans aucune
  * liste publique. Elle a un « projet suivant » (sinon son pied de page n'aurait
  * nulle part où aller) mais n'est jamais la destination de personne.
@@ -27,15 +31,11 @@ export const PROJETS = [
     tags: "Identité visuelle, site web, direction artistique",
     annee: "2026",
     hero: {
-      image: "/images/harmonia-vitrine.webp",
-      mobileImage: "/videos/harmonia-ouverture-poster.webp"
+      // Le mockup sur l'eau livré par le client : paysage 16:10 sur grand
+      // écran, recadré sur l'écran de l'ordinateur pour le téléphone.
+      image: "/images/harmonia-mockup-large.webp",
+      mobileImage: "/images/harmonia-mockup-tel.webp"
     },
-    /*  `mur` prime sur `hero.image` dans le mur des autres projets. Il est là
-     *  pour les cas où le visuel du hero ne tient pas en PLEIN CADRE sur un
-     *  écran large — ici, le mockup livré par le client, qui dit mieux le
-     *  projet que la capture d'écran du hero. Facultatif : sans lui, le mur
-     *  reprend l'image du hero. */
-    mur: "/images/harmonia-mockup-large.webp",
     vignette: "/videos/harmonia-univers-poster.webp",
     listed: true
   },

@@ -257,15 +257,25 @@
               />
             </div>
           {:else}
-            <img
-              class="fr__bg-img"
-              class:is-shown={activeIndex === i}
-              src={slide.images[0]}
-              alt=""
-              loading={i < 2 ? "eager" : "lazy"}
-              decoding="async"
-              draggable="false"
-            />
+            <!-- `mobileImage` (facultatif) : un visuel PAYSAGE qui ne tient pas
+                 dans le bloc haut du téléphone. Même bascule que la vidéo. -->
+            <picture>
+              {#if slide.mobileImage}
+                <source
+                  media="(max-width: 900px) and (orientation: portrait)"
+                  srcset={slide.mobileImage}
+                />
+              {/if}
+              <img
+                class="fr__bg-img"
+                class:is-shown={activeIndex === i}
+                src={slide.images[0]}
+                alt=""
+                loading={i < 2 ? "eager" : "lazy"}
+                decoding="async"
+                draggable="false"
+              />
+            </picture>
           {/if}
         {/each}
       </div>
