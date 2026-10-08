@@ -76,10 +76,18 @@
   // Les deux temps du voile — les MÊMES que `.page-fade` en CSS.
   const FADE_IN_MS = 200;
   const FADE_OUT_MS = 450;
-  // L'arrivée des noms : départ à 28 % du recul, 0,75 s par mot, 38 ms d'écart.
-  const WORD_START = 0.28;
-  const WORD_MS = 750;
+  // L'arrivée des noms — l'effet des textes de la home (`revealWordIn`
+  // d'app.css), rejoué image par image en JS : départ à 20 % du recul, 0,65 s
+  // par mot, 38 ms d'écart (la cadence de la home), flou de 12 px, montée de
+  // 0,24 em, violet profond puis indigo de la charte à 38 % de la course.
+  const WORD_START = 0.2;
+  const WORD_MS = 650;
   const WORD_STAGGER_MS = 38;
+  const WORD_BLUR = 12;
+  const WORD_RISE = 0.24;
+  const WORD_INK_FROM = [23, 5, 47]; // #17052f
+  const WORD_INK_MID = [87, 104, 255]; // #5768ff
+  const WORD_INK_MID_AT = 0.38;
 
   const pathname = $derived(page.url.pathname.replace(/\/+$/, "") || "/");
 
@@ -97,8 +105,7 @@
   let opened = $state(false); //   la cible : ouvert ou refermé
   let veiled = $state(false); //   la carte est voilée (changement de page)
   let backdrop = $state(false); // le fond du menu sert de fond à la carte (cadre)
-  let revealed = $state(false); // les noms arrivent
-  let settled = $state(false); //  les noms sont arrivés : plus d'animation en cours
+  let revealed = $state(false); // les noms sont (ou arrivent) à l'écran
 
   let rootEl;
   let veilEl;
@@ -126,7 +133,7 @@
   let lastTarget = false;
   // Appelé quand le recul de la transition de page est réellement fini.
   let onOutCardDone = null;
-  let settleTimer = 0;
+  let revealRaf = 0;
 
   // La transition de page en cours : sa phase et la promesse que SvelteKit
   // attend avant de changer la page (`onNavigate`).
@@ -439,7 +446,7 @@
   function releasePage() {
     unlockScroll();
     clearTimeout(finishTimer);
-    clearTimeout(settleTimer);
+    stopReveal();
     cancelAnimationFrame(startRaf);
     startRaf = 0;
     stopTrack();
@@ -474,7 +481,6 @@
     veiled = false;
     backdrop = false;
     revealed = false;
-    settled = false;
     visible = false;
 
     // La page suivante s'est montée SOUS la carte transformée : ce qu'elle a
@@ -488,17 +494,88 @@
 
   /* ── Le menu ── */
 
-  // L'arrivée des noms part avec la carte, pas avant : une seule horloge, et
-  // une fin certaine — passé la cascade, l'animation est RETIRÉE (`settled`),
-  // le mot reste net à sa couleur quoi qu'il arrive au rendu.
+  // ── L'arrivée des noms ──────────────────────────────────────────────────
+  //  Rejouée en JS, image par image, à partir du temps écoulé : une animation
+  //  CSS de `filter` sur ces mots — posés dans un calque glissé SOUS la page,
+  //  elle-même transformée pendant le geste — pouvait rester figée dans Safari
+  //  sur une image floue, ou ne montrer le texte qu'à la fin. Ici chaque image
+  //  recalcule l'état de chaque mot ; une image en retard est rattrapée par la
+  //  suivante, et un mot arrivé rend la main au CSS (net, à la couleur du
+  //  lien). Rien ne peut rester entre deux états.
+  const cubic = (p1x, p1y, p2x, p2y) => {
+    const bx = (t) => 3 * p1x * t * (1 - t) ** 2 + 3 * p2x * t * t * (1 - t) + t ** 3;
+    const by = (t) => 3 * p1y * t * (1 - t) ** 2 + 3 * p2y * t * t * (1 - t) + t ** 3;
+    return (x) => {
+      let lo = 0;
+      let hi = 1;
+      for (let i = 0; i < 24; i++) {
+        const mid = (lo + hi) / 2;
+        if (bx(mid) < x) lo = mid;
+        else hi = mid;
+      }
+      return by((lo + hi) / 2);
+    };
+  };
+  // La courbe de `revealWordIn`.
+  const wordEase = cubic(0.22, 0.61, 0.36, 1);
+
+  const parseRgb = (value) => (value.match(/[\d.]+/g) || [255, 255, 255]).slice(0, 3).map(Number);
+  const mix = (a, b, k) => a.map((v, i) => Math.round(v + (b[i] - v) * k));
+
+  function clearWord(el) {
+    el.style.opacity = "";
+    el.style.filter = "";
+    el.style.transform = "";
+    el.style.color = "";
+  }
+
+  function stopReveal() {
+    cancelAnimationFrame(revealRaf);
+    revealRaf = 0;
+    for (const el of rootEl?.querySelectorAll(".menu-word") ?? []) clearWord(el);
+  }
+
   function startReveal() {
-    clearTimeout(settleTimer);
-    settled = false;
+    stopReveal();
+    const words = [...(rootEl?.querySelectorAll(".menu-word") ?? [])];
+    if (!words.length || reducedMotion()) {
+      revealed = true;
+      return;
+    }
+    // La couleur d'arrivée de chaque mot : celle de son lien (gris, ou blanc
+    // pour la rubrique courante), lue avant d'écrire quoi que ce soit.
+    const finals = words.map((el) => parseRgb(getComputedStyle(el.parentElement).color));
+    const draw = (el, i, t) => {
+      const e = wordEase(t);
+      const ink =
+        t < WORD_INK_MID_AT
+          ? mix(WORD_INK_FROM, WORD_INK_MID, wordEase(t / WORD_INK_MID_AT))
+          : mix(WORD_INK_MID, finals[i], wordEase((t - WORD_INK_MID_AT) / (1 - WORD_INK_MID_AT)));
+      el.style.opacity = e.toFixed(3);
+      el.style.filter = `blur(${(WORD_BLUR * (1 - e)).toFixed(2)}px)`;
+      el.style.transform = `translateY(${(WORD_RISE * (1 - e)).toFixed(3)}em)`;
+      el.style.color = `rgb(${ink.join(", ")})`;
+    };
+    // État de départ posé AVANT que la classe ne les rende visibles : aucune
+    // image de texte net avant l'arrivée.
+    words.forEach((el, i) => draw(el, i, 0));
     revealed = true;
-    const total = cfg.duration * WORD_START * 1000 + WORD_MS + (wordCount - 1) * WORD_STAGGER_MS + 80;
-    settleTimer = setTimeout(() => {
-      if (revealed) settled = true;
-    }, total);
+
+    const start = performance.now() + cfg.duration * WORD_START * 1000;
+    const step = (now) => {
+      let pending = false;
+      words.forEach((el, i) => {
+        const t = (now - start - i * WORD_STAGGER_MS) / WORD_MS;
+        if (t >= 1) {
+          if (el.style.filter) clearWord(el);
+          return;
+        }
+        pending = true;
+        draw(el, i, Math.max(0, t));
+      });
+      revealRaf = pending ? requestAnimationFrame(step) : 0;
+    };
+    revealRaf = requestAnimationFrame(step);
   }
 
   function show() {
@@ -768,7 +845,6 @@
   class:is-open={opened}
   class:is-backdrop={backdrop && !visible}
   class:is-revealed={revealed}
-  class:is-settled={settled}
   bind:this={rootEl}
   aria-hidden={!visible}
 >
@@ -960,29 +1036,15 @@
     border-radius: 4px;
   }
 
-  /* L'arrivée des textes de la home (`revealWordIn`, app.css) : chaque mot
-     sort du flou l'un après l'autre, 38 ms d'écart, en traversant le violet
-     puis l'indigo de la charte. Elle part AVEC la carte (classe posée par le
-     script au départ du recul), à 28 % de sa course. Une fois la cascade
-     finie, `is-settled` RETIRE l'animation : le mot est net, à sa couleur,
-     quoi qu'il arrive au rendu — c'est ce qui le laissait parfois flou. */
+  /* L'arrivée des noms est menée par le script (voir `startReveal`) : le CSS
+     ne porte que l'état caché et l'état arrivé, net. */
   .menu-word {
     display: inline-block;
     opacity: 0;
   }
 
   .fs-menu.is-revealed .menu-word {
-    animation: revealWordIn 0.75s cubic-bezier(0.22, 0.61, 0.36, 1) both;
-    animation-delay: calc(var(--menu-duration) * 0.28s + var(--i) * 38ms);
-    will-change: opacity, filter, transform;
-  }
-
-  .fs-menu.is-settled .menu-word {
-    animation: none;
     opacity: 1;
-    filter: none;
-    transform: none;
-    will-change: auto;
   }
 
   /* ── Les boutons réseaux du menu précédent, coin bas droit ── */
@@ -1198,9 +1260,5 @@
       --menu-duration: 0.001;
     }
 
-    .fs-menu.is-revealed .menu-word {
-      animation: none;
-      opacity: 1;
-    }
   }
 </style>
