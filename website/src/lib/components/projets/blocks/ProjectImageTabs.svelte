@@ -102,8 +102,19 @@
           aria-hidden={i !== index}
           style={tab.bg ? `background:${tab.bg};` : undefined}
         >
+          <!-- L'image mobile suit le FORMAT du cadre, pas un point de rupture à
+               part : le cadre passe au format mobile sous 900 px (voir
+               `.tabs__scene`), l'image doit basculer au même pixel — elle
+               basculait à 640 px, et entre les deux l'image large était
+               rognée dans le cadre mobile. Le téléphone couché reprend le
+               format large : il garde l'image large (première source qui
+               correspond). -->
           {#if tab.mobileImage}
-            <source media="(max-width: 640px)" srcset={tab.mobileImage} />
+            <source
+              media="(pointer: coarse) and (orientation: landscape) and (max-height: 600px)"
+              srcset={tab.image}
+            />
+            <source media="(max-width: 900px)" srcset={tab.mobileImage} />
           {/if}
           <img
             class="tabs__image"

@@ -58,13 +58,15 @@
         {
           title: "Un emblème modernisé",
           text: "Le colibri de la marque a été entièrement redessiné : des formes plus nettes, un geste plus franc, et une <span class='hl'>lisibilité tenue</span> jusqu'aux très petites tailles.",
-          image: "/images/lybra-logo.webp",
-          alt: "Le colibri Lybra redessiné, sur fond bleu nuit",
-          // Le fichier est très large (2,24:1) : rogné au cadre presque carré
-          // du volet, le nom passerait à la trappe. On le laisse entier et on
-          // prolonge son fond plutôt que de laisser deux bandes noires.
-          fit: "contain",
-          bg: "#0b3a63"
+          // Recomposé le 2026-10-09 : le logo d'origine (logo-font.jpg) à la
+          // même part de la largeur, centré sur son dégradé ÉTIRÉ en hauteur,
+          // au format 1:2. Le fichier large (2,24:1) posé en `contain`
+          // laissait des bandes d'aplat qui ne raccordaient pas au dégradé.
+          // Le cadre va de 1,06:1 (bureau) à 0,47:1 (tablette verticale) :
+          // un seul fichier très haut, en `cover`, ne perd que du fond dans
+          // tous les cas, et le logo garde ~65 % de la largeur.
+          image: "/images/lybra-embleme-haut.webp",
+          alt: "Le colibri Lybra redessiné, sur fond bleu nuit"
         },
         {
           title: "Une identité complète",
@@ -100,20 +102,22 @@
     <ProjectImageTabs
       title="Un seul emblème —<br /><span class='dim'>autant de fonds qu'il en faut.</span>"
       // Les trois planches de fond sont en 16/9 : elles remplissent le cadre de
-      // bureau sans perdre un pixel. Sur téléphone, un cadre portrait les
-      // rognerait et le nom de la marque passerait à la trappe — elles y
-      // restent donc ENTIÈRES (`contain`), et leur propre fond, relevé au pixel
-      // dans chaque fichier, remplit le reste du cadre : la bande ne se voit
-      // pas. La photo de rue, elle, se rogne comme n'importe quelle photo.
+      // bureau sans perdre un pixel. Sur téléphone (cadre 4/3), les deux à
+      // fond UNI restent entières (`contain`) et leur aplat, relevé au pixel,
+      // remplit le reste : la bande ne se voit pas. Le DÉGRADÉ ne peut pas se
+      // prolonger par un aplat — il a sa propre version 4/3, recomposée sur
+      // un dégradé étiré (2026-10-09), et passe en `cover` : entre 641 et
+      // 900 px, où le 16/9 occupe le cadre 4/3, seul le fond est rogné (le
+      // logo tient dans les 75 % du milieu). La photo de rue se rogne comme
+      // n'importe quelle photo.
       aspect="16 / 9"
       mobileAspect="4 / 3"
       tabs={[
         {
           label: "Bleu nuit",
           image: "/images/lybra-fond-degrade.webp",
-          alt: "Logo Lybra sur un dégradé bleu nuit",
-          fit: "contain",
-          bg: "linear-gradient(180deg, #013d6f 0%, #819fb7 50%, #ffffff 100%)"
+          mobileImage: "/images/lybra-fond-degrade-4x3.webp",
+          alt: "Logo Lybra sur un dégradé bleu nuit"
         },
         {
           label: "Bleu ciel",
