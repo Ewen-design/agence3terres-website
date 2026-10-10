@@ -184,13 +184,27 @@
   <!-- Le mot du client, sur le NOIR de la palette (bande sombre), à la place
        du mur des autres projets — le pied de page « projet suivant » assure la
        suite de la visite.
-       ⚠️ TEXTE PROVISOIRE : remplacer `quote`, `author` et `role` par la vraie
-       citation du client. -->
+       Le VRAI témoignage de Ludovic Coqueret (reçu le 2026-10-09). Trop long
+       pour un écran : la page n'en garde que la dernière phrase (sans son
+       « donc »), sans signature ; le « + » ouvre le texte entier, signé, dans
+       une carte plein écran. -->
   <div class="project-theme-band theme-deep">
     <ProjectQuote
-      quote="<span class='hl'>La citation du client prendra place ici.</span> Une ou deux phrases, dans ses mots."
-      author="Prénom Nom"
-      role="Fonction, Ludosphères"
+      label="Le mot du client"
+      quote="<span class='hl'>Je recommande vivement l’agence 3&nbsp;Terres</span> à toutes celles et ceux qui recherchent un accompagnement de grande qualité et une véritable sensibilité créative."
+      full={[
+        "Je tiens à remercier chaleureusement l’agence 3&nbsp;Terres et tout particulièrement Ewen, pour la grande qualité du travail réalisé dans le cadre de la création de mon site internet «&nbsp;Ludosphères&nbsp;».",
+        "Ewen a su parfaitement comprendre mes attentes et donner naissance à un univers à la fois élégant, cohérent et singulier, reflétant pleinement ma sensibilité artistique.",
+        "J’ai particulièrement apprécié la justesse de ses choix, son sens du détail, ainsi que sa capacité à transformer un univers artistique en une expérience digitale esthétique, intuitive, moderne et résolument professionnelle.",
+        "Au-delà de la qualité technique de la réalisation, Ewen a su insuffler une véritable identité à «&nbsp;Ludosphères&nbsp;» et mettre en valeur mon travail d’artiste avec beaucoup de finesse et de sensibilité.",
+        "Un immense merci pour son écoute, son implication et son talent, qui ont permis de donner vie à ce beau projet.",
+        "Je recommande donc vivement l’agence 3&nbsp;Terres à toutes celles et ceux qui recherchent un accompagnement de grande qualité et une véritable sensibilité créative."
+      ]}
+      photo="/images/ludo-artiste.webp"
+      photoAlt="Ludovic Coqueret"
+      photoPosition="50% 28%"
+      signature={{ name: "Ludovic Coqueret", org: "Ludosphères" }}
+      logo="/images/logos-clients/ludospheres.svg"
     />
   </div>
 </ProjectThemePage>

@@ -48,11 +48,12 @@
       // le mot est plus petit que celui de Lybra, mais plus large — il garde
       // la hauteur commune.
       scale: 1,
-      // Le visuel « vitrine » du client (le site posé sur un visage) : jamais
-      // montré ailleurs sur le site, et son coin bas droit est sombre — le
-      // logo blanc s'y lit sans renforcer le voile.
-      image: "/images/harmonia-clients-vitrine-w1800.webp",
-      alt: "Le site du Centre Harmonia posé sur un visage — Agence 3 Terres"
+      // L'affiche grand format (2026-10-09, demande client) : le visuel du
+      // volet « Une identité médicale » de la page Harmonia, cadré comme là-bas
+      // sur le panneau.
+      image: "/images/harmonia-affiche.webp",
+      position: "47% 50%",
+      alt: "Affiche Centre Harmonia grand format, un visage en plein ciel — Agence 3 Terres"
     },
     {
       name: "Lybra",

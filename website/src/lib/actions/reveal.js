@@ -16,6 +16,7 @@ import { browser } from "$app/environment";
  * ne découpe pas un média en mots.
  *
  * Forcer l'un ou l'autre : `use:reveal={{ words: true }}` / `{ words: false }`.
+ * Garder la couche après l'arrivée : `{ keepLayer: true }` (voir plus bas).
  *
  * SSR-safe (no-op côté serveur), joue une seule fois à l'entrée dans le
  * viewport, et se désactive sous `prefers-reduced-motion`.
@@ -30,33 +31,7 @@ const INLINE_TAGS = new Set([
   "SPAN", "EM", "STRONG", "B", "I", "A", "SMALL", "MARK", "U", "SUP", "SUB", "BR", "WBR"
 ]);
 
-/** node → éléments qui contiennent directement des mots (voir `paintFinalColor`). */
-const wordHosts = new WeakMap();
-
 let observer = null;
-
-/**
- * Fige la couleur d'arrivée de chaque groupe de mots.
- *
- * Elle est passée en `--reveal-final` plutôt que laissée à `inherit` dans les
- * keyframes : `inherit` n'y est pas fiable, et chaque mot doit rejoindre la
- * couleur de SON hôte — un `.hl` en pleine encre au milieu d'un paragraphe gris
- * n'atterrit pas au même endroit. La propriété étant héritée, une écriture par
- * hôte suffit : inutile de toucher les mots un par un.
- *
- * Lecture faite à l'apparition et non au montage : au montage il faudrait lire
- * le style calculé de tous les textes de la page d'un coup, juste après les
- * avoir modifiés — donc autant de recalculs de style forcés. Ici le coût est
- * étalé sur le défilement, et la couleur lue est celle du thème courant (les
- * pages projet en changent au scroll).
- */
-function paintFinalColor(node) {
-  const hosts = wordHosts.get(node);
-  if (!hosts) return;
-  for (const host of hosts) {
-    host.style.setProperty("--reveal-final", window.getComputedStyle(host).color);
-  }
-}
 
 function ensureObserver() {
   if (observer || !browser) return observer;
@@ -66,7 +41,6 @@ function ensureObserver() {
       for (const entry of entries) {
         if (!entry.isIntersecting) continue;
         const node = entry.target;
-        paintFinalColor(node);
         node.classList.add(REVEAL_CLASS);
         observer.unobserve(node);
 
@@ -76,11 +50,14 @@ function ensureObserver() {
         window.setTimeout(() => {
           // Libère la couche GPU. La garder sur tous les éléments révélés (des
           // dizaines par page) promeut des couches en permanence et alourdit la
-          // composition sur mobile.
-          node.style.willChange = "auto";
-          // Et retire l'animation des mots : `both` fige la dernière image, donc
-          // la couleur d'arrivée. Or les pages projet changent de thème au
-          // scroll — un texte figé y resterait à l'ancienne couleur.
+          // composition sur mobile. Sauf demande contraire (`keepLayer`) : voir
+          // plus bas.
+          if (node.dataset.revealKeepLayer === undefined) node.style.willChange = "auto";
+          // Et libère les animations des mots, finies depuis longtemps. Rien ne
+          // change à l'écran : elles se remplissent vers l'arrière seulement
+          // (`backwards`, voir `app.css`), chaque mot a déjà rendu la main à ses
+          // valeurs normales — sa couleur héritée comprise, qui suit donc les
+          // changements de thème des pages projet.
           if (words) node.classList.add("reveal--settled");
         }, 1300 + words * WORD_STAGGER);
       }
@@ -105,17 +82,14 @@ function isTextContent(node) {
  * Les balises en ligne sont traversées, pas remplacées : un `.hl` garde donc sa
  * couleur, et ses mots la reprennent.
  *
- * Retourne le nombre de mots, et enregistre les hôtes pour `paintFinalColor`.
+ * Retourne le nombre de mots.
  */
 function splitIntoWords(root) {
   let index = 0;
-  const hosts = [];
 
   const walk = (parent) => {
     const children = Array.from(parent.childNodes);
     if (!children.length) return;
-
-    let hosted = false;
 
     for (const child of children) {
       if (child.nodeType === 3) {
@@ -123,7 +97,11 @@ function splitIntoWords(root) {
         if (!text.trim()) continue;
 
         const fragment = document.createDocumentFragment();
-        for (const part of text.split(/(\s+)/)) {
+        // Coupé aux espaces ordinaires SEULEMENT : une espace insécable (ou
+        // fine insécable) reste DANS le mot. Séparés en deux boîtes `inline-
+        // block`, « « » et « Ludosphères » pouvaient tomber sur deux lignes
+        // malgré l'insécable entre eux (vu dans Chrome, 2026-10-09).
+        for (const part of text.split(/([^\S\u00a0\u202f]+)/)) {
           if (!part) continue;
           if (!part.trim()) {
             fragment.appendChild(document.createTextNode(part));
@@ -134,19 +112,15 @@ function splitIntoWords(root) {
           word.style.setProperty("--i", String(index++));
           word.textContent = part;
           fragment.appendChild(word);
-          hosted = true;
         }
         parent.replaceChild(fragment, child);
       } else if (child.nodeType === 1 && child.tagName !== "BR" && child.tagName !== "WBR") {
         walk(child);
       }
     }
-
-    if (hosted) hosts.push(parent);
   };
 
   walk(root);
-  if (index) wordHosts.set(root, hosts);
   return index;
 }
 
@@ -182,6 +156,12 @@ export function reveal(node, options = {}) {
     return {};
   }
 
+  // `keepLayer` : l'élément GARDE sa couche après l'arrivée. Pour un très grand
+  // texte seul à l'écran : quand Safari retire la couche d'un texte, il le
+  // redessine dans celle du dessous, recalé au pixel — un léger glissement,
+  // une fois le texte posé, qu'on lit comme un texte qui « se replace ».
+  if (options.keepLayer) node.dataset.revealKeepLayer = "";
+
   const wantsWords = options.words ?? isTextContent(node);
   if (wantsWords) {
     const count = splitIntoWords(node);
@@ -200,7 +180,6 @@ export function reveal(node, options = {}) {
     },
     destroy() {
       obs?.unobserve(node);
-      wordHosts.delete(node);
     }
   };
 }

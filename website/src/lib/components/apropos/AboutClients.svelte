@@ -53,12 +53,12 @@
       name: "Centre Harmonia",
       logo: "/images/logos-clients/harmonia.webp",
       scale: 1,
-      image: "/images/harmonia-clients-vitrine-w1800.webp",
-      // Cadre PORTRAIT ici : calé à gauche, il garde le titre du site en
-      // entier (« L'harmonie comme signature. ») à côté du visage — centré,
-      // il le coupait au milieu d'un mot.
-      position: "0% center",
-      alt: "Le site du Centre Harmonia posé sur un visage — Agence 3 Terres"
+      // L'affiche grand format (2026-10-09, demande client) : le visuel du
+      // volet « Une identité médicale » de la page Harmonia. Cadre PORTRAIT
+      // ici : centré sur le panneau, il garde les yeux et le nom.
+      image: "/images/harmonia-affiche.webp",
+      position: "47% 50%",
+      alt: "Affiche Centre Harmonia grand format, un visage en plein ciel — Agence 3 Terres"
     },
     {
       name: "Lybra",

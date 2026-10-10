@@ -2,7 +2,7 @@
   import { onMount } from "svelte";
   import { browser } from "$app/environment";
   import AutoVideo from "$lib/components/shared/media/AutoVideo.svelte";
-  import { reveal } from "$lib/actions/reveal.js";
+  import { reveal, revealBlock } from "$lib/actions/reveal.js";
 
   // ───────────────────────────────────────────────────────────────────────────
   //  HomeFeatureCards — ce que fait l'agence, en quatre volets.
@@ -121,6 +121,12 @@
   <!-- ── Grand écran : le visuel collant, puis la liste ────────────────────── -->
   <div class="fcards__desk">
     <div class="fcards__stage">
+      <!-- L'arrivée du visuel (2026-10-09) est portée par cette enveloppe, et
+           SURTOUT PAS par le cadre : celui-ci est collant, et une couche ou un
+           filtre posés sur une boîte `sticky` la font trembler dans Safari
+           (voir plus bas). Dedans, c'est sans risque — c'est la place où les
+           visuels portent déjà leur propre couche. -->
+      <div class="fcards__arrive" use:revealBlock>
       {#each cards as card, i}
         <div
           class="fcards__shot"
@@ -156,6 +162,7 @@
           {/if}
         </div>
       {/each}
+      </div>
     </div>
 
     <ol class="fcards__list">
@@ -165,9 +172,12 @@
           class:is-on={i === active}
           bind:this={itemEls[i]}
         >
-          <span class="fcards__num">{rank(i)}</span>
-          {#if card.title}<h3 class="fcards__title">{card.title}</h3>{/if}
-          <p class="fcards__text">{@html card.text}</p>
+          <!-- Chaque volet arrive quand il entre à l'écran (2026-10-09), mot à
+               mot comme les autres textes du site. Sur l'enfant, jamais sur le
+               volet lui-même : sa demi-teinte est une transition d'opacité. -->
+          <span class="fcards__num" use:reveal>{rank(i)}</span>
+          {#if card.title}<h3 class="fcards__title" use:reveal={{ delay: 60 }}>{card.title}</h3>{/if}
+          <p class="fcards__text" use:reveal={{ delay: 140 }}>{@html card.text}</p>
         </li>
       {/each}
     </ol>
@@ -361,6 +371,11 @@
         var(--bg-panel, #161617) 46%,
         var(--bg-deep, #050709) 100%
       );
+    }
+
+    .fcards__arrive {
+      position: absolute;
+      inset: 0;
     }
 
     /* Les quatre visuels sont empilés au même endroit ; seule l'opacité change.

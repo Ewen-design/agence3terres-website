@@ -39,6 +39,7 @@
   import { afterNavigate, beforeNavigate, onNavigate } from "$app/navigation";
   import { page } from "$app/state";
   import { navigate } from "$lib/navigate.js";
+  import { registerPageCardEngine } from "$lib/pageCard.js";
   import {
     clearSilentNavigation,
     isSilentNavigationPending,
@@ -137,10 +138,13 @@
 
   // La transition de page en cours : sa phase et la promesse que SvelteKit
   // attend avant de changer la page (`onNavigate`).
-  /** @type {null | "out" | "in"} */
+  /** @type {null | "out" | "in" | "card"} */
   let pagePhase = null;
   let outPromise = null;
   let pageTimers = [];
+  // La carte de contenu (`coverPage`) : appelé quand la carte noire est revenue
+  // plein écran.
+  let onCardCovered = null;
 
   const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
   const reducedMotion = () => window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ?? false;
@@ -392,6 +396,10 @@
         onOutCardDone?.();
       } else if (!lastTarget && pagePhase === "in") {
         finishSession();
+      } else if (!lastTarget && pagePhase === "card") {
+        stopTrack();
+        render(0);
+        onCardCovered?.();
       }
     }
   }
@@ -477,6 +485,7 @@
     pagePhase = null;
     outPromise = null;
     onOutCardDone = null;
+    onCardCovered = null;
     lastTarget = false;
     veiled = false;
     backdrop = false;
@@ -733,6 +742,103 @@
     }, FADE_OUT_MS * 0.5);
   }
 
+  /* ── La carte de contenu (geste « cadre » sans navigation) ──────────────
+   *  Un panneau plein écran (la citation complète d'un client) s'ouvre avec le
+   *  geste de la transition de page : recul sur place et voile au noir, comme
+   *  un départ — puis, au lieu d'une nouvelle page, la carte revient plein
+   *  écran EN RESTANT NOIRE. Le panneau, du même noir, se pose alors
+   *  par-dessus et la page est rendue dessous, à plat : rien ne reste
+   *  transformé pendant qu'on lit. La fermeture rejoue tout à l'envers.
+   *  Voir `$lib/pageCard.js`. */
+
+  function coverPage() {
+    if (mode || !rootEl || reducedMotion()) return null;
+    const out = startPageOut();
+    if (!out) return null;
+    // Aucune page ne se monte dessous : pas de remesure à la fin.
+    navigatedUnder = false;
+
+    return new Promise((resolve) => {
+      out.then(() => {
+        if (mode !== "frame" || pagePhase !== "out") return resolve({ released: Promise.resolve() });
+        for (const t of pageTimers) clearTimeout(t);
+        pageTimers = [];
+        pagePhase = "card";
+
+        let covered = false;
+        onCardCovered = () => {
+          if (covered) return;
+          covered = true;
+          onCardCovered = null;
+          // `released` : la page est rendue à plat dessous et au repos. Le
+          // panneau attend ce moment pour faire arriver ses textes — lancés
+          // pendant que la page se redessine sous lui, ils accrochaient sur
+          // téléphone.
+          let markReleased;
+          const released = new Promise((done) => (markReleased = done));
+          resolve({ released });
+          // Deux images : le panneau est peint par-dessus avant qu'on ne
+          // touche à quoi que ce soit dessous.
+          requestAnimationFrame(() =>
+            requestAnimationFrame(() => {
+              if (pagePhase !== "card") return markReleased();
+              // Le voile disparaît d'un coup : il est sous le panneau, son
+              // fondu de 0,45 s ne ferait que du travail pour rien.
+              if (fadeEl) fadeEl.style.transition = "none";
+              finishSession();
+              requestAnimationFrame(() =>
+                requestAnimationFrame(() => {
+                  if (fadeEl) fadeEl.style.transition = "";
+                  markReleased();
+                })
+              );
+            })
+          );
+        };
+
+        // La carte, toujours voilée, revient plein écran : le voile la suit.
+        const backMs = frame.back * 1000;
+        moveCard(false, { duration: backMs / 1000, ease: EASE_CARD });
+        track();
+        // Filet si `transitionend` ne vient pas.
+        later(() => onCardCovered?.(), backMs + 300);
+      });
+    });
+  }
+
+  function uncoverPage(onCovered) {
+    if (mode || !rootEl || reducedMotion()) return false;
+    if (!beginSession("frame")) return false;
+    pagePhase = "card";
+    // La carte à plat, voilée SOUS le panneau : rien ne change à l'écran.
+    render(0);
+    veiled = true;
+
+    later(() => {
+      // Le même noir est en place dessous : le panneau peut partir.
+      onCovered?.();
+      startRaf = requestAnimationFrame(() =>
+        (startRaf = requestAnimationFrame(() => {
+          startRaf = 0;
+          // La carte noire recule, puis le voile se lève sur la page et la
+          // carte revient : la fin d'une transition de page ordinaire.
+          pagePhase = "out";
+          let done = false;
+          onOutCardDone = () => {
+            if (done) return;
+            done = true;
+            runPageIn();
+          };
+          const outMs = frame.out * 1000;
+          moveCard(true, { duration: outMs / 1000, ease: EASE_CARD });
+          track();
+          later(() => onOutCardDone?.(), outMs + 200);
+        }))
+      );
+    }, FADE_IN_MS + 40);
+    return true;
+  }
+
   const samePath = (a, b) => (a.pathname.replace(/\/+$/, "") || "/") === (b.pathname.replace(/\/+$/, "") || "/");
 
   beforeNavigate((nav) => {
@@ -832,7 +938,9 @@
   }
 
   onMount(() => {
+    const unregister = registerPageCardEngine({ cover: coverPage, uncover: uncoverPage });
     return () => {
+      unregister();
       opened = false;
       finishSession();
     };

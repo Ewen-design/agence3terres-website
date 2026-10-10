@@ -164,33 +164,58 @@ select {
 
 /* ── Arrivée en bloc ──
    Utilisée pour tout ce que l'action `reveal` ne découpe pas en mots : les
-   figures qui portent une image ou une vidéo. Les textes, eux, passent par
-   l'arrivée mot à mot définie juste après. */
+   figures qui portent une image ou une vidéo, les cartes. Les textes, eux,
+   passent par l'arrivée mot à mot définie juste après.
+
+   ⚠️ UNE ANIMATION, PLUS UNE TRANSITION (2026-10-09). L'arrivée était une
+   `transition` posée par `.reveal`. Or un composant qui déclare sa propre
+   `transition` sur le même élément (un fondu de couleur de thème, un survol) a
+   un sélecteur plus précis que `.reveal` : il REMPLAÇAIT la liste entière, et
+   l'opacité, le flou et la montée passaient à leur valeur finale sans fondu.
+   Le bloc tombait d'un coup — l'image d'ouverture et toutes les cartes des
+   pages projet étaient dans ce cas. Une animation ne partage rien avec les
+   transitions du composant : elle joue quoi qu'il déclare.
+
+   Elle ne déclare que son point de DÉPART (`from`) et se remplit vers l'arrière
+   (`backwards`) : l'arrivée se fait vers les valeurs normales de l'élément, et
+   une fois finie il ne reste rien sur lui — ni `filter: blur(0)`, ni
+   `transform`, qui en faisaient pour toujours une racine d'arrière-plan (le
+   verre des boutons qu'il contient ne floutait plus). La montée passe par
+   `translate`, pas par `transform` : elle se compose avec un `transform` que
+   l'élément aurait déjà au lieu de l'écraser.
+
+   L'état caché est sous `:where()` pour garder la spécificité d'une seule
+   classe : un composant peut toujours le surcharger, comme avant. */
 .reveal {
-  opacity: 0;
-  filter: blur(12px);
-  transform: translate3d(0, 18px, 0);
-  transition:
-    opacity 0.6s ease,
-    filter 0.85s cubic-bezier(0.22, 0.61, 0.36, 1),
-    transform 0.85s cubic-bezier(0.22, 0.61, 0.36, 1);
-  transition-delay: var(--reveal-delay, 0ms);
   will-change: opacity, filter, transform;
   backface-visibility: hidden;
 }
 
-.reveal.is-revealed {
-  opacity: 1;
-  filter: blur(0);
-  transform: translate3d(0, 0, 0);
+.reveal:where(:not(.is-revealed)) {
+  opacity: 0;
+  filter: blur(12px);
+  /* La montée du bloc, réglable (`--reveal-shift`) : un très grand texte seul
+     à l'écran (la citation de fin des pages projet) arrive SUR PLACE. */
+  translate: 0 var(--reveal-shift, 18px);
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .reveal {
-    opacity: 1;
-    filter: none;
-    transform: none;
-    transition: none;
+.reveal.is-revealed {
+  animation:
+    revealBlockFade 0.6s ease backwards,
+    revealBlockRise 0.85s cubic-bezier(0.22, 0.61, 0.36, 1) backwards;
+  animation-delay: var(--reveal-delay, 0ms);
+}
+
+@keyframes revealBlockFade {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes revealBlockRise {
+  from {
+    filter: blur(12px);
+    translate: 0 var(--reveal-shift, 18px);
   }
 }
 
@@ -200,17 +225,35 @@ select {
    entrance. */
 @media (hover: none) and (pointer: coarse) {
   .reveal {
-    filter: none;
-    transform: translate3d(0, 14px, 0);
-    transition:
-      opacity 0.5s ease,
-      transform 0.6s cubic-bezier(0.22, 0.61, 0.36, 1);
-    transition-delay: var(--reveal-delay, 0ms);
     will-change: opacity, transform;
   }
-  .reveal.is-revealed {
+  .reveal:where(:not(.is-revealed)) {
     filter: none;
-    transform: translate3d(0, 0, 0);
+    translate: 0 var(--reveal-shift, 14px);
+  }
+  .reveal.is-revealed {
+    animation:
+      revealBlockFade 0.5s ease backwards,
+      revealBlockRiseLite 0.6s cubic-bezier(0.22, 0.61, 0.36, 1) backwards;
+    animation-delay: var(--reveal-delay, 0ms);
+  }
+}
+
+@keyframes revealBlockRiseLite {
+  from {
+    translate: 0 var(--reveal-shift, 14px);
+  }
+}
+
+/* Après la variante mobile, pour passer aussi devant elle. */
+@media (prefers-reduced-motion: reduce) {
+  .reveal:where(:not(.is-revealed)) {
+    opacity: 1;
+    filter: none;
+    translate: none;
+  }
+  .reveal.is-revealed {
+    animation: none;
   }
 }
 
@@ -225,15 +268,16 @@ select {
 
    Ces règles viennent APRÈS celles de l'arrivée en bloc, et portent deux
    classes (`.reveal.reveal--words`), pour passer devant elles en toutes
-   circonstances — y compris devant la variante mobile ci-dessus, qui a la même
-   spécificité que `.reveal--words` seul et l'emporterait sinon. */
+   circonstances — y compris devant la variante mobile ci-dessus. */
 .reveal.reveal--words {
   /* L'élément lui-même ne bouge plus : ce sont ses mots qui arrivent. Sans ça,
      son flou s'ajouterait à celui des mots. */
   opacity: 1;
   filter: none;
   transform: none;
+  translate: none;
   transition: none;
+  animation: none;
   will-change: auto;
 }
 
@@ -245,42 +289,46 @@ select {
      gagner. L'animation promeut d'elle-même ce qui doit l'être. */
 }
 
+/* `backwards` et non `both` (2026-10-09). Avec `both`, la dernière image
+   restait FIGÉE sur chaque mot jusqu'à ce que l'action retire l'animation,
+   une seconde plus tard et pour tous les mots à la fois : le texte, déjà posé,
+   était alors redessiné d'un bloc hors de son calque d'animation, et ce saut
+   se voyait — surtout sur la citation de fin des pages projet, seule à l'écran
+   et en grand. Ici chaque mot rend la main à ses valeurs normales à la fin de
+   SON animation, au bout de son propre ralenti. */
 .reveal.reveal--words.is-revealed .reveal-word {
-  animation: revealWordIn 0.9s cubic-bezier(0.22, 0.61, 0.36, 1) both;
+  opacity: 1;
+  animation: revealWordIn 0.9s cubic-bezier(0.22, 0.61, 0.36, 1) backwards;
   animation-delay: calc(var(--reveal-delay, 0ms) + var(--i) * 38ms);
 }
 
-/* Une fois la cascade terminée, l'action retire l'animation. Indispensable :
-   `both` fige la dernière image, donc la couleur capturée à l'arrivée — et les
-   pages projet changent de thème au scroll. Sans ça, un texte déjà révélé
-   resterait à la couleur de l'ancien thème. Rendu à sa couleur héritée, il
-   reprend la transition de thème. */
+/* L'action pose encore `reveal--settled` une fois la cascade finie. Avec le
+   remplissage `backwards`, retirer l'animation ne change plus rien à l'écran :
+   ça libère seulement les animations terminées. */
 .reveal.reveal--words.reveal--settled .reveal-word {
   animation: none;
-  opacity: 1;
-  filter: none;
-  transform: none;
 }
 
-/* La couleur d'arrivée est passée en `--reveal-final` par l'action plutôt que
-   laissée à `inherit` : `inherit` n'est pas fiable dans une `@keyframes`, et
-   chaque mot doit rejoindre la couleur de SON parent — un `.hl` en pleine encre
-   au milieu d'un paragraphe gris n'atterrit pas au même endroit. */
+/* Pas d'image d'ARRIVÉE (100 %) : chaque propriété rejoint la valeur normale
+   du mot. C'est ce qui donne à chacun la couleur de SON parent — un `.hl` en
+   pleine encre au milieu d'un paragraphe gris n'atterrit pas au même endroit —
+   et ce qui lui fait suivre un changement de thème en cours de route. (Le mot
+   clé `inherit`, lui, n'est pas fiable dans une `@keyframes` ; une image de fin
+   omise n'a pas ce défaut.) */
 @keyframes revealWordIn {
   0% {
     opacity: 0;
     filter: blur(12px);
-    transform: translateY(0.24em);
+    /* La montée de chaque mot, réglable par texte (`--reveal-rise`) : sur un
+       TRÈS grand texte, 0,24 em font une douzaine de pixels, et les mots d'une
+       même ligne, à des hauteurs différentes le temps de la cascade, ont l'air
+       de se replacer un à un. (La citation de fin des pages projet, elle,
+       n'est plus découpée en mots du tout — voir `ProjectQuote`.) */
+    transform: translateY(var(--reveal-rise, 0.24em));
     color: #17052f;
   }
   38% {
     color: #5768ff;
-  }
-  100% {
-    opacity: 1;
-    filter: blur(0);
-    transform: translateY(0);
-    color: var(--reveal-final, currentColor);
   }
 }
 
@@ -748,59 +796,12 @@ body {
   transition: background-color var(--project-theme-transition);
 }
 
-/* The themed colour/background transitions above redeclare `transition` on the
-   same media and text elements with higher specificity than the global `.reveal`
-   rule, which would cancel the focus-pull arrival (it would appear instantly).
-   Re-assert the reveal transition with matching specificity so it always plays. */
-.project-theme-page :is(
-  .editorial-role__media,
-  .editorial-split__media,
-  .editorial-mobile-showcase__media
-).reveal,
-.project-theme-page :is(
-  .editorial-role__item,
-  .editorial-split__copy
-) .reveal {
-  transition:
-    opacity 0.6s ease,
-    filter 0.85s cubic-bezier(0.22, 0.61, 0.36, 1),
-    transform 0.85s cubic-bezier(0.22, 0.61, 0.36, 1);
-  transition-delay: var(--reveal-delay, 0ms);
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .project-theme-page :is(
-    .editorial-role__media,
-    .editorial-split__media,
-    .editorial-mobile-showcase__media
-  ).reveal,
-  .project-theme-page :is(
-    .editorial-role__item,
-    .editorial-split__copy
-  ) .reveal {
-    transition: none;
-  }
-}
-
-/* Mobile: same blur-drop for the themed project-page reveals (they redeclare
-   the transition with higher specificity, so neutralise the filter here too). */
-@media (hover: none) and (pointer: coarse) {
-  .project-theme-page :is(
-    .editorial-role__media,
-    .editorial-split__media,
-    .editorial-mobile-showcase__media
-  ).reveal,
-  .project-theme-page :is(
-    .editorial-role__item,
-    .editorial-split__copy
-  ) .reveal {
-    filter: none;
-    transition:
-      opacity 0.5s ease,
-      transform 0.6s cubic-bezier(0.22, 0.61, 0.36, 1);
-    transition-delay: var(--reveal-delay, 0ms);
-  }
-}
+/* Les fondus de thème ci-dessus redéclarent `transition` sur des éléments qui
+   portent aussi `.reveal`. Ce n'est plus un problème depuis que l'arrivée est
+   une animation (voir `.reveal` en tête de fichier) : les deux ne partagent
+   plus la même propriété. Les règles qui réimposaient ici la transition de
+   l'arrivée ont été retirées le 2026-10-09 — elles écrasaient à leur tour le
+   fondu de thème. */
 
 /*  ── Bande SOMBRE ──────────────────────────────────────────────────────────
  *  Deux par page projet, pour rompre le gris qui tient tout le reste depuis le

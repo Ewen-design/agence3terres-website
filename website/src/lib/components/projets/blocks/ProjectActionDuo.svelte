@@ -24,10 +24,18 @@
   //
   //  ⚠️ LE VERRE DU « + » : la carte porte `isolation: isolate`, donc son lavis
   //  est dans la MÊME racine d'arrière-plan que le bouton — c'est ce qui lui
-  //  donne de quoi flouter. Ne poser ni `filter`, ni `opacity`, ni `use:reveal`
-  //  sur un parent du bouton, sinon le verre redevient un aplat.
+  //  donne de quoi flouter. Ne poser ni `filter`, ni `opacity` sur un parent
+  //  de la CARTE, sinon le verre redevient un aplat.
+  //
+  //  ── L'ARRIVÉE (2026-10-09) ────────────────────────────────────────────────
+  //  Les deux cartes entrent en bloc (`revealBlock`), la seconde en léger
+  //  différé, et leur titre se dépose mot à mot une fois la carte presque là.
+  //  C'est sur la CARTE elle-même que l'arrivée est posée : elle est déjà la
+  //  racine d'arrière-plan du bouton, l'opacité du fondu n'y change donc rien.
+  //  Et l'arrivée est une animation qui ne laisse rien derrière elle (voir
+  //  `.reveal` dans `app.css`) : une fois finie, plus aucun filtre sur la carte.
   // ───────────────────────────────────────────────────────────────────────────
-  import { reveal } from "$lib/actions/reveal.js";
+  import { reveal, revealBlock } from "$lib/actions/reveal.js";
 
   /** La couleur de la marque du projet. Les deux cartes en découlent. */
   export let tint = "#26408f";
@@ -76,6 +84,7 @@
     data-sveltekit-preload-data={primary.external ? undefined : "hover"}
     style={`background-image:${fondPrimaire};`}
     on:mousemove={handlePlusMove}
+    use:revealBlock
   >
     {#if primary.phone}
       <div class="duo__phone" aria-hidden="true">
@@ -96,7 +105,7 @@
 
     <div class="duo__body">
       {#if primary.label}<span class="duo__label">{primary.label}</span>{/if}
-      <h2 class="duo__title" use:reveal>{primary.title}</h2>
+      <h2 class="duo__title" use:reveal={{ delay: 260 }}>{primary.title}</h2>
     </div>
 
     <span class="duo__plus" aria-hidden="true">
@@ -114,10 +123,11 @@
     data-sveltekit-preload-data={secondary.external ? undefined : "hover"}
     style={`background-image:${fondSecondaire};`}
     on:mousemove={handlePlusMove}
+    use:revealBlock={{ delay: 120 }}
   >
     <div class="duo__body">
       {#if secondary.label}<span class="duo__label">{secondary.label}</span>{/if}
-      <h2 class="duo__title" use:reveal={{ delay: 100 }}>{secondary.title}</h2>
+      <h2 class="duo__title" use:reveal={{ delay: 380 }}>{secondary.title}</h2>
     </div>
 
     <span class="duo__plus" aria-hidden="true">

@@ -16,12 +16,14 @@
   // Seul le vide transparent du haut et du bas a été retiré.
   // Téléphone (≤ 640px) : même image recadrée serré autour du téléphone, sinon
   // la pleine largeur d'un écran étroit le ramène à 190 px de haut.
-  export let image = "/images/statement-silhouette-1600.webp";
+  // Version corrigée du 2026-10-09 (« Née pour créer ») : mêmes cadrages au
+  // pixel près que la précédente, recalés sur elle — formats inchangés.
+  export let image = "/images/statement-silhouette-creer-1600.webp";
   export let srcset =
-    "/images/statement-silhouette-960.webp 960w, /images/statement-silhouette-1600.webp 1600w, /images/statement-silhouette-2560.webp 2560w";
+    "/images/statement-silhouette-creer-960.webp 960w, /images/statement-silhouette-creer-1600.webp 1600w, /images/statement-silhouette-creer-2560.webp 2560w";
   export let mobileSrcset =
-    "/images/statement-silhouette-mobile-800.webp 800w, /images/statement-silhouette-mobile-1200.webp 1200w";
-  export let alt = "Une main tient un téléphone couché, l'écran affiche « Née pour briller »";
+    "/images/statement-silhouette-creer-mobile-800.webp 800w, /images/statement-silhouette-creer-mobile-1200.webp 1200w";
+  export let alt = "Une main tient un téléphone couché, l'écran affiche « Née pour créer »";
 </script>
 
 <section class="hstmt">

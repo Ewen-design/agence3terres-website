@@ -7,15 +7,51 @@
   //  grand, et sa signature dessous. Le pied de page « projet suivant » prend
   //  ensuite le relais pour la suite de la visite.
   //
-  //  La phrase arrive mot à mot (`reveal`, l'effet de référence du site), la
-  //  signature en léger différé. Même convention de couleur que les autres
-  //  textes des pages projet : ce qui est dans `<span class="hl">` reste en
-  //  pleine encre ; sans `.hl`, toute la phrase est en pleine encre.
+  //  ⚠️ LA PHRASE ARRIVE D'UN SEUL BLOC, SUR PLACE (2026-10-10) : du flou au net
+  //  en fondu, sans montée, et sans le découpage mot à mot du reste du site.
+  //  Le client voyait les mots « se replacer » après leur apparition, trois
+  //  fois de suite, dans son Safari 18.1 — invisible sous Chromium et sous le
+  //  WebKit de Playwright (filmés image par image : rien ne bouge). Plutôt que
+  //  de traquer UNE cause, toutes sont retirées : aucun mot n'est plus une
+  //  boîte à part (calque, position et équilibrage de ligne propres), le texte
+  //  n'est plus jamais retouché par le script, et la couche de l'arrivée est
+  //  GARDÉE ensuite (`keepLayer`) — c'est en la retirant que Safari recale un
+  //  texte au pixel. Ne pas remettre `reveal` (mot à mot) ici.
   //
-  //  Les guillemets français sont posés ici, avec des espaces insécables :
-  //  l'arrivée mot à mot les garde collés au premier et au dernier mot.
+  //  Le surtitre et la signature suivent, en léger différé. Même convention
+  //  de couleur que les autres textes des pages projet : ce qui est dans
+  //  `<span class="hl">` reste en pleine encre ; sans `.hl`, toute la phrase
+  //  est en pleine encre.
+  //
+  //  Les guillemets français sont posés ici, avec des espaces insécables, DANS
+  //  le texte (`withQuotes`), collés au premier et au dernier mot.
+  //
+  //  ── LE TÉMOIGNAGE EN ENTIER (2026-10-09, Ludosphères) ─────────────────────
+  //  Quand le client a écrit plus long que ce qu'un écran porte, la page n'en
+  //  montre qu'une phrase, sous un petit surtitre (`label`) et SANS signature,
+  //  et un « + » (le bouton de verre du site) ouvre le texte complet dans une
+  //  carte plein écran (`ProjectQuoteCard`) : la page recule et se voile au
+  //  noir comme pour une transition de page, la carte revient plein écran en
+  //  restant noire, et le texte s'y pose. Le bouton menu du header passe en
+  //  croix et la referme — le geste se rejoue alors à l'envers. Voir
+  //  `$lib/pageCard.js`.
   // ───────────────────────────────────────────────────────────────────────────
-  import { reveal } from "$lib/actions/reveal.js";
+  import { onDestroy, tick } from "svelte";
+  import { beforeNavigate } from "$app/navigation";
+  import { revealBlock } from "$lib/actions/reveal.js";
+  import { coverPage, uncoverPage, setPageCardOpen } from "$lib/pageCard.js";
+  import ProjectQuoteCard from "./ProjectQuoteCard.svelte";
+
+  // Pose les guillemets DANS le texte, au contact du premier et du dernier mot
+  // (après les balises ouvrantes, avant les fermantes) : l'arrivée mot à mot
+  // les découpe alors avec leur mot, et ils ne peuvent plus rester seuls en
+  // bout de ligne.
+  function withQuotes(html, { open = true, close = true } = {}) {
+    const head = html.match(/^\s*(?:<[^/][^>]*>\s*)*/)[0];
+    const tail = html.slice(head.length).match(/(?:\s*<\/[^>]+>)*\s*$/)[0];
+    const body = html.slice(head.length, html.length - tail.length);
+    return `${head}${open ? "«&nbsp;" : ""}${body}${close ? "&nbsp;»" : ""}${tail}`;
+  }
 
   /** La citation. HTML autorisé (`.hl`), sans guillemets. */
   export let quote = "";
@@ -23,18 +59,194 @@
   export let author = "";
   /** Sa fonction, sa structure. */
   export let role = "";
+  /** Petit surtitre gris au-dessus de la citation. */
+  export let label = "";
+
+  /** Le témoignage complet, en paragraphes (HTML, sans guillemets). Le « + »
+   *  n'apparaît que s'il est fourni. */
+  export let full = [];
+  /** La carte : photo de la personne, sa signature `{ name, org }`, le logo
+   *  de sa marque en filigrane. */
+  export let photo = "";
+  export let photoAlt = "";
+  export let photoPosition = "50% 30%";
+  export let signature = null;
+  export let logo = "";
+
+  $: quoted = withQuotes(quote);
+  $: fullQuoted = full.map((para, i) =>
+    withQuotes(para, { open: i === 0, close: i === full.length - 1 })
+  );
+
+  /** @type {"closed" | "covering" | "open" | "closing"} */
+  let phase = "closed";
+  let mounted = false;
+  let ready = false;
+  let contentHidden = false;
+  let fadeIn = false;
+  let leaving = false;
+  let cardEl;
+  let plusEl;
+  let scrollHeld = false;
+
+  // Le panneau est sorti de `.page-stage` : la page recule pendant les deux
+  // gestes (transform), et un `position: fixed` resté dedans la suivrait.
+  // L'hôte est un enfant de la section, jamais une racine du composant :
+  // Svelte retire ses racines en parcourant leurs voisins, ce qu'un nœud
+  // déplacé fausserait.
+  function portal(node) {
+    (document.querySelector("main") ?? document.body).appendChild(node);
+    return {
+      destroy() {
+        node.remove();
+      }
+    };
+  }
+
+  function holdScroll() {
+    if (scrollHeld) return;
+    scrollHeld = true;
+    document.documentElement.style.overflow = "hidden";
+  }
+
+  function releaseScroll() {
+    if (!scrollHeld) return;
+    scrollHeld = false;
+    if (document.documentElement.style.overflow === "hidden") {
+      document.documentElement.style.overflow = "";
+    }
+  }
+
+  async function openCard() {
+    if (phase !== "closed") return;
+    phase = "covering";
+    const cover = coverPage();
+    fadeIn = !cover;
+    const covered = cover ? await cover : null;
+    if (phase !== "covering") return;
+
+    // L'écran est noir : le panneau se pose, du même noir, dans l'image même —
+    // encore VIDE.
+    mounted = true;
+    phase = "open";
+    await tick();
+    // Après le montage : le layout lève tout verrou de défilement dont il ne
+    // voit pas le propriétaire (`data-scroll-lock-owner` sur le panneau).
+    holdScroll();
+    setPageCardOpen(true, closeCard);
+    cardEl?.focus({ preventScroll: true });
+
+    // Les textes n'arrivent qu'une fois la page rendue à plat dessous et au
+    // repos : lancés pendant qu'elle se redessinait, ils accrochaient.
+    if (covered?.released) await covered.released;
+    if (phase === "open") ready = true;
+  }
+
+  function removeCard() {
+    releaseScroll();
+    mounted = false;
+    ready = false;
+    contentHidden = false;
+    leaving = false;
+    fadeIn = false;
+    phase = "closed";
+    plusEl?.focus({ preventScroll: true });
+  }
+
+  function closeCard() {
+    if (phase !== "open") return;
+    phase = "closing";
+    setPageCardOpen(false);
+    // Les textes s'effacent d'abord, sur le noir ; puis le geste à l'envers.
+    contentHidden = true;
+    setTimeout(() => {
+      if (phase !== "closing") return;
+      if (!uncoverPage(removeCard)) {
+        leaving = true;
+        setTimeout(removeCard, 400);
+      }
+    }, 360);
+  }
+
+  function onKeyDown(event) {
+    if (event.key === "Escape" && phase === "open") {
+      event.preventDefault();
+      closeCard();
+    }
+  }
+
+  function handleButtonMove(event) {
+    const button = event.currentTarget;
+    const rect = button.getBoundingClientRect();
+    button.style.setProperty("--mx", `${event.clientX - rect.left}px`);
+    button.style.setProperty("--my", `${event.clientY - rect.top}px`);
+  }
+
+  // Une navigation pendant que la carte est ouverte (le logo, le retour du
+  // navigateur) : la carte s'efface pendant que la page part.
+  beforeNavigate(() => {
+    if (phase === "closed") return;
+    setPageCardOpen(false);
+    leaving = true;
+    releaseScroll();
+  });
+
+  onDestroy(() => {
+    if (phase !== "closed") setPageCardOpen(false);
+    if (scrollHeld) releaseScroll();
+  });
 </script>
+
+<svelte:window on:keydown={onKeyDown} />
 
 <section class="pquote" aria-label="Le mot du client">
   <figure class="pquote__figure">
-    <blockquote class="pquote__text" use:reveal>«&nbsp;{@html quote}&nbsp;»</blockquote>
+    {#if label}<p class="pquote__label" use:revealBlock={{ keepLayer: true }}>{label}</p>{/if}
+    <blockquote class="pquote__text" use:revealBlock={{ delay: 80, keepLayer: true }}>{@html quoted}</blockquote>
     {#if author || role}
-      <figcaption class="pquote__cite" use:reveal={{ delay: 160 }}>
+      <figcaption class="pquote__cite" use:revealBlock={{ delay: 200, keepLayer: true }}>
         {#if author}<span class="pquote__author">{author}</span>{/if}
         {#if role}<span class="pquote__role">{role}</span>{/if}
       </figcaption>
     {/if}
+
+    {#if full.length}
+      <button
+        class="pquote__more card-plus"
+        type="button"
+        aria-label="Lire le témoignage en entier"
+        aria-haspopup="dialog"
+        aria-expanded={phase === "open"}
+        data-cursor="button"
+        bind:this={plusEl}
+        on:click={openCard}
+        on:mousemove={handleButtonMove}
+        use:revealBlock={{ delay: 220 }}
+      >
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg>
+      </button>
+    {/if}
   </figure>
+
+  {#if full.length}
+    <div class="pquote__portal" use:portal>
+      {#if mounted}
+        <ProjectQuoteCard
+          paragraphs={fullQuoted}
+          {photo}
+          {photoAlt}
+          {photoPosition}
+          {signature}
+          {logo}
+          {ready}
+          {contentHidden}
+          {fadeIn}
+          {leaving}
+          bind:el={cardEl}
+        />
+      {/if}
+    </div>
+  {/if}
 </section>
 
 <style>
@@ -51,6 +263,14 @@
     margin: 0;
     width: min(100%, 58rem);
     text-align: center;
+  }
+
+  /* Le texte arrive sur place : ni montée, ni mots qui bougent (voir plus
+     haut). Le « + » garde la montée des boutons. */
+  .pquote__label,
+  .pquote__text,
+  .pquote__cite {
+    --reveal-shift: 0px;
   }
 
   /* Plus grand que les accroches de la page (36 px au repos) : c'est le seul
@@ -93,9 +313,117 @@
     color: color-mix(in srgb, var(--project-surface-ink, #f4efe6) 50%, transparent);
   }
 
+  /* Le surtitre : le gabarit de la signature, en gris. */
+  .pquote__label {
+    margin: 0 0 clamp(1.4rem, 3.5vh, 2.25rem);
+    font-family: var(--site-font);
+    font-size: clamp(0.95rem, 1.1vw, 1.1rem);
+    line-height: 1.4;
+    color: color-mix(in srgb, var(--project-surface-ink, #f4efe6) 50%, transparent);
+  }
+
+  /*  ── Le « + » ───────────────────────────────────────────────────────────
+   *  Le bouton de verre du site, au fond et aux effets de « Visiter le site »
+   *  du hero de la même page (`.hero-cta`) : verre blanc à 11 % sur un fond
+   *  flouté, arrondi de 10 px, et au survol le liseré qui suit le curseur. Un
+   *  carré à la hauteur de ce bouton, un « + » au trait de la croix du header,
+   *  qui pivote au survol comme elle. Sur écran tactile, `.card-plus` coupe
+   *  les liserés (`app.css`). */
+  .pquote__more {
+    position: relative;
+    display: inline-grid;
+    place-items: center;
+    width: clamp(3.15rem, 4vw, 3.9rem);
+    aspect-ratio: 1;
+    margin-top: clamp(2.25rem, 5.5vh, 3.5rem);
+    padding: 0;
+    border: 0;
+    border-radius: 10px;
+    color: #f7f2e8;
+    cursor: pointer;
+    background: rgba(255, 255, 255, 0.11);
+    backdrop-filter: blur(20px) saturate(160%) brightness(0.82);
+    -webkit-backdrop-filter: blur(20px) saturate(160%) brightness(0.82);
+    box-shadow: 0 6px 8px rgba(var(--shade-rgb, 0, 0, 0), 0.04);
+    -webkit-tap-highlight-color: transparent;
+    transition:
+      box-shadow 1.2s cubic-bezier(.22,.61,.36,1),
+      background 1.2s cubic-bezier(.22,.61,.36,1);
+  }
+
+  .pquote__more svg {
+    width: 18px;
+    height: 18px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    transition: transform 0.6s cubic-bezier(.22,.61,.36,1);
+  }
+
+  .pquote__more::before,
+  .pquote__more::after {
+    content: "";
+    position: absolute;
+    inset: -1px;
+    border-radius: inherit;
+    padding: 1px;
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+    opacity: 0;
+  }
+
+  .pquote__more::before {
+    background: radial-gradient(
+      68px circle at var(--mx, 50%) var(--my, 50%),
+      var(--site-glow-strong) 0%,
+      var(--site-glow-mid) 22%,
+      var(--site-glow-soft) 45%,
+      var(--site-glow-fade) 62%,
+      transparent 78%
+    );
+    transition: opacity 0.25s ease;
+  }
+
+  .pquote__more::after {
+    background: radial-gradient(
+      78px circle at var(--mx, 50%) var(--my, 50%),
+      var(--site-glow-ambient) 0%,
+      var(--site-glow-outer) 42%,
+      transparent 72%
+    );
+    filter: blur(2px);
+    transition: opacity 0.25s ease;
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .pquote__more:hover::before,
+    .pquote__more:hover::after {
+      opacity: 1;
+    }
+
+    .pquote__more:hover svg {
+      transform: scale(1.12) rotate(90deg);
+    }
+  }
+
+  .pquote__more:focus-visible {
+    outline: 1px solid rgba(255, 255, 255, 0.6);
+    outline-offset: 3px;
+  }
+
   @media (max-width: 900px) {
     .pquote {
       padding: clamp(4rem, 10vh, 6rem) var(--project-side-padding, 1rem);
+    }
+
+    /* Le verre mobile du site, comme `.hero-cta`. */
+    .pquote__more {
+      width: 3.45rem;
+      backdrop-filter: blur(12px) saturate(130%);
+      -webkit-backdrop-filter: blur(12px) saturate(130%);
     }
   }
 

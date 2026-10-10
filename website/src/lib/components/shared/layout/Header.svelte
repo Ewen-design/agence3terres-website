@@ -4,6 +4,7 @@
   import { page } from "$app/stores";
   import FullscreenMenu from "./FullscreenMenu.svelte";
   import { navigate } from "$lib/navigate.js";
+  import { pageCardState, closePageCard } from "$lib/pageCard.js";
   import {
     registerRead,
     unregisterRead,
@@ -244,7 +245,17 @@
     menuOpen = true;
   }
 
+  // Une carte de contenu est ouverte (la citation complète d'un client, voir
+  // `$lib/pageCard.js`) : le bouton prend l'état « menu ouvert » — la croix — et
+  // la referme au lieu d'ouvrir le menu.
+  $: cardOpen = $pageCardState.open;
+  $: crossed = menuOpen || cardOpen;
+
   function toggleMenu() {
+    if (cardOpen) {
+      closePageCard();
+      return;
+    }
     if (menuOpen) {
       menuOpen = false;
     } else {
@@ -278,7 +289,7 @@
     }, revealDelay);
   }
 
-  $: compact = scrollingDown && !menuOpen;
+  $: compact = scrollingDown && !crossed;
 
   $: themeClass =
     pathname === "/services" ? "theme-services" :
@@ -396,8 +407,8 @@
 {/if}
 
 <header
-  class="nav-wrapper {compact ? 'compact' : ''} {menuOpen ? 'menu-open' : ''} {themeClass} {headerReady ? 'is-ready' : 'is-loading'} {headerIntroVisible ? 'intro-visible' : 'intro-hidden'} {headerIntroVisible && !headerIntroDone ? 'intro-animating' : ''} {textColor === LIGHT_TEXT_COLOR && !menuOpen ? 'ink-dark' : ''}"
-  style="color:{menuOpen ? '#ffffff' : textColor}"
+  class="nav-wrapper {compact ? 'compact' : ''} {crossed ? 'menu-open' : ''} {themeClass} {headerReady ? 'is-ready' : 'is-loading'} {headerIntroVisible ? 'intro-visible' : 'intro-hidden'} {headerIntroVisible && !headerIntroDone ? 'intro-animating' : ''} {textColor === LIGHT_TEXT_COLOR && !crossed ? 'ink-dark' : ''}"
+  style="color:{crossed ? '#ffffff' : textColor}"
   bind:this={headerEl}
 >
   <button
@@ -416,7 +427,7 @@
     data-cursor="button"
     role="button"
     tabindex="0"
-    aria-label={menuOpen ? "Fermer le menu" : "Ouvrir le menu"}
+    aria-label={cardOpen ? "Fermer" : menuOpen ? "Fermer le menu" : "Ouvrir le menu"}
     aria-expanded={menuOpen}
     on:mousemove={handleButtonMove}
     on:click={toggleMenu}

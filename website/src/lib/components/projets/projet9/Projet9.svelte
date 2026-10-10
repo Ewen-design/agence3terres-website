@@ -48,9 +48,9 @@
   <div class="project-theme-band">
     <ProjectEditoBadge
       text="<span class='hl'>Un centre de médecine esthétique se juge d'abord sur la confiance qu'il inspire.</span> Il fallait une marque qui tienne le médical et le soin dans le même geste, sans jamais verser dans la promesse."
-      video={videoSources("harmonia-signature")}
-      poster="/videos/harmonia-signature-poster.webp"
-      alt="Le site du Centre Harmonia sur téléphone"
+      image="/images/harmonia-carte-eau.webp"
+      mobileImage="/images/harmonia-carte-eau-mobile.webp"
+      alt="Une carte Centre Harmonia flotte à la surface d'une piscine : un visage qui sourit, les yeux fermés"
       aspect="1.78"
       mobileAspect="1.3"
     />
@@ -88,8 +88,14 @@
         {
           title: "La marque imprimée",
           text: "Brochure, peignoir, signalétique : l'identité <span class='hl'>quitte l'écran</span> et se retrouve dans la main du patient, au même diapason.",
-          image: "/images/harmonia-imprime.webp",
-          alt: "Brochure et textile à l'identité du Centre Harmonia"
+          // L'affiche encadrée dans un couloir (2026-10-10). L'affiche occupe
+          // presque toute la hauteur et le quart du milieu de la largeur :
+          // centrée, elle tient du cadre presque carré du bureau (1,06:1) au
+          // très haut de la tablette verticale (0,48:1).
+          image: "/images/harmonia-affiche-couloir.webp",
+          position: "51% 50%",
+          mobilePosition: "51% 50%",
+          alt: "Une affiche Centre Harmonia encadrée dans un couloir boisé, un passant au premier plan"
         }
       ]}
     />
@@ -101,7 +107,7 @@
     />
 
     <ProjectImageTabs
-      title="Un même soin,<br /><span class='dim'>quatre façons de l'approcher.</span>"
+      title="Un même soin,<br /><span class='dim'>cinq façons de l'approcher.</span>"
       aspect="16 / 10"
       mobileAspect="4 / 5"
       tabs={[
@@ -119,15 +125,29 @@
           mobileImage: "/images/harmonia-macbook-mobile.webp",
           alt: "La section « L'harmonie débute par le lieu » sur ordinateur portable"
         },
+        // Les trois derniers onglets (2026-10-10) : des mockups livrés par le
+        // client, chacun en deux fichiers — 16/10 pour le bureau et le
+        // téléphone couché, 4/5 pour le téléphone et la tablette verticale.
         {
           label: "Un univers",
-          image: "/images/harmonia-site-visage.webp",
-          alt: "La page Visage, sous le nom d'Aphrodite"
+          image: "/images/harmonia-univers-ecrans-large.webp",
+          mobileImage: "/images/harmonia-univers-ecrans-mobile.webp",
+          alt: "Les univers « Luminothérapie & bilan capillaire » et « Immunité & hydratation » sur MacBook Air et iPad Pro"
         },
         {
           label: "Le diagnostic",
-          image: "/images/harmonia-site-diagnostic.webp",
-          alt: "Le diagnostic en ligne du Centre Harmonia"
+          // Le tissu du canapé est ADOUCI (flou de 4 px hors de l'iPad) : son
+          // zigzag très contrasté pesait 1 Mo à lui seul et moirait une fois
+          // réduit par le navigateur.
+          image: "/images/harmonia-diagnostic-ipad-large.webp",
+          mobileImage: "/images/harmonia-diagnostic-ipad-mobile.webp",
+          alt: "« Commencez par votre diagnostic » : l'accueil du diagnostic en ligne sur iPad"
+        },
+        {
+          label: "Les tarifs",
+          image: "/images/harmonia-tarifs-macbook-large.webp",
+          mobileImage: "/images/harmonia-tarifs-macbook-mobile.webp",
+          alt: "La page des tarifs du Centre Harmonia sur un MacBook, posé sur les genoux"
         }
       ]}
       note="Le même système, de l'écran d'accueil à la brochure : <span class='hl'>une seule promesse</span>, tenue partout."

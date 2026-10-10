@@ -58,15 +58,15 @@
         {
           title: "Un emblème modernisé",
           text: "Le colibri de la marque a été entièrement redessiné : des formes plus nettes, un geste plus franc, et une <span class='hl'>lisibilité tenue</span> jusqu'aux très petites tailles.",
-          // Recomposé le 2026-10-09 : le logo d'origine (logo-font.jpg) à la
-          // même part de la largeur, centré sur son dégradé ÉTIRÉ en hauteur,
-          // au format 1:2. Le fichier large (2,24:1) posé en `contain`
-          // laissait des bandes d'aplat qui ne raccordaient pas au dégradé.
-          // Le cadre va de 1,06:1 (bureau) à 0,47:1 (tablette verticale) :
-          // un seul fichier très haut, en `cover`, ne perd que du fond dans
-          // tous les cas, et le logo garde ~65 % de la largeur.
-          image: "/images/lybra-embleme-haut.webp",
-          alt: "Le colibri Lybra redessiné, sur fond bleu nuit"
+          // L'enseigne lumineuse en cube (2026-10-10, mockup du client). Le
+          // cadre va de 1,06:1 (bureau) à 0,48:1 (tablette verticale) : le
+          // fichier est HAUT (2000×3250), resserré autour du cube et de sa
+          // potence, son fond sombre PROLONGÉ en haut et en bas (les bandes de
+          // bord de l'original sont unies : étirées, elles ne se voient pas).
+          // En `cover` centré, le cube tient entier dans tous les formats et
+          // reste grand en bureau ; seul du fond tombe hors cadre.
+          image: "/images/lybra-enseigne-cube.webp",
+          alt: "L'enseigne lumineuse en cube de Lybra, le colibri et le nom, de nuit"
         },
         {
           title: "Une identité complète",

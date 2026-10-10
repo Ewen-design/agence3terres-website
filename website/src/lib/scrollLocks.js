@@ -67,6 +67,12 @@ export function hasActiveGlobalScrollLockOwner() {
     return true;
   }
 
+  // Une carte de contenu ouverte (`$lib/pageCard.js`) tient le défilement du
+  // document pendant qu'on lit dans la sienne.
+  if (document.querySelector("[data-scroll-lock-owner]")) {
+    return true;
+  }
+
   return false;
 }
 
