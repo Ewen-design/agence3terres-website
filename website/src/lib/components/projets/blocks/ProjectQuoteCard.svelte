@@ -25,8 +25,14 @@
   //    téléphone l'animation accrochait — et, dans le Safari du client, des
   //    mots qui « se replaçaient » (voir `ProjectQuote`). Couche gardée après
   //    l'arrivée (`keepLayer`), même raison.
+  //
+  //  ── OU LA VIDÉO (2026-10-17, Lybra) ──────────────────────────────────────
+  //  Quand le client a témoigné en vidéo, elle prend la place du texte, en
+  //  pleine hauteur (`ProjectQuoteVideo`) : ni photo, ni signature, ni
+  //  filigrane — il se présente lui-même. Le panneau ne défile plus.
   // ───────────────────────────────────────────────────────────────────────────
   import { revealBlock } from "$lib/actions/reveal.js";
+  import ProjectQuoteVideo from "./ProjectQuoteVideo.svelte";
 
   /** Les paragraphes du témoignage (HTML), guillemets déjà posés. */
   export let paragraphs = [];
@@ -47,6 +53,10 @@
   export let leaving = false;
   /** Le panneau lui-même, pour lui donner le focus. */
   export let el = null;
+  /** Le témoignage vidéo : l'élément <video> préparé par `ProjectQuote`, et
+   *  son poster. Remplace tout le texte. */
+  export let video = null;
+  export let videoPoster = "";
 
   // Les deux premiers paragraphes sont à l'écran ensemble : le second attend
   // que le premier soit lancé. Les suivants arrivent quand on les fait défiler.
@@ -59,51 +69,64 @@
   class:is-fade-in={fadeIn}
   class:is-leaving={leaving}
   class:is-content-hidden={contentHidden}
+  class:pcard--video={video}
   role="dialog"
   aria-modal="true"
-  aria-label={signature?.name ? `Le témoignage de ${signature.name}` : "Le témoignage en entier"}
+  aria-label={video
+    ? "Le témoignage en vidéo"
+    : signature?.name
+      ? `Le témoignage de ${signature.name}`
+      : "Le témoignage en entier"}
   tabindex="-1"
   data-scroll-lock-owner
   data-lenis-prevent
   bind:this={el}
 >
-  <div class="pcard__inner">
-    {#if ready}
-      {#if photo}
-        <img
-          class="pcard__photo"
-          src={photo}
-          alt={photoAlt}
-          style:object-position={photoPosition}
-          decoding="async"
-          draggable="false"
-          use:revealBlock
-        />
+  {#if video}
+    <div class="pcard__inner pcard__inner--video">
+      {#if ready}
+        <ProjectQuoteVideo {video} poster={videoPoster} stopping={contentHidden} />
       {/if}
+    </div>
+  {:else}
+    <div class="pcard__inner">
+      {#if ready}
+        {#if photo}
+          <img
+            class="pcard__photo"
+            src={photo}
+            alt={photoAlt}
+            style:object-position={photoPosition}
+            decoding="async"
+            draggable="false"
+            use:revealBlock
+          />
+        {/if}
 
-      <blockquote class="pcard__text">
-        {#each paragraphs as para, i}
-          <p use:revealBlock={{ delay: paraDelay(i), keepLayer: true }}>{@html para}</p>
-        {/each}
-      </blockquote>
+        <blockquote class="pcard__text">
+          {#each paragraphs as para, i}
+            <p use:revealBlock={{ delay: paraDelay(i), keepLayer: true }}>{@html para}</p>
+          {/each}
+        </blockquote>
 
-      {#if signature}
-        <p class="pcard__cite" use:revealBlock={{ keepLayer: true }}>
-          {#if signature.name}<span class="pcard__author">{signature.name}</span>{/if}
-          {#if signature.org}<span class="pcard__org">{signature.org}</span>{/if}
-        </p>
+        {#if signature}
+          <p class="pcard__cite" use:revealBlock={{ keepLayer: true }}>
+            {#if signature.name}<span class="pcard__author">{signature.name}</span>{/if}
+            {#if signature.org}<span class="pcard__org">{signature.org}</span>{/if}
+          </p>
+        {/if}
+
+        {#if logo}
+          <!-- L'arrivée sur l'ENVELOPPE, pas sur le logo : l'opacité du filigrane
+               (0,16) l'emportait sur l'état caché de l'arrivée — le logo était
+               visible avant d'arriver, s'éteignait d'un coup, puis revenait. -->
+          <div class="pcard__mark" use:revealBlock={{ delay: 120 }}>
+            <img class="pcard__logo" src={logo} alt="" aria-hidden="true" draggable="false" />
+          </div>
+        {/if}
       {/if}
-
-      {#if logo}
-        <!-- L'arrivée sur l'ENVELOPPE, pas sur le logo : l'opacité du filigrane
-             (0,16) l'emportait sur l'état caché de l'arrivée — le logo était
-             visible avant d'arriver, s'éteignait d'un coup, puis revenait. -->
-        <div class="pcard__mark" use:revealBlock={{ delay: 120 }}>
-          <img class="pcard__logo" src={logo} alt="" aria-hidden="true" draggable="false" />
-        </div>
-      {/if}
-    {/if}
-  </div>
+    </div>
+  {/if}
 </div>
 
 <style>
@@ -162,6 +185,18 @@
 
   .pcard.is-content-hidden .pcard__inner {
     opacity: 0;
+  }
+
+  /* La vidéo tient l'écran : rien à faire défiler. */
+  .pcard--video {
+    overflow: hidden;
+  }
+
+  .pcard__inner--video {
+    position: absolute;
+    inset: 0;
+    min-height: 0;
+    padding: 0;
   }
 
   .pcard__photo {

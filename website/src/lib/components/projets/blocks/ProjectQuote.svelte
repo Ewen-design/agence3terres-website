@@ -35,6 +35,13 @@
   //  restant noire, et le texte s'y pose. Le bouton menu du header passe en
   //  croix et la referme — le geste se rejoue alors à l'envers. Voir
   //  `$lib/pageCard.js`.
+  //
+  //  ── OU EN VIDÉO (2026-10-17, Lybra) ──────────────────────────────────────
+  //  Avec `video`, le « + » ouvre la même carte, et la vidéo du client y prend
+  //  la place du texte, en pleine hauteur, AVEC LE SON (`ProjectQuoteVideo`).
+  //  L'élément <video> est fabriqué ICI, dans le clic même (`primeVideo`) :
+  //  la carte ne s'ouvre que trois secondes plus tard, et Safari refuserait
+  //  alors le son à un élément qui n'a jamais vu le geste.
   // ───────────────────────────────────────────────────────────────────────────
   import { onDestroy, tick } from "svelte";
   import { beforeNavigate } from "$app/navigation";
@@ -72,6 +79,11 @@
   export let photoPosition = "50% 30%";
   export let signature = null;
   export let logo = "";
+  /** Le témoignage en vidéo, à la place du texte : `{ src, poster }` (un
+   *  seul fichier H.264, son compris). Le « + » apparaît aussi avec lui. */
+  export let video = null;
+
+  $: hasCard = full.length > 0 || Boolean(video?.src);
 
   $: quoted = withQuotes(quote);
   $: fullQuoted = full.map((para, i) =>
@@ -88,6 +100,8 @@
   let cardEl;
   let plusEl;
   let scrollHeld = false;
+  /** L'élément <video> de la carte, vivant du clic à la fermeture. */
+  let videoEl = null;
 
   // Le panneau est sorti de `.page-stage` : la page recule pendant les deux
   // gestes (transform), et un `position: fixed` resté dedans la suivrait.
@@ -117,13 +131,54 @@
     }
   }
 
+  // DANS le geste : un <video> rangé hors champ, et une lecture MUETTE
+  // aussitôt mise en pause. Safari lève alors, pour CET élément, l'obligation
+  // d'un geste pour jouer le son — la carte pourra le lancer à l'ouverture.
+  // Le fichier commence aussi à charger pendant que la page recule.
+  function primeVideo() {
+    const el = document.createElement("video");
+    el.playsInline = true;
+    el.setAttribute("playsinline", "");
+    el.setAttribute("webkit-playsinline", "");
+    el.preload = "auto";
+    if (video.poster) el.poster = video.poster;
+    el.defaultMuted = true;
+    el.muted = true;
+    el.style.cssText =
+      "position:fixed;left:-9999px;top:0;width:2px;height:2px;opacity:0;pointer-events:none";
+    el.src = video.src;
+    document.body.appendChild(el);
+    el.play()
+      ?.then(() => {
+        // La carte a pu démarrer la vraie lecture entre-temps (`data-live`).
+        if (el.dataset.live === undefined) el.pause();
+      })
+      .catch(() => {});
+    return el;
+  }
+
+  function releaseVideo() {
+    if (!videoEl) return;
+    const el = videoEl;
+    videoEl = null;
+    el.pause();
+    // Coupe le téléchargement en cours et libère le décodeur.
+    el.removeAttribute("src");
+    el.load();
+    el.remove();
+  }
+
   async function openCard() {
     if (phase !== "closed") return;
     phase = "covering";
+    if (video?.src) videoEl = primeVideo();
     const cover = coverPage();
     fadeIn = !cover;
     const covered = cover ? await cover : null;
-    if (phase !== "covering") return;
+    if (phase !== "covering") {
+      releaseVideo();
+      return;
+    }
 
     // L'écran est noir : le panneau se pose, du même noir, dans l'image même —
     // encore VIDE.
@@ -144,6 +199,7 @@
 
   function removeCard() {
     releaseScroll();
+    releaseVideo();
     mounted = false;
     ready = false;
     contentHidden = false;
@@ -186,6 +242,7 @@
   // navigateur) : la carte s'efface pendant que la page part.
   beforeNavigate(() => {
     if (phase === "closed") return;
+    videoEl?.pause();
     setPageCardOpen(false);
     leaving = true;
     releaseScroll();
@@ -194,6 +251,7 @@
   onDestroy(() => {
     if (phase !== "closed") setPageCardOpen(false);
     if (scrollHeld) releaseScroll();
+    releaseVideo();
   });
 </script>
 
@@ -210,11 +268,11 @@
       </figcaption>
     {/if}
 
-    {#if full.length}
+    {#if hasCard}
       <button
         class="pquote__more card-plus"
         type="button"
-        aria-label="Lire le témoignage en entier"
+        aria-label={video?.src ? "Voir le témoignage en vidéo" : "Lire le témoignage en entier"}
         aria-haspopup="dialog"
         aria-expanded={phase === "open"}
         data-cursor="button"
@@ -228,7 +286,7 @@
     {/if}
   </figure>
 
-  {#if full.length}
+  {#if hasCard}
     <div class="pquote__portal" use:portal>
       {#if mounted}
         <ProjectQuoteCard
@@ -242,6 +300,8 @@
           {contentHidden}
           {fadeIn}
           {leaving}
+          video={videoEl}
+          videoPoster={video?.poster ?? ""}
           bind:el={cardEl}
         />
       {/if}

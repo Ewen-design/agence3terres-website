@@ -20,7 +20,17 @@
   import ProjectActionDuo from "$lib/components/projets/blocks/ProjectActionDuo.svelte";
   import ProjectQuote from "$lib/components/projets/blocks/ProjectQuote.svelte";
 
-  import { videoSources } from "$lib/components/shared/media/videoSources.js";
+  import { videoSources, videoPoster } from "$lib/components/shared/media/videoSources.js";
+
+  // Le témoignage vidéo de Thomas (reçu le 2026-10-16), produit par
+  // `media-source/encode-lybra-temoignage.sh`. Un seul fichier H.264, son
+  // compris. Jeton de cache à bumper après chaque réencodage (voir
+  // `videoSources.js`).
+  const TEMOIGNAGE_VERSION = "2026-10-17";
+  const temoignage = {
+    src: `/videos/lybra-temoignage.h264.mp4?v=${TEMOIGNAGE_VERSION}`,
+    poster: videoPoster("lybra-temoignage", { version: TEMOIGNAGE_VERSION })
+  };
 </script>
 
 <ProjectThemePage>
@@ -208,13 +218,18 @@
   <!-- Le mot du client, sur le NOIR de la palette (bande sombre), à la place
        du mur des autres projets — le pied de page « projet suivant » assure la
        suite de la visite.
-       ⚠️ TEXTE PROVISOIRE : remplacer `quote`, `author` et `role` par la vraie
-       citation du client. -->
+       Le VRAI témoignage de Thomas, en vidéo (reçu le 2026-10-16). La page
+       n'en garde qu'une phrase, sur la nouvelle direction artistique — le cœur
+       du projet — sans signature, comme Ludosphères ; le « + » ouvre la vidéo,
+       avec le son, en pleine hauteur dans la carte. Mots d'origine (vers
+       0:27) : « on est très content de la nouvelle direction, franchement
+       c'est beaucoup plus moderne, c'est beaucoup plus à jour et aligné avec
+       ce que l'on fait aujourd'hui ». -->
   <div class="project-theme-band theme-deep">
     <ProjectQuote
-      quote="<span class='hl'>La citation du client prendra place ici.</span> Une ou deux phrases, dans ses mots."
-      author="Prénom Nom"
-      role="Fonction, Lybra"
+      label="Le mot du client"
+      quote="<span class='hl'>On est très contents de la nouvelle direction.</span> C’est beaucoup plus moderne, beaucoup plus à jour, et aligné avec ce que l’on fait aujourd’hui."
+      video={temoignage}
     />
   </div>
 </ProjectThemePage>
