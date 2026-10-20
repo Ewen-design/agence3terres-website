@@ -25,6 +25,15 @@
   export let video = [];
   export let mobileVideo = [];
   export let poster = "";
+  /** Affiche du rendu portrait (voir AutoVideo). */
+  export let mobilePoster = "";
+  /**
+   * Quand passer au rendu portrait : au MÊME point que le cadre (4/5 sous
+   * 900 px), sauf téléphone couché, où le cadre repasse en large. Avec le
+   * 640 px d'AutoVideo, une tablette verticale recevait la vidéo paysage
+   * rognée dans un cadre portrait.
+   */
+  export let mobileQuery = "(max-width: 900px) and (orientation: portrait)";
   /** Cadre de l'image : 16/10 par défaut, comme la capture d'origine. */
   export let aspect = "1.6";
   export let mobileAspect = "1.1";
@@ -46,6 +55,8 @@
       <AutoVideo
         sources={video}
         mobileSources={mobileVideo}
+        {mobileQuery}
+        {mobilePoster}
         poster={poster || image}
         label={alt}
         objectFit={fit}

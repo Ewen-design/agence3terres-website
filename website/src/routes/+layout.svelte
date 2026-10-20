@@ -100,7 +100,7 @@
     "/projet1": {
       title: "Serein Design | Projet Agence 3 Terres",
       description:
-        "Identité produit, direction artistique et interface: découvrez le projet Serein Design par Agence 3 Terres.",
+        "Identité visuelle, site web et direction artistique de Carousel, l'objet de bureau de Serein Design : découvrez le projet par Agence 3 Terres.",
       imageAlt: "Projet Serein Design par Agence 3 Terres"
     },
     "/projet3": {

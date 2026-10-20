@@ -100,15 +100,19 @@ export const PROJETS = [
   {
     slug: "projet1",
     title: "Serein Design",
-    category: "Identité produit",
-    lead: "Un univers objet premium, calme et fonctionnel.",
-    tags: "UI design, UX design, direction visuelle",
-    annee: "2025",
+    category: "Objet de bureau",
+    lead: "Un objet qui n'affiche que ce qui compte.",
+    tags: "Identité visuelle, site web, direction artistique",
+    annee: "2026",
     hero: {
-      image: "/images/serein_design.webp",
-      mobileImage: "/images/serein_design.webp"
+      // Le hero est une VIDÉO (le téléphone sur le fond studio rouge) :
+      // ses posters sont le photogramme 0 de chaque rendu. `?v=` = le jeton
+      // de `Projet1.svelte`, à changer avec lui.
+      image: "/videos/serein-hero-poster.webp?v=2",
+      mobileImage: "/videos/serein-hero-mobile-poster.webp?v=2"
     },
-    vignette: "/images/telephone2.webp",
+    // L'objet de face, de nuit : sombre, portrait, sujet centré.
+    vignette: "/images/serein-vignette.webp",
     listed: true
   }
 ];

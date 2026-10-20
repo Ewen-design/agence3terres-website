@@ -55,9 +55,9 @@
     },
     {
       title: "Serein Design",
-      category: "Identité produit",
-      lead: "Un univers objet premium, calme et fonctionnel.",
-      image: "/images/serein_design.webp",
+      category: "Objet de bureau",
+      lead: "Un objet qui n'affiche que ce qui compte.",
+      image: "/images/serein-vignette.webp",
       page: "projet1",
       button: "Voir le projet"
     },
