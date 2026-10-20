@@ -207,6 +207,42 @@
   });
 </script>
 
+{#snippet dock(where)}
+      <div class="fr__rail fr__rail--{where}" role="group" aria-label="Progression des projets">
+        <div class="fr__pill" role="tablist" aria-label="projets">
+          {#each slides as slide, i}
+            <button
+              type="button"
+              class="fr__dot"
+              class:is-active={activeIndex === i}
+              role="tab"
+              aria-selected={activeIndex === i}
+              aria-label={"Projet " + (i + 1) + " : " + slide.title.replace(/\n/g, " ")}
+              on:click={() => goTo(i)}
+            ></button>
+          {/each}
+        </div>
+
+        {#if N > 1}
+          <button
+            type="button"
+            class="fr__pp"
+            data-no-wipe
+            on:click={togglePlay}
+            aria-label={playing ? "Pause de la lecture automatique" : atEnd() ? "Rejouer la lecture automatique" : "Lecture automatique"}
+          >
+            {#if playing}
+              <svg viewBox="0 0 24 24" width="1em" height="1em" aria-hidden="true"><rect x="7" y="6" width="3.4" height="12" rx="1.1" fill="currentColor"/><rect x="13.6" y="6" width="3.4" height="12" rx="1.1" fill="currentColor"/></svg>
+            {:else if atEnd()}
+              <svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 11a8 8 0 1 0-.6 4"/><polyline points="20 5 20 11 14 11"/></svg>
+            {:else}
+              <svg viewBox="0 0 24 24" width="1em" height="1em" aria-hidden="true"><path d="M8 5.5v13l11-6.5z" fill="currentColor"/></svg>
+            {/if}
+          </button>
+        {/if}
+      </div>
+{/snippet}
+
 {#if N > 0}
 {#if blurWarm}
   <div class="fr__blur-prewarm" aria-hidden="true">
@@ -271,7 +307,7 @@
                 class:is-shown={activeIndex === i}
                 src={slide.images[0]}
                 alt=""
-                loading={i < 2 ? "eager" : "lazy"}
+                loading="lazy"
                 decoding="async"
                 draggable="false"
               />
@@ -292,6 +328,8 @@
               class:is-active={activeIndex === i}
               aria-hidden={activeIndex !== i ? "true" : undefined}
             >
+              <!-- Sur téléphone, le nom du projet remplace le petit texte. -->
+              <p class="fr__title">{slide.title}</p>
               {#if slide.description}
                 <p class="fr__desc">{slide.description}</p>
               {/if}
@@ -314,41 +352,12 @@
         {/if}
       </div>
 
-      <!-- Le module de suivi, désormais DANS le bloc image. -->
-      <div class="fr__rail" role="group" aria-label="Progression des projets">
-        <div class="fr__pill" role="tablist" aria-label="projets">
-          {#each slides as slide, i}
-            <button
-              type="button"
-              class="fr__dot"
-              class:is-active={activeIndex === i}
-              role="tab"
-              aria-selected={activeIndex === i}
-              aria-label={"Projet " + (i + 1) + " : " + slide.title.replace(/\n/g, " ")}
-              on:click={() => goTo(i)}
-            ></button>
-          {/each}
-        </div>
-
-        {#if N > 1}
-          <button
-            type="button"
-            class="fr__pp"
-            data-no-wipe
-            on:click={togglePlay}
-            aria-label={playing ? "Pause de la lecture automatique" : atEnd() ? "Rejouer la lecture automatique" : "Lecture automatique"}
-          >
-            {#if playing}
-              <svg viewBox="0 0 24 24" width="1em" height="1em" aria-hidden="true"><rect x="7" y="6" width="3.4" height="12" rx="1.1" fill="currentColor"/><rect x="13.6" y="6" width="3.4" height="12" rx="1.1" fill="currentColor"/></svg>
-            {:else if atEnd()}
-              <svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 11a8 8 0 1 0-.6 4"/><polyline points="20 5 20 11 14 11"/></svg>
-            {:else}
-              <svg viewBox="0 0 24 24" width="1em" height="1em" aria-hidden="true"><path d="M8 5.5v13l11-6.5z" fill="currentColor"/></svg>
-            {/if}
-          </button>
-        {/if}
-      </div>
+      <!-- Le module de suivi DANS le bloc image (bureau). Sur téléphone, il
+           passe sous le bloc, centré (voir `fr__rail--below`). -->
+      {@render dock("inside")}
     </div>
+
+    {@render dock("below")}
   </div>
 </section>
 {/if}
@@ -562,6 +571,18 @@
     pointer-events: auto;
   }
 
+  .fr__title {
+    margin: 0;
+    font-family: var(--site-font);
+    font-weight: var(--site-weight-display, 500);
+    font-size: clamp(1.6rem, 7vw, 2.1rem);
+    line-height: 1.08;
+    letter-spacing: -0.025em;
+    color: #ffffff;
+    white-space: pre-line;
+    text-shadow: 0 4px 24px rgba(var(--shade-rgb, 0, 0, 0), 0.45);
+  }
+
   .fr__desc {
     margin: 0;
     max-width: 30ch;
@@ -677,6 +698,13 @@
     gap: clamp(0.7rem, 1.2vw, 1rem);
     pointer-events: auto;
   }
+  /* Le module SOUS le bloc et le nom du projet dans le bloc : téléphone
+     seulement (voir plus bas). */
+  .fr__rail--below,
+  .fr__title {
+    display: none;
+  }
+
   .fr__pill,
   .fr__pp {
     background: rgba(255, 255, 255, 0.11);
@@ -853,6 +881,44 @@
       font-size: 1.02rem;
       max-width: 26ch;
     }
+
+    /*  ── Téléphone (2026-10-20, demande client) ──────────────────────────
+     *  Plus de rangée de noms sous le bloc : le module de suivi y prend sa
+     *  place, centré. Dans le bloc, seul le nom du projet reste au-dessus du
+     *  bouton — le petit texte d'accroche est réservé au bureau. Le swipe
+     *  horizontal sur le bloc change toujours de projet. */
+    .fr__nav,
+    .fr__rail--inside,
+    .fr__desc {
+      display: none;
+    }
+
+    .fr__title {
+      display: block;
+    }
+
+    .fr__rail--below {
+      position: static;
+      order: 2;
+      display: flex;
+      justify-content: center;
+      justify-self: center;
+      transform: none;
+    }
+
+    /* Posée sur le fond de page et non plus sur une photo : la couleur des
+       cartes, comme les pastilles qu'elle remplace. */
+    .fr__rail--below .fr__pill,
+    .fr__rail--below .fr__pp {
+      background: var(--bg-panel, rgba(255, 255, 255, 0.11));
+      -webkit-backdrop-filter: none;
+      backdrop-filter: none;
+      box-shadow: none;
+    }
+
+    .fr__rail--below .fr__dot:not(.is-active) {
+      background: rgba(255, 255, 255, 0.34);
+    }
   }
 
   @media (max-width: 768px) {
@@ -879,6 +945,21 @@
     .fr__panel {
       order: 0;
       height: min(84svh, 420px);
+    }
+
+    /* Couché, la colonne de noms et le module dans le bloc reviennent. */
+    .fr__nav,
+    .fr__rail--inside {
+      display: flex;
+    }
+
+    .fr__rail--below,
+    .fr__title {
+      display: none;
+    }
+
+    .fr__desc {
+      display: block;
     }
 
     .fr__nav {

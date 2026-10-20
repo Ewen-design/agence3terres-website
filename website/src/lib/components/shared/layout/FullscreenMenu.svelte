@@ -427,8 +427,14 @@
 
   function beginSession(nextMode) {
     if (!rootEl) return false;
-    // Arrête une inertie en cours : la carte est prise à CETTE position.
-    window.scrollTo(window.scrollX, window.scrollY);
+    // Arrête une inertie en cours : la carte est prise à CETTE position. Pas
+    // sur écran tactile : dans Safari iOS, un défilement programmé pendant une
+    // inertie fait partir les éléments fixes (header, cache du haut) plus bas
+    // que la page (voir `$lib/fixedResync.js`). La découpe y suit déjà le
+    // défilement (`onScroll`), et le verrou du menu coupe l'inertie.
+    if (!window.matchMedia?.("(pointer: coarse)").matches) {
+      window.scrollTo(window.scrollX, window.scrollY);
+    }
     mode = nextMode;
     if (!measure()) {
       mode = null;
@@ -499,6 +505,9 @@
       navigatedUnder = false;
       requestAnimationFrame(() => window.dispatchEvent(new Event("resize")));
     }
+
+    // La page est rendue à plat : Safari iOS recale ses éléments fixes.
+    window.dispatchEvent(new Event("app:fixed-resync"));
   }
 
   /* ── Le menu ── */
@@ -533,7 +542,7 @@
 
   function clearWord(el) {
     el.style.opacity = "";
-    el.style.filter = "";
+    el.style.textShadow = "";
     el.style.transform = "";
     el.style.color = "";
   }
@@ -561,9 +570,14 @@
           ? mix(WORD_INK_FROM, WORD_INK_MID, wordEase(t / WORD_INK_MID_AT))
           : mix(WORD_INK_MID, finals[i], wordEase((t - WORD_INK_MID_AT) / (1 - WORD_INK_MID_AT)));
       el.style.opacity = e.toFixed(3);
-      el.style.filter = `blur(${(WORD_BLUR * (1 - e)).toFixed(2)}px)`;
+      // Le flou est une OMBRE de texte (lettres transparentes, ombre floue de
+      // la couleur du moment), pas un `filter: blur` : sur iPhone, ce filtre
+      // recalculé à chaque image laissait des traits roses aux bords de la
+      // boîte de chaque mot (2026-10-20). Une ombre de rayon r ≈ un flou de
+      // r / 2 : même rendu, et aucun calque de filtre.
+      el.style.color = "transparent";
+      el.style.textShadow = `0 0 ${(WORD_BLUR * 2 * (1 - e)).toFixed(2)}px rgb(${ink.join(", ")})`;
       el.style.transform = `translateY(${(WORD_RISE * (1 - e)).toFixed(3)}em)`;
-      el.style.color = `rgb(${ink.join(", ")})`;
     };
     // État de départ posé AVANT que la classe ne les rende visibles : aucune
     // image de texte net avant l'arrivée.
@@ -576,7 +590,7 @@
       words.forEach((el, i) => {
         const t = (now - start - i * WORD_STAGGER_MS) / WORD_MS;
         if (t >= 1) {
-          if (el.style.filter) clearWord(el);
+          if (el.style.textShadow) clearWord(el);
           return;
         }
         pending = true;

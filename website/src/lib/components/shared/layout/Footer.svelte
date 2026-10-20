@@ -68,6 +68,16 @@
   $: if (browser && pathname) scheduleMeasure();
   $: footerGradient = footerGradients[pathname] ?? null;
   $: footerImage = footerImages[pathname] ?? footerImages["/"];
+
+  /*  La photo de fond n'est posée qu'à l'approche du pied de page (2026-10-20).
+   *  Un `background-image` en style part au téléchargement dès le rendu, quelle
+   *  que soit sa place dans la page : sur /travail, /services, Moovy ou Lybra,
+   *  100 à 200 Ko filaient AVANT les images du premier écran. Elle est posée
+   *  quand le défilement arrive à ~2,5 écrans du début du fondu, assez tôt pour
+   *  être là avant d'être visible (le fondu part de 0,12 d'opacité). Remise à
+   *  zéro à chaque page : la suivante a sa propre image et sa propre course. */
+  let fondPret = false;
+  $: if (pathname) fondPret = false;
   $: footerThemeClass =
     pathname === "/services" ? "theme-services" :
     ["/travail", "/projet1", "/projet3", "/projet4", "/projet6", "/projet8"].includes(pathname) ? "theme-projets" :
@@ -97,6 +107,7 @@
   let hFooter = 0;
   let debutReveal = 0;
   let courseReveal = 1;
+  let hFenetre = 800;
 
   function measure() {
     if (!browser || !footerEl) return;
@@ -111,6 +122,7 @@
       document.documentElement.style.setProperty("--footer-reserve", `${h}px`);
     }
 
+    hFenetre = vh;
     debutReveal = Math.max(docH - vh - h * 1.05, 0);
     courseReveal = Math.max(h * 0.82, 1);
   }
@@ -127,6 +139,8 @@
       besoinMesure = false;
       measure();
     }
+
+    if (!fondPret && y > debutReveal - hFenetre * 2.5) fondPret = true;
 
     const cible = Math.min(Math.max((y - debutReveal) / courseReveal, 0), 1);
     if (cible === tgtReveal) return;
@@ -173,7 +187,7 @@
       <SiteGradient nom={footerGradient} />
     </div>
   {:else}
-    <div class="footer-bg" style={`background-image: url('${footerImage}')`}></div>
+    <div class="footer-bg" style={fondPret ? `background-image: url('${footerImage}')` : undefined}></div>
   {/if}
   <div class="footer-overlay" class:is-grad={Boolean(footerGradient)}></div>
 

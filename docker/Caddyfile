@@ -62,13 +62,19 @@
 	@hashed path /_app/immutable/*
 	header @hashed Cache-Control "public, max-age=31536000, immutable"
 
-	# Images — served by stable filename (not content-hashed), so they can be
-	# edited in place. Use revalidation instead of a long max-age: the browser
-	# keeps the file cached but asks the server (via ETag) whether it changed.
-	#   - unchanged → cheap 304, no re-download
-	#   - edited    → new bytes served immediately (no stale 7-day copy)
-	@images path /images/*
-	header @images Cache-Control "public, no-cache"
+	# Images — served by stable filename (not content-hashed).
+	# 2026-10-20 : on est passé de `no-cache` (revalidation à CHAQUE affichage,
+	# donc un aller-retour serveur par image et par chargement de page, à travers
+	# Pangolin) à un cache frais d'un jour + `stale-while-revalidate` d'une
+	# semaine : dans la journée l'image sort du cache sans rien demander, ensuite
+	# elle s'affiche tout de suite et la revalidation (304) se fait en fond.
+	#   ⚠️ Conséquence : une image remplacée SOUS LE MÊME NOM peut rester
+	#   l'ancienne jusqu'à un jour (+ un affichage). La règle du projet tient
+	#   déjà compte de ça : nouveau nom de fichier, ou jeton `?v=` incrémenté
+	#   sur toutes les références (l'URL change, le cache est contourné).
+	# Les dégradés (/degrades/*) suivent la même règle (avant : aucun en-tête).
+	@images path /images/* /degrades/*
+	header @images Cache-Control "public, max-age=86400, stale-while-revalidate=604800"
 
 	# Vidéos — même logique que les images (nom de fichier stable → revalidation
 	# via ETag plutôt qu'un long max-age, pour qu'un ré-encodage soit servi tout

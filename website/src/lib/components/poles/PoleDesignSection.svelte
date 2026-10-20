@@ -16,7 +16,7 @@
   const designSlides = [
      { image: "/images/naming.webp", alt: "Naming et fondations", label: "Naming & fondations", caption: "Un nom et un ton qui posent des bases solides." },
     { image: "/images/ipad-logo.webp", alt: "Logo", label: "Logo", caption: "Un logo cohérent, pensé pour marquer les esprits." },
-    { image: "/images/justx-couleurs2.webp", alt: "Identité visuelle", label: "Identité visuelle", caption: "Un univers visuel cohérent, fidèle à vos valeurs." },
+    { image: "/images/justx-couleurs2.webp?v=2", alt: "Identité visuelle", label: "Identité visuelle", caption: "Un univers visuel cohérent, fidèle à vos valeurs." },
     { image: "/images/carte-ludo.webp", alt: "Présentation de la typographie", label: "Charte éditoriale", caption: "Une manière singulière de communiquer." },
     { image: "/images/ipad-ludo.webp", alt: "Suivi stratégique", label: "Suivi & stratégie", caption: "Un accompagnement stratégique dans la durée." }
   ];

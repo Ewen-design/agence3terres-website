@@ -74,7 +74,7 @@
           class:is-shown={active === i}
           src={part.image}
           alt={active === i ? part.alt : ""}
-          loading={i === 0 ? "eager" : "lazy"}
+          loading="lazy"
           decoding="async"
           draggable="false"
           style={`--mask-a:${part.fade[0]}; --mask-b:${part.fade[1]}`}

@@ -246,7 +246,7 @@
             class="ms-card__img"
             src={slide.image}
             alt={slide.alt ?? slide.label ?? ""}
-            loading={i < 2 ? "eager" : "lazy"}
+            loading="lazy"
             decoding="async"
             draggable="false"
           />

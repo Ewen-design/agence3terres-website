@@ -122,7 +122,7 @@
             style:object-position={tab.position ?? "center"}
             src={tab.image}
             alt={i === index ? (tab.alt ?? tab.label) : ""}
-            loading={i === 0 ? "eager" : "lazy"}
+            loading="lazy"
             decoding="async"
           />
         </picture>

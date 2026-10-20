@@ -137,7 +137,7 @@
         style:object-position={brand.position ?? "center"}
         src={brand.image}
         alt={brand.alt}
-        loading={i === 0 ? "eager" : "lazy"}
+        loading="lazy"
         decoding="async"
         draggable="false"
       />

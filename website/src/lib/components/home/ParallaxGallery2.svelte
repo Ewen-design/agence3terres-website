@@ -541,6 +541,11 @@
                 {#if item.gradient}
                   <SiteGradient nom={item.gradient} />
                 {:else}
+                <!-- Différées, sans priorité haute (2026-10-20) : ce rail n'est
+                     jamais en haut de page, et `eager` + `fetchpriority="high"`
+                     faisait passer ses images AVANT le hero. `$lib/lazyAhead.js`
+                     les fait partir quand le rail approche, cartes hors cadre
+                     comprises. -->
                 <picture>
                   {#if item.mobileImage}
                     <source media="(max-width: 900px)" srcset={item.mobileImage} />
@@ -548,8 +553,7 @@
                   <img
                     src={item.image}
                     alt={item.title}
-                    loading={index < 2 ? "eager" : "lazy"}
-                    fetchpriority={index < 2 ? "high" : "auto"}
+                    loading="lazy"
                     decoding="async"
                     draggable="false"
                   />
@@ -615,8 +619,7 @@
                   <img
                     src={item.image}
                     alt={item.title}
-                    loading={index < 2 ? "eager" : "lazy"}
-                    fetchpriority={index < 2 ? "high" : "auto"}
+                    loading="lazy"
                     decoding="async"
                     draggable="false"
                   />

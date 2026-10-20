@@ -233,7 +233,7 @@
         href: "https://centreharmonia.fr",
         external: true,
         // Une capture du site sur iPhone (2026-10-09), au format de l'écran.
-        phone: { image: "/images/harmonia-tel-accueil.webp", position: "50% 50%" }
+        phone: { image: "/images/harmonia-tel-accueil.webp?v=2", position: "50% 50%" }
       }}
       secondary={{
         label: "Parlons-en",

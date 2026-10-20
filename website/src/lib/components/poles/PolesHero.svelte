@@ -322,7 +322,7 @@
       </div>
 
       <div class="after-image" bind:this={afterImageEl} use:reveal>
-        <img class="after-image-asset" src={afterImage} alt="Visuel Agence 3 Terres" />
+        <img class="after-image-asset" src={afterImage} alt="Visuel Agence 3 Terres" loading="lazy" decoding="async" />
       </div>
     </div>
   </section>

@@ -10,6 +10,8 @@
   import { estPageProjet, projetSuivant } from "$lib/data/projets.js";
   import CustomCursor from "$lib/components/shared/layout/CustomCursor.svelte";
   import SiteIntroLoader from "$lib/components/shared/layout/SiteIntroLoader.svelte";
+  // Diagnostic temporaire (header décalé sur iPhone) : inactif sans `?debug-fixes`.
+  import FixedDebug from "$lib/components/shared/layout/FixedDebug.svelte";
 
   import {
     initScrollEngine,
@@ -20,6 +22,7 @@
 
   import { installDesktopWheelDamping } from "$lib/desktopWheelDamping.js";
   import { installBlurButtonWipe } from "$lib/blurButtonWipe.js";
+  import { installFixedResync } from "$lib/fixedResync.js";
   import {
     activatePendingSilentNavigation,
     clearSilentNavigation,
@@ -39,6 +42,7 @@
   let scrollLockObserver;
   let removeTouchFlipListener;
   let removeBlurButtonWipe;
+  let removeFixedResync;
   let projectTheme = null;
   let removeProjectThemeListener;
   let pipDockVisible = false;
@@ -352,6 +356,9 @@
   afterNavigate(() => {
     settleGlobalScrollLocks();
     syncScrollState();
+    // Nouvelle page, document d'une autre hauteur, défilement remis à zéro :
+    // Safari iOS recale ses éléments fixes (voir `$lib/fixedResync.js`).
+    setTimeout(() => window.dispatchEvent(new Event("app:fixed-resync")), 450);
 
     if (!pageWrapper) {
       return;
@@ -420,6 +427,7 @@
       updateScrollEngineViewport();
       removeTouchFlipListener = installTouchFlipAnimation();
       removeBlurButtonWipe = installBlurButtonWipe();
+      removeFixedResync = installFixedResync();
 
       window.lenis = null;
 
@@ -517,6 +525,7 @@
       if (onVisibilityChange) document.removeEventListener("visibilitychange", onVisibilityChange);
       removeTouchFlipListener?.();
       removeBlurButtonWipe?.();
+      removeFixedResync?.();
       removeProjectThemeListener?.();
       projectTheme = null;
 
@@ -585,6 +594,7 @@
 
   <Header />
   <SiteIntroLoader />
+  <FixedDebug />
 
   <!-- `.page-stage` : tout ce qui est LA PAGE — son contenu et son pied de
        page. C'est ce bloc qui recule en carte quand le menu s'ouvre
@@ -756,13 +766,20 @@
        the bottom mask) kills any subpixel seam during scroll/animation.
        z-index sits ABOVE page content but BELOW the header (600000) so the
        mobile menu control stays visible and tappable over the bar. */
+    /* 2026-10-20 : le cache part de 120 px AU-DESSUS de l'écran et s'arrête
+       pile au bas de la zone sûre. Dans Safari (zone sûre à 0 en portrait) il
+       est donc entièrement hors champ ; avant, ses 8 px de marge formaient une
+       ligne noire sur la page, qui se détachait du haut dès que Safari
+       décalait ses éléments fixes de quelques pixels (voir
+       `$lib/fixedResync.js`). Décalé, il ne fait plus que prolonger le noir
+       de la barre d'état. */
     .ios-top-mask {
       position: fixed;
       left: 0;
       right: 0;
-      top: 0;
+      top: -120px;
       display: block;
-      height: calc(env(safe-area-inset-top, 0px) + 8px);
+      height: calc(env(safe-area-inset-top, 0px) + 120px);
       background: var(--bg-deep, #000);
       pointer-events: none;
       z-index: 500000;

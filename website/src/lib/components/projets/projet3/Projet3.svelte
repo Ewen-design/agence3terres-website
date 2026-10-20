@@ -175,7 +175,7 @@
         href: "https://moovy.agence3terres.fr",
         external: true,
         // Capture du site sur iPhone (2026-10-09), au format de l'écran.
-        phone: { image: "/images/moovy-tel-joker.webp", position: "50% 50%" }
+        phone: { image: "/images/moovy-tel-joker.webp?v=2", position: "50% 50%" }
       }}
       secondary={{
         label: "Parlons-en",
