@@ -259,10 +259,17 @@
     margin-top: clamp(3.5rem, 9vh, 6rem);
   }
 
+  /* Taillé dans une BOÎTE, pas à une largeur : un logo carré (Ludosphères)
+     bute sur la hauteur et garde ses 8rem, un logotype en longueur (Harmonia,
+     4:1) bute sur la largeur — à 8rem de large, il n'aurait fait que 2rem de
+     haut. Les deux bornes suivent le même vw : le carré reste toujours tenu
+     par la hauteur. */
   .pcard__logo {
     display: block;
-    width: clamp(5.5rem, 9vw, 8rem);
+    width: auto;
     height: auto;
+    max-width: clamp(9rem, 15vw, 13rem);
+    max-height: clamp(5.5rem, 9vw, 8rem);
     opacity: 0.16;
   }
 

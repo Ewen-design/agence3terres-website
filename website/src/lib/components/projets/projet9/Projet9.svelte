@@ -246,13 +246,26 @@
   <!-- Le mot du client, sur le NOIR de la palette (bande sombre), à la place
        du mur des autres projets — le pied de page « projet suivant » assure la
        suite de la visite.
-       ⚠️ TEXTE PROVISOIRE : remplacer `quote`, `author` et `role` par la vraie
-       citation du client. -->
+       Le témoignage du centre (reçu le 2026-10-27), écrit d'un seul bloc :
+       la page en garde une phrase, le « + » ouvre le texte entier, coupé en
+       paragraphes sans toucher aux mots. Comme pour Ludosphères, une photo en
+       haut de la carte — ici le centre lui-même, sa façade — et le logo en
+       filigrane. -->
   <div class="project-theme-band theme-deep">
     <ProjectQuote
-      quote="<span class='hl'>La citation du client prendra place ici.</span> Une ou deux phrases, dans ses mots."
-      author="Prénom Nom"
-      role="Fonction, Centre Harmonia"
+      label="Le mot du client"
+      quote="<span class='hl'>Le résultat final est tout simplement parfait,</span> à la hauteur de nos exigences et même au-delà."
+      full={[
+        "Une excellente expérience de collaboration pour la création du site internet du Centre HARMONIA&nbsp;!",
+        "Une équipe professionnelle, à l’écoute, très réactive et toujours attentive à nos attentes. Chacune de nos demandes a été prise en compte avec soin et précision.",
+        "Le résultat final est tout simplement parfait, à la hauteur de nos exigences et même au-delà.",
+        "Un grand merci pour ce magnifique travail&nbsp;!"
+      ]}
+      photo="/images/harmonia-centre-rond.webp"
+      photoAlt="La façade du Centre Harmonia, son enseigne au-dessus de la vitrine"
+      photoPosition="50% 50%"
+      signature={{ name: "Centre Harmonia", org: "Médecine esthétique" }}
+      logo="/images/logos-clients/harmonia.webp"
     />
   </div>
 </ProjectThemePage>
