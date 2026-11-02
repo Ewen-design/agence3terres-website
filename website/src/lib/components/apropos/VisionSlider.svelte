@@ -6,12 +6,12 @@
 
   // ── Data ───────────────────────────────────────────────────────────────────
   const quotes = [
-    { text: "Créer avec intention, toujours.",                      author: "Agence 3 Terres" },
-    { text: "La vision précède la matière.",                        author: "Agence 3 Terres" },
-    { text: "Chaque détail raconte une histoire.",                  author: "Agence 3 Terres" },
-    { text: "Le silence est une forme de design.",                  author: "Agence 3 Terres" },
-    { text: "Je ne perds jamais, soit je gagne, soit j'apprends.",  author: "Nelson Mandela" },
-    { text: "La profondeur crée l'émotion.",                        author: "Agence 3 Terres" },
+    { text: "On ne voit bien qu'avec le cœur. L'essentiel est invisible pour les yeux.",                  author: "Antoine de Saint-Exupéry" },
+    { text: "J'ai dû travailler très dur pour que ça paraisse facile.",                                  author: "Roger Federer" },
+    { text: "Le design, ce n'est pas seulement l'apparence. C'est la façon dont ça fonctionne.",         author: "Steve Jobs" },
+    { text: "Aucun être humain n'est limité.",                                                           author: "Eliud Kipchoge" },
+    { text: "Je ne perds jamais, soit je gagne, soit j'apprends.",                                       author: "Nelson Mandela" },
+    { text: "L'imagination est plus importante que le savoir.",                                         author: "Albert Einstein" },
   ];
 
   // ── Carousel — exactement ton original ────────────────────────────────────

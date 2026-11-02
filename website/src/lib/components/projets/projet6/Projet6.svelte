@@ -14,7 +14,6 @@
   import ProjectFlaps from "$lib/components/home/HomeFeatureCards.svelte";
   import ProjectImageTabs from "$lib/components/projets/blocks/ProjectImageTabs.svelte";
   import ProjectActionDuo from "$lib/components/projets/blocks/ProjectActionDuo.svelte";
-  import ProjectQuote from "$lib/components/projets/blocks/ProjectQuote.svelte";
 
 </script>
 
@@ -113,19 +112,6 @@
         title: "Une idée de jeu à mettre debout ?",
         href: "/contact"
       }}
-    />
-  </div>
-
-  <!-- Le mot du client, sur le NOIR de la palette (bande sombre), à la place
-       du mur des autres projets — le pied de page « projet suivant » assure la
-       suite de la visite.
-       ⚠️ TEXTE PROVISOIRE : remplacer `quote`, `author` et `role` par la vraie
-       citation du client. -->
-  <div class="project-theme-band theme-deep">
-    <ProjectQuote
-      quote="<span class='hl'>La citation du client prendra place ici.</span> Une ou deux phrases, dans ses mots."
-      author="Prénom Nom"
-      role="Fonction, Mission X"
     />
   </div>
 </ProjectThemePage>

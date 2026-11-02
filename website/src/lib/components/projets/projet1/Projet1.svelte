@@ -250,13 +250,14 @@
   <!-- Le mot du client, sur le NOIR de la palette (bande sombre), à la place
        du mur des autres projets — le pied de page « projet suivant » assure la
        suite de la visite.
-       ⚠️ TEXTE PROVISOIRE : remplacer `quote`, `author` et `role` par la vraie
-       citation du client. -->
+       Même tenue que Ludosphères, Lybra et Harmonia : surtitre, une phrase,
+       pas de signature.
+       ⚠️ TEXTE RÉDIGÉ PAR NOUS (2026-11-02), le client n'a rien écrit : à faire
+       valider par Dimitry Siebert avant la mise en ligne. -->
   <div class="project-theme-band theme-deep">
     <ProjectQuote
-      quote="<span class='hl'>La citation du client prendra place ici.</span> Une ou deux phrases, dans ses mots."
-      author="Prénom Nom"
-      role="Fonction, Serein Design"
+      label="Le mot du client"
+      quote="<span class='hl'>Ils ont compris l’objet avant de dessiner la marque.</span> Du monogramme au site, tout dit le calme qu’on voulait y mettre."
     />
   </div>
 </ProjectThemePage>
