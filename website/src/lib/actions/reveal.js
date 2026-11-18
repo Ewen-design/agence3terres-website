@@ -32,6 +32,72 @@ const INLINE_TAGS = new Set([
 ]);
 
 let observer = null;
+let railObserver = null;
+/** rail (ou carrousel) → éléments qu'il porte hors champ sur le côté */
+const rails = new Map();
+const railChecked = new WeakSet();
+
+function revealNode(node) {
+  if (node.classList.contains(REVEAL_CLASS)) return;
+  node.classList.add(REVEAL_CLASS);
+  observer?.unobserve(node);
+
+  // Le délai couvre la cascade complète : durée de l'animation + décalage
+  // du dernier mot.
+  const words = Number(node.dataset.revealWords) || 0;
+  window.setTimeout(() => {
+    // Libère la couche GPU. La garder sur tous les éléments révélés (des
+    // dizaines par page) promeut des couches en permanence et alourdit la
+    // composition sur mobile. Sauf demande contraire (`keepLayer`) : voir
+    // plus bas.
+    if (node.dataset.revealKeepLayer === undefined) node.style.willChange = "auto";
+    // Et libère les animations des mots, finies depuis longtemps. Rien ne
+    // change à l'écran : elles se remplissent vers l'arrière seulement
+    // (`backwards`, voir `app.css`), chaque mot a déjà rendu la main à ses
+    // valeurs normales — sa couleur héritée comprise, qui suit donc les
+    // changements de thème des pages projet.
+    if (words) node.classList.add("reveal--settled");
+  }, 1300 + words * WORD_STAGGER);
+}
+
+/*  ── Les éléments hors champ SUR LE CÔTÉ (2026-11-18) ──────────────────────
+ *  Une carte rangée à droite d'un rail horizontal (pôles, carrousels) ou un
+ *  visage latéral d'un carrousel 3D ne croise jamais la fenêtre tant qu'on ne
+ *  l'y amène pas : son arrivée ne se déclenchait pas, et la carte glissait
+ *  dans le cadre VIDE, l'image n'apparaissant qu'après (constaté par la
+ *  batterie de stabilité sur /services/* et /apropos). Elle se joue
+ *  maintenant quand son rail entre dans la fenêtre, avec ses voisines. Le
+ *  rail est le premier ancêtre qui, lui, est dans le cadre en largeur. */
+function railOf(node, entry) {
+  const b = entry.boundingClientRect;
+  const vw = entry.rootBounds?.width || window.innerWidth;
+  if (!b.width) return null;
+  const part = (Math.min(b.right, vw) - Math.max(b.left, 0)) / b.width;
+  if (part >= 0.5) return null;
+  for (let el = node.parentElement, d = 0; el && el !== document.body && d < 12; el = el.parentElement, d++) {
+    const r = el.getBoundingClientRect();
+    if (!r.width) continue;
+    if ((Math.min(r.right, vw) - Math.max(r.left, 0)) / Math.min(r.width, vw) >= 0.5) return el;
+  }
+  return null;
+}
+
+function ensureRailObserver() {
+  if (railObserver) return railObserver;
+  railObserver = new IntersectionObserver(
+    (entries) => {
+      for (const entry of entries) {
+        if (!entry.isIntersecting) continue;
+        const set = rails.get(entry.target);
+        rails.delete(entry.target);
+        railObserver.unobserve(entry.target);
+        set?.forEach((n) => n.isConnected && revealNode(n));
+      }
+    },
+    { rootMargin: "0px 0px -10% 0px", threshold: 0 }
+  );
+  return railObserver;
+}
 
 function ensureObserver() {
   if (observer || !browser) return observer;
@@ -39,27 +105,22 @@ function ensureObserver() {
   observer = new IntersectionObserver(
     (entries) => {
       for (const entry of entries) {
-        if (!entry.isIntersecting) continue;
         const node = entry.target;
-        node.classList.add(REVEAL_CLASS);
-        observer.unobserve(node);
-
-        // Le délai couvre la cascade complète : durée de l'animation + décalage
-        // du dernier mot.
-        const words = Number(node.dataset.revealWords) || 0;
-        window.setTimeout(() => {
-          // Libère la couche GPU. La garder sur tous les éléments révélés (des
-          // dizaines par page) promeut des couches en permanence et alourdit la
-          // composition sur mobile. Sauf demande contraire (`keepLayer`) : voir
-          // plus bas.
-          if (node.dataset.revealKeepLayer === undefined) node.style.willChange = "auto";
-          // Et libère les animations des mots, finies depuis longtemps. Rien ne
-          // change à l'écran : elles se remplissent vers l'arrière seulement
-          // (`backwards`, voir `app.css`), chaque mot a déjà rendu la main à ses
-          // valeurs normales — sa couleur héritée comprise, qui suit donc les
-          // changements de thème des pages projet.
-          if (words) node.classList.add("reveal--settled");
-        }, 1300 + words * WORD_STAGGER);
+        if (entry.isIntersecting) {
+          revealNode(node);
+          continue;
+        }
+        if (railChecked.has(node)) continue;
+        railChecked.add(node);
+        const rail = railOf(node, entry);
+        if (!rail) continue;
+        let set = rails.get(rail);
+        if (!set) {
+          set = new Set();
+          rails.set(rail, set);
+          ensureRailObserver().observe(rail);
+        }
+        set.add(node);
       }
     },
     { rootMargin: "0px 0px -10% 0px", threshold: 0.12 }
@@ -180,6 +241,11 @@ export function reveal(node, options = {}) {
     },
     destroy() {
       obs?.unobserve(node);
+      for (const [rail, set] of rails) {
+        if (!set.delete(node) || set.size) continue;
+        rails.delete(rail);
+        railObserver?.unobserve(rail);
+      }
     }
   };
 }

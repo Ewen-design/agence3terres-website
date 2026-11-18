@@ -23,3 +23,6 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Résultats de la batterie de stabilité (régénérés à chaque passage)
+tests/stabilite/resultats/

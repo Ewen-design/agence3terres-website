@@ -39,6 +39,85 @@ const BEHIND = 1;
 
 let installed = false;
 
+/*  ── La bonne variante (2026-11-18) ──────────────────────────────────────
+ *  Le build pose sur chaque image ses variantes (`srcset`) et une valeur
+ *  d'attente `sizes="100vw"` (voir `$lib/images/preprocess.js`). Pour une
+ *  image différée, on connaît sa boîte avant qu'elle parte : `sizes` reçoit
+ *  la largeur réelle, et le navigateur choisit la variante juste — une carte
+ *  de 400 px ne télécharge plus (ni ne décode) une image de 2 880 px.
+ *  En `object-fit: cover`, l'image peut déborder de sa boîte en largeur :
+ *  on prend alors la largeur qu'elle occupe vraiment (hauteur × format).
+ *  Seulement si le navigateur n'a pas encore choisi (`currentSrc` vide) :
+ *  sinon on relancerait un second téléchargement. */
+function ajusterSizes(img) {
+  if (!img.hasAttribute("data-rsizes") || img.currentSrc) return;
+  const largeur = img.offsetWidth;
+  const hauteur = img.offsetHeight;
+  if (!largeur) return;
+  let besoin = largeur;
+  const w = +img.getAttribute("width");
+  const h = +img.getAttribute("height");
+  if (w && h && hauteur && getComputedStyle(img).objectFit === "cover") {
+    besoin = Math.max(largeur, hauteur * (w / h));
+  }
+  const valeur = `${Math.ceil(besoin)}px`;
+  img.sizes = valeur;
+  const picture = img.parentElement?.tagName === "PICTURE" ? img.parentElement : null;
+  picture?.querySelectorAll("source[data-rsizes]").forEach((s) => (s.sizes = valeur));
+}
+
+/*  ── L'arrivée d'une image (2026-11-18) ──────────────────────────────────
+ *  Plainte récurrente : « l'arrivée des images qui bug ». Une image différée
+ *  qui finit d'arriver à l'écran se peignait par bandes, ou d'un coup sec, et
+ *  Safari la DÉCODAIT au moment de la peindre, sur le fil principal (à-coup
+ *  du défilement). Désormais elle reste transparente tant qu'elle n'est pas
+ *  chargée ET décodée (`decode()`, hors du fil principal), puis arrive en
+ *  fondu (`app.css`, `img[data-arrivee]`). Chargée en avance, ce fondu se
+ *  joue hors champ : on ne le voit que sur un réseau lent — et c'est alors
+ *  un fondu propre au lieu d'une image qui se dessine.
+ *  `data-no-arrivee` sur l'image ou un ancêtre : le composant gère lui-même
+ *  son apparition. */
+/*  Le fondu ne se joue QUE pour une image qui arrive sous les yeux
+ *  (2026-11-18, « scroll moins fluide sur Safari bureau ») : une animation
+ *  d'opacité fait créer puis détruire un calque à WebKit, même hors champ, et
+ *  ces créations en série pendant le défilement se payaient. Une image arrivée
+ *  hors champ — le cas courant, elles partent 2,5 écrans en avance — apparaît
+ *  simplement, sans animation : personne ne la regardait. */
+const sousLesYeux = new WeakSet();
+let regard = null;
+function observerRegard(img) {
+  if (!regard) {
+    regard = new IntersectionObserver((entries) => {
+      for (const e of entries) {
+        if (e.isIntersecting) sousLesYeux.add(e.target);
+        else sousLesYeux.delete(e.target);
+      }
+    });
+  }
+  regard.observe(img);
+}
+
+function preparerArrivee(img) {
+  if (img.closest("[data-no-arrivee]")) return;
+  img.dataset.arrivee = "attente";
+  observerRegard(img);
+  const fini = () => {
+    img.removeEventListener("load", charge);
+    img.removeEventListener("error", fini);
+    regard?.unobserve(img);
+    if (sousLesYeux.has(img)) img.dataset.arrivee = "ok";
+    else delete img.dataset.arrivee;
+  };
+  const charge = () => {
+    if (typeof img.decode === "function") img.decode().then(fini, fini);
+    else fini();
+  };
+  img.addEventListener("load", charge);
+  img.addEventListener("error", fini);
+  // Arrivée entre le test `complete` et la pose des écouteurs.
+  if (img.complete && img.naturalWidth > 0) charge();
+}
+
 export function installLazyAhead() {
   if (installed || typeof window === "undefined") return;
   if (!("IntersectionObserver" in window)) return;
@@ -90,7 +169,9 @@ export function installLazyAhead() {
     if (seen.has(img)) return;
     seen.add(img);
     if (img.complete && img.naturalWidth > 0) return;
+    preparerArrivee(img);
     const target = clipTarget(img);
+    ajusterSizes(img);
     let set = groups.get(target);
     if (!set) {
       set = new Set();

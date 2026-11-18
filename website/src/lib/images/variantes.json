@@ -1,0 +1,1684 @@
+{
+ "/images/affiche-moovy.webp": {
+  "w": 3000,
+  "h": 2250,
+  "v": [
+   640,
+   960,
+   1280,
+   1920
+  ],
+  "sig": "83c648ddacb8"
+ },
+ "/images/agence.webp": {
+  "w": 2118,
+  "h": 1588,
+  "v": [
+   640,
+   960,
+   1280
+  ],
+  "sig": "264fd273e839"
+ },
+ "/images/agence2.webp": {
+  "w": 2200,
+  "h": 1651,
+  "v": [
+   640,
+   960,
+   1280,
+   1920
+  ],
+  "sig": "e60f1e21c017"
+ },
+ "/images/apercu.webp": {
+  "w": 4180,
+  "h": 2410,
+  "v": [
+   640,
+   960,
+   1280,
+   1920,
+   2880
+  ],
+  "sig": "631263f05434"
+ },
+ "/images/app-justx.webp": {
+  "w": 3000,
+  "h": 3000,
+  "v": [
+   640,
+   960,
+   1280,
+   1920
+  ],
+  "sig": "51aaee6a6abe"
+ },
+ "/images/appareil_photo.webp": {
+  "w": 2200,
+  "h": 2200,
+  "v": [
+   640,
+   960,
+   1280,
+   1920
+  ],
+  "sig": "a03469bcb952"
+ },
+ "/images/apple_justx.webp": {
+  "w": 4000,
+  "h": 3000,
+  "v": [
+   640,
+   960,
+   1280,
+   1920,
+   2880
+  ],
+  "sig": "31d678c8288a"
+ },
+ "/images/apropos-hero.webp": {
+  "w": 2880,
+  "h": 1920,
+  "v": [
+   640,
+   960,
+   1280,
+   1920
+  ],
+  "sig": "d0a533ed746e"
+ },
+ "/images/carte-ludo.webp": {
+  "w": 2300,
+  "h": 1500,
+  "v": [
+   640,
+   960,
+   1280,
+   1920
+  ],
+  "sig": "6201122aa521"
+ },
+ "/images/carte_visite_desktop.webp": {
+  "w": 1500,
+  "h": 900,
+  "v": [
+   640,
+   960,
+   1280
+  ],
+  "sig": "56a77c6ed499"
+ },
+ "/images/carte_visite_desktop2.webp": {
+  "w": 1500,
+  "h": 900,
+  "v": [
+   640,
+   960,
+   1280
+  ],
+  "sig": "4410196e126c"
+ },
+ "/images/carte_visite_mobile.webp": {
+  "w": 918,
+  "h": 1746,
+  "v": [
+   640
+  ],
+  "sig": "98562b222168"
+ },
+ "/images/creation_logo_desktop.webp": {
+  "w": 1777,
+  "h": 1015,
+  "v": [
+   640,
+   960,
+   1280
+  ],
+  "sig": "9f6913da7791"
+ },
+ "/images/creation_logo_mobile.webp": {
+  "w": 900,
+  "h": 1915,
+  "v": [
+   640
+  ],
+  "sig": "c2da2504cc30"
+ },
+ "/images/harmonia-accueil-lieu.webp": {
+  "w": 1200,
+  "h": 1600,
+  "v": [
+   640,
+   960
+  ],
+  "sig": "d2497536eb01"
+ },
+ "/images/harmonia-affiche-couloir.webp": {
+  "w": 2400,
+  "h": 1800,
+  "v": [
+   640,
+   960,
+   1280,
+   1920
+  ],
+  "sig": "a5579b648597"
+ },
+ "/images/harmonia-affiche.webp": {
+  "w": 2400,
+  "h": 1615,
+  "v": [
+   640,
+   960,
+   1280,
+   1920
+  ],
+  "sig": "6571f849349c"
+ },
+ "/images/harmonia-carte-eau-mobile.webp": {
+  "w": 1200,
+  "h": 900,
+  "v": [
+   640,
+   960
+  ],
+  "sig": "6f90758e5418"
+ },
+ "/images/harmonia-carte-eau.webp": {
+  "w": 2400,
+  "h": 1500,
+  "v": [
+   640,
+   960,
+   1280,
+   1920
+  ],
+  "sig": "d5473c340842"
+ },
+ "/images/harmonia-centre-rond.webp": {
+  "w": 480,
+  "h": 480,
+  "v": [],
+  "sig": "2e88c3f91124"
+ },
+ "/images/harmonia-diagnostic-ipad-large.webp": {
+  "w": 2400,
+  "h": 1500,
+  "v": [
+   640,
+   960,
+   1280,
+   1920
+  ],
+  "sig": "357f950a6a4c"
+ },
+ "/images/harmonia-diagnostic-ipad-mobile.webp": {
+  "w": 1200,
+  "h": 1500,
+  "v": [
+   640,
+   960
+  ],
+  "sig": "3ec971376551"
+ },
+ "/images/harmonia-enseigne.webp": {
+  "w": 1600,
+  "h": 868,
+  "v": [
+   640,
+   960,
+   1280
+  ],
+  "sig": "68aa536ac651"
+ },
+ "/images/harmonia-ipad-large.webp": {
+  "w": 2400,
+  "h": 1500,
+  "v": [
+   640,
+   960,
+   1280,
+   1920
+  ],
+  "sig": "82423e170a3f"
+ },
+ "/images/harmonia-ipad-mobile.webp": {
+  "w": 1200,
+  "h": 1500,
+  "v": [
+   640,
+   960
+  ],
+  "sig": "6c6fbd1905e1"
+ },
+ "/images/harmonia-macbook-mobile.webp": {
+  "w": 1200,
+  "h": 1500,
+  "v": [
+   640,
+   960
+  ],
+  "sig": "201dacce1ea2"
+ },
+ "/images/harmonia-macbook.webp": {
+  "w": 2400,
+  "h": 1500,
+  "v": [
+   640,
+   960,
+   1280,
+   1920
+  ],
+  "sig": "2232e0b2f3c7"
+ },
+ "/images/harmonia-mockup-large.webp": {
+  "w": 2000,
+  "h": 1251,
+  "v": [
+   640,
+   960,
+   1280
+  ],
+  "sig": "86161c58e41d"
+ },
+ "/images/harmonia-mockup-tel.webp": {
+  "w": 1080,
+  "h": 2160,
+  "v": [
+   640,
+   960
+  ],
+  "sig": "7c70f2588d0e"
+ },
+ "/images/harmonia-mockup.webp": {
+  "w": 1500,
+  "h": 1875,
+  "v": [
+   640,
+   960,
+   1280
+  ],
+  "sig": "571cccf2e7b4"
+ },
+ "/images/harmonia-signaletique.webp": {
+  "w": 1600,
+  "h": 889,
+  "v": [
+   640,
+   960,
+   1280
+  ],
+  "sig": "122ba1e42077"
+ },
+ "/images/harmonia-soin-cheveux.webp": {
+  "w": 1200,
+  "h": 1799,
+  "v": [
+   640,
+   960
+  ],
+  "sig": "4afdc2225c7b"
+ },
+ "/images/harmonia-soin-epilation.webp": {
+  "w": 1200,
+  "h": 1801,
+  "v": [
+   640,
+   960
+  ],
+  "sig": "d5bf0753b560"
+ },
+ "/images/harmonia-soin-led.webp": {
+  "w": 1600,
+  "h": 1067,
+  "v": [
+   640,
+   960,
+   1280
+  ],
+  "sig": "95bfedc9d345"
+ },
+ "/images/harmonia-tarifs-macbook-large.webp": {
+  "w": 2400,
+  "h": 1500,
+  "v": [
+   640,
+   960,
+   1280,
+   1920
+  ],
+  "sig": "e6025e4a25ce"
+ },
+ "/images/harmonia-tarifs-macbook-mobile.webp": {
+  "w": 1200,
+  "h": 1500,
+  "v": [
+   640,
+   960
+  ],
+  "sig": "331c889faf35"
+ },
+ "/images/harmonia-tel-accueil.webp": {
+  "w": 640,
+  "h": 1385,
+  "v": [],
+  "sig": "d5b4c6000680"
+ },
+ "/images/harmonia-univers-ecrans-large.webp": {
+  "w": 2400,
+  "h": 1500,
+  "v": [
+   640,
+   960,
+   1280,
+   1920
+  ],
+  "sig": "890c8f96ce9c"
+ },
+ "/images/harmonia-univers-ecrans-mobile.webp": {
+  "w": 1200,
+  "h": 1500,
+  "v": [
+   640,
+   960
+  ],
+  "sig": "e50069bdfba0"
+ },
+ "/images/instagram.png": {
+  "w": 160,
+  "h": 160,
+  "v": [],
+  "sig": "2d9a00ea944e"
+ },
+ "/images/ipad-creation-w1800.webp": {
+  "w": 1594,
+  "h": 1800,
+  "v": [
+   640,
+   960,
+   1280
+  ],
+  "sig": "4c31f556ecfe"
+ },
+ "/images/ipad-logo.webp": {
+  "w": 3368,
+  "h": 2800,
+  "v": [
+   640,
+   960,
+   1280,
+   1920,
+   2880
+  ],
+  "sig": "1cec2f3ee010"
+ },
+ "/images/ipad-ludo.webp": {
+  "w": 3000,
+  "h": 2250,
+  "v": [
+   640,
+   960,
+   1280,
+   1920
+  ],
+  "sig": "cedfbd4eafec"
+ },
+ "/images/iphone-ambition.webp": {
+  "w": 1600,
+  "h": 3202,
+  "v": [
+   640,
+   960,
+   1280
+  ],
+  "sig": "98c91e39f5d1"
+ },
+ "/images/jeu_mockup.webp": {
+  "w": 2200,
+  "h": 1650,
+  "v": [
+   640,
+   960,
+   1280,
+   1920
+  ],
+  "sig": "f14f2d4bd397"
+ },
+ "/images/justx-couleurs2.webp": {
+  "w": 3300,
+  "h": 2269,
+  "v": [
+   640,
+   960,
+   1280,
+   1920,
+   2880
+  ],
+  "sig": "a725c458e078"
+ },
+ "/images/justx-ipads-w1800.webp": {
+  "w": 1800,
+  "h": 1260,
+  "v": [
+   640,
+   960,
+   1280
+  ],
+  "sig": "1b3cc44120d2"
+ },
+ "/images/justx-ipads.webp": {
+  "w": 4000,
+  "h": 2800,
+  "v": [
+   640,
+   960,
+   1280,
+   1920,
+   2880
+  ],
+  "sig": "59e936883b64"
+ },
+ "/images/justx-rs.webp": {
+  "w": 3000,
+  "h": 2253,
+  "v": [
+   640,
+   960,
+   1280,
+   1920
+  ],
+  "sig": "549f01d73e7e"
+ },
+ "/images/justx-tel.webp": {
+  "w": 3688,
+  "h": 2022,
+  "v": [
+   640,
+   960,
+   1280,
+   1920,
+   2880
+  ],
+  "sig": "5fa139138ddd"
+ },
+ "/images/justx.webp": {
+  "w": 1700,
+  "h": 2000,
+  "v": [
+   640,
+   960,
+   1280
+  ],
+  "sig": "2c36c8e809ec"
+ },
+ "/images/justx_app.webp": {
+  "w": 1484,
+  "h": 2200,
+  "v": [
+   640,
+   960,
+   1280
+  ],
+  "sig": "61ec4726ec7c"
+ },
+ "/images/justx_fitness.webp": {
+  "w": 1700,
+  "h": 2000,
+  "v": [
+   640,
+   960,
+   1280
+  ],
+  "sig": "c0d584af3f92"
+ },
+ "/images/justx_icon.webp": {
+  "w": 512,
+  "h": 512,
+  "v": [],
+  "sig": "0bb5d8461500"
+ },
+ "/images/justx_textile.webp": {
+  "w": 1200,
+  "h": 901,
+  "v": [
+   640,
+   960
+  ],
+  "sig": "f58f0b574dd3"
+ },
+ "/images/logo_justx.webp": {
+  "w": 1554,
+  "h": 1254,
+  "v": [
+   640,
+   960,
+   1280
+  ],
+  "sig": "04264be4cce1"
+ },
+ "/images/logo_prisme.png": {
+  "w": 384,
+  "h": 384,
+  "v": [],
+  "sig": "a013112f54b7"
+ },
+ "/images/logos-clients/harmonia.webp": {
+  "w": 1024,
+  "h": 249,
+  "v": [
+   640
+  ],
+  "sig": "9c4154890355"
+ },
+ "/images/logos-clients/moovy.webp": {
+  "w": 560,
+  "h": 491,
+  "v": [],
+  "sig": "ddea29863660"
+ },
+ "/images/ludo-artiste.webp": {
+  "w": 1030,
+  "h": 1458,
+  "v": [
+   640
+  ],
+  "sig": "22ea56e69226"
+ },
+ "/images/ludo-cachets.webp": {
+  "w": 1200,
+  "h": 1500,
+  "v": [
+   640,
+   960
+  ],
+  "sig": "c4ee2633f7f8"
+ },
+ "/images/ludo-cartes.webp": {
+  "w": 976,
+  "h": 1220,
+  "v": [
+   640
+  ],
+  "sig": "d0f631a64014"
+ },
+ "/images/ludo-drapeau.webp": {
+  "w": 1200,
+  "h": 1500,
+  "v": [
+   640,
+   960
+  ],
+  "sig": "11f1a5613401"
+ },
+ "/images/ludo-hero-mobile.webp": {
+  "w": 1080,
+  "h": 1920,
+  "v": [
+   640,
+   960
+  ],
+  "sig": "9bdda2344ea1"
+ },
+ "/images/ludo-iphone.webp": {
+  "w": 2400,
+  "h": 1800,
+  "v": [
+   640,
+   960,
+   1280,
+   1920
+  ],
+  "sig": "41769bc204a7"
+ },
+ "/images/ludo-logo-peintures.webp": {
+  "w": 2319,
+  "h": 1449,
+  "v": [
+   640,
+   960,
+   1280,
+   1920
+  ],
+  "sig": "3680b25e3d06"
+ },
+ "/images/ludo-magazine.webp": {
+  "w": 2400,
+  "h": 1650,
+  "v": [
+   640,
+   960,
+   1280,
+   1920
+  ],
+  "sig": "c30b6b346a07"
+ },
+ "/images/ludo-site-desktop.webp": {
+  "w": 1920,
+  "h": 1200,
+  "v": [
+   640,
+   960,
+   1280
+  ],
+  "sig": "903fb865fe2e"
+ },
+ "/images/ludo-tablette.webp": {
+  "w": 1200,
+  "h": 1600,
+  "v": [
+   640,
+   960
+  ],
+  "sig": "1a6aa6ab7fc4"
+ },
+ "/images/ludo-tel-cosmos.webp": {
+  "w": 640,
+  "h": 1385,
+  "v": [],
+  "sig": "69a77696de1d"
+ },
+ "/images/ludo.webp": {
+  "w": 2000,
+  "h": 2000,
+  "v": [
+   640,
+   960,
+   1280
+  ],
+  "sig": "084e97118f3b"
+ },
+ "/images/lybra-affichage-w1800.webp": {
+  "w": 1800,
+  "h": 1350,
+  "v": [
+   640,
+   960,
+   1280
+  ],
+  "sig": "01855cb09a9c"
+ },
+ "/images/lybra-affichage.webp": {
+  "w": 2560,
+  "h": 1920,
+  "v": [
+   640,
+   960,
+   1280,
+   1920
+  ],
+  "sig": "220ab6184c02"
+ },
+ "/images/lybra-cartes.webp": {
+  "w": 2200,
+  "h": 1834,
+  "v": [
+   640,
+   960,
+   1280,
+   1920
+  ],
+  "sig": "ae1664532611"
+ },
+ "/images/lybra-coffret-portrait.webp": {
+  "w": 1200,
+  "h": 1500,
+  "v": [
+   640,
+   960
+  ],
+  "sig": "74800e4f11b9"
+ },
+ "/images/lybra-coffret.webp": {
+  "w": 1600,
+  "h": 1200,
+  "v": [
+   640,
+   960,
+   1280
+  ],
+  "sig": "38f9e5a13fc8"
+ },
+ "/images/lybra-enseigne-cube.webp": {
+  "w": 2000,
+  "h": 3250,
+  "v": [
+   640,
+   960,
+   1280
+  ],
+  "sig": "69611f31fe0b"
+ },
+ "/images/lybra-fond-ciel.webp": {
+  "w": 1920,
+  "h": 1080,
+  "v": [
+   640,
+   960,
+   1280
+  ],
+  "sig": "e59fc272ec7d"
+ },
+ "/images/lybra-fond-degrade-4x3.webp": {
+  "w": 1440,
+  "h": 1080,
+  "v": [
+   640,
+   960,
+   1280
+  ],
+  "sig": "b694218490d4"
+ },
+ "/images/lybra-fond-degrade.webp": {
+  "w": 1920,
+  "h": 1080,
+  "v": [
+   640,
+   960,
+   1280
+  ],
+  "sig": "4b513dff9dce"
+ },
+ "/images/lybra-fond-vert.webp": {
+  "w": 1920,
+  "h": 1080,
+  "v": [
+   640,
+   960,
+   1280
+  ],
+  "sig": "e1f54f9425a7"
+ },
+ "/images/lybra-livre.webp": {
+  "w": 2400,
+  "h": 1846,
+  "v": [
+   640,
+   960,
+   1280,
+   1920
+  ],
+  "sig": "3374ce517c2a"
+ },
+ "/images/lybra-macbook.webp": {
+  "w": 2200,
+  "h": 1650,
+  "v": [
+   640,
+   960,
+   1280,
+   1920
+  ],
+  "sig": "1c04021bc8e7"
+ },
+ "/images/lybra-sac-mobile.webp": {
+  "w": 1300,
+  "h": 1130,
+  "v": [
+   640,
+   960
+  ],
+  "sig": "f6f9d143e98d"
+ },
+ "/images/lybra-sac.webp": {
+  "w": 2400,
+  "h": 1500,
+  "v": [
+   640,
+   960,
+   1280,
+   1920
+  ],
+  "sig": "2f31b7a27133"
+ },
+ "/images/lybra-sachet.webp": {
+  "w": 2400,
+  "h": 1714,
+  "v": [
+   640,
+   960,
+   1280,
+   1920
+  ],
+  "sig": "be2234fcf7cc"
+ },
+ "/images/mail.png": {
+  "w": 160,
+  "h": 160,
+  "v": [],
+  "sig": "74226c177a1a"
+ },
+ "/images/main-justx-desktop.webp": {
+  "w": 3906,
+  "h": 3540,
+  "v": [
+   640,
+   960,
+   1280,
+   1920,
+   2880
+  ],
+  "sig": "5a471bf880f7"
+ },
+ "/images/main-justx.webp": {
+  "w": 1592,
+  "h": 2666,
+  "v": [
+   640,
+   960,
+   1280
+  ],
+  "sig": "f1b570a0f3e7"
+ },
+ "/images/missionX5.webp": {
+  "w": 1700,
+  "h": 2000,
+  "v": [
+   640,
+   960,
+   1280
+  ],
+  "sig": "ff7eec985caf"
+ },
+ "/images/missionx-tel-victoire.webp": {
+  "w": 640,
+  "h": 1233,
+  "v": [],
+  "sig": "3e13f36874af"
+ },
+ "/images/missionx1.webp": {
+  "w": 1761,
+  "h": 2200,
+  "v": [
+   640,
+   960,
+   1280
+  ],
+  "sig": "70f2257944ae"
+ },
+ "/images/missionx2.webp": {
+  "w": 1761,
+  "h": 2200,
+  "v": [
+   640,
+   960,
+   1280
+  ],
+  "sig": "93fdca1bad5f"
+ },
+ "/images/missionx3.webp": {
+  "w": 1761,
+  "h": 2200,
+  "v": [
+   640,
+   960,
+   1280
+  ],
+  "sig": "451c67db4919"
+ },
+ "/images/missionx4.webp": {
+  "w": 2200,
+  "h": 1231,
+  "v": [
+   640,
+   960,
+   1280,
+   1920
+  ],
+  "sig": "5b97fe488968"
+ },
+ "/images/mobile-j.webp": {
+  "w": 4000,
+  "h": 2463,
+  "v": [
+   640,
+   960,
+   1280,
+   1920,
+   2880
+  ],
+  "sig": "1ceeaf1d8b7e"
+ },
+ "/images/mobile-photo.webp": {
+  "w": 4000,
+  "h": 3096,
+  "v": [
+   640,
+   960,
+   1280,
+   1920,
+   2880
+  ],
+  "sig": "59fd7c00d877"
+ },
+ "/images/mockup-ludo.webp": {
+  "w": 1679,
+  "h": 1363,
+  "v": [
+   640,
+   960,
+   1280
+  ],
+  "sig": "ac020ad435f1"
+ },
+ "/images/montre-justx.webp": {
+  "w": 4000,
+  "h": 2666,
+  "v": [
+   640,
+   960,
+   1280,
+   1920,
+   2880
+  ],
+  "sig": "81372e5ad2c2"
+ },
+ "/images/moovy-ordi-bleu.webp": {
+  "w": 3680,
+  "h": 2760,
+  "v": [
+   640,
+   960,
+   1280,
+   1920,
+   2880
+  ],
+  "sig": "1f9e9b6c6323"
+ },
+ "/images/moovy-ordi.webp": {
+  "w": 2680,
+  "h": 2158,
+  "v": [
+   640,
+   960,
+   1280,
+   1920
+  ],
+  "sig": "1d7cb791f985"
+ },
+ "/images/moovy-phone-w1800.webp": {
+  "w": 1800,
+  "h": 1350,
+  "v": [
+   640,
+   960,
+   1280
+  ],
+  "sig": "5e09d14dc8eb"
+ },
+ "/images/moovy-phone.webp": {
+  "w": 3680,
+  "h": 2760,
+  "v": [
+   640,
+   960,
+   1280,
+   1920,
+   2880
+  ],
+  "sig": "7d94f5c7a0f5"
+ },
+ "/images/moovy-salon.webp": {
+  "w": 2000,
+  "h": 2000,
+  "v": [
+   640,
+   960,
+   1280
+  ],
+  "sig": "e6c4a8e4a159"
+ },
+ "/images/moovy-tel-joker.webp": {
+  "w": 640,
+  "h": 1385,
+  "v": [],
+  "sig": "482a96873533"
+ },
+ "/images/moovy.webp": {
+  "w": 2200,
+  "h": 1238,
+  "v": [
+   640,
+   960,
+   1280,
+   1920
+  ],
+  "sig": "03cc18f0d570"
+ },
+ "/images/moovy2.webp": {
+  "w": 1700,
+  "h": 2000,
+  "v": [
+   640,
+   960,
+   1280
+  ],
+  "sig": "047f266c144c"
+ },
+ "/images/moovy_ipad.webp": {
+  "w": 2200,
+  "h": 1650,
+  "v": [
+   640,
+   960,
+   1280,
+   1920
+  ],
+  "sig": "f57c351ad247"
+ },
+ "/images/moovy_mac.webp": {
+  "w": 1730,
+  "h": 2159,
+  "v": [
+   640,
+   960,
+   1280
+  ],
+  "sig": "c1f3ebd837d1"
+ },
+ "/images/moovy_mobile.webp": {
+  "w": 1800,
+  "h": 1773,
+  "v": [
+   640,
+   960,
+   1280
+  ],
+  "sig": "fa7c0154c6cc"
+ },
+ "/images/moovy_page.webp": {
+  "w": 5179,
+  "h": 3000,
+  "v": [
+   640,
+   960,
+   1280,
+   1920,
+   2880
+  ],
+  "sig": "4352abba4d41"
+ },
+ "/images/moovy_recherche.webp": {
+  "w": 4000,
+  "h": 2666,
+  "v": [
+   640,
+   960,
+   1280,
+   1920,
+   2880
+  ],
+  "sig": "f3a41df61e22"
+ },
+ "/images/naming.webp": {
+  "w": 2128,
+  "h": 2016,
+  "v": [
+   640,
+   960,
+   1280
+  ],
+  "sig": "bbb1d2e4e1f1"
+ },
+ "/images/ordinateur.webp": {
+  "w": 1536,
+  "h": 1024,
+  "v": [
+   640,
+   960,
+   1280
+  ],
+  "sig": "487ba204829e"
+ },
+ "/images/parfum_ordinateur.webp": {
+  "w": 2200,
+  "h": 1760,
+  "v": [
+   640,
+   960,
+   1280,
+   1920
+  ],
+  "sig": "cbae7e623406"
+ },
+ "/images/parfum_rouge.webp": {
+  "w": 2200,
+  "h": 2200,
+  "v": [
+   640,
+   960,
+   1280,
+   1920
+  ],
+  "sig": "e45959312129"
+ },
+ "/images/pexels-erich-naufal-52024210-7920814.webp": {
+  "w": 2200,
+  "h": 2332,
+  "v": [
+   640,
+   960,
+   1280,
+   1920
+  ],
+  "sig": "633efef2097d"
+ },
+ "/images/pexels-jack-atkinson-1289771108-24356055.webp": {
+  "w": 2880,
+  "h": 1922,
+  "v": [
+   640,
+   960,
+   1280,
+   1920
+  ],
+  "sig": "72f90a2da3cd"
+ },
+ "/images/pexels-kristof-sass-kovan-64832383-8384482.webp": {
+  "w": 2200,
+  "h": 3911,
+  "v": [
+   640,
+   960,
+   1280,
+   1920
+  ],
+  "sig": "7f63ad47d1e8"
+ },
+ "/images/prisme-eclat-bas-aube.webp": {
+  "w": 2560,
+  "h": 1440,
+  "v": [
+   640,
+   960,
+   1280,
+   1920
+  ],
+  "sig": "29cbd10baacf"
+ },
+ "/images/prisme-traverse-noir.webp": {
+  "w": 2560,
+  "h": 1440,
+  "v": [
+   640,
+   960,
+   1280,
+   1920
+  ],
+  "sig": "3f24a2d6c737"
+ },
+ "/images/serein-affiche.webp": {
+  "w": 2400,
+  "h": 1800,
+  "v": [
+   640,
+   960,
+   1280,
+   1920
+  ],
+  "sig": "7715de51564a"
+ },
+ "/images/serein-durable.webp": {
+  "w": 1400,
+  "h": 1304,
+  "v": [
+   640,
+   960
+  ],
+  "sig": "1974e5dcda49"
+ },
+ "/images/serein-ecran-objectif-large.webp": {
+  "w": 2400,
+  "h": 1500,
+  "v": [
+   640,
+   960,
+   1280,
+   1920
+  ],
+  "sig": "b0ba6accb9c8"
+ },
+ "/images/serein-ecran-objectif-mobile.webp": {
+  "w": 1200,
+  "h": 1500,
+  "v": [
+   640,
+   960
+  ],
+  "sig": "b54f01f82192"
+ },
+ "/images/serein-ecran-seconde-large.webp": {
+  "w": 2400,
+  "h": 1500,
+  "v": [
+   640,
+   960,
+   1280,
+   1920
+  ],
+  "sig": "f2cc459caca4"
+ },
+ "/images/serein-ecran-seconde-mobile.webp": {
+  "w": 1200,
+  "h": 1500,
+  "v": [
+   640,
+   960
+  ],
+  "sig": "c1635f8af482"
+ },
+ "/images/serein-ecran-vacances-large.webp": {
+  "w": 2400,
+  "h": 1500,
+  "v": [
+   640,
+   960,
+   1280,
+   1920
+  ],
+  "sig": "1f6ab89c8d89"
+ },
+ "/images/serein-ecran-vacances-mobile.webp": {
+  "w": 1200,
+  "h": 1500,
+  "v": [
+   640,
+   960
+  ],
+  "sig": "207173811e10"
+ },
+ "/images/serein-monogramme-face.webp": {
+  "w": 1080,
+  "h": 1350,
+  "v": [
+   640,
+   960
+  ],
+  "sig": "82392cf57adc"
+ },
+ "/images/serein-monogramme-volume.webp": {
+  "w": 1080,
+  "h": 1080,
+  "v": [
+   640,
+   960
+  ],
+  "sig": "908079387418"
+ },
+ "/images/serein-monogramme.webp": {
+  "w": 1080,
+  "h": 1080,
+  "v": [
+   640,
+   960
+  ],
+  "sig": "f5438ef5a244"
+ },
+ "/images/serein-objectif.webp": {
+  "w": 1800,
+  "h": 1985,
+  "v": [
+   640,
+   960,
+   1280
+  ],
+  "sig": "06944908f05d"
+ },
+ "/images/serein-ordinateur.webp": {
+  "w": 2400,
+  "h": 1800,
+  "v": [
+   640,
+   960,
+   1280,
+   1920
+  ],
+  "sig": "1f2a6db47f97"
+ },
+ "/images/serein-reparable.webp": {
+  "w": 1400,
+  "h": 1492,
+  "v": [
+   640,
+   960
+  ],
+  "sig": "cc71172dd7ac"
+ },
+ "/images/serein-sans-compte.webp": {
+  "w": 1400,
+  "h": 1454,
+  "v": [
+   640,
+   960
+  ],
+  "sig": "6526b3cb4548"
+ },
+ "/images/serein-tel-accueil.webp": {
+  "w": 640,
+  "h": 1352,
+  "v": [],
+  "sig": "3393fe437415"
+ },
+ "/images/serein-telephone-bois.webp": {
+  "w": 1500,
+  "h": 1800,
+  "v": [
+   640,
+   960,
+   1280
+  ],
+  "sig": "546443cbc3ea"
+ },
+ "/images/serein-vignette.webp": {
+  "w": 1200,
+  "h": 1600,
+  "v": [
+   640,
+   960
+  ],
+  "sig": "d810d9b1426a"
+ },
+ "/images/serein_design.webp": {
+  "w": 1024,
+  "h": 576,
+  "v": [
+   640
+  ],
+  "sig": "596a23245c4b"
+ },
+ "/images/statement-silhouette-creer-1600.webp": {
+  "w": 1600,
+  "h": 782,
+  "v": [
+   640,
+   960,
+   1280
+  ],
+  "sig": "6b3f96f08775"
+ },
+ "/images/statement-silhouette-creer-2560.webp": {
+  "w": 2560,
+  "h": 1252,
+  "v": [
+   640,
+   960,
+   1280,
+   1920
+  ],
+  "sig": "0e3483eb07be"
+ },
+ "/images/statement-silhouette-creer-960.webp": {
+  "w": 960,
+  "h": 470,
+  "v": [
+   640
+  ],
+  "sig": "85277c4fb630"
+ },
+ "/images/statement-silhouette-creer-mobile-1200.webp": {
+  "w": 1200,
+  "h": 960,
+  "v": [
+   640,
+   960
+  ],
+  "sig": "d8becffdb82e"
+ },
+ "/images/statement-silhouette-creer-mobile-800.webp": {
+  "w": 800,
+  "h": 640,
+  "v": [
+   640
+  ],
+  "sig": "3b21a10c1c92"
+ },
+ "/images/tel_moovy.webp": {
+  "w": 2200,
+  "h": 1650,
+  "v": [
+   640,
+   960,
+   1280,
+   1920
+  ],
+  "sig": "628218c7118e"
+ },
+ "/images/tel_moovy2.webp": {
+  "w": 2200,
+  "h": 1650,
+  "v": [
+   640,
+   960,
+   1280,
+   1920
+  ],
+  "sig": "417e1018368d"
+ },
+ "/images/telephone2.webp": {
+  "w": 1800,
+  "h": 1773,
+  "v": [
+   640,
+   960,
+   1280
+  ],
+  "sig": "0b1da0a45a26"
+ },
+ "/images/telephone2_parfum.webp": {
+  "w": 2200,
+  "h": 1108,
+  "v": [
+   640,
+   960,
+   1280,
+   1920
+  ],
+  "sig": "d18d54afda67"
+ },
+ "/images/telephone3.webp": {
+  "w": 1080,
+  "h": 1920,
+  "v": [
+   640,
+   960
+  ],
+  "sig": "149e62ed910f"
+ },
+ "/images/telephone_main.webp": {
+  "w": 2200,
+  "h": 2200,
+  "v": [
+   640,
+   960,
+   1280,
+   1920
+  ],
+  "sig": "461533e738c1"
+ },
+ "/images/telephone_parfum.webp": {
+  "w": 2200,
+  "h": 2200,
+  "v": [
+   640,
+   960,
+   1280,
+   1920
+  ],
+  "sig": "2292c89f4621"
+ },
+ "/images/travail-mockups-1280.webp": {
+  "w": 1280,
+  "h": 699,
+  "v": [
+   640,
+   960
+  ],
+  "sig": "f8fd8e2603a4"
+ },
+ "/images/travail-mockups-1920.webp": {
+  "w": 1920,
+  "h": 1048,
+  "v": [
+   640,
+   960,
+   1280
+  ],
+  "sig": "a210f3c622f8"
+ },
+ "/images/travail-mockups-2560.webp": {
+  "w": 2560,
+  "h": 1397,
+  "v": [
+   640,
+   960,
+   1280,
+   1920
+  ],
+  "sig": "dde8f984ac65"
+ },
+ "/images/travail-mockups-mobile.webp": {
+  "w": 1080,
+  "h": 2160,
+  "v": [
+   640,
+   960
+  ],
+  "sig": "47910fdfabfd"
+ },
+ "/images/visage-w1800.webp": {
+  "w": 1078,
+  "h": 1800,
+  "v": [
+   640,
+   960
+  ],
+  "sig": "fea771344494"
+ },
+ "/videos/harmonia-ouverture-poster.webp": {
+  "w": 1080,
+  "h": 1350,
+  "v": [
+   640,
+   960
+  ],
+  "sig": "c290d1d6bf9a"
+ },
+ "/videos/harmonia-recit-poster.webp": {
+  "w": 1080,
+  "h": 1350,
+  "v": [
+   640,
+   960
+  ],
+  "sig": "b728a4d1dc75"
+ },
+ "/videos/harmonia-univers-poster.webp": {
+  "w": 1080,
+  "h": 1350,
+  "v": [
+   640,
+   960
+  ],
+  "sig": "aa80987fcd7b"
+ },
+ "/videos/ludo-collections-poster.webp": {
+  "w": 896,
+  "h": 1120,
+  "v": [
+   640
+  ],
+  "sig": "96dad3ff5bd4"
+ },
+ "/videos/ludo-demarche-poster.webp": {
+  "w": 1080,
+  "h": 1350,
+  "v": [
+   640,
+   960
+  ],
+  "sig": "d9f83471c718"
+ },
+ "/videos/ludo-oeuvre-poster.webp": {
+  "w": 896,
+  "h": 1120,
+  "v": [
+   640
+  ],
+  "sig": "341bcc9e1c00"
+ },
+ "/videos/ludo-site-poster.webp": {
+  "w": 1280,
+  "h": 800,
+  "v": [
+   640,
+   960
+  ],
+  "sig": "b6bdd87ba6e2"
+ },
+ "/videos/lybra-envol-poster.webp": {
+  "w": 1080,
+  "h": 1350,
+  "v": [
+   640,
+   960
+  ],
+  "sig": "26b68fda27e9"
+ },
+ "/videos/moovy-fiche-film-poster.webp": {
+  "w": 1920,
+  "h": 1080,
+  "v": [
+   640,
+   960,
+   1280
+  ],
+  "sig": "5258b476ed2d"
+ },
+ "/videos/moovy-hero-mobile-poster.webp": {
+  "w": 720,
+  "h": 1280,
+  "v": [
+   640
+  ],
+  "sig": "19efdf8a2d35"
+ },
+ "/videos/moovy-hero-poster.webp": {
+  "w": 1920,
+  "h": 1080,
+  "v": [
+   640,
+   960,
+   1280
+  ],
+  "sig": "726deacf3045"
+ },
+ "/videos/moovy-parcours-poster.webp": {
+  "w": 1920,
+  "h": 1080,
+  "v": [
+   640,
+   960,
+   1280
+  ],
+  "sig": "831f236cce1e"
+ },
+ "/videos/serein-hero-mobile-poster.webp": {
+  "w": 1080,
+  "h": 1920,
+  "v": [
+   640,
+   960
+  ],
+  "sig": "82f0a6bb3afa"
+ },
+ "/videos/serein-hero-poster.webp": {
+  "w": 1920,
+  "h": 1080,
+  "v": [
+   640,
+   960,
+   1280
+  ],
+  "sig": "0f558404d39c"
+ }
+}

@@ -15,15 +15,25 @@
   //  sont donc RECOPIÉES de `ProjectHeroProjetsStyle` : les toucher ici sans les
   //  toucher là-bas ferait sauter l'image ou le titre au changement de page.
   //
-  //  ── La course ─────────────────────────────────────────────────────────────
+  //  ── La course : une CARTE qui s'ouvre (refait le 2026-11-18) ──────────────
   //  Une enveloppe haute de plusieurs écrans, un panneau `sticky` d'un écran
-  //  dedans. La progression est la part de l'enveloppe déjà parcourue ; elle
-  //  ouvre le voile, pose l'image et remplit la jauge. Au seuil, seuls les
-  //  éléments PROPRES au pied de page (le libellé et la jauge) s'en vont ; le
-  //  titre et la flèche restent, puisqu'ils sont déjà ceux du hero d'arrivée.
+  //  dedans. Le projet suivant y arrive en CARTE — les marges et l'arrondi du
+  //  cadre des hero du site — qui monte avec la page puis s'ouvre, au fil du
+  //  défilement, jusqu'au plein écran : exactement le hero d'arrivée, cadre
+  //  ouvert. L'image se pose de 1,12 à 1 pendant l'ouverture, le titre suit le
+  //  coin bas gauche de la carte jusqu'à sa place dans le hero, et une ligne
+  //  au-dessus de la carte (« Projet suivant », la catégorie, un compteur de 0
+  //  à 100) est poussée hors champ par son bord haut.
+  //  Repris d'Estrela (estrela.studio), passé dans l'identité du site : avant,
+  //  c'était une image plein écran sous un voile sombre qui s'éclaircissait,
+  //  avec une fine jauge de chargement — le client trouvait ça « classique ».
+  //  La carte, le compteur et le titre sont écrits image par image en
+  //  `transform` (compositeur) ; seule la découpe de la carte (`clip-path`)
+  //  est repeinte, et c'est un rectangle arrondi.
   //  La course est volontairement PLUS COURTE que l'enveloppe : la progression
   //  atteint 1 avant le bas absolu de la page, sinon un navigateur qui amortit
-  //  la fin de course resterait bloqué à 0,99.
+  //  la fin de course resterait bloqué à 0,99. Un clic sur la carte déroule la
+  //  course jusqu'au bout (défilement doux) : le départ est alors le même.
   //
   //  ── LE DÉPART (refait le 2026-10-02, pour l'iPhone) ────────────────────────
   //  Sur un vrai téléphone, c'est Safari qui tient le défilement, pas la page :
@@ -79,10 +89,17 @@
 
   /** Part de l'enveloppe sur laquelle la progression se joue (le reste est du mou). */
   const COURSE = 0.78;
-  /** Au-delà, on part. Jamais 1 : la fin de course est amortie sur certains navigateurs. */
-  const SEUIL = 0.985;
+  /** Au-delà, on part. Jamais 1 : la fin de course est amortie sur certains
+   *  navigateurs. C'est AUSSI le point où la carte est pleine et le compteur à
+   *  100 (2026-11-18) : avant, la carte paraissait pleine vers 0,9 et la page
+   *  ne partait qu'à 0,985 — le client devait « encore faire un scroll de
+   *  plus » alors que rien ne bougeait plus à l'écran. */
+  const SEUIL = 0.96;
   /** En deçà, un départ engagé est annulé : le lecteur est remonté. */
-  const SEUIL_RETOUR = 0.9;
+  const SEUIL_RETOUR = 0.86;
+  /** Courbe de l'ouverture (exposant du reste) : < 2 pour que la carte bouge
+   *  visiblement jusqu'au seuil au lieu de se figer sur le dernier dixième. */
+  const COURBE = 1.5;
   /** Immobilité exigée avant de partir : position du défilement et hauteur
    *  visible. Une inertie iOS déplace la page à CHAQUE image jusqu'à son arrêt :
    *  sept images sans le moindre mouvement, c'est un arrêt. */
@@ -92,12 +109,38 @@
   /** Le fondu final du panneau sur le hero d'arrivée — bref : les deux sont
    *  identiques, il ne fait qu'adoucir un écart d'un pixel s'il en reste un. */
   const REVELATION_MS = 220;
+  /** Part d'écran sur laquelle la carte commence à s'ouvrir AVANT de se
+   *  coller en haut : elle monte et s'élargit dans le même geste. */
+  const ENTREE = 0.45;
+  /** Zoom de l'image dans la carte fermée ; 1 une fois ouverte (le hero). */
+  const ZOOM = 0.12;
+  /** Au doigt, la carte AFFICHÉE rattrape la progression en douceur (constante
+   *  de temps, ms) au lieu de la suivre image par image. Repris d'Avatr
+   *  (vision.avatr.com, `onScroll({ sync: .8 })` d'anime.js) : Safari iOS
+   *  livre la position du défilement par à-coups irréguliers, et une valeur
+   *  qui la suit à la lettre les montre tous. Le départ, lui, reste décidé sur
+   *  la position RÉELLE (voir `handleRead`) : le lissage n'ajoute aucune
+   *  attente. Sur grand écran, la position est déjà lissée par le moteur. */
+  const LISSAGE_DOIGT_MS = 70;
 
   let wrapEl;
   let panelEl;
-  let veilEl;
-  let fillEl;
+  let cardEl;
+  let cueEl;
+  let barreEl;
+  let itemGEl;
+  let itemDEl;
+  let chiffreEl;
   let imgEl;
+  /** La carte fermée : marges haut / côtés / bas et arrondi, en px. */
+  let geo = { t: 0, s: 0, b: 0, r: 22 };
+  let entreePx = 0;
+  let chiffreAffiche = -1;
+  let barreCachee = false;
+  /** La progression telle que la carte l'AFFICHE (voir `LISSAGE_DOIGT_MS`). */
+  let pVue = 0;
+  let dernierPas = 0;
+  let rafVue = 0;
   let progress = 0;
   let leaving = false;
   /** La navigation est lancée : plus d'annulation possible. */
@@ -146,7 +189,9 @@
     arme = false;
     ouvert = false;
     progress = 0;
+    pVue = 0;
     pAppliquee = -1;
+    chiffreAffiche = -1;
     sale = true;
     chargee = false;
     besoinMesure = true;
@@ -243,12 +288,15 @@
     if (besoinMesure) {
       besoinMesure = false;
       course = Math.max((wrapEl.offsetHeight - panelEl.offsetHeight) * COURSE, 1);
+      mesurerCarte();
     }
 
     const haut = wrapEl.getBoundingClientRect().top;
     wrapTop = haut + y;
 
-    const p = clamp(((tactile ? y : ctx?.motionY ?? y) - wrapTop) / course);
+    // La carte s'ouvre dès qu'elle est à moitié montée, et finit d'arriver au
+    // bout de la course : p = 1 à `wrapTop + course`, comme avant.
+    const p = clamp(((tactile ? y : ctx?.motionY ?? y) - wrapTop + entreePx) / (course + entreePx));
     if (Math.abs(p - progress) > 0.0005) {
       progress = p;
       sale = true;
@@ -280,27 +328,112 @@
    *  propriété personnalisée ferait recalculer tout le sous-arbre à chaque
    *  image. Rien n'est écrit pendant la couverture : le panneau doit rester
    *  exactement tel qu'il était au départ. */
-  function handleWrite() {
-    if (!sale || couverture) return;
-    sale = false;
+  /*  La progression affichée avance vers sa cible : au départ la course est
+   *  finie (carte ouverte, image posée), sinon la progression lue. */
+  function avancerVue(now) {
+    const cible = leaving ? 1 : progress;
+    if (!tactile || reduced) {
+      pVue = cible;
+      dernierPas = now;
+      return;
+    }
+    const dt = Math.min(64, Math.max(0, now - (dernierPas || now)));
+    dernierPas = now;
+    pVue += (cible - pVue) * (1 - Math.exp(-dt / LISSAGE_DOIGT_MS));
+    if (Math.abs(cible - pVue) < 0.0004) pVue = cible;
+  }
 
-    // Au départ, la course est finie : la jauge se remplit, l'image se pose.
-    const p = leaving ? 1 : progress;
+  /*  Quand le moteur de défilement s'arrête (fin d'inertie), la carte finit
+   *  de rattraper sa cible sur ses propres images — sans rien lire. */
+  function suivreVue() {
+    if (rafVue || couverture) return;
+    rafVue = requestAnimationFrame((t) => {
+      rafVue = 0;
+      handleWrite(0, { now: t });
+    });
+  }
+
+  function handleWrite(_y, ctx) {
+    if (couverture) return;
+    if (sale) {
+      sale = false;
+      pAppliquee = -1;
+    }
+    avancerVue(ctx?.now ?? performance.now());
+    if (pVue !== (leaving ? 1 : progress)) suivreVue();
+
+    const p = pVue;
     if (p === pAppliquee) return;
     pAppliquee = p;
 
-    // Le voile s'ouvre en courbe en S plutôt qu'en pente droite : une rampe
-    // linéaire se lit comme une arête au départ et à l'arrivée.
-    const u = clamp(p / 0.9);
-    const doux = u * u * (3 - 2 * u);
-    if (veilEl) veilEl.style.opacity = (0.74 * (1 - doux)).toFixed(4);
+    // L'ouverture RALENTIT en arrivant : la carte se pose sur le plein écran
+    // du hero sans à-coup final — et elle y est EXACTEMENT au seuil de départ
+    // (progression rapportée au seuil), pas avant.
+    const u = Math.min(1, p / SEUIL);
+    const reste = Math.pow(1 - u, COURBE);
+    const t = geo.t * reste;
+    const s = geo.s * reste;
+    const b = geo.b * reste;
+    const r = geo.r * reste;
 
-    // L'image se pose de 1,05 à 1 en RALENTISSANT (courbe au carré) : elle
-    // atterrit sur l'échelle 1 du hero qui lui succède, sans à-coup final.
-    const reste = 1 - p;
-    if (imgEl) imgEl.style.transform = `scale(${(1 + 0.05 * reste * reste).toFixed(5)})`;
+    if (cardEl) {
+      cardEl.style.clipPath = reste < 0.0005
+        ? "none"
+        : `inset(${t.toFixed(2)}px ${s.toFixed(2)}px ${b.toFixed(2)}px ${s.toFixed(2)}px round ${r.toFixed(2)}px)`;
+    }
+    if (imgEl) imgEl.style.transform = reduced ? "none" : `scale(${(1 + ZOOM * reste).toFixed(5)})`;
+    // Le titre suit le coin bas gauche de la carte : à l'ouverture complète,
+    // il est à sa place dans le hero, au pixel près.
+    if (cueEl) cueEl.style.transform = `translate3d(${s.toFixed(2)}px, ${(-b).toFixed(2)}px, 0)`;
 
-    if (fillEl) fillEl.style.transform = `scaleX(${p.toFixed(4)})`;
+    // La ligne du haut est portée par le bord haut de la carte, qui la pousse
+    // hors champ en s'ouvrant ; elle s'efface sur la seconde moitié. Éteinte,
+    // elle passe en `visibility: hidden` : un calque à opacité nulle dans un
+    // `sticky` est repeint à chaque mise en page par Safari ≤ 18.1.
+    const fondu = clamp((1 - reste - 0.45) / 0.4);
+    const opacite = leaving ? 0 : 1 - fondu * fondu * (3 - 2 * fondu);
+    if (barreEl) {
+      barreEl.style.transform = `translate3d(0, ${(t - 14).toFixed(2)}px, 0)`;
+      barreEl.style.opacity = opacite.toFixed(3);
+      const cachee = opacite < 0.002;
+      if (cachee !== barreCachee) {
+        barreEl.style.visibility = cachee ? "hidden" : "";
+        barreCachee = cachee;
+      }
+    }
+    if (itemGEl) itemGEl.style.transform = `translate3d(${s.toFixed(2)}px, 0, 0)`;
+    if (itemDEl) itemDEl.style.transform = `translate3d(${(-s).toFixed(2)}px, 0, 0)`;
+
+    // Le compteur atteint 100 au départ, pas à la fin théorique de la course.
+    const chiffre = leaving ? 100 : Math.min(100, Math.round((p / SEUIL) * 100));
+    if (chiffreEl && chiffre !== chiffreAffiche) {
+      chiffreEl.textContent = String(chiffre);
+      chiffreAffiche = chiffre;
+    }
+  }
+
+  /*  La carte fermée : les marges et l'arrondi du cadre des hero du site
+   *  (`--site-inset`, 22 px ; 18 px sur téléphone), en plus large sur les
+   *  côtés et en haut pour qu'elle se lise comme une carte posée sur la page.
+   *  Lu sur les mêmes bases que le CSS (`clamp(0.9rem, 2vw, 1.8rem)`). */
+  function mesurerCarte() {
+    const vw = window.innerWidth || 1;
+    const vh = panelEl?.offsetHeight || window.innerHeight || 1;
+    const rem = parseFloat(getComputedStyle(document.documentElement).fontSize) || 16;
+    const marge = clamp(0.02 * vw, 0.9 * rem, 1.8 * rem);
+    const telephone = vw <= 640;
+    geo = telephone
+      ? { t: Math.round(vh * 0.17), s: Math.round(marge), b: Math.round(vh * 0.035), r: 18 }
+      : { t: Math.round(vh * 0.16), s: Math.round(Math.max(marge * 3, vw * 0.06)), b: Math.round(Math.max(marge, vh * 0.05)), r: 22 };
+    entreePx = Math.round(vh * ENTREE);
+    pAppliquee = -1;
+    sale = true;
+  }
+
+  /** Un clic sur la carte déroule la course jusqu'au bout. */
+  function allerAuBout() {
+    if (leaving || couverture || !wrapEl) return;
+    window.scrollTo({ top: Math.ceil(wrapTop + course + 2), behavior: reduced ? "auto" : "smooth" });
   }
 
   function partir() {
@@ -350,11 +483,14 @@
     depart = true;
     const cible = affiche.slug;
 
-    // 1. L'état d'arrivée est écrit (voile ouvert, image posée à l'échelle 1,
-    //    jauge pleine), puis le panneau se fige à l'écran : de `sticky` à
-    //    `fixed`, à la même place.
+    // 1. L'état d'arrivée est écrit (carte ouverte, image posée à l'échelle 1,
+    //    compteur plein), puis le panneau se fige à l'écran : de `sticky` à
+    //    `fixed`, à la même place. L'affichage lissé est d'abord posé sur la
+    //    fin : le raccord exige la carte EXACTEMENT ouverte.
+    cancelAnimationFrame(rafVue);
+    rafVue = 0;
+    pVue = 1;
     sale = true;
-    pAppliquee = -1;
     handleWrite();
     couverture = true;
     // L'en-tête ne doit pas lire le saut de défilement qui vient comme une
@@ -502,6 +638,7 @@
   onDestroy(() => {
     clearTimeout(sortieTimer);
     clearTimeout(retourTimer);
+    if (browser) cancelAnimationFrame(rafVue);
     if (browser && couverture) tenirEntete(false);
   });
 </script>
@@ -511,61 +648,75 @@
     <div
       class="nextp__panel"
       class:is-leaving={leaving}
-      class:is-returning={retour}
       class:is-cover={couverture}
       class:is-revealing={revelation}
       bind:this={panelEl}
     >
-      <!--  `hero-media` et `hero-dark-layer` ne sont pas décoratifs : `app.css`
+      <!--  La carte : tout ce que le hero d'arrivée peint, découpé en rectangle
+            arrondi qui s'ouvre jusqu'au plein écran (voir `handleWrite`).
+            `hero-media` et `hero-dark-layer` ne sont pas décoratifs : `app.css`
             porte, pour les écrans TACTILES, un assombrissement du bas du hero
-            qui vise ces deux classes (voir le bloc `@media (hover: none) and
-            (pointer: coarse)`). Sans elles, le panneau serait clair là où le
-            hero d'arrivée est sombre — et le raccord se verrait.
-            Ces classes sont GLOBALES : les règles du hero, elles, sont
-            portées par Svelte et ne touchent pas cet élément. -->
-      <div class="nextp__media hero-media" aria-hidden="true">
-        <picture>
-          {#if affiche.hero?.mobileImage}
-            <source media="(max-width: 640px)" srcset={affiche.hero.mobileImage} />
-          {/if}
-          <img
-            src={affiche.hero?.image}
-            alt=""
-            loading="lazy"
-            decoding="async"
-            class:is-loaded={chargee}
-            bind:this={imgEl}
-            on:load={surChargement}
-            on:error={surChargement}
-          />
-        </picture>
-        <div class="nextp__dark hero-dark-layer"></div>
-        <span class="nextp__veil" bind:this={veilEl}></span>
+            qui vise ces deux classes (bloc `@media (hover: none) and
+            (pointer: coarse)`). Sans elles, la carte serait claire là où le
+            hero d'arrivée est sombre — et le raccord se verrait. -->
+      <!-- svelte-ignore a11y_click_events_have_key_events a11y_no_static_element_interactions -->
+      <div class="nextp__card" bind:this={cardEl} data-cursor="view" on:click={allerAuBout}>
+        <div class="nextp__media hero-media" aria-hidden="true">
+          <picture>
+            {#if affiche.hero?.mobileImage}
+              <source media="(max-width: 640px)" srcset={affiche.hero.mobileImage} sizes="100vw" />
+            {/if}
+            <!--  `sizes="100vw"` écrit en dur, comme dans le hero : les deux
+                  doivent choisir la MÊME variante, sinon le hero d'arrivée
+                  repartirait chercher une autre image au changement de page.
+                  `data-no-arrivee` : l'image a son propre fondu (`is-loaded`). -->
+            <img
+              src={affiche.hero?.image}
+              sizes="100vw"
+              alt=""
+              loading="lazy"
+              decoding="async"
+              data-no-arrivee
+              class:is-loaded={chargee}
+              bind:this={imgEl}
+              on:load={surChargement}
+              on:error={surChargement}
+            />
+          </picture>
+          <div class="nextp__dark hero-dark-layer"></div>
+        </div>
+
+        <!--  Le fondu au noir du bas d'écran, propre au hero TÉLÉPHONE (voir les
+              styles) : sans lui, toute la moitié basse s'assombrissait d'un coup
+              au changement de page. -->
+        <span class="nextp__fondu" aria-hidden="true"></span>
       </div>
 
-      <!--  Le fondu au noir du bas d'écran, propre au hero TÉLÉPHONE (voir les
-            styles) : sans lui, toute la moitié basse s'assombrissait d'un coup
-            au changement de page. -->
-      <span class="nextp__fondu" aria-hidden="true"></span>
+      <!--  La ligne au-dessus de la carte : portée par son bord haut, poussée
+            hors champ quand elle s'ouvre. Le compteur remplace l'ancienne
+            jauge ; il atteint 100 au départ. -->
+      <div class="nextp__barre" class:is-open={ouvert} bind:this={barreEl}>
+        <span class="nextp__item nextp__item--g" bind:this={itemGEl}>
+          <span class="nextp__in">{libelle}</span>
+        </span>
+        <span class="nextp__item nextp__item--d" bind:this={itemDEl}>
+          <span class="nextp__in nextp__compteur" role="progressbar" aria-label={`Vers ${affiche.title}`}
+            aria-valuemin="0" aria-valuemax="100" aria-valuenow={pourcent}>
+            <span class="nextp__chiffre" bind:this={chiffreEl}>0</span><span class="nextp__pct">%</span>
+          </span>
+        </span>
+      </div>
 
       <!-- Le titre : mêmes règles que `.hero-scroll-label` du hero projet, au
-           pixel près — c'est ce qui rend le passage invisible. -->
-      <div class="nextp__cue" class:is-open={ouvert}>
+           pixel près une fois la carte ouverte — c'est ce qui rend le passage
+           invisible. Pendant l'ouverture, il suit le coin de la carte. -->
+      <div class="nextp__cue" class:is-open={ouvert} bind:this={cueEl}>
         <p class="nextp__label" use:fitTitle={affiche.title}>{affiche.title}</p>
         <!--  La flèche du hero, et pas un intitulé : la pile du hero d'arrivée
               est exactement « titre + flèche », donc le titre se pose ici à la
               même hauteur au pixel près. Elle RESTE au départ : elle est déjà
               celle du hero d'arrivée. -->
         <span class="nextp__arrow" aria-hidden="true">↓</span>
-      </div>
-
-      <div class="nextp__side" class:is-open={ouvert}>
-        <p class="nextp__libelle">{libelle}</p>
-
-        <div class="nextp__bar" role="progressbar" aria-label={`Vers ${affiche.title}`}
-          aria-valuemin="0" aria-valuemax="100" aria-valuenow={pourcent}>
-          <span class="nextp__fill" bind:this={fillEl}></span>
-        </div>
       </div>
 
       <!--  Le raccourci pour qui ne veut pas dérouler — et le seul chemin au
@@ -626,6 +777,31 @@
     transition: opacity 220ms cubic-bezier(0.4, 0, 0.2, 1);
   }
 
+  /*  ── La carte ──
+   *  Plein écran, découpée par le script (`clip-path: inset(… round …)`) :
+   *  seul le contour bouge, jamais la boîte — redimensionner à chaque image
+   *  un élément qui porte une image, c'est le défilement qui accroche (même
+   *  règle que le cadre des hero, `heroFrame.js`). L'état de départ ci-dessous
+   *  ne sert qu'au premier rendu, avant la première mesure. */
+  .nextp__card {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    cursor: pointer;
+    clip-path: inset(16svh 6vw 5svh 6vw round 22px);
+    background: var(--bg-deep, #050709);
+    /*  Un calque à part (2026-11-18) : sa découpe change à chaque image ; sans
+     *  calque, WebKit repeignait avec elle ce qu'elle contient — dont le
+     *  fondu au noir de 68rem du téléphone. Calque sur la CARTE, jamais sur
+     *  le panneau `sticky` qui la porte (voir la mémoire du projet). */
+    will-change: transform;
+  }
+
+  .nextp__panel.is-leaving .nextp__card,
+  .nextp__panel.is-cover .nextp__card {
+    cursor: default;
+  }
+
   /* Même boîte que `.hero-media` du hero projet : c'est la condition du
      raccord. Ne pas la modifier d'un côté seulement. */
   .nextp__media {
@@ -650,6 +826,7 @@
     object-fit: cover;
     /* L'image arrive en fondu à son chargement, jamais d'un coup sec. */
     opacity: 0;
+    transform: scale(1.12);
     transition: opacity 700ms cubic-bezier(0.22, 1, 0.36, 1);
     /* Son échelle est réécrite à chaque image pendant la course : la couche
        doit exister d'avance, sinon la promotion se fait en plein mouvement. */
@@ -693,20 +870,6 @@
     pointer-events: none;
   }
 
-  /*  Le voile : opaque quand le panneau arrive, il s'ouvre au fur et à mesure et
-   *  finit sur l'image nue — exactement l'état du hero au repos. */
-  .nextp__veil {
-    position: absolute;
-    inset: 0;
-    z-index: 2;
-    background: rgba(var(--shade-rgb, 5, 7, 9), 1);
-    /* La valeur est écrite par le JS à chaque image (voir `handleWrite`) : une
-       seule mutation d'opacité, que le compositeur applique sans recalculer la
-       mise en page. Cette valeur de départ ne sert qu'au premier rendu. */
-    opacity: 0.74;
-    will-change: opacity;
-  }
-
   /*  Le fondu au noir du hero TÉLÉPHONE. Sous 640 px, la bande infos du hero
    *  (`.after-section::before` dans `ProjectHeroProjetsStyle`) remonte un
    *  dégradé de 68rem par-dessus le média, jusqu'au noir plein au bas de
@@ -718,11 +881,89 @@
     display: none;
   }
 
+  /*  ── La ligne au-dessus de la carte ──
+   *  Une rangée de hauteur nulle collée en haut du panneau ; le script la
+   *  descend jusqu'au bord haut de la carte (`translate`) et décale les deux
+   *  extrémités sur ses bords (gauche / droite). Les arrivées sont portées par
+   *  les `.nextp__in`, jamais par les éléments que le script déplace. */
+  .nextp__barre {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 0;
+    z-index: 4;
+    pointer-events: none;
+    will-change: transform, opacity;
+  }
+
+  .nextp__item {
+    position: absolute;
+    bottom: 0;
+    display: block;
+    font-family: var(--site-font);
+    font-size: 0.8rem;
+    font-weight: var(--site-weight);
+    line-height: 1.3;
+    letter-spacing: 0.01em;
+    white-space: nowrap;
+  }
+
+  .nextp__item--g {
+    left: 0;
+    color: #fff;
+    will-change: transform;
+  }
+
+  .nextp__item--d {
+    right: 0;
+    will-change: transform;
+  }
+
+  .nextp__in {
+    display: inline-block;
+    opacity: 0;
+    translate: 0 10px;
+    transition:
+      opacity 620ms cubic-bezier(0.22, 1, 0.36, 1) var(--nextp-delai, 0ms),
+      translate 760ms cubic-bezier(0.22, 1, 0.36, 1) var(--nextp-delai, 0ms);
+  }
+
+  .nextp__item--d .nextp__in {
+    --nextp-delai: 120ms;
+  }
+
+  .nextp__barre.is-open .nextp__in {
+    opacity: 1;
+    translate: 0 0;
+  }
+
+  /*  Le compteur : chiffres à chasse fixe et largeur réservée — sinon toute
+   *  la ligne bougerait d'un pixel à chaque chiffre. */
+  .nextp__compteur {
+    color: #fff;
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: "tnum" 1;
+  }
+
+  .nextp__chiffre {
+    display: inline-block;
+    min-width: 3ch;
+    text-align: right;
+  }
+
+  .nextp__pct {
+    margin-left: 0.2em;
+    color: rgba(255, 255, 255, 0.58);
+  }
+
   /*  ── Le titre, recopié du hero ──
    *  Dans le hero, la pile titre + flèche vit DANS `.hero-stage-content`, qui
    *  porte déjà `inset: var(--site-inset)` : ses décalages s'ajoutent donc à
    *  cette marge. Ici il n'y a pas de couche intermédiaire — on additionne à la
-   *  main, sinon le titre saute d'une marge de site au changement de page. */
+   *  main, sinon le titre saute d'une marge de site au changement de page.
+   *  Pendant l'ouverture, le script le décale jusqu'au coin de la carte ;
+   *  carte ouverte, ce décalage est nul. */
   .nextp__cue {
     position: absolute;
     left: calc(var(--site-inset) + clamp(1rem, 2vw, 1.8rem));
@@ -735,6 +976,7 @@
     gap: 0.45rem;
     color: #fff;
     pointer-events: none;
+    will-change: transform;
   }
 
   .nextp__label {
@@ -826,79 +1068,6 @@
     transform: translate3d(0, 0, 0);
   }
 
-  /*  ── Le libellé et la jauge ──
-   *  En bas à droite : le titre et sa flèche tiennent la gauche, ils ne se
-   *  croisent jamais — même avec un nom sur deux lignes. Le haut de l'écran
-   *  reste libre, le bouton du header y vit.
-   *  Les arrivées et les sorties sont portées par les deux ENFANTS, jamais par
-   *  la colonne : une opacité sur elle en ferait la racine du flou d'arrière-
-   *  plan de la jauge, qui perdrait son verre pendant chaque fondu. */
-  .nextp__side {
-    position: absolute;
-    right: clamp(1rem, 2vw, 1.8rem);
-    bottom: max(clamp(1.1rem, 2.4vw, 1.8rem), var(--safe-bottom-offset));
-    z-index: 4;
-    display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-    gap: clamp(0.5rem, 1vw, 0.75rem);
-  }
-
-  .nextp__libelle {
-    margin: 0;
-    font-family: var(--site-font);
-    font-size: 0.76rem;
-    font-weight: var(--site-weight);
-    line-height: 1.4;
-    letter-spacing: 0.01em;
-    color: rgba(255, 255, 255, 0.58);
-  }
-
-  .nextp__bar {
-    position: relative;
-    width: clamp(9rem, 16vw, 15rem);
-    height: 3px;
-    overflow: hidden;
-    border-radius: 999px;
-    background: rgba(255, 255, 255, 0.14);
-    backdrop-filter: blur(20px) saturate(160%) brightness(0.82);
-    -webkit-backdrop-filter: blur(20px) saturate(160%) brightness(0.82);
-  }
-
-  .nextp__libelle,
-  .nextp__bar {
-    opacity: 0;
-    transform: translate3d(0, 10px, 0);
-    transition:
-      opacity 620ms cubic-bezier(0.22, 1, 0.36, 1) var(--nextp-delai, 0ms),
-      transform 760ms cubic-bezier(0.22, 1, 0.36, 1) var(--nextp-delai, 0ms);
-  }
-
-  .nextp__libelle {
-    --nextp-delai: 120ms;
-  }
-
-  .nextp__bar {
-    --nextp-delai: 200ms;
-  }
-
-  .nextp__side.is-open .nextp__libelle,
-  .nextp__side.is-open .nextp__bar {
-    opacity: 1;
-    transform: translate3d(0, 0, 0);
-  }
-
-  .nextp__fill {
-    display: block;
-    width: 100%;
-    height: 100%;
-    border-radius: inherit;
-    background: #fff;
-    transform: scaleX(0);
-    transform-origin: left center;
-    will-change: transform;
-  }
-
   /* Le raccourci reste hors de l'écran mais entièrement focalisable : c'est le
      seul chemin au clavier vers le projet suivant, puisque la progression est
      pilotée au défilement. Il revient à l'écran quand il prend le focus — et
@@ -928,45 +1097,6 @@
     outline-offset: 3px;
   }
 
-  /* ── La sortie ──
-     Seuls les éléments PROPRES au pied de page s'en vont : le libellé, puis la
-     jauge, une fois pleine. Le titre et la flèche restent — ils sont déjà ceux
-     du hero qui arrive. La page n'attend PAS la fin de cette sortie pour
-     partir : elle se finit sous la couverture, puis dans le fondu final. */
-  .nextp__panel.is-leaving .nextp__libelle,
-  .nextp__panel.is-leaving .nextp__bar {
-    opacity: 0;
-    transform: translate3d(0, -6px, 0);
-    transition:
-      opacity 360ms cubic-bezier(0.4, 0, 0.2, 1) var(--nextp-sortie, 0ms),
-      transform 420ms cubic-bezier(0.22, 1, 0.36, 1) var(--nextp-sortie, 0ms);
-  }
-
-  .nextp__panel.is-leaving .nextp__bar {
-    --nextp-sortie: 80ms;
-  }
-
-  /* La jauge finit de se remplir en glissant (elle était au seuil, pas au bout),
-     et y revient de la même façon si le lecteur remonte. */
-  .nextp__panel.is-leaving .nextp__fill,
-  .nextp__panel.is-returning .nextp__fill {
-    transition: transform 260ms cubic-bezier(0.22, 1, 0.36, 1);
-  }
-
-  /*  Sur grand écran, le libellé se dissout en plus d'un léger flou. Pas sur
-   *  écran tactile : un flou animé y rastérise la couche à chaque image, et le
-   *  site l'y retire partout (voir `.reveal` dans `app.css`). Jamais sur la
-   *  jauge : un filtre en ferait la racine de son propre verre. */
-  @media (hover: hover) and (pointer: fine) {
-    .nextp__panel.is-leaving .nextp__libelle {
-      filter: blur(4px);
-      transition:
-        opacity 360ms cubic-bezier(0.4, 0, 0.2, 1),
-        transform 420ms cubic-bezier(0.22, 1, 0.36, 1),
-        filter 360ms cubic-bezier(0.4, 0, 0.2, 1);
-    }
-  }
-
   /* ── Téléphone ──
      Mêmes règles que le hero en dessous de 640 px : le média déborde de 12svh
      par le bas, le dégradé disparaît, et le titre change de place et de taille.
@@ -981,6 +1111,10 @@
   @media (max-width: 640px) {
     .nextp {
       height: 200svh;
+    }
+
+    .nextp__card {
+      clip-path: inset(17svh 1rem 3.5svh 1rem round 18px);
     }
 
     .nextp__media::after {
@@ -1005,7 +1139,7 @@
 
     /* Le fondu au noir de `.after-section::before` du hero : ancré au bas du
        cadre (le haut de la bande infos), 68rem de haut, mêmes arrêts. Il passe
-       sous le titre et le libellé, comme dans le hero. */
+       sous le titre, comme dans le hero. */
     .nextp__fondu {
       display: block;
       position: absolute;
@@ -1053,56 +1187,31 @@
     .nextp__arrow {
       font-size: 1rem;
     }
-
-    /*  À droite et en bas, comme sur grand écran : en pleine largeur, la jauge
-     *  passait sous la flèche dès qu'un nom tenait sur deux lignes (Serein
-     *  Design). Hauteur fixe elle aussi, au-dessus de l'indicateur d'accueil
-     *  même là où il n'y a pas de barre (site ajouté à l'écran d'accueil). */
-    .nextp__side {
-      right: calc(1rem + var(--site-inset));
-      bottom: max(2.2rem, env(safe-area-inset-bottom, 0px));
-      gap: 0.6rem;
-    }
-
-    .nextp__bar {
-      width: min(36vw, 9.5rem);
-      backdrop-filter: blur(12px) saturate(130%);
-      -webkit-backdrop-filter: blur(12px) saturate(130%);
-    }
   }
 
-  /*  Mouvement réduit : plus de course animée. Le panneau se lit comme un pied
-   *  de page ordinaire — image, nom, et un lien qu'on suit si on veut. Le
-   *  passage automatique reste (il est déclenché par la lecture du défilement),
-   *  mais sans fondu ni effacement progressif. */
+  /*  Mouvement réduit : la carte suit toujours le défilement (c'est le
+   *  lecteur qui la mène), mais rien ne s'anime de lui-même et l'image ne
+   *  zoome pas. Le passage automatique reste, sans fondu. */
   @media (prefers-reduced-motion: reduce) {
-    .nextp__veil {
-      opacity: 0.32;
+    .nextp__media img {
+      transform: none;
     }
 
     .nextp__media img,
     .nextp__arrow,
     .nextp__label,
-    .nextp__libelle,
-    .nextp__bar,
+    .nextp__in,
     .nextp__panel.is-revealing {
       transition: none;
     }
 
     .nextp__arrow,
     .nextp__label,
-    .nextp__libelle,
-    .nextp__bar {
+    .nextp__in {
       opacity: 1;
       filter: none;
       transform: none;
-    }
-
-    .nextp__panel.is-leaving .nextp__libelle,
-    .nextp__panel.is-leaving .nextp__bar,
-    .nextp__panel.is-leaving .nextp__fill,
-    .nextp__panel.is-returning .nextp__fill {
-      transition: none;
+      translate: none;
     }
   }
 </style>

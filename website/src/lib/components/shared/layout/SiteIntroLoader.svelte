@@ -1,5 +1,6 @@
 <script>
   import { onDestroy, onMount } from "svelte";
+  import { premierEcranPret } from "$lib/mediaPret.js";
 
   // ---------------------------------------------------------------------------
   // Intro du site : la phrase sur fond noir, et rien d'autre.
@@ -15,6 +16,8 @@
 
   const TEXT_MS = 2300;     // phrase (arrivée + tenue)
   const SAFETY_MS = 8000;   // filet : l'intro se termine quoi qu'il arrive
+  const FONT_WAIT_MS = 900; // attente maximale de la police avant la phrase
+  const HERO_WAIT_MS = 2400; // attente maximale de l'image d'ouverture, phrase tenue
 
   let visible = true;
   let hidden = false;
@@ -98,6 +101,12 @@
   }
 
   async function runSequence() {
+    // La phrase ne part qu'avec SA police : préchargée, elle est presque
+    // toujours là — sinon on la verrait changer de dessin en pleine arrivée.
+    if (document.fonts?.ready) {
+      await Promise.race([document.fonts.ready, new Promise((r) => later(r, FONT_WAIT_MS))]);
+      if (finished) return;
+    }
     // Un tick avant d'armer l'animation, sinon l'état initial n'est pas
     // enregistré et les mots apparaissent d'un bloc.
     requestAnimationFrame(() => {
@@ -105,6 +114,15 @@
     });
     dispatch("preloader:header-reveal");
     await new Promise((r) => later(r, TEXT_MS));
+    if (finished) return;
+
+    // ── Le hero doit être PRÊT quand le rideau s'ouvre (2026-11-18) ──
+    // La phrase tenait 2,3 s quoi qu'il arrive : sur un réseau moyen, le
+    // site s'ouvrait sur un hero vide et l'image tombait ensuite — c'était
+    // l'« animation d'arrivée qui bug ». La phrase reste donc à l'écran le
+    // temps que l'image d'ouverture soit décodée (comme le chargeur
+    // d'Estrela), plafonné : on ne retient jamais le visiteur longtemps.
+    await premierEcranPret({ timeout: HERO_WAIT_MS });
     if (finished) return;
 
     textClearing = true;

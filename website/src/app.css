@@ -245,8 +245,34 @@ select {
   }
 }
 
+/* ── Arrivée d'une image différée (2026-11-18) ──
+   Posée par `$lib/lazyAhead.js` : l'image reste transparente tant qu'elle
+   n'est pas chargée ET décodée, puis arrive en fondu — jamais une image qui
+   se peint par bandes ou tombe d'un coup sec. `!important` sur l'attente :
+   une image sans pixels n'a rien à montrer, quel que soit l'état que lui
+   donne son composant. Le fondu est une ANIMATION vers la valeur normale de
+   l'image (`backwards`, seul le départ est déclaré) : elle ne remplace ni
+   l'opacité ni la transition d'un carrousel, et ne laisse rien derrière
+   elle. */
+img[data-arrivee="attente"] {
+  opacity: 0 !important;
+}
+
+img[data-arrivee="ok"] {
+  animation: imageArrivee 0.65s cubic-bezier(0.22, 0.61, 0.36, 1) backwards;
+}
+
+@keyframes imageArrivee {
+  from {
+    opacity: 0;
+  }
+}
+
 /* Après la variante mobile, pour passer aussi devant elle. */
 @media (prefers-reduced-motion: reduce) {
+  img[data-arrivee="ok"] {
+    animation: none;
+  }
   .reveal:where(:not(.is-revealed)) {
     opacity: 1;
     filter: none;
@@ -889,4 +915,108 @@ body {
   --project-hero-after-ink: #fff;
   --project-hero-after-muted: rgba(255, 255, 255, 0.7);
   --pole-title-top: #3f4a5a;   /* même clarté que #4a4a4a, teinte de la palette */
+}
+
+/* ── Transition de page : le geste continu (2026-11-18) ─────────────────────
+   Menée par `FullscreenMenu.svelte` avec l'API View Transitions (voir
+   `lancerTransitionVue`). L'ancienne page, figée, recule en carte et
+   s'assombrit ; la nouvelle, vivante, monte en carte aux coins arrondis et
+   s'ouvre en plein écran — le cadre des hero du site, dans un seul geste.
+   La courbe est celle d'Estrela (départ retenu, arrivée très douce).
+   Le header, le logo du coin et le curseur ont leur PROPRE nom : sans lui,
+   ils feraient partie de l'image de la page et partiraient avec elle.
+   ⚠️ Ces noms ne sont posés QUE pendant la transition (`html.vt-page`) : un
+   élément nommé est une racine d'arrière-plan, et le verre des boutons du
+   header ne flouterait plus la page en permanence (voir la mémoire du projet,
+   « glass button blur gotcha »). */
+:root {
+  --vt-duree: 0.95s;
+  --vt-courbe: cubic-bezier(0.5, 0, 0, 1);
+}
+
+html.vt-page .nav-wrapper {
+  view-transition-name: entete;
+}
+
+html.vt-page .site-prism-mark {
+  view-transition-name: logo-coin;
+}
+
+html.vt-page .cursor-indicator {
+  view-transition-name: curseur;
+}
+
+html.vt-page::view-transition-group(root) {
+  animation-duration: var(--vt-duree);
+}
+
+html.vt-page::view-transition-old(root) {
+  animation: vtPageSortie var(--vt-duree) var(--vt-courbe) both;
+  transform-origin: 50% 40%;
+}
+
+html.vt-page::view-transition-new(root) {
+  animation: vtPageEntree var(--vt-duree) var(--vt-courbe) both;
+}
+
+/* Les éléments nommés (header, logo) ne bougent pas : un fondu enchaîné
+   très court suffit si leur état change d'une page à l'autre. */
+html.vt-page::view-transition-group(entete),
+html.vt-page::view-transition-group(logo-coin),
+html.vt-page::view-transition-group(curseur) {
+  animation-duration: 0.3s;
+}
+
+/* Le média des hero arrive d'ordinaire en fondu depuis l'opacité 0 (il
+   sortait du voile noir de l'ancienne transition). Dans la carte qui monte, ce
+   fondu montrait une carte NOIRE dont l'image apparaissait ensuite : pendant
+   le geste, l'image est donc là d'emblée — l'image d'ouverture a été attendue
+   avant que la carte parte — et seul son léger dézoom se joue. */
+html.vt-page .hero-media,
+html.vt-page .hero__media {
+  opacity: 1 !important;
+}
+
+@keyframes vtPageSortie {
+  from {
+    transform: none;
+    opacity: 1;
+    clip-path: inset(0 round 0);
+  }
+  to {
+    transform: translate3d(0, -3%, 0) scale(0.93);
+    opacity: 0.3;
+    clip-path: inset(0 round 22px);
+  }
+}
+
+@keyframes vtPageEntree {
+  from {
+    transform: translate3d(0, 16vh, 0);
+    clip-path: inset(100% 1.4rem 0 1.4rem round 22px 22px 0 0);
+  }
+  to {
+    transform: none;
+    clip-path: inset(0 0 0 0 round 0);
+  }
+}
+
+@media (max-width: 900px) {
+  @keyframes vtPageEntree {
+    from {
+      transform: translate3d(0, 12vh, 0);
+      clip-path: inset(100% 0.9rem 0 0.9rem round 18px 18px 0 0);
+    }
+    to {
+      transform: none;
+      clip-path: inset(0 0 0 0 round 0);
+    }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html.vt-page::view-transition-old(root),
+  html.vt-page::view-transition-new(root) {
+    animation: none;
+  }
 }

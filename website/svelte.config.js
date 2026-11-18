@@ -1,9 +1,12 @@
 import adapter from '@sveltejs/adapter-static';
 import { vitePreprocess } from '@sveltejs/vite-plugin-svelte';
+import { imagesResponsives } from './src/lib/images/preprocess.js';
 
 /** @type {import('@sveltejs/kit').Config} */
 export default {
-  preprocess: vitePreprocess(),
+  // `imagesResponsives` pose srcset / sizes / width / height sur chaque <img>
+  // (voir src/lib/images/preprocess.js et scripts/images-responsives.mjs).
+  preprocess: [imagesResponsives(), vitePreprocess()],
   kit: {
     adapter: adapter({
       pages: 'dist',

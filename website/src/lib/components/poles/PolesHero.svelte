@@ -134,7 +134,11 @@
         f.imageOpacity !== applied.imageOpacity
       ) {
         heroMediaImgEl.style.transform = `scale(${f.imageScale})`;
-        heroMediaImgEl.style.filter = `brightness(${f.imageBrightness})`;
+        // Luminosité 1 (la seule valeur depuis que l'image est figée) : AUCUN
+        // filtre. `brightness(1)` ne change rien à l'écran mais fait passer
+        // l'image par le chemin des filtres, recalculé à chaque image par
+        // Firefox (2026-11-18, comme dans le hero des pages projet).
+        heroMediaImgEl.style.filter = f.imageBrightness === 1 ? "none" : `brightness(${f.imageBrightness})`;
         heroMediaImgEl.style.opacity = `${f.imageOpacity}`;
         applied.imageScale = f.imageScale;
         applied.imageBrightness = f.imageBrightness;
@@ -422,8 +426,8 @@
        se contente de suivre le scroll de façon nette. */
     opacity: 1;
     transform: scale(1.05);
-    filter: brightness(1);
-    will-change: transform, opacity, filter;
+    filter: none;
+    will-change: transform, opacity;
     backface-visibility: hidden;
     -webkit-backface-visibility: hidden;
   }

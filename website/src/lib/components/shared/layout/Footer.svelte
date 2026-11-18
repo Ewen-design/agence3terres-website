@@ -78,6 +78,15 @@
    *  zéro à chaque page : la suivante a sa propre image et sa propre course. */
   let fondPret = false;
   $: if (pathname) fondPret = false;
+
+  /*  ── En sommeil loin du bas de page (2026-11-18) ──────────────────────────
+   *  Le pied de page est `fixed`, posé en permanence SOUS la page. Même à
+   *  opacité nulle, Firefox le composait à chaque image — filtres de la photo,
+   *  verre flouté du bouton : mesuré sur /travail, 83 ms par image au lieu de
+   *  17 ; sur /apropos, 54 images de plus de 50 ms au lieu de 6. Il passe donc
+   *  en `visibility: hidden` tant que le bas de la page est à plus d'un
+   *  demi-écran, et se réveille avant que la page commence à le découvrir. */
+  let endormi = true;
   $: footerThemeClass =
     pathname === "/services" ? "theme-services" :
     ["/travail", "/projet1", "/projet3", "/projet4", "/projet6", "/projet8"].includes(pathname) ? "theme-projets" :
@@ -141,6 +150,8 @@
     }
 
     if (!fondPret && y > debutReveal - hFenetre * 2.5) fondPret = true;
+    const loin = y < debutReveal - hFenetre * 0.5;
+    if (loin !== endormi) endormi = loin;
 
     const cible = Math.min(Math.max((y - debutReveal) / courseReveal, 0), 1);
     if (cible === tgtReveal) return;
@@ -180,6 +191,7 @@
 
 <footer
   class={`footer section-full ${footerThemeClass}`}
+  class:is-endormi={endormi}
   bind:this={footerEl}
 >
   {#if footerGradient}
@@ -244,6 +256,10 @@
     will-change: opacity;
   }
 
+  .footer.is-endormi {
+    visibility: hidden;
+  }
+
   .footer-bg,
   .footer-overlay {
     position: absolute;
@@ -257,7 +273,7 @@
    *  — `theme-projets` ne vise que /travail, les pages projet ont leur propre
    *  pied de page. */
   .footer.theme-projets .footer-bg {
-    filter: brightness(0.42) contrast(1.02) saturate(0.92);
+    --fond-voile: 0.58;
   }
 
   /*  Le dégradé n'est pas une photographie : il n'a ni à être assombri ni à
@@ -273,14 +289,34 @@
     will-change: auto;
   }
 
+  .footer-bg--grad::after {
+    display: none;
+  }
+
+  /*  ── L'assombrissement de la photo : un VOILE, plus un filtre (2026-11-18) ──
+   *  C'était `filter: brightness(0.56) contrast(1.02) saturate(0.92)` sur une
+   *  image plein écran qui apparaît en fondu : Firefox recalculait le filtre à
+   *  chaque image — mesuré sur /travail, 50 ms par image au lieu de 17 dès que
+   *  le pied de page était à l'écran. `brightness(b)` est EXACTEMENT un voile
+   *  noir d'opacité 1 − b posé par-dessus ; le +2 % de contraste et le −8 % de
+   *  saturation, imperceptibles sur une photo assombrie de moitié, sont
+   *  abandonnés. Réglage : `--fond-voile` (= 1 − l'ancienne luminosité). */
   .footer-bg {
+    --fond-voile: 0.44;
     background-size: cover;
     background-repeat: no-repeat;
     background-position: center center;
-    filter: brightness(0.56) contrast(1.02) saturate(0.92);
     opacity: calc(0.12 + (0.88 * var(--footer-reveal)));
     will-change: opacity;
     transform: scale(1.03);
+  }
+
+  .footer-bg::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, var(--fond-voile));
+    pointer-events: none;
   }
 
   .footer-overlay {
@@ -553,11 +589,7 @@
     }
 
     .footer-bg {
-      filter: brightness(0.52) contrast(1.02) saturate(0.92);
-    }
-
-    .footer-bg--grad {
-      filter: none;
+      --fond-voile: 0.48;
     }
 
     .footer-content {

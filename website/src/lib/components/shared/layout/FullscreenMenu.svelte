@@ -40,6 +40,7 @@
   import { page } from "$app/state";
   import { navigate } from "$lib/navigate.js";
   import { registerPageCardEngine } from "$lib/pageCard.js";
+  import { premierEcranPret } from "$lib/mediaPret.js";
   import {
     clearSilentNavigation,
     isSilentNavigationPending,
@@ -142,6 +143,22 @@
   let pagePhase = null;
   let outPromise = null;
   let pageTimers = [];
+  /** Chaque retour de page porte un jeton : une attente d'image périmée
+   *  (nouvelle navigation entre-temps) ne lève pas le voile de la suivante. */
+  let pageInToken = 0;
+  /** Plafond de l'attente de l'image d'ouverture sous le voile. */
+  const PAGE_IN_WAIT_MS = 650;
+  /** Transition continue : plafond de l'attente de l'image d'ouverture. La
+   *  page est figée pendant ce temps — d'ordinaire l'image est déjà là
+   *  (préchargée au survol du lien). */
+  const VT_WAIT_MS = 380;
+  let vtAttendue = false;
+  /** Le geste continu (View Transitions) est ÉTEINT : essayé le 2026-11-18,
+   *  le client préfère la transition classique (recul en carte) pour les
+   *  changements de page. Il garde ce que la refonte lui a apporté : l'image
+   *  d'ouverture préchargée au survol et attendue sous le voile. Remettre à
+   *  `true` pour rallumer le geste continu (CSS `html.vt-page` dans app.css). */
+  const TRANSITION_CONTINUE = false;
   // La carte de contenu (`coverPage`) : appelé quand la carte noire est revenue
   // plein écran.
   let onCardCovered = null;
@@ -745,15 +762,24 @@
     pagePhase = "in";
     if (measure()) writeGeometry();
     render(cardProgress());
-    veiled = false;
-    later(() => {
-      const p = cardProgress();
-      const backMs = frame.back * 1000 * Math.max(0.35, p);
-      moveCard(false, { duration: backMs / 1000, ease: EASE_CARD });
-      track();
-      // Filet seulement : c'est la fin RÉELLE du retour qui rend la page.
-      finishTimer = setTimeout(finishSession, backMs + 400);
-    }, FADE_OUT_MS * 0.5);
+    // Le voile ne se lève que sur une page dont l'image d'ouverture est là
+    // (2026-11-18) : sinon on découvrait un hero vide, et l'image tombait
+    // pendant que la carte revenait. Préchargée au survol du lien (voir
+    // `$lib/prechargement.js`), elle est d'ordinaire déjà prête ; le plafond
+    // garde la transition vive sur un réseau lent.
+    const jeton = ++pageInToken;
+    premierEcranPret({ timeout: PAGE_IN_WAIT_MS }).then(() => {
+      if (jeton !== pageInToken || mode !== "frame" || pagePhase !== "in") return;
+      veiled = false;
+      later(() => {
+        const p = cardProgress();
+        const backMs = frame.back * 1000 * Math.max(0.35, p);
+        moveCard(false, { duration: backMs / 1000, ease: EASE_CARD });
+        track();
+        // Filet seulement : c'est la fin RÉELLE du retour qui rend la page.
+        finishTimer = setTimeout(finishSession, backMs + 400);
+      }, FADE_OUT_MS * 0.5);
+    });
   }
 
   /* ── La carte de contenu (geste « cadre » sans navigation) ──────────────
@@ -856,6 +882,8 @@
   const samePath = (a, b) => (a.pathname.replace(/\/+$/, "") || "/") === (b.pathname.replace(/\/+$/, "") || "/");
 
   beforeNavigate((nav) => {
+    // Une transition annoncée puis annulée ne doit pas servir à la suivante.
+    vtAttendue = false;
     if (!nav.to || nav.willUnload || nav.to.url.origin !== window.location.origin) return;
     if (nav.from && samePath(nav.from.url, nav.to.url)) return;
     // Liens du menu, pied de page « projet suivant » : leur geste à eux.
@@ -874,6 +902,16 @@
     }
 
     if (reducedMotion() || !rootEl) return;
+
+    // Le geste continu (View Transitions), quand le navigateur le sait faire.
+    // Pas au retour arrière : sur iPhone, le glissé du bord joue déjà sa
+    // propre animation, et le navigateur restaure la position de la page.
+    if (!mode && nav.type !== "popstate" && vtDisponible()) {
+      vtAttendue = true;
+      markNextNavigationSilent();
+      return;
+    }
+
     const out = startPageOut();
     if (!out) return;
     // Le layout ne joue pas son propre fondu par-dessus.
@@ -882,9 +920,68 @@
   });
 
   // SvelteKit attend la fin du recul et du voile avant de changer la page.
-  onNavigate(() => {
+  onNavigate((navigation) => {
+    if (vtAttendue) {
+      vtAttendue = false;
+      return lancerTransitionVue(navigation);
+    }
     if (outPromise) return outPromise;
   });
+
+  /*  ── La transition de page : un geste continu (2026-11-18) ───────────────
+   *  Demande du client, après comparaison avec Estrela : « chez eux c'est
+   *  super fluide, chez moi beaucoup moins ». L'ancienne transition
+   *  enchaînait quatre temps — recul en carte, voile au noir, page changée
+   *  sous le voile, retour — soit près de deux secondes, avec un passage au
+   *  noir au milieu. Estrela fait UN geste d'une seconde où les deux pages
+   *  sont à l'écran ensemble : la nouvelle balaie l'ancienne, qui s'assombrit.
+   *
+   *  Ici, avec l'API View Transitions : l'ancienne page est figée en image,
+   *  la nouvelle est montée vivante dessous, et le compositeur anime les deux
+   *  (`app.css`, `html.vt-page`) — l'ancienne recule en carte et s'assombrit,
+   *  la nouvelle monte en carte aux coins arrondis et s'ouvre en plein écran.
+   *  Le header, le logo du coin et le curseur ont leur propre nom de
+   *  transition : ils restent en place pendant le geste.
+   *  Avant que la nouvelle page soit montrée, son image d'ouverture est
+   *  attendue (plafond court) : elle monte avec son image, jamais vide.
+   *  Sans l'API (Firefox < 144, vieux Safari), l'ancienne transition reste. */
+  function vtDisponible() {
+    if (!TRANSITION_CONTINUE) return false;
+    return typeof document !== "undefined" && typeof document.startViewTransition === "function";
+  }
+
+  function lancerTransitionVue(navigation) {
+    return new Promise((resolve) => {
+      const html = document.documentElement;
+      html.classList.add("vt-page");
+      let vt;
+      try {
+        vt = document.startViewTransition(async () => {
+          resolve();
+          try {
+            await navigation.complete;
+          } catch {
+            return;
+          }
+          // `peinte: false` : l'affichage est suspendu pendant cette mise à
+          // jour, deux `requestAnimationFrame` n'arriveraient qu'au plafond
+          // (mesuré : 440 ms de page figée au clic, 33 ms sans).
+          await premierEcranPret({ timeout: VT_WAIT_MS, peinte: false });
+        });
+      } catch {
+        html.classList.remove("vt-page");
+        resolve();
+        return;
+      }
+      vt.finished
+        .catch(() => {})
+        .finally(() => {
+          html.classList.remove("vt-page");
+          // La page vient d'être rendue à plat : Safari iOS recale ses fixes.
+          window.dispatchEvent(new Event("app:fixed-resync"));
+        });
+    });
+  }
 
   afterNavigate(() => {
     outPromise = null;
@@ -937,6 +1034,9 @@
     } catch {
       // navigate() journalise ses propres erreurs.
     }
+
+    // Comme pour toute transition : le voile attend l'image d'ouverture.
+    if (!reducedMotion()) await premierEcranPret({ timeout: PAGE_IN_WAIT_MS });
 
     navigating = false;
     veiled = false;

@@ -353,7 +353,39 @@
     await fadeTransitionLayer(1, profile.enterDuration);
   });
 
-  afterNavigate(() => {
+  /*  ── La nouvelle page arrive EN HAUT, et y reste ─────────────────────────
+   *  SvelteKit remet le défilement à zéro après avoir monté la page. Firefox
+   *  (constaté le 2026-11-18, clic de la home vers /travail depuis y = 6 600)
+   *  le renvoie une à deux images plus tard vers l'ancienne position, bornée
+   *  par la nouvelle page : on arrivait au milieu de /travail. Aucun script du
+   *  site n'en est la cause (tous les appels de défilement tracés) ; ni
+   *  l'ancrage du défilement ni l'arrêt d'inertie du menu ne changent rien.
+   *  On tient donc la position quelques images — sans jamais lutter contre le
+   *  lecteur : son premier geste rend la main. Pas au retour arrière (le
+   *  navigateur y restaure la position voulue) ni vers une ancre. */
+  let releaseTopHold = null;
+  function holdTop() {
+    releaseTopHold?.();
+    let frames = 0;
+    let raf = 0;
+    const events = ["wheel", "touchstart", "keydown", "pointerdown"];
+    const release = () => {
+      cancelAnimationFrame(raf);
+      for (const type of events) window.removeEventListener(type, release);
+      if (releaseTopHold === release) releaseTopHold = null;
+    };
+    const step = () => {
+      if ((window.scrollY || window.pageYOffset || 0) > 0.5) window.scrollTo(0, 0);
+      if (++frames < 20) raf = requestAnimationFrame(step);
+      else release();
+    };
+    for (const type of events) window.addEventListener(type, release, { passive: true });
+    releaseTopHold = release;
+    raf = requestAnimationFrame(step);
+  }
+
+  afterNavigate((nav) => {
+    if (nav.from && nav.type !== "popstate" && !nav.to?.url.hash) holdTop();
     settleGlobalScrollLocks();
     syncScrollState();
     // Nouvelle page, document d'une autre hauteur, défilement remis à zéro :

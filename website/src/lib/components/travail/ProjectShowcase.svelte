@@ -1,5 +1,4 @@
 <script>
-  import { navigate } from "$lib/navigate.js";
   import { reveal } from "$lib/actions/reveal.js";
   import SiteGradient from "$lib/components/shared/SiteGradient.svelte";
 
@@ -93,13 +92,16 @@
 <section class="projects-grid" class:is-full={full}>
   <div class="grid-inner">
     {#each filteredProjects as p, i}
-      <button
+      <!-- Un vrai lien (2026-11-18), plus un bouton qui navigue en JS : clic
+           du milieu et « ouvrir dans un onglet », pages projet suivies par les
+           moteurs de recherche, et image d'ouverture préchargée au survol
+           (`$lib/prechargement.js`). La transition est celle de tout lien. -->
+      <a
         class="p-card"
-        type="button"
+        href={`/${p.page}`}
         data-cursor="view"
         use:reveal={{ delay: (i % 2) * 100 }}
         on:mousemove={handleMove}
-        on:click={() => navigate(p.page)}
       >
         <div class="p-card-img">
           {#if p.gradient}
@@ -119,7 +121,7 @@
             </span>
           </span>
         </div>
-      </button>
+      </a>
     {/each}
   </div>
 </section>
@@ -153,6 +155,8 @@
     background: var(--bg-raised, #0a0a0a);
     text-align: left;
     display: block;
+    color: inherit;
+    text-decoration: none;
     -webkit-tap-highlight-color: transparent;
     border-radius: 14px;
   }

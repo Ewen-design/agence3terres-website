@@ -2,7 +2,6 @@
   import { onMount } from "svelte";
   import { browser } from "$app/environment";
   import { revealBlock as reveal } from "$lib/actions/reveal.js";
-  import { heroFrame } from "$lib/actions/heroFrame.js";
   import { fitTitle } from "$lib/actions/fitTitle.js";
   import { consumeProjectHandoff } from "$lib/projectHandoff.js";
   import AutoVideo from "$lib/components/shared/media/AutoVideo.svelte";
@@ -343,7 +342,6 @@
   class="hero-join-clean"
   class:is-handoff={handedOff}
   bind:this={heroSection}
-  use:heroFrame
 >
   <section class="hero-stage">
     <div class="hero-media-sticky" aria-hidden="true">
@@ -435,24 +433,25 @@
     </div>
   </section>
 
-  <div class="hero-scroll-cue-mobile" class:title-visible={titleVisible} aria-hidden="true">
+  <!--  La copie TÉLÉPHONE du titre. Elle n'est plus `aria-hidden` (2026-11-18) :
+        sous 640 px, le titre de bureau est en `display: none`, et la page
+        projet n'avait alors AUCUN titre pour un lecteur d'écran. Une seule des
+        deux copies est affichée à la fois, donc une seule est lue. -->
+  <div class="hero-scroll-cue-mobile" class:title-visible={titleVisible}>
     <h1 class="hero-scroll-label" use:fitTitle={title}>{title}</h1>
-    <span class="hero-scroll-arrow">↓</span>
+    <span class="hero-scroll-arrow" aria-hidden="true">↓</span>
   </div>
 </section>
 
 <style>
-  /* Le cadre des autres hero du site, posé ici aussi (2026-09-03) : plein
-     écran en haut de page, puis une marge `--site-inset` et un arrondi 22 px
-     qui s'installent au premier cran de défilement. C'est l'action `heroFrame`
-     qui bascule `--hero-t` entre 0 et 1 ; le reste est une `transition`.
-     Ce que le hero projet garde en propre : sa traversée en `sticky` sur
-     132svh, et la bande infos + bouton juste en dessous. */
+  /* PLEIN ÉCRAN, sans cadre qui se referme (2026-11-18, demande du client) :
+     le cadre des autres hero du site (marge `--site-inset` et arrondi 22 px
+     installés au premier cran de défilement, action `heroFrame`) a été retiré
+     des pages projet — il rendait le haut de page moins stable et n'apportait
+     rien ici. `--hero-inset` reste : c'est la marge du titre et de la flèche,
+     que le pied de page « projet suivant » recopie au pixel près. */
   .hero-join-clean {
-    --hero-t: 0;
     --hero-inset: var(--site-inset);
-    --hero-radius: 22px;
-    --hero-cut: calc(var(--hero-inset) * var(--hero-t));
 
     position: relative;
     width: 100%;
@@ -480,16 +479,11 @@
     z-index: 0;
   }
 
-  /* Le découpage referme le cadre. Surtout pas une marge ni une hauteur :
-     redimensionner à chaque image un élément qui porte une vidéo, c'est la
-     recette du défilement qui accroche. Seul le contour bouge. */
   .hero-media-sticky {
     position: absolute;
     inset: 0;
     z-index: 0;
     pointer-events: none;
-    clip-path: inset(var(--hero-cut) round calc(var(--hero-radius) * var(--hero-t)));
-    transition: clip-path 820ms cubic-bezier(0.22, 1, 0.36, 1);
   }
 
   .hero-media {
@@ -589,13 +583,11 @@
     will-change: opacity;
   }
 
-  /* Posé à la place qu'il occupe CADRE FERMÉ, exactement comme les autres hero
-     du site (2026-09-03). Sans cet `inset`, le titre et la flèche restaient
-     collés au bord de l'écran et dépassaient du cadre dès que la marge et
-     l'arrondi s'installaient au premier cran de défilement.
-     L'inset est FIXE et non `calc(… * var(--hero-t))` : une valeur animée
-     referait la mise en page à chaque image. Les deux éléments ne bougent
-     jamais, c'est le cadre qui vient à eux. */
+  /* Le titre et la flèche gardent la marge du site (`--hero-inset`), même
+     depuis que le hero projet n'a plus de cadre qui se referme (2026-11-18) :
+     c'est leur place de toujours, et celle que le pied de page « projet
+     suivant » recopie au pixel près — la changer ferait sauter le titre au
+     changement de page. */
   .hero-stage-content {
     position: absolute;
     inset: var(--hero-inset);

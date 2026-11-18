@@ -1,6 +1,5 @@
 <script>
   import { reveal } from "$lib/actions/reveal.js";
-  import { navigate } from "$lib/navigate.js";
 
   // Deux grandes cartes présentées comme la galerie d'accueil (ParallaxGallery),
   // mais en grille statique : image plein cadre, titre qui bascule vers un CTA au
@@ -8,10 +7,6 @@
   export let cards = [];
   export let ctaLabel = "Découvrir";
   export let showSubtitle = true;
-
-  function open(href) {
-    if (href) navigate(href);
-  }
 
   // Glow du "+" qui suit le curseur — même effet que les boutons du site.
   function handleCardMove(event) {
@@ -26,13 +21,14 @@
 <section class="sc">
   <div class="sc-grid">
     {#each cards as card, i}
+      <!-- Un vrai lien quand la carte mène quelque part (2026-11-18) : voir
+           `travail/ProjectShowcase.svelte`. -->
       <svelte:element
-        this={card.href ? "button" : "div"}
+        this={card.href ? "a" : "div"}
         class="pole-card"
-        type={card.href ? "button" : undefined}
+        href={card.href ? `/${card.href.replace(/^\//, "")}` : undefined}
         data-cursor={card.href ? "view" : undefined}
         aria-label={card.href ? `Voir ${card.title}` : undefined}
-        on:click={() => open(card.href)}
         on:mousemove={handleCardMove}
         use:reveal={{ delay: (i % 2) * 90 }}
       >
@@ -103,8 +99,8 @@
     background: var(--project-surface-card, var(--bg-raised, #080808));
   }
 
-  button.pole-card { cursor: pointer; }
-  button.pole-card:focus-visible { outline: 2px solid var(--lead-blue, #5768ff); outline-offset: 4px; }
+  a.pole-card { cursor: pointer; }
+  a.pole-card:focus-visible { outline: 2px solid var(--lead-blue, #5768ff); outline-offset: 4px; }
 
   .pc-img {
     position: absolute;
@@ -291,22 +287,22 @@
   }
 
   /* ─────────── État survol ─────────── */
-  button.pole-card:hover .pc-img img {
+  a.pole-card:hover .pc-img img {
     transform: scale(1) translateZ(0);
     will-change: transform;
   }
 
-  button.pole-card:hover .pc-title-text { transform: translateY(-100%); }
-  button.pole-card:hover .pc-title-flip::after { transform: translateY(0%); }
+  a.pole-card:hover .pc-title-text { transform: translateY(-100%); }
+  a.pole-card:hover .pc-title-flip::after { transform: translateY(0%); }
 
-  button.pole-card:hover .pc-plus {
+  a.pole-card:hover .pc-plus {
     opacity: 1;
     transform: translateY(0) scale(1);
     background: rgba(255,255,255,.2);
   }
 
-  button.pole-card:hover .pc-plus::before,
-  button.pole-card:hover .pc-plus::after { opacity: 1; }
+  a.pole-card:hover .pc-plus::before,
+  a.pole-card:hover .pc-plus::after { opacity: 1; }
 
   @media (max-width: 900px) {
     .sc-grid { grid-template-columns: 1fr; gap: 1rem; }
