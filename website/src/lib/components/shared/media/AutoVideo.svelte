@@ -61,6 +61,15 @@
   export let objectPosition = "center";
   /** Marge de pré-chargement autour du viewport. */
   export let rootMargin = "300px";
+  /**
+   * Marge de LECTURE autour du viewport : la vidéo ne se met en pause qu'au-delà.
+   * `0px` par défaut (pause dès qu'elle quitte l'écran). Le hero de la home
+   * prend une demi-hauteur d'écran : en remontant vers lui, la vidéo tourne
+   * déjà quand il réapparaît — sinon ses premières images arrivaient figées, le
+   * temps que la lecture reprenne — et un aller-retour près du bord ne la
+   * coupe plus. Elle reste en pause dès qu'on s'en éloigne vraiment.
+   */
+  export let playMargin = "0px";
   /** Exposé pour que le parent puisse animer/mesurer l'élément. */
   export let element = null;
   /**
@@ -91,6 +100,9 @@
   let candidatesReady = null;
   /** Tentatives de relance quand la lecture est refusée par la politique. */
   let blockedRetries = 0;
+  // Le décodeur est en cours de resynchronisation (retour d'onglet) : la
+  // lecture ne repart qu'une fois le parcours fait.
+  let resyncEnCours = false;
   /** Une image a-t-elle déjà été montrée ? (voir onGesture) */
   let hasPlayed = false;
 
@@ -135,7 +147,12 @@
 
   $: element = videoEl;
 
-  const GESTURE_EVENTS = ["pointerdown", "touchstart", "keydown", "wheel"];
+  // `touchend` et `click` : iOS n'autorise le lancement d'une vidéo qu'AU
+  // RELÂCHER du doigt (depuis iOS 9), pas au contact. Sans eux, en mode
+  // économie d'énergie, une vidéo remise en pause (sortie puis retour à
+  // l'écran) restait figée jusqu'à une touche de clavier : le `touchstart` qui
+  // la relançait était refusé.
+  const GESTURE_EVENTS = ["pointerdown", "touchstart", "touchend", "click", "keydown", "wheel"];
 
   // On classe par réponse de canPlayType plutôt que de prendre bêtement la
   // première source : un navigateur qui répond "" pour l'AV1 saute directement
@@ -292,7 +309,7 @@
   }
 
   function mayPlay() {
-    return inView && active && !document.hidden && !reduceMotion;
+    return inView && active && !document.hidden && !reduceMotion && !resyncEnCours;
   }
 
   function recover() {
@@ -444,22 +461,58 @@
     // Les fichiers du site portent une image-clé par seconde exprès pour ça
     // (voir `-g 30` dans les scripts d'encodage) : le parcours est court et le
     // décodeur repart propre.
-    function resyncDecoder() {
-      if (!videoEl || !currentSrc || reduceMotion) return;
-      if (videoEl.readyState < 2 || !Number.isFinite(videoEl.duration)) return;
-      const at = videoEl.currentTime + 1 / 30;
-      videoEl.currentTime = at < videoEl.duration ? at : 0;
+    //
+    // Retouché le 2026-11-18 (« la vidéo s'arrête un peu trop ») sans rien
+    // retirer du correctif :
+    //   • le parcours se fait AVANT de relancer la lecture, plus pendant : la
+    //     vidéo repartait, puis se figeait le temps du parcours (et ces premières
+    //     images pouvaient être justement les corrompues) ;
+    //   • une absence de moins de 2 s ne le déclenche plus — un changement
+    //     d'onglet éclair, une fenêtre passée devant (macOS déclare alors la
+    //     page cachée) : le décodeur n'a pas le temps d'être vidé, et chaque
+    //     retour coûtait un arrêt. Le `-g 30` des fichiers reste le filet.
+    const RESYNC_APRES_MS = 2000;
+    let cacheeDepuis = 0;
+    function resyncPuisLecture() {
+      // Après le retour au premier plan, pas pendant : on laisse le
+      // compositeur reprendre la main avant de demander un parcours.
+      requestAnimationFrame(() =>
+        requestAnimationFrame(() => {
+          if (!videoEl || !currentSrc || reduceMotion || document.hidden) return syncPlayback();
+          if (videoEl.readyState < 2 || !Number.isFinite(videoEl.duration)) return syncPlayback();
+          resyncEnCours = true;
+          let fait = false;
+          const reprendre = () => {
+            if (fait) return;
+            fait = true;
+            resyncEnCours = false;
+            syncPlayback();
+          };
+          videoEl.addEventListener("seeked", reprendre, { once: true });
+          // filet : un `seeked` qui n'arrive jamais ne doit pas laisser la vidéo en pause
+          setTimeout(reprendre, 700);
+          const at = videoEl.currentTime + 1 / 30;
+          videoEl.currentTime = at < videoEl.duration ? at : 0;
+        })
+      );
     }
 
     const onVisibility = () => {
-      syncPlayback();
-      // Après le retour au premier plan, pas pendant : on laisse le
-      // compositeur reprendre la main avant de demander un parcours.
-      if (!document.hidden) requestAnimationFrame(() => requestAnimationFrame(resyncDecoder));
+      if (document.hidden) {
+        cacheeDepuis = performance.now();
+        syncPlayback();
+        return;
+      }
+      const absence = cacheeDepuis ? performance.now() - cacheeDepuis : Infinity;
+      cacheeDepuis = 0;
+      if (absence < RESYNC_APRES_MS) syncPlayback();
+      else resyncPuisLecture();
     };
-    const onPageShow = () => {
-      syncPlayback();
-      requestAnimationFrame(() => requestAnimationFrame(resyncDecoder));
+    // Restauration depuis le cache avant/arrière (bfcache) : la page a pu
+    // dormir longtemps. Un chargement ordinaire n'a rien à resynchroniser.
+    const onPageShow = (event) => {
+      if (event.persisted) resyncPuisLecture();
+      else syncPlayback();
     };
 
     // Un redimensionnement (passage plein écran → fenêtré) recompose la couche
@@ -492,7 +545,7 @@
         for (const entry of entries) inView = entry.isIntersecting;
         syncPlayback();
       },
-      { threshold: 0.01 }
+      { threshold: 0.01, rootMargin: playMargin }
     );
 
     if (eager) loadSource();

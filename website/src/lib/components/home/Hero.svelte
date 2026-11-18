@@ -201,6 +201,7 @@
         mobilePoster={heroPosterMobile}
         mobileQuery={HERO_MOBILE_QUERY}
         eager
+        playMargin="50% 0px"
         posterLayer={false}
       />
       <!-- Le poster, en couche AU-DESSUS de la vidéo, retiré à la première
