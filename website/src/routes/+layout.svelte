@@ -1,7 +1,7 @@
 <script>
   import { onMount, tick } from "svelte";
   import { page } from "$app/stores";
-  import { afterNavigate, onNavigate } from "$app/navigation";
+  import { afterNavigate, beforeNavigate, onNavigate } from "$app/navigation";
   import "../app.css";
 
   import Header from "$lib/components/shared/layout/Header.svelte";
@@ -23,6 +23,11 @@
   import { installDesktopWheelDamping } from "$lib/desktopWheelDamping.js";
   import { installBlurButtonWipe } from "$lib/blurButtonWipe.js";
   import { installFixedResync } from "$lib/fixedResync.js";
+  import {
+    installerDefilementLisse,
+    synchroniserDefilementLisse,
+    transitionDeDefilement
+  } from "$lib/defilementLisse.js";
   import {
     activatePendingSilentNavigation,
     clearSilentNavigation,
@@ -384,7 +389,16 @@
     raf = requestAnimationFrame(step);
   }
 
+  // Pendant un changement de page, le défilement lissé (grand écran) est en
+  // pause : pas de glissade qui continue sous la transition ni qui reprend la
+  // nouvelle page là où l'ancienne s'arrêtait. Relancé une image après
+  // l'arrivée, recalé sur la position réelle (voir `$lib/defilementLisse.js`).
+  beforeNavigate((nav) => {
+    if (!nav.willUnload) transitionDeDefilement(true);
+  });
+
   afterNavigate((nav) => {
+    requestAnimationFrame(() => transitionDeDefilement(false));
     if (nav.from && nav.type !== "popstate" && !nav.to?.url.hash) holdTop();
     settleGlobalScrollLocks();
     syncScrollState();
@@ -461,7 +475,9 @@
       removeBlurButtonWipe = installBlurButtonWipe();
       removeFixedResync = installFixedResync();
 
-      window.lenis = null;
+      // Le défilement lissé sur grand écran (Lenis) — voir le module. Il
+      // remplace l'ancien amortisseur de molette, resté éteint.
+      installerDefilementLisse();
 
       syncWheelDamping();
 
@@ -509,6 +525,8 @@
 
       scrollLockObserver = new MutationObserver(() => {
         enforceGlobalScrollLockIntegrity();
+        // Un verrou posé ou levé (menu, intro, témoignage) : Lenis suit.
+        synchroniserDefilementLisse();
       });
 
       scrollLockObserver.observe(document.documentElement, {

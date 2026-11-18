@@ -47,10 +47,14 @@ let installed = false;
  *  de 400 px ne télécharge plus (ni ne décode) une image de 2 880 px.
  *  En `object-fit: cover`, l'image peut déborder de sa boîte en largeur :
  *  on prend alors la largeur qu'elle occupe vraiment (hauteur × format).
- *  Seulement si le navigateur n'a pas encore choisi (`currentSrc` vide) :
- *  sinon on relancerait un second téléchargement. */
+ *  Pas de garde sur `currentSrc` (retirée le 2026-11-18) : WebKit le remplit
+ *  dès l'analyse de la page, même pour une image différée qu'il n'a pas encore
+ *  demandée — sur Safari, l'ajustement ne s'appliquait donc presque jamais, et
+ *  une vignette de 365 px recevait une image de 1 440 (plus lourde à décoder
+ *  et à envoyer à la carte graphique : des images sautées au défilement). Le
+ *  module n'est appelé que pour une image pas encore chargée. */
 function ajusterSizes(img) {
-  if (!img.hasAttribute("data-rsizes") || img.currentSrc) return;
+  if (!img.hasAttribute("data-rsizes")) return;
   const largeur = img.offsetWidth;
   const hauteur = img.offsetHeight;
   if (!largeur) return;

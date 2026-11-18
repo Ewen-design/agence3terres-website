@@ -245,6 +245,28 @@ select {
   }
 }
 
+/* ── Un bloc qui porte une IMAGE ou une VIDÉO arrive sans flou (2026-11-18) ──
+   Le flou se calcule sur toute la surface : sur un visuel plein cadre (le
+   cadre des cartes de la home, les cartes de la galerie, les figures des pages
+   projet), c'étaient les images longues du défilement dans Safari bureau,
+   pile à l'entrée de ces blocs (sonde `tests/stabilite/fluidite.mjs`). Fondu
+   et légère montée seulement, comme sur téléphone ; les TEXTES gardent leur
+   sortie du flou, signature du site. */
+.reveal:has(img, video, picture) {
+  will-change: opacity, transform;
+}
+
+.reveal:has(img, video, picture):where(:not(.is-revealed)) {
+  filter: none;
+}
+
+.reveal.is-revealed:has(img, video, picture) {
+  animation:
+    revealBlockFade 0.6s ease backwards,
+    revealBlockRiseLite 0.85s cubic-bezier(0.22, 0.61, 0.36, 1) backwards;
+  animation-delay: var(--reveal-delay, 0ms);
+}
+
 /* ── Arrivée d'une image différée (2026-11-18) ──
    Posée par `$lib/lazyAhead.js` : l'image reste transparente tant qu'elle
    n'est pas chargée ET décodée, puis arrive en fondu — jamais une image qui
@@ -271,6 +293,9 @@ img[data-arrivee="ok"] {
 /* Après la variante mobile, pour passer aussi devant elle. */
 @media (prefers-reduced-motion: reduce) {
   img[data-arrivee="ok"] {
+    animation: none;
+  }
+  .reveal.is-revealed:has(img, video, picture) {
     animation: none;
   }
   .reveal:where(:not(.is-revealed)) {
@@ -322,10 +347,17 @@ img[data-arrivee="ok"] {
    se voyait — surtout sur la citation de fin des pages projet, seule à l'écran
    et en grand. Ici chaque mot rend la main à ses valeurs normales à la fin de
    SON animation, au bout de son propre ralenti. */
-.reveal.reveal--words.is-revealed .reveal-word {
+/*  Chaque mot est LANCÉ À SON TOUR par l'action `reveal` (classe `is-on`,
+ *  toutes les 38 ms) plutôt que tous ensemble avec un délai (2026-11-18) :
+ *  avec des délais, les 30 ou 40 mots d'un texte démarraient leur animation
+ *  dans la même image — rempli « vers l'arrière », chacun recevait sur-le-champ
+ *  son calque et son flou — et WebKit les créait tous d'un coup, une image
+ *  sautée pile à l'arrivée du texte (Safari bureau, sonde de fluidité). Lancés
+ *  au fil de la cascade, les calques naissent un ou deux par image. L'effet à
+ *  l'écran est le même. */
+.reveal.reveal--words .reveal-word.is-on {
   opacity: 1;
   animation: revealWordIn 0.9s cubic-bezier(0.22, 0.61, 0.36, 1) backwards;
-  animation-delay: calc(var(--reveal-delay, 0ms) + var(--i) * 38ms);
 }
 
 /* L'action pose encore `reveal--settled` une fois la cascade finie. Avec le
@@ -362,7 +394,7 @@ img[data-arrivee="ok"] {
   .reveal-word {
     opacity: 1;
   }
-  .reveal.reveal--words.is-revealed .reveal-word {
+  .reveal.reveal--words .reveal-word.is-on {
     animation: none;
   }
 }
@@ -1019,4 +1051,20 @@ html.vt-page .hero__media {
   html.vt-page::view-transition-new(root) {
     animation: none;
   }
+}
+
+/* ── Défilement lissé sur grand écran (Lenis, `$lib/defilementLisse.js`) ──
+   Les réglages recommandés par Lenis : pas de défilement doux natif qui se
+   battrait avec le sien, et un bloc qui défile seul garde sa molette. */
+html.lenis,
+html.lenis body {
+  height: auto;
+}
+
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+
+.lenis.lenis-smooth [data-lenis-prevent] {
+  overscroll-behavior: contain;
 }

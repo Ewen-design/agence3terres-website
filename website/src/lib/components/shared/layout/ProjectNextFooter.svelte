@@ -81,6 +81,7 @@
   import { navigate } from "$lib/navigate.js";
   import { fitTitle } from "$lib/actions/fitTitle.js";
   import { markProjectHandoff } from "$lib/projectHandoff.js";
+  import { arreterGlissade, defilerVers } from "$lib/defilementLisse.js";
 
   /** Le projet annoncé — une entrée de `$lib/data/projets.js`. */
   export let project = null;
@@ -433,12 +434,18 @@
   /** Un clic sur la carte déroule la course jusqu'au bout. */
   function allerAuBout() {
     if (leaving || couverture || !wrapEl) return;
-    window.scrollTo({ top: Math.ceil(wrapTop + course + 2), behavior: reduced ? "auto" : "smooth" });
+    const cible = Math.ceil(wrapTop + course + 2);
+    if (reduced) window.scrollTo(0, cible);
+    else defilerVers(cible);
   }
 
   function partir() {
     if (leaving || !arme || !affiche) return;
     leaving = true;
+    // La carte est pleine : la glissade du défilement lissé (Lenis, grand
+    // écran) n'a plus rien à montrer, et le départ attendrait sa fin (le
+    // repos) près d'une seconde. Elle s'arrête sur place.
+    if (!tactile) arreterGlissade();
     sale = true;
     debutSortie = performance.now();
     // Hors de la phase de lecture du moteur : le départ écrit des styles.

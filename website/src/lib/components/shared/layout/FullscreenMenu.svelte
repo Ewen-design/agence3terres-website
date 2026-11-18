@@ -41,6 +41,7 @@
   import { navigate } from "$lib/navigate.js";
   import { registerPageCardEngine } from "$lib/pageCard.js";
   import { premierEcranPret } from "$lib/mediaPret.js";
+  import { arreterGlissade } from "$lib/defilementLisse.js";
   import {
     clearSilentNavigation,
     isSilentNavigationPending,
@@ -450,7 +451,11 @@
     // que la page (voir `$lib/fixedResync.js`). La découpe y suit déjà le
     // défilement (`onScroll`), et le verrou du menu coupe l'inertie.
     if (!window.matchMedia?.("(pointer: coarse)").matches) {
-      window.scrollTo(window.scrollX, window.scrollY);
+      // Avec le défilement lissé (Lenis), c'est SA glissade qu'il faut arrêter :
+      // un `scrollTo` natif ne l'interrompt pas, et la page continuait de
+      // glisser sous la carte.
+      if (window.lenis) arreterGlissade();
+      else window.scrollTo(window.scrollX, window.scrollY);
     }
     mode = nextMode;
     if (!measure()) {

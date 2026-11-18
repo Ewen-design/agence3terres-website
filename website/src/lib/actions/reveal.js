@@ -37,10 +37,28 @@ let railObserver = null;
 const rails = new Map();
 const railChecked = new WeakSet();
 
+/*  Les mots partent un par un, au rythme de la cascade (voir `app.css`,
+ *  `.reveal-word.is-on`) : un mot reçoit sa classe — donc son animation et
+ *  son calque — à SON heure, au lieu que tous les reçoivent dans la même
+ *  image avec un délai. */
+function lancerMots(node) {
+  const mots = node.querySelectorAll(".reveal-word");
+  if (!mots.length) return;
+  const delai = parseFloat(node.style.getPropertyValue("--reveal-delay")) || 0;
+  const depart = performance.now() + delai;
+  let i = 0;
+  const pas = (t) => {
+    while (i < mots.length && t >= depart + i * WORD_STAGGER) mots[i++].classList.add("is-on");
+    if (i < mots.length) requestAnimationFrame(pas);
+  };
+  requestAnimationFrame(pas);
+}
+
 function revealNode(node) {
   if (node.classList.contains(REVEAL_CLASS)) return;
   node.classList.add(REVEAL_CLASS);
   observer?.unobserve(node);
+  if (node.dataset.revealWords) lancerMots(node);
 
   // Le délai couvre la cascade complète : durée de l'animation + décalage
   // du dernier mot.
@@ -230,6 +248,36 @@ export function reveal(node, options = {}) {
       node.dataset.revealWords = String(count);
       node.classList.add("reveal--words");
     }
+  }
+
+  // Dans un GROUPE (`data-reveal-groupe` sur un ancêtre) : l'arrivée se joue
+  // quand le groupe entre dans la fenêtre, pour tous ses éléments ensemble.
+  // Pour un carrousel 3D (/apropos, citations) : l'observateur jugeait mal un
+  // visage tourné dans l'espace, et une citation pouvait rester invisible une
+  // fois ramenée de face (WebKit, format portable — 2026-11-18).
+  const groupe = node.parentElement?.closest("[data-reveal-groupe]");
+  if (groupe) {
+    let set = rails.get(groupe);
+    if (!set) {
+      set = new Set();
+      rails.set(groupe, set);
+      ensureRailObserver().observe(groupe);
+    }
+    set.add(node);
+    return {
+      update(next = {}) {
+        if (next.delay) node.style.setProperty("--reveal-delay", `${next.delay}ms`);
+      },
+      destroy() {
+        const s = rails.get(groupe);
+        if (!s) return;
+        s.delete(node);
+        if (!s.size) {
+          rails.delete(groupe);
+          railObserver?.unobserve(groupe);
+        }
+      }
+    };
   }
 
   const obs = ensureObserver();

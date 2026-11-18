@@ -6,7 +6,8 @@
     "preview": "vite preview",
     "test:stabilite": "node tests/stabilite/battery.mjs",
     "images": "node scripts/images-responsives.mjs",
-    "test:chaos": "node tests/stabilite/chaos.mjs"
+    "test:chaos": "node tests/stabilite/chaos.mjs",
+    "test:fluidite": "node tests/stabilite/fluidite.mjs"
   },
   "dependencies": {
     "gsap": "^3.14.2",

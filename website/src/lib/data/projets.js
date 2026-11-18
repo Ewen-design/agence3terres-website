@@ -61,8 +61,10 @@ export const PROJETS = [
     tags: "Identité visuelle, site web, direction artistique",
     annee: "2026",
     hero: {
-      image: "/images/ludo-site-desktop.webp",
-      mobileImage: "/images/ludo-hero-mobile.webp"
+      // Le hero est une VIDÉO (2026-11-18) : ses posters sont le photogramme 0
+      // de chaque rendition, l'image exacte sur laquelle la page s'ouvre.
+      image: "/videos/ludo-hero-poster.webp",
+      mobileImage: "/videos/ludo-hero-mobile-poster.webp"
     },
     vignette: "/images/ludo-tablette.webp",
     listed: true

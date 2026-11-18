@@ -218,7 +218,9 @@
 
     <div bind:this={section}></div>
 
-    <div class="carousel-wrapper">
+    <!-- `data-reveal-groupe` : les citations arrivent ensemble, quand le
+         carrousel entre à l'écran (voir `reveal.js`). -->
+    <div class="carousel-wrapper" data-reveal-groupe>
       <div
         class="carousel"
         class:is-dragging={isDragging}

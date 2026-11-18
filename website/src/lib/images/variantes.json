@@ -611,15 +611,6 @@
   ],
   "sig": "11f1a5613401"
  },
- "/images/ludo-hero-mobile.webp": {
-  "w": 1080,
-  "h": 1920,
-  "v": [
-   640,
-   960
-  ],
-  "sig": "9bdda2344ea1"
- },
  "/images/ludo-iphone.webp": {
   "w": 2400,
   "h": 1800,
@@ -677,16 +668,6 @@
   "h": 1385,
   "v": [],
   "sig": "69a77696de1d"
- },
- "/images/ludo.webp": {
-  "w": 2000,
-  "h": 2000,
-  "v": [
-   640,
-   960,
-   1280
-  ],
-  "sig": "084e97118f3b"
  },
  "/images/lybra-affichage-w1800.webp": {
   "w": 1800,
@@ -1581,6 +1562,14 @@
   ],
   "sig": "aa80987fcd7b"
  },
+ "/videos/ludo-accrochage-poster.webp": {
+  "w": 900,
+  "h": 1024,
+  "v": [
+   640
+  ],
+  "sig": "529d797644ec"
+ },
  "/videos/ludo-collections-poster.webp": {
   "w": 896,
   "h": 1120,
@@ -1588,6 +1577,24 @@
    640
   ],
   "sig": "96dad3ff5bd4"
+ },
+ "/videos/ludo-contenus-mobile-poster.webp": {
+  "w": 1080,
+  "h": 1920,
+  "v": [
+   640,
+   960
+  ],
+  "sig": "20281908cc1e"
+ },
+ "/videos/ludo-contenus-poster.webp": {
+  "w": 1080,
+  "h": 1020,
+  "v": [
+   640,
+   960
+  ],
+  "sig": "694a57566c88"
  },
  "/videos/ludo-demarche-poster.webp": {
   "w": 1080,
@@ -1597,6 +1604,25 @@
    960
   ],
   "sig": "d9f83471c718"
+ },
+ "/videos/ludo-hero-mobile-poster.webp": {
+  "w": 1080,
+  "h": 1920,
+  "v": [
+   640,
+   960
+  ],
+  "sig": "2188ccdfe22a"
+ },
+ "/videos/ludo-hero-poster.webp": {
+  "w": 1920,
+  "h": 1080,
+  "v": [
+   640,
+   960,
+   1280
+  ],
+  "sig": "4df9e87ba0ab"
  },
  "/videos/ludo-oeuvre-poster.webp": {
   "w": 896,

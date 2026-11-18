@@ -4,6 +4,7 @@
   import { revealBlock as reveal } from "$lib/actions/reveal.js";
   import { fitTitle } from "$lib/actions/fitTitle.js";
   import { consumeProjectHandoff } from "$lib/projectHandoff.js";
+  import { defilerVers } from "$lib/defilementLisse.js";
   import AutoVideo from "$lib/components/shared/media/AutoVideo.svelte";
   import {
     registerParallax,
@@ -201,7 +202,7 @@
     const target = document.getElementById(scrollToId);
     if (!target) return;
     const top = target.getBoundingClientRect().top + (window.scrollY || window.pageYOffset || 0);
-    window.scrollTo({ top, behavior: "smooth" });
+    defilerVers(top);
   }
 
   function startIntro(withDelay = true) {

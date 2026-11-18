@@ -76,6 +76,7 @@
     />
 
     <ProjectFlaps
+      continu
       background="var(--project-surface-bg, var(--bg-deep, #050709))"
       title="Une marque, un site,<br />un objet."
       cards={[

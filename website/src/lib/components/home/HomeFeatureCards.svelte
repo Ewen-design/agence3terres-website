@@ -68,6 +68,10 @@
    *  tant qu'on ne les passe pas : la home n'en passe aucun.
    *    `title`      un en-tête au-dessus du bloc (la home n'en a pas) ;
    *    `background` la couleur de la section (la home garde le noir du site) ;
+   *    `continu`    sur téléphone, la DERNIÈRE carte se fond dans le bloc
+   *                 suivant : ni coins arrondis en bas ni filet sous elle (son
+   *                 bas est déjà au noir de la page) — les pages projet
+   *                 (2026-11-18 : la jointure se voyait entre les deux blocs) ;
    *    et par carte, `fit` / `bg` pour un visuel qu'il ne faut pas rogner — un
    *    logotype très large, par exemple, qui perdrait son nom en `cover`.
    *
@@ -77,6 +81,7 @@
    *  est presque carré, mais pas au même format. */
   export let title = "";
   export let background = "";
+  export let continu = false;
 
   const rank = (i) => String(i + 1).padStart(2, "0");
 
@@ -109,6 +114,7 @@
 
 <section
   class="fcards"
+  class:is-continu={continu}
   aria-label={title || "Ce que nous faisons"}
   style={background ? `background:${background};` : undefined}
 >
@@ -384,19 +390,21 @@
     .fcards__shot {
       position: absolute;
       inset: 0;
-      opacity: 0;
-      /*  ── ÉTEINT = MASQUÉ, pas seulement transparent (2026-10-02) ──────────
-       *  Un calque à opacité nulle à l'intérieur d'un `sticky` déclenche un
-       *  défaut de WebKit, corrigé seulement dans Safari 18.2 (bug 280316) :
-       *  le défilement et la mise en page ne le jugent pas de la même façon
-       *  (« vide » pour l'un, « visible » pour l'autre), et le calque est
-       *  REPEINT à chaque mise en page qui survient pendant le défilement.
-       *  Trois visuels éteints sur quatre vivaient ainsi en permanence dans le
-       *  cadre collant. `visibility: hidden` les met d'accord : le visuel
-       *  s'efface en fondu, PUIS est masqué ; il est rendu visible dès qu'il
-       *  s'allume, avant son fondu d'entrée. Une image ou une vidéo masquée
-       *  garde sa boîte : elle se charge comme avant. */
-      visibility: hidden;
+      /*  ── ÉTEINT = PRESQUE transparent, jamais masqué (2026-11-18) ──────────
+       *  Historique : un calque à opacité NULLE dans un `sticky` déclenche un
+       *  défaut de WebKit, corrigé seulement dans Safari 18.2 (bug 280316) — le
+       *  défilement le juge « vide », la mise en page « visible », et il est
+       *  REPEINT à chaque mise en page pendant le défilement. Le 2026-10-02,
+       *  les visuels éteints sont donc passés en `visibility: hidden`.
+       *  Mais WebKit LIBÈRE un calque masqué : à chaque changement de volet, il
+       *  devait redessiner (et redécoder) une image plein cadre, 30 à 60 ms
+       *  d'un coup — les « à-coups » du défilement de la home sur Safari
+       *  bureau, mesurés à la sonde de fluidité (`tests/stabilite/fluidite.mjs`)
+       *  pile aux changements de volet. 0,001 contente les deux : ce n'est pas
+       *  zéro (les deux chemins de WebKit le jugent visible, pas de repeint en
+       *  boucle), et le calque reste dessiné une fois pour toutes ; changer de
+       *  volet n'est plus qu'un fondu de calques prêts. Invisible à l'œil. */
+      opacity: 0.001;
       /*  ── La couche va ICI, sur le visuel, et surtout PAS sur le cadre ──────
        *  Sur la boîte `position: sticky` elle-même, une couche forcée est
        *  nuisible : elle la sort du chemin rapide du fil de défilement. Sur le
@@ -411,17 +419,11 @@
       transform: translateZ(0);
       /* Un fondu long : les volets font trois quarts d'écran, un fondu court se
          lirait comme une coupe au milieu du défilement. */
-      transition:
-        opacity 620ms cubic-bezier(0.4, 0, 0.2, 1),
-        visibility 0s linear 620ms;
+      transition: opacity 620ms cubic-bezier(0.4, 0, 0.2, 1);
     }
 
     .fcards__shot.is-on {
       opacity: 1;
-      visibility: visible;
-      transition:
-        opacity 620ms cubic-bezier(0.4, 0, 0.2, 1),
-        visibility 0s linear 0s;
     }
 
     /* La vidéo du digital est DÉTOURÉE : au rendu, l'appareil sort déjà par la
@@ -524,6 +526,22 @@
          voir l'arrondi de la DERNIÈRE carte — sans ce filet, ses coins tombent
          pile sur la fin de la section et l'arrondi ne se voit pas. */
       padding: 0 0 var(--site-inset);
+    }
+
+    /* `continu` : la dernière carte se prolonge dans le bloc suivant, sans
+       arrondi ni filet entre les deux — une seule continuité noire. */
+    .fcards.is-continu {
+      padding-bottom: 0;
+    }
+
+    /* L'ombre de la carte part vers le HAUT, mais son flou (jusqu'à 90 px)
+       débordait d'une quarantaine de pixels SOUS elle : une bande plus sombre
+       sur le bloc suivant, qui suffisait à marquer la jointure. Elle est
+       coupée au ras du bord bas, gardée au-dessus. */
+    .fcards.is-continu .fcards__card:last-child {
+      border-bottom-left-radius: 0;
+      border-bottom-right-radius: 0;
+      clip-path: inset(-120px 0 0 0);
     }
   }
 

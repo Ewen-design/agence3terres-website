@@ -62,6 +62,7 @@
     />
 
     <ProjectFlaps
+      continu
       background="var(--project-surface-bg, var(--bg-deep, #050709))"
       title="Quatre chantiers, <br />un seul système."
       cards={[

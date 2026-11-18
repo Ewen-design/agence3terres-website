@@ -17,6 +17,10 @@ let isTouch = false;
 let prefersReducedMotion = false;
 
 let rafId = 0;
+/** Le défilement est déjà lissé en amont (Lenis, sur grand écran) : le moteur
+ *  ne lisse plus `motionY` par-dessus — deux lissages empilés, c'est un effet
+ *  qui traîne derrière la page. */
+let lissageExterne = false;
 let viewportDirty = false;
 let pendingNativeY = 0;
 let resizeRafId = 0;
@@ -146,7 +150,7 @@ function emitFrame(now) {
 
   currentY = nextY;
 
-  if (!prefersReducedMotion) {
+  if (!prefersReducedMotion && !lissageExterne) {
     const smoothingMs =
       isMobile || isTouch ? MOBILE_MOTION_SMOOTHING_MS : DESKTOP_MOTION_SMOOTHING_MS;
     const motionAlpha = 1 - Math.exp(-dt / smoothingMs);
@@ -372,4 +376,25 @@ export function registerWrite(callback, options = {}) {
 
 export function unregisterWrite(callback) {
   removeFromRegistry(writeCallbacks, callback);
+}
+
+/** Voir `lissageExterne`. Posé par `$lib/defilementLisse.js`. */
+export function setScrollEngineExternalSmoothing(actif) {
+  lissageExterne = !!actif;
+  if (lissageExterne) motionY = currentY;
+}
+
+/*  Faire avancer le moteur TOUT DE SUITE, dans la même image que celle où la
+ *  position vient d'être posée (Lenis la pose dans sa propre boucle). Sans ça,
+ *  le moteur lisait la position dans SA boucle, parfois avant Lenis : tout ce
+ *  qu'il place au défilement traînait d'une image derrière la page — ce qui se
+ *  voit comme un léger flottement. */
+export function stepScrollEngine(now) {
+  if (!initialized || typeof window === "undefined") return;
+  if (rafId) {
+    cancelAnimationFrame(rafId);
+    rafId = 0;
+  }
+  lastActivityTime = now ?? getNow();
+  emitFrame(now ?? getNow());
 }

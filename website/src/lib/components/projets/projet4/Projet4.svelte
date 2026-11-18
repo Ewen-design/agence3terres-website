@@ -3,6 +3,11 @@
   //  Même trame que les autres pages projet. Les deux blocs qui lui sont
   //  propres : les trois cartes à légende (l'accrochage, le geste, la matière)
   //  et la double vue mobile, qui montre le site en mouvement.
+  //
+  //  La galerie 3D (2026-11-18) : le hero et la carte « Des contenus pour la
+  //  suite » sont des extraits du reel des toiles en 3D, « L'accrochage » est
+  //  la page Œuvres filmée. Tout sort de `media-source/encode-ludospheres-
+  //  galerie.sh`, qui dit pourquoi chaque plan est là.
   import ProjectThemePage from "$lib/components/projets/shared/ProjectThemePage.svelte";
   import ProjectHeroProjetsStyle from "$lib/components/projets/shared/ProjectHeroProjetsStyle.svelte";
   import ProjectEditorialStatement from "$lib/components/projets/shared/ProjectEditorialStatement.svelte";
@@ -24,8 +29,12 @@
 <ProjectThemePage>
   <ProjectHeroProjetsStyle
     title="Ludosphères"
-    image="/images/ludo-site-desktop.webp"
-    mobileImage="/images/ludo-hero-mobile.webp"
+    image="/videos/ludo-hero-poster.webp"
+    mobileImage="/videos/ludo-hero-mobile-poster.webp"
+    video={videoSources("ludo-hero")}
+    mobileVideo={videoSources("ludo-hero-mobile")}
+    videoPoster="/videos/ludo-hero-poster.webp"
+    mobileVideoPoster="/videos/ludo-hero-mobile-poster.webp"
     metaBlocks={[
       { label: "Date", value: "2026" },
       { label: "Localisation", value: "France" },
@@ -50,6 +59,7 @@
     />
 
     <ProjectFlaps
+      continu
       background="var(--project-surface-bg, var(--bg-deep, #050709))"
       title="Une marque faite de<br />l'œuvre, pas posée dessus."
       cards={[
@@ -80,8 +90,13 @@
         {
           title: "Des contenus pour la suite",
           text: "Photos, mockups et posts déclinés depuis le même système, pour que la marque <span class='hl'>continue de vivre</span> une fois le site en ligne.",
-          image: "/images/carte-ludo.webp",
-          alt: "Cartes de visite Ludosphères, bleu nuit et kraft gaufré"
+          // Trois plans du reel « Galerie 3D » : les toiles accrochées dans
+          // une salle blanche, rendues en 3D pour les réseaux.
+          video: videoSources("ludo-contenus"),
+          mobileVideo: videoSources("ludo-contenus-mobile"),
+          poster: "/videos/ludo-contenus-poster.webp",
+          mobilePoster: "/videos/ludo-contenus-mobile-poster.webp",
+          alt: "Les toiles de Ludovic Cocqueret accrochées dans une galerie blanche, en 3D"
         }
       ]}
     />
@@ -99,10 +114,11 @@
         {
           title: "L'accrochage",
           text: "Le site montre l'œuvre en grand avant d'en dire un mot. Le texte attend son tour.",
-          // La toile seule au mur, comme on la découvre : le mockup des deux
-          // tablettes revenait déjà dans le hero et la mosaïque.
-          image: "/images/ludo.webp",
-          alt: "Une toile rouge et rose de Ludovic Cocqueret, accrochée sur un mur blanc"
+          // La page Œuvres du site, filmée : le mur de toiles en 3D qu'on fait
+          // glisser. Une seule rendition (voir le script d'encodage).
+          video: videoSources("ludo-accrochage"),
+          poster: "/videos/ludo-accrochage-poster.webp",
+          alt: "La page Œuvres de Ludosphères : les toiles accrochées sur un mur en 3D, qui défile"
         },
         {
           title: "Le geste",
@@ -184,7 +200,7 @@
   <!-- Le mot du client, sur le NOIR de la palette (bande sombre), à la place
        du mur des autres projets — le pied de page « projet suivant » assure la
        suite de la visite.
-       Le VRAI témoignage de Ludovic Coqueret (reçu le 2026-10-09). Trop long
+       Le VRAI témoignage de Ludovic Cocqueret (reçu le 2026-10-09). Trop long
        pour un écran : la page n'en garde que la dernière phrase (sans son
        « donc »), sans signature ; le « + » ouvre le texte entier, signé, dans
        une carte plein écran. -->
@@ -201,9 +217,9 @@
         "Je recommande donc vivement l’agence 3&nbsp;Terres à toutes celles et ceux qui recherchent un accompagnement de grande qualité et une véritable sensibilité créative."
       ]}
       photo="/images/ludo-artiste.webp"
-      photoAlt="Ludovic Coqueret"
+      photoAlt="Ludovic Cocqueret"
       photoPosition="50% 28%"
-      signature={{ name: "Ludovic Coqueret", org: "Ludosphères" }}
+      signature={{ name: "Ludovic Cocqueret", org: "Ludosphères" }}
       logo="/images/logos-clients/ludospheres.svg"
     />
   </div>

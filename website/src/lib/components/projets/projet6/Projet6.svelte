@@ -44,6 +44,7 @@
     />
 
     <ProjectFlaps
+      continu
       background="var(--project-surface-bg, var(--bg-deep, #050709))"
       title="Deux camps,<br />un seul écran."
       cards={[
