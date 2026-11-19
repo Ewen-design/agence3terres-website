@@ -300,6 +300,8 @@
     else transform = `translate3d(0px, ${(cfg.recede * geo.vh + nudge).toFixed(3)}px, 0px) scale(${cfg.scale})`;
     stage.style.transition = instant || duration < 0.01 ? "none" : `transform ${duration.toFixed(3)}s ${ease}`;
     stage.style.transform = transform;
+    // La page ne s'allonge pas de la descente de la carte (voir le layout).
+    document.documentElement.classList.add("carte-page");
     lastTarget = toFull;
   }
 
@@ -694,6 +696,7 @@
     for (const el of [...pinned]) unpin(el);
     if (fadeEl) fadeEl.style.clipPath = "";
     if (veilEl) veilEl.style.clipPath = "";
+    document.documentElement.classList.remove("carte-page");
   }
 
   function finishSession() {

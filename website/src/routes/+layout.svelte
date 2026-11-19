@@ -689,6 +689,19 @@
     background: var(--bg-deep, #000);
   }
 
+  /*  Pendant que la page est une CARTE (menu ouvert, transition de page —
+   *  FullscreenMenu pose `carte-page`), elle est décalée d'une demi-hauteur
+   *  d'écran vers le bas, et un transform agrandit la zone à défiler : la page
+   *  comptait ~420 px de plus (2026-11-19, Safari bureau, menu → Contact,
+   *  molette pendant le retour de la carte — on descendait dans un « bas qui
+   *  n'existe pas », puis la page remontait d'elle-même). Découpée à sa vraie
+   *  hauteur : ce qui dépasse est sous le bas de la page, donc jamais à
+   *  l'écran. Hors défilement interne (là, c'est le bloc `.defileur` qui
+   *  défile, et le cas n'a pas été signalé). */
+  :global(html.carte-page:not(.defilement-interne)) main {
+    overflow-y: clip;
+  }
+
   .ios-top-mask {
     display: none;
   }
