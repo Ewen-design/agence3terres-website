@@ -16,6 +16,17 @@
       ) {
         document.documentElement.classList.add("defilement-interne");
       }
+      // Safari de BUREAU (2026-11-19) : l'arrivée des mots y perd son balayage
+      // de couleur, voir `revealWordInSafari` dans app.css.
+      var ua = navigator.userAgent;
+      if (
+        /Safari\//.test(ua) &&
+        !/Chrome|Chromium|CriOS|FxiOS|Edg|OPR|Android/.test(ua) &&
+        window.matchMedia &&
+        window.matchMedia("(hover: hover) and (pointer: fine)").matches
+      ) {
+        document.documentElement.classList.add("safari-bureau");
+      }
     </script>
     <!-- Police du site : préchargée pour éviter le saut de rendu au premier
          écran (le fichier variable couvre toutes les graisses). -->

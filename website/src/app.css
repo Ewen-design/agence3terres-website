@@ -390,6 +390,29 @@ img[data-arrivee="ok"] {
   }
 }
 
+/* ── Safari de bureau : la sortie du flou SANS le balayage de couleur ──
+   (2026-11-19, validé par le client.) Mesuré dans le vrai Safari, page à
+   propos : animer `color` oblige Safari à REPEINDRE chaque mot flouté à chaque
+   image, alors que le flou, la montée et le fondu seuls passent par la carte
+   graphique — 9 à 15 images lentes par défilement complet avec le balayage,
+   3 à 5 sans (un flou deux fois moindre, lui, ne gagnait rien). Firefox,
+   Chrome et le téléphone gardent l'effet complet. Classe posée par app.html ;
+   hors mouvement réduit, et pas une fois le texte posé (`reveal--settled`
+   libère l'animation, comme ailleurs). */
+@media (prefers-reduced-motion: no-preference) {
+  html.safari-bureau .reveal.reveal--words:not(.reveal--settled) .reveal-word.is-on {
+    animation-name: revealWordInSafari;
+  }
+}
+
+@keyframes revealWordInSafari {
+  0% {
+    opacity: 0;
+    filter: blur(12px);
+    transform: translateY(var(--reveal-rise, 0.24em));
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .reveal-word {
     opacity: 1;
