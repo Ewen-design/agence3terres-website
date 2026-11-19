@@ -296,14 +296,14 @@
 
   .ms-dock {
     position: sticky;
-    bottom: max(clamp(1.1rem, 3vh, 2rem), var(--safe-bottom-offset, 1rem));
+    bottom: max(clamp(1.1rem, 3svh, 2rem), var(--safe-bottom-offset, 1rem));
     z-index: 5;
   }
 
   @media (min-width: 769px) {
     .ms {
-      min-height: calc(100lvh + 24vh);
-      margin-top: clamp(4rem, 9vh, 8rem);
+      min-height: calc(100svh + 24svh);
+      margin-top: clamp(4rem, 9svh, 8rem);
     }
   }
 
@@ -352,7 +352,7 @@
     position: relative;
     min-width: 0;
     /* Hauteur pilotée par la fenêtre, comme ParallaxGallery2 (desktop). */
-    height: min(86vh, 920px);
+    height: min(86svh, 920px);
     border-radius: 24px;
     overflow: hidden;
     background: var(--project-surface-card, #121212);
@@ -458,7 +458,7 @@
      écran, hauteur pilotée par la fenêtre, un léger aperçu de la suivante). */
   @media (max-width: 768px) {
     .ms {
-      min-height: calc(100lvh + 14vh);
+      min-height: calc(100svh + 14svh);
       display: flex;
       flex-direction: column;
       justify-content: center;
@@ -469,7 +469,7 @@
     }
     .ms-card {
       aspect-ratio: auto;
-      height: min(72vh, 660px);
+      height: min(72svh, 660px);
       border-radius: 22px;
     }
     .ms-card__title {
@@ -479,8 +479,8 @@
     /* Le dock se pose plus bas (bottom plus petit = point d'ancrage plus proche
        du bas de la section) pour ne plus être collé aux slides en état final. */
     .ms :global(.sd-overlay) {
-      top: -42vh;
-      bottom: 3vh;
+      top: -42svh;
+      bottom: 3svh;
     }
   }
 
@@ -489,7 +489,7 @@
       grid-auto-columns: clamp(270px, 90vw, 380px);
     }
     .ms-card {
-      height: min(74vh, 620px);
+      height: min(74svh, 620px);
     }
   }
 
@@ -505,5 +505,13 @@
       transition: none;
       transform: scale(1);
     }
+  }
+
+  /* Défilement interne (écran tactile, `$lib/defileur.js`) : le conteneur de
+     l'élément collant a son PROPRE calque — sans lui, Safari iOS fait trembler
+     le collant dans le bloc qui défile, voire fige le défilement (mesuré au
+     simulateur iOS 27, 2026-11-19 ; voir app.css, « Les collants »). */
+  :global(html.defilement-interne) .ms {
+    transform: translateZ(0);
   }
 </style>

@@ -128,12 +128,12 @@
     width: 100%;
     background: var(--bg-deep, #000);
     color: var(--faq-ink);
-    padding: clamp(4.5rem, 11vh, 9rem) var(--faq-inset) clamp(6rem, 14vh, 12rem);
+    padding: clamp(4.5rem, 11svh, 9rem) var(--faq-inset) clamp(6rem, 14svh, 12rem);
     overflow-x: clip;
   }
 
   .faq__title {
-    margin: 0 auto clamp(2.2rem, 5vh, 3.8rem);
+    margin: 0 auto clamp(2.2rem, 5svh, 3.8rem);
     max-width: 26ch;
     font-family: var(--site-font);
     font-size: clamp(1.85rem, 3.5vw, 3.3rem);
@@ -292,7 +292,7 @@
 
   @media (max-width: 760px) {
     .faq {
-      padding: clamp(3.5rem, 9vh, 6rem) 1rem clamp(4.5rem, 11vh, 8rem);
+      padding: clamp(3.5rem, 9svh, 6rem) 1rem clamp(4.5rem, 11svh, 8rem);
     }
 
     .faq__title {

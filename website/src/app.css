@@ -80,12 +80,12 @@
      déjà rétractée). Sert à garder les éléments du bas au-dessus de la barre
      Safari sans être affectés par sa rétractation. */
   --bar-inset: 0px;
-  --bar-inset: calc(100lvh - 100svh);
+  --bar-inset: calc(100svh - 100svh);
   /* Hauteur DYNAMIQUE de la barre (0 quand rétractée) : à ajouter au `bottom`
-     d'un élément ancré dans un cadre 100lvh pour qu'il suive le bas RÉEL du
+     d'un élément ancré dans un cadre 100svh pour qu'il suive le bas RÉEL du
      viewport et ne « saute » pas quand la barre Safari se rétracte. */
   --dyn-bar: 0px;
-  --dyn-bar: calc(100lvh - 100dvh);
+  --dyn-bar: calc(100svh - 100dvh);
   /* Marge latérale des blocs du site (cadres, cartes, rails). */
   --site-inset: clamp(0.9rem, 2vw, 1.8rem);
   --site-font: "Switzer", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
@@ -489,6 +489,87 @@ img {
 
 html, body {
   overscroll-behavior: none;
+}
+
+/*  ── Le défilement INTERNE sur écran tactile (2026-11-19) ──────────────────
+ *  Demande du client, d'après estrela.studio : « la barre de Safari est
+ *  bloquée, ne se recalcule pas et ne se rétracte pas, ce qui évite beaucoup de
+ *  bugs ; on voit un cache derrière, et en haut de l'écran ». Leur page ne fait
+ *  pas défiler le DOCUMENT : chaque page est un bloc plein écran qui défile
+ *  seul (`main.page`, Lenis `wrapper`). Le document ne bougeant jamais, Safari
+ *  n'a aucune raison de replier sa barre, la fenêtre ne change jamais de
+ *  taille, et ses éléments fixes ne peuvent plus « descendre » (le décalage
+ *  du header, bug WebKit lié au défilement du document et au repli de la
+ *  barre, vu sur le simulateur iOS 27 deux fois sur onze). Les bandes noires
+ *  sous la barre d'état et derrière la barre d'adresse sont le fond du
+ *  document, que Safari montre hors de la fenêtre.
+ *  Ici : `.defileur` (+layout.svelte) devient ce bloc, sur écran tactile
+ *  seulement (classe posée dans app.html avant le premier affichage). Sur
+ *  bureau ses deux enveloppes sont en `display: contents` : rien ne change.
+ *  `$lib/defileur.js` redirige vers lui ce que le site demande à la fenêtre. */
+.defileur,
+.defileur-contenu {
+  display: contents;
+}
+
+html.defilement-interne,
+html.defilement-interne body {
+  height: 100%;
+  overflow: hidden;
+}
+
+html.defilement-interne main {
+  height: 100%;
+}
+
+html.defilement-interne .defileur {
+  display: block;
+  position: absolute;
+  inset: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: none;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+
+html.defilement-interne .defileur::-webkit-scrollbar {
+  display: none;
+}
+
+/* Une enveloppe SANS transform entre le bloc et la page : quand le menu ou la
+   transition font reculer `.page-stage` en carte (transform), la hauteur à
+   défiler reste la sienne — sinon elle rétrécissait avec la carte et la
+   position, au bas d'une page, sautait. */
+html.defilement-interne .defileur-contenu {
+  display: flow-root;
+}
+
+/* Les collants. Dans le bloc qui défile, un élément `position: sticky` dont le
+   CONTENEUR n'a pas de calque propre tremble sur Safari iOS — ou fige le
+   défilement : mesuré au simulateur iOS 27 (2026-11-19), cartes de la home 33
+   allers-retours au lieu de 0, séquence d'/apropos 22 images en mouvement sur
+   toute la descente au lieu de 738. Avec `transform: translateZ(0)` sur le
+   conteneur, exactement comme en défilement du document. Chaque composant le
+   pose sur le sien, sous `html.defilement-interne` seulement (sur bureau, la
+   règle n°1 des collants tient toujours : aucune couche forcée). Seule
+   exception : le pied de page « projet suivant », dont le panneau passe en
+   `position: fixed` au départ — un transform sur son conteneur le ferait
+   sauter. */
+
+/* Menu ouvert : la page recule et découvre le menu, mais la BOÎTE du bloc
+   reste plein écran par-dessus — elle laisse passer les touchers (classe posée
+   par FullscreenMenu). */
+html.defilement-interne.menu-visible .defileur {
+  pointer-events: none;
+}
+
+/* Les verrous de défilement du site (menu ouvert, témoignage, intro) se posent
+   sur <html> : ils bloquent ici le bloc qui défile. */
+html.defilement-interne.site-intro-active .defileur,
+html.defilement-interne[style*="overflow: hidden"] .defileur,
+html.defilement-interne body[style*="overflow: hidden"] .defileur {
+  overflow-y: hidden;
 }
 
 body {
@@ -1024,7 +1105,7 @@ html.vt-page .hero__media {
 
 @keyframes vtPageEntree {
   from {
-    transform: translate3d(0, 16vh, 0);
+    transform: translate3d(0, 16svh, 0);
     clip-path: inset(100% 1.4rem 0 1.4rem round 22px 22px 0 0);
   }
   to {
@@ -1036,7 +1117,7 @@ html.vt-page .hero__media {
 @media (max-width: 900px) {
   @keyframes vtPageEntree {
     from {
-      transform: translate3d(0, 12vh, 0);
+      transform: translate3d(0, 12svh, 0);
       clip-path: inset(100% 0.9rem 0 0.9rem round 18px 18px 0 0);
     }
     to {

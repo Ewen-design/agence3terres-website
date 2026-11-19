@@ -60,12 +60,12 @@
     padding-bottom: clamp(3rem, 5vw, 5rem);
   }
 
-  /* Même espace vide sous le texte de showcase (rangée basse 16vh). */
+  /* Même espace vide sous le texte de showcase (rangée basse 16svh). */
   .digital-showcase :global(.about-editorial-single-showcase) {
     min-height: 0;
   }
   .digital-showcase :global(.about-editorial-single-showcase__content) {
-    grid-template-rows: 100vh auto 16vh;
+    grid-template-rows: 100svh auto 16svh;
     min-height: 0;
   }
 

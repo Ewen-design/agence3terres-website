@@ -176,9 +176,9 @@
     flex-direction: column;
     align-items: center;
     padding:
-      clamp(6.5rem, 15vh, 9.5rem)
+      clamp(6.5rem, 15svh, 9.5rem)
       var(--project-side-padding, var(--site-inset))
-      clamp(5rem, 12vh, 8rem);
+      clamp(5rem, 12svh, 8rem);
     text-align: center;
     transition: opacity 0.35s ease;
   }
@@ -203,7 +203,7 @@
     display: block;
     width: clamp(4.25rem, 5.6vw, 5.75rem);
     aspect-ratio: 1;
-    margin-bottom: clamp(2rem, 5vh, 3.25rem);
+    margin-bottom: clamp(2rem, 5svh, 3.25rem);
     border-radius: 50%;
     object-fit: cover;
   }
@@ -240,7 +240,7 @@
     flex-direction: column;
     align-items: center;
     gap: 0.3rem;
-    margin: clamp(2.5rem, 6vh, 3.75rem) 0 0;
+    margin: clamp(2.5rem, 6svh, 3.75rem) 0 0;
     font-family: var(--site-font);
     font-size: clamp(0.95rem, 1.1vw, 1.1rem);
     line-height: 1.4;
@@ -256,7 +256,7 @@
 
   /* Le filigrane : ni timbre-poste, ni second titre. */
   .pcard__mark {
-    margin-top: clamp(3.5rem, 9vh, 6rem);
+    margin-top: clamp(3.5rem, 9svh, 6rem);
   }
 
   /* Taillé dans une BOÎTE, pas à une largeur : un logo carré (Ludosphères)

@@ -83,7 +83,7 @@
     display: grid;
     grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr);
     gap: var(--site-inset);
-    padding: clamp(9rem, 20vh, 16rem) var(--site-inset) 0;
+    padding: clamp(9rem, 20svh, 16rem) var(--site-inset) 0;
     background: var(--bg-deep, #050709);
   }
 
@@ -301,7 +301,7 @@
   @media (max-width: 760px) {
     .action-cards {
       grid-template-columns: minmax(0, 1fr);
-      padding-top: clamp(7rem, 16vh, 10rem);
+      padding-top: clamp(7rem, 16svh, 10rem);
     }
 
     .action-card {

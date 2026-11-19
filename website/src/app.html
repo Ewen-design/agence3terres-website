@@ -5,6 +5,18 @@
     <link rel="icon" type="image/webp" href="%sveltekit.assets%/logo_favikon.webp" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <meta name="theme-color" content="#000000" />
+    <!-- Défilement interne sur écran tactile (2026-11-19, comme estrela.studio) :
+         décidé AVANT le premier affichage, voir `$lib/defileur.js`. -->
+    <script>
+      // `?defilement=document` : l'ancien défilement du document (comparaisons).
+      if (
+        window.matchMedia &&
+        window.matchMedia("(pointer: coarse)").matches &&
+        !/[?&]defilement=document\b/.test(location.search)
+      ) {
+        document.documentElement.classList.add("defilement-interne");
+      }
+    </script>
     <!-- Police du site : préchargée pour éviter le saut de rendu au premier
          écran (le fichier variable couvre toutes les graisses). -->
     <link

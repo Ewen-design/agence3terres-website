@@ -154,17 +154,6 @@
   ],
   "sig": "d2497536eb01"
  },
- "/images/harmonia-affiche-couloir.webp": {
-  "w": 2400,
-  "h": 1800,
-  "v": [
-   640,
-   960,
-   1280,
-   1920
-  ],
-  "sig": "a5579b648597"
- },
  "/images/harmonia-affiche.webp": {
   "w": 2400,
   "h": 1615,
@@ -310,34 +299,6 @@
    1280
   ],
   "sig": "122ba1e42077"
- },
- "/images/harmonia-soin-cheveux.webp": {
-  "w": 1200,
-  "h": 1799,
-  "v": [
-   640,
-   960
-  ],
-  "sig": "4afdc2225c7b"
- },
- "/images/harmonia-soin-epilation.webp": {
-  "w": 1200,
-  "h": 1801,
-  "v": [
-   640,
-   960
-  ],
-  "sig": "d5bf0753b560"
- },
- "/images/harmonia-soin-led.webp": {
-  "w": 1600,
-  "h": 1067,
-  "v": [
-   640,
-   960,
-   1280
-  ],
-  "sig": "95bfedc9d345"
  },
  "/images/harmonia-tarifs-macbook-large.webp": {
   "w": 2400,
@@ -1188,6 +1149,15 @@
   ],
   "sig": "3f24a2d6c737"
  },
+ "/images/serein-affiche-vignette.webp": {
+  "w": 1200,
+  "h": 1600,
+  "v": [
+   640,
+   960
+  ],
+  "sig": "08529df87c4e"
+ },
  "/images/serein-affiche.webp": {
   "w": 2400,
   "h": 1800,
@@ -1198,15 +1168,6 @@
    1920
   ],
   "sig": "7715de51564a"
- },
- "/images/serein-durable.webp": {
-  "w": 1400,
-  "h": 1304,
-  "v": [
-   640,
-   960
-  ],
-  "sig": "1974e5dcda49"
  },
  "/images/serein-ecran-objectif-large.webp": {
   "w": 2400,
@@ -1316,24 +1277,6 @@
   ],
   "sig": "1f2a6db47f97"
  },
- "/images/serein-reparable.webp": {
-  "w": 1400,
-  "h": 1492,
-  "v": [
-   640,
-   960
-  ],
-  "sig": "cc71172dd7ac"
- },
- "/images/serein-sans-compte.webp": {
-  "w": 1400,
-  "h": 1454,
-  "v": [
-   640,
-   960
-  ],
-  "sig": "6526b3cb4548"
- },
  "/images/serein-tel-accueil.webp": {
   "w": 640,
   "h": 1352,
@@ -1349,15 +1292,6 @@
    1280
   ],
   "sig": "546443cbc3ea"
- },
- "/images/serein-vignette.webp": {
-  "w": 1200,
-  "h": 1600,
-  "v": [
-   640,
-   960
-  ],
-  "sig": "d810d9b1426a"
  },
  "/images/serein_design.webp": {
   "w": 1024,
@@ -1562,6 +1496,15 @@
   ],
   "sig": "aa80987fcd7b"
  },
+ "/videos/ludo-accrochage-mobile-poster.webp": {
+  "w": 1080,
+  "h": 1920,
+  "v": [
+   640,
+   960
+  ],
+  "sig": "036c7828ca5e"
+ },
  "/videos/ludo-accrochage-poster.webp": {
   "w": 900,
   "h": 1024,
@@ -1577,24 +1520,6 @@
    640
   ],
   "sig": "96dad3ff5bd4"
- },
- "/videos/ludo-contenus-mobile-poster.webp": {
-  "w": 1080,
-  "h": 1920,
-  "v": [
-   640,
-   960
-  ],
-  "sig": "20281908cc1e"
- },
- "/videos/ludo-contenus-poster.webp": {
-  "w": 1080,
-  "h": 1020,
-  "v": [
-   640,
-   960
-  ],
-  "sig": "694a57566c88"
  },
  "/videos/ludo-demarche-poster.webp": {
   "w": 1080,
@@ -1695,7 +1620,7 @@
    640,
    960
   ],
-  "sig": "82f0a6bb3afa"
+  "sig": "2753d2f0259c"
  },
  "/videos/serein-hero-poster.webp": {
   "w": 1920,
@@ -1705,6 +1630,6 @@
    960,
    1280
   ],
-  "sig": "0f558404d39c"
+  "sig": "50ffc7b28bba"
  }
 }

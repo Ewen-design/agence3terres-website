@@ -15,7 +15,7 @@
     {
       title: "Harmonia",
       category: "Centre de médecine esthétique",
-      lead: "Une identité médicale, et un site qui la porte.",
+      lead: "Le site et la charte d'un centre de médecine esthétique.",
       image: "/images/harmonia-mockup.webp",
       page: "projet9",
       button: "Voir le projet"
@@ -23,7 +23,7 @@
     {
       title: "Lybra",
       category: "Identité de marque",
-      lead: "Un colibri modernisé pour porter l'envol de leurs clients.",
+      lead: "Un colibri redessiné, et la charte qui va avec.",
       image: "/images/lybra-cartes.webp",
       page: "projet8",
       button: "Voir le projet"
@@ -31,7 +31,7 @@
     {
       title: "Ludosphères",
       category: "Site d'artiste",
-      lead: "Un site sobre pour laisser respirer les œuvres.",
+      lead: "Le site d'un peintre, sa galerie en 3D et sa marque.",
       image: "/images/ludo-tablette.webp",
       page: "projet4",
       button: "Voir le projet"
@@ -39,7 +39,7 @@
     {
       title: "Moovy",
       category: "Plateforme web",
-      lead: "Une recommandation de films simple, directe et personnelle.",
+      lead: "Trouver le film de ce soir en quelques questions.",
       image: "/images/tel_moovy2.webp",
       page: "projet3",
       button: "Voir le projet"
@@ -55,8 +55,8 @@
     {
       title: "Serein Design",
       category: "Objet de bureau",
-      lead: "Un objet qui n'affiche que ce qui compte.",
-      image: "/images/serein-vignette.webp",
+      lead: "La marque et le site d'un objet de bureau.",
+      image: "/images/serein-affiche-vignette.webp",
       page: "projet1",
       button: "Voir le projet"
     },

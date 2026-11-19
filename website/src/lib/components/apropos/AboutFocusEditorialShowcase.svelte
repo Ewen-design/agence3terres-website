@@ -258,7 +258,7 @@
     width: 100%;
     background: var(--afe-bg);
     color: var(--afe-ink);
-    padding: clamp(4.5rem, 11vh, 9rem) var(--site-inset) clamp(5.5rem, 13vh, 11rem);
+    padding: clamp(4.5rem, 11svh, 9rem) var(--site-inset) clamp(5.5rem, 13svh, 11rem);
     overflow-x: clip;
     touch-action: pan-y;
   }
@@ -270,7 +270,7 @@
   /* ── Le bloc ────────────────────────────────────────────────────────────── */
   .afe__panel {
     position: relative;
-    height: min(86vh, 960px);
+    height: min(86svh, 960px);
     border-radius: var(--afe-radius);
     overflow: hidden;
     background: var(--afe-panel);
@@ -502,13 +502,13 @@
   /* ── Écrans étroits : l'accordéon s'assoit au bas du bloc ───────────────── */
   @media (max-width: 900px) {
     .afe {
-      padding: clamp(3.5rem, 9vh, 6rem) 1rem clamp(4rem, 10vh, 7rem);
+      padding: clamp(3.5rem, 9svh, 6rem) 1rem clamp(4rem, 10svh, 7rem);
     }
 
     /* Plus haut qu'avant (2026-09-03) : l'accordéon ouvert occupe le bas du
-       cadre, et à 78vh il ne restait presque plus de photo à voir au-dessus. */
+       cadre, et à 78svh il ne restait presque plus de photo à voir au-dessus. */
     .afe__panel {
-      height: min(86vh, 820px);
+      height: min(86svh, 820px);
       border-radius: 18px;
     }
 

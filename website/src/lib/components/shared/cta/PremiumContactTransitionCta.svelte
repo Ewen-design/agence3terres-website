@@ -153,7 +153,7 @@
     display: flex;
     justify-content: flex-end;
     align-self: end;
-    padding-top: clamp(4rem, 10vh, 7rem);
+    padding-top: clamp(4rem, 10svh, 7rem);
   }
 
   .premium-contact-cta__button {

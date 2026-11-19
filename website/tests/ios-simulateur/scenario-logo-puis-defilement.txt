@@ -1,0 +1,12 @@
+wait 1.5
+tap 0.08 0.099
+wait 0.5
+swipe 0.5 0.80 0.30 2500
+wait 0.25
+swipe 0.5 0.80 0.30 2500
+wait 0.25
+swipe 0.5 0.80 0.30 2500
+wait 0.25
+swipe 0.5 0.80 0.30 2500
+wait 3
+shot fin

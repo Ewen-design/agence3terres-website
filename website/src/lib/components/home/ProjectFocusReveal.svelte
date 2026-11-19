@@ -377,7 +377,7 @@
     width: 100%;
     background: var(--bg-deep, #000);
     color: var(--fr-ink);
-    padding: clamp(1rem, 2vh, 2rem) var(--fr-inset) clamp(4.5rem, 10vh, 9rem);
+    padding: clamp(1rem, 2svh, 2rem) var(--fr-inset) clamp(4.5rem, 10svh, 9rem);
     overflow-x: clip;
     /* On ne change de slide qu'au swipe horizontal / points / lecture auto :
        le scroll vertical de la page reste totalement natif. */
@@ -447,7 +447,7 @@
   /* ── Bloc image ─────────────────────────────────────────────────────────── */
   .fr__panel {
     position: relative;
-    height: min(80vh, 880px);
+    height: min(80svh, 880px);
     border-radius: var(--fr-radius);
     overflow: hidden;
     background: var(--bg-raised, #080808);
@@ -720,7 +720,7 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: clamp(0.8rem, 1.4vh, 1.15rem);
+    gap: clamp(0.8rem, 1.4svh, 1.15rem);
     width: clamp(2.4rem, 2.8vw, 2.9rem);
     padding: clamp(0.9rem, 1.5vw, 1.25rem) 0;
     border-radius: 999px;
@@ -743,7 +743,7 @@
     .fr__dot:hover { background: rgba(255, 255, 255, 0.7); }
   }
   .fr__dot.is-active {
-    height: clamp(24px, 3vh, 34px);
+    height: clamp(24px, 3svh, 34px);
     background: #ffffff;
   }
   .fr__dot:focus-visible {
@@ -799,7 +799,7 @@
   /* ── Mobile : le bloc d'abord, les noms en dessous ───────────────────────── */
   @media (max-width: 900px) {
     .fr {
-      padding: clamp(0.8rem, 2vh, 1.5rem) 1rem clamp(3.5rem, 9vh, 6.5rem);
+      padding: clamp(0.8rem, 2svh, 1.5rem) 1rem clamp(3.5rem, 9svh, 6.5rem);
     }
 
     .fr__inner {
@@ -811,7 +811,7 @@
        sur mobile, c'est l'ordre de grille qui remet le bloc au-dessus. */
     .fr__panel {
       order: 1;
-      height: min(72vh, 620px);
+      height: min(72svh, 620px);
       border-radius: 18px;
     }
 

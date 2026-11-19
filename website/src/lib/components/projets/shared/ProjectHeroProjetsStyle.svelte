@@ -698,7 +698,7 @@
     position: relative;
     z-index: 3;
     background: transparent;
-    padding: 12vh 0 18vh;
+    padding: 12svh 0 18svh;
   }
 
   .after-grid {
@@ -941,7 +941,7 @@
     }
 
     .after-section {
-      padding: 10vh 0 12vh;
+      padding: 10svh 0 12svh;
       background: var(--bg-deep, #000);
     }
 

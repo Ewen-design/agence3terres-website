@@ -4,7 +4,11 @@ import {
   clearSilentNavigation,
   markNextNavigationSilent
 } from "$lib/routeTransitionState.js";
-import { clearGlobalScrollLocks, resetScrollPosition } from "$lib/scrollLocks.js";
+import {
+  clearGlobalScrollLocks,
+  clearUnexpectedGlobalScrollLocks,
+  resetScrollPosition
+} from "$lib/scrollLocks.js";
 
 let _isTransitioning = false;
 
@@ -83,24 +87,46 @@ export async function navigate(target, options = {}) {
      *  ne déplace rien. */
     const tardif = !options.silent;
 
+    /*  ── Jamais contre le lecteur (2026-11-19) ───────────────────────────────
+     *  La transition de page rend maintenant la nouvelle page VISIBLE avant
+     *  320 ms, et le lecteur pressé défile dès qu'il la voit (vidéo du client :
+     *  logo touché, défilement aussitôt). La remise à zéro tardive le ramenait
+     *  en haut d'un coup — et sur iPhone, un défilement programmé pendant une
+     *  inertie est LE déclencheur connu des éléments fixes (header, cache du
+     *  haut) qui « descendent » (voir `$lib/fixedResync.js`). Son premier geste
+     *  rend donc la main, comme `holdTop` dans le layout. */
+    let lecteur = false;
+    const GESTES = ["wheel", "touchstart", "keydown", "pointerdown"];
+    const prendreLaMain = () => {
+      lecteur = true;
+    };
+    for (const type of GESTES) window.addEventListener(type, prendreLaMain, { passive: true });
+    const remettreEnHaut = () => {
+      if (!lecteur && (window.scrollY || window.pageYOffset || 0) > 0.5) resetScrollPosition();
+    };
+
+    // Les rappels suivants ne lèvent que les verrous ORPHELINS : un menu ouvert
+    // ou un témoignage ouvert entre-temps (la page est rendue au premier
+    // toucher, voir FullscreenMenu) garde le sien.
     clearGlobalScrollLocks();
-    resetScrollPosition();
+    remettreEnHaut();
     requestAnimationFrame(() => {
-      clearGlobalScrollLocks();
+      clearUnexpectedGlobalScrollLocks();
       stopWheelDamping();
-      resetScrollPosition();
+      remettreEnHaut();
     });
     setTimeout(() => {
-      clearGlobalScrollLocks();
+      clearUnexpectedGlobalScrollLocks();
       stopWheelDamping();
     }, 120);
     setTimeout(() => {
-      clearGlobalScrollLocks();
+      clearUnexpectedGlobalScrollLocks();
       stopWheelDamping();
-      if (tardif) resetScrollPosition();
+      if (tardif) remettreEnHaut();
     }, 320);
     setTimeout(() => {
-      clearGlobalScrollLocks();
+      for (const type of GESTES) window.removeEventListener(type, prendreLaMain);
+      clearUnexpectedGlobalScrollLocks();
       stopWheelDamping();
     }, 700);
 

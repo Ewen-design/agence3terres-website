@@ -128,7 +128,7 @@
     position: relative;
     display: flex;
     flex-direction: column;
-    min-height: clamp(21rem, 52vh, 30rem);
+    min-height: clamp(21rem, 52svh, 30rem);
     padding: clamp(1rem, 1.8vw, 1.5rem);
     border-radius: var(--project-media-radius, 22px);
     background: var(--project-surface-card, #0a0e12);
@@ -174,7 +174,7 @@
      l'en-tête du composant. */
   .steps__bottom {
     margin-top: auto;
-    padding-top: clamp(3rem, 12vh, 7rem);
+    padding-top: clamp(3rem, 12svh, 7rem);
   }
 
   .steps__card-title {
@@ -305,11 +305,11 @@
     }
 
     .steps__bottom {
-      padding-top: clamp(2rem, 8vh, 4rem);
+      padding-top: clamp(2rem, 8svh, 4rem);
     }
 
     .steps__card--photo {
-      min-height: clamp(15rem, 44vh, 21rem);
+      min-height: clamp(15rem, 44svh, 21rem);
     }
   }
 

@@ -19,10 +19,11 @@
    *     3. choix du codec par `canPlayType` plutôt que par l'ordre des `<source>`,
    *        avec repli automatique si le fichier retenu échoue à l'exécution
    *     4. rien ne se charge si l'utilisateur a demandé moins d'animations
-   *   Le `poster` reste dans le HTML : il s'affiche immédiatement et sert de
-   *   repli permanent si la lecture est refusée.
+   *   Le `poster` reste dans le HTML pour une vidéo `eager` (hero) : il
+   *   s'affiche immédiatement et sert de repli permanent si la lecture est
+   *   refusée. Ailleurs il est posé à l'approche (voir `posterPret`).
    */
-  import { onMount } from "svelte";
+  import { onMount, tick as apresRendu } from "svelte";
   import { av1IsPowerEfficient, isAv1Source } from "./videoSources.js";
 
   /**
@@ -100,9 +101,6 @@
   let candidatesReady = null;
   /** Tentatives de relance quand la lecture est refusée par la politique. */
   let blockedRetries = 0;
-  // Le décodeur est en cours de resynchronisation (retour d'onglet) : la
-  // lecture ne repart qu'une fois le parcours fait.
-  let resyncEnCours = false;
   /** Une image a-t-elle déjà été montrée ? (voir onGesture) */
   let hasPlayed = false;
 
@@ -111,6 +109,19 @@
   // poster mobile, pour ne jamais télécharger le mauvais des deux.
   let layerPoster = mobilePoster ? "" : poster;
   let layerHidden = false;
+
+  /*  ── L'affiche, différée elle aussi (2026-11-19) ─────────────────────────
+   *  Une affiche part dès que le navigateur la VOIT (attribut `poster`, image
+   *  de fond du calque), où que soit la vidéo dans la page. Mesuré sur /projet4
+   *  au téléphone, débit limité : les sept affiches de la page partaient à
+   *  l'ouverture et prenaient le débit aux images proches de l'écran — l'image
+   *  d'une carte demandée à 2,5 s n'arrivait qu'à 5,4 s, vide à l'écran.
+   *  Hors `eager` (hero), SUR ÉCRAN TACTILE, l'affiche n'est donc posée qu'à
+   *  2,5 écrans de distance, la même avance que les images
+   *  (`$lib/lazyAhead.js`) : elle est là bien avant la vidéo (300 px) et bien
+   *  avant d'être vue. Sur bureau, tout de suite (voir `onMount`). */
+  let posterPret = eager;
+  $: posterAttr = posterPret && !mobilePoster ? poster : undefined;
   // Le calque est un FRÈRE de la vidéo (pas d'enveloppe : les parents ciblent
   // `:global(video)` et la positionnent eux-mêmes). Il se cale donc sur le même
   // bloc conteneur ; si la mise en page du parent ne le permet pas (vidéo hors
@@ -125,16 +136,37 @@
     layerHidden = true;
   }
 
+  // Vérifiée APRÈS que le calque est dans la page, puis de nouveau quand la
+  // vidéo revient à l'écran. 2026-11-19 : depuis que l'affiche est posée à
+  // l'approche (`posterPret`), le calque n'existait pas encore au montage — la
+  // seule vérification d'alors ne le voyait pas, et un calque mal ancré restait
+  // en place : sur /projet4 et /projet9, l'affiche d'une vidéo de 499 px
+  // s'étirait sur TOUTE la page (9 830 px), pixelisée, et se voyait derrière les
+  // sections transparentes (« Le mot du client ») tant que la vidéo ne jouait
+  // pas — iPhone en économie d'énergie, vidéo en pause hors champ.
+  //  `strict` (première vérification) : à 2 px près, la règle d'origine. Les
+  //  suivantes ne retiennent qu'un écart GROSSIER (calque ancré sur un autre
+  //  bloc) : une vidéo qu'un parent est en train d'animer ne doit pas perdre
+  //  son calque pour quelques pixels.
+  let calqueVerifie = false;
   function checkLayerFit() {
-    if (!layerEl || !videoEl) return;
+    if (!layerFits || !layerEl || !videoEl) return;
     const a = layerEl.getBoundingClientRect();
     const b = videoEl.getBoundingClientRect();
     if (!b.width || !b.height) return;
+    const strict = !calqueVerifie;
+    calqueVerifie = true;
+    const marge = (taille) => (strict ? 2 : Math.max(40, taille * 0.25));
     layerFits =
-      Math.abs(a.left - b.left) < 2 &&
-      Math.abs(a.top - b.top) < 2 &&
-      Math.abs(a.width - b.width) < 2 &&
-      Math.abs(a.height - b.height) < 2;
+      Math.abs(a.left - b.left) < marge(b.width) &&
+      Math.abs(a.top - b.top) < marge(b.height) &&
+      Math.abs(a.width - b.width) < marge(b.width) &&
+      Math.abs(a.height - b.height) < marge(b.height);
+  }
+
+  function verifierCalque() {
+    if (!posterLayer) return;
+    apresRendu().then(() => requestAnimationFrame(checkLayerFit));
   }
 
   // Chien de garde. Safari peut laisser l'élément dans un état « ni en pause
@@ -309,7 +341,28 @@
   }
 
   function mayPlay() {
-    return inView && active && !document.hidden && !reduceMotion && !resyncEnCours;
+    return inView && active && !document.hidden && !reduceMotion;
+  }
+
+  // Juste après un retour (onglet, fenêtre, focus), le navigateur peut
+  // refuser ou différer la lecture le temps que son pipeline média se
+  // réveille. Trois relances rapprochées, qui ne touchent qu'à une vidéo
+  // ARRÊTÉE alors qu'elle devrait tourner, et ne comptent pas dans les essais
+  // du chien de garde.
+  let relances = [];
+  function clearRelances() {
+    for (const t of relances) clearTimeout(t);
+    relances = [];
+  }
+  function relancesRapides() {
+    clearRelances();
+    for (const ms of [250, 700, 1500]) {
+      relances.push(
+        setTimeout(() => {
+          if (videoEl && currentSrc && mayPlay() && (videoEl.paused || videoEl.ended)) tryPlay();
+        }, ms)
+      );
+    }
   }
 
   function recover() {
@@ -347,6 +400,10 @@
   }
 
   function tick() {
+    // Le calque d'affiche tant qu'il se voit : le repère d'un `position:
+    // absolute` peut changer après coup (un parent animé à l'arrivée porte un
+    // transform le temps de son animation, puis le perd) — voir checkLayerFit.
+    if (!layerHidden && layerFits && inView) checkLayerFit();
     if (!videoEl || !mayPlay() || !currentSrc) {
       lastTime = -1;
       stuckTicks = 0;
@@ -411,11 +468,43 @@
     // avant tout chargement, pour que le cadre affiché soit dès la première
     // image celui de la rendition qui va effectivement jouer.
     const syncPoster = () => {
-      if (!videoEl || !mobilePoster) return;
+      if (!videoEl || !mobilePoster || !posterPret) return;
       const wanted = mobileMedia?.matches ? mobilePoster : poster;
       if (wanted && videoEl.poster !== wanted) videoEl.poster = wanted;
       if (wanted) layerPoster = wanted;
     };
+
+    const poserAffiche = () => {
+      if (posterPret) return;
+      posterPret = true;
+      // Posée tout de suite sur l'élément (sans attendre Svelte) : une
+      // transition qui attend le premier écran la lit dans la même tâche.
+      if (videoEl && poster && !mobilePoster) videoEl.setAttribute("poster", poster);
+      syncPoster();
+      verifierCalque();
+    };
+    let posterObserver = null;
+    // Sur bureau (pointeur fin), l'affiche est posée tout de suite, comme
+    // avant : le gain mesuré ne valait que pour un téléphone en réseau lent, et
+    // on ne change pas pour rien ce que Safari bureau peint en défilant.
+    if (!posterPret && !window.matchMedia?.("(pointer: coarse)").matches) poserAffiche();
+    if (!posterPret && videoEl) {
+      const r = videoEl.getBoundingClientRect();
+      const vh = window.innerHeight || 800;
+      if (r.top < vh * 3.5 && r.bottom > -vh) poserAffiche();
+      else {
+        posterObserver = new IntersectionObserver(
+          (entries) => {
+            if (!entries.some((e) => e.isIntersecting)) return;
+            posterObserver?.disconnect();
+            posterObserver = null;
+            poserAffiche();
+          },
+          { rootMargin: "100% 0px 250% 0px" }
+        );
+        posterObserver.observe(videoEl);
+      }
+    }
 
     reduceMotion = motionQuery.matches;
     armVideo();
@@ -471,6 +560,18 @@
     //     d'onglet éclair, une fenêtre passée devant (macOS déclare alors la
     //     page cachée) : le décodeur n'a pas le temps d'être vidé, et chaque
     //     retour coûtait un arrêt. Le `-g 30` des fichiers reste le filet.
+    //
+    // Retouché le 2026-11-19 (« il prend du temps à redémarrer » au retour
+    // d'une autre fenêtre du Mac) :
+    //   • le parcours et la relance partent ENSEMBLE : la lecture demandée
+    //     pendant un parcours ne montre aucune image avant la position visée
+    //     (rien de corrompu à l'écran), sans attendre `seeked` — que Safari peut
+    //     différer tant que son pipeline média se réveille, et l'ancien filet
+    //     de 700 ms devenait alors 700 ms de vidéo figée ;
+    //   • des relances rapprochées suivent chaque retour (voir
+    //     `relancesRapides`) : une lecture refusée ou suspendue au réveil
+    //     n'attend plus le chien de garde (1,2 s par essai) ;
+    //   • le retour du focus sur la fenêtre relance aussi.
     const RESYNC_APRES_MS = 2000;
     let cacheeDepuis = 0;
     function resyncPuisLecture() {
@@ -478,21 +579,14 @@
       // compositeur reprendre la main avant de demander un parcours.
       requestAnimationFrame(() =>
         requestAnimationFrame(() => {
-          if (!videoEl || !currentSrc || reduceMotion || document.hidden) return syncPlayback();
-          if (videoEl.readyState < 2 || !Number.isFinite(videoEl.duration)) return syncPlayback();
-          resyncEnCours = true;
-          let fait = false;
-          const reprendre = () => {
-            if (fait) return;
-            fait = true;
-            resyncEnCours = false;
-            syncPlayback();
-          };
-          videoEl.addEventListener("seeked", reprendre, { once: true });
-          // filet : un `seeked` qui n'arrive jamais ne doit pas laisser la vidéo en pause
-          setTimeout(reprendre, 700);
-          const at = videoEl.currentTime + 1 / 30;
-          videoEl.currentTime = at < videoEl.duration ? at : 0;
+          // Même hors de l'écran (en pause) : elle repartira propre quand on
+          // reviendra vers elle.
+          if (videoEl && currentSrc && !document.hidden && !reduceMotion && videoEl.readyState >= 2 && Number.isFinite(videoEl.duration)) {
+            const at = videoEl.currentTime + 1 / 30;
+            videoEl.currentTime = at < videoEl.duration ? at : 0;
+          }
+          syncPlayback();
+          relancesRapides();
         })
       );
     }
@@ -500,19 +594,32 @@
     const onVisibility = () => {
       if (document.hidden) {
         cacheeDepuis = performance.now();
+        clearRelances();
         syncPlayback();
         return;
       }
       const absence = cacheeDepuis ? performance.now() - cacheeDepuis : Infinity;
       cacheeDepuis = 0;
-      if (absence < RESYNC_APRES_MS) syncPlayback();
-      else resyncPuisLecture();
+      if (absence < RESYNC_APRES_MS) {
+        syncPlayback();
+        relancesRapides();
+      } else {
+        resyncPuisLecture();
+      }
     };
     // Restauration depuis le cache avant/arrière (bfcache) : la page a pu
     // dormir longtemps. Un chargement ordinaire n'a rien à resynchroniser.
     const onPageShow = (event) => {
       if (event.persisted) resyncPuisLecture();
       else syncPlayback();
+    };
+    // La fenêtre reprend le focus (retour d'une autre application) : si le
+    // navigateur a suspendu la lecture sans déclarer la page cachée, on la
+    // relance. Sans effet sur une vidéo qui tourne.
+    const onFocus = () => {
+      if (document.hidden || !videoEl?.paused) return;
+      syncPlayback();
+      relancesRapides();
     };
 
     // Un redimensionnement (passage plein écran → fenêtré) recompose la couche
@@ -543,6 +650,7 @@
     const playObserver = new IntersectionObserver(
       (entries) => {
         for (const entry of entries) inView = entry.isIntersecting;
+        if (inView) verifierCalque();
         syncPlayback();
       },
       { threshold: 0.01, rootMargin: playMargin }
@@ -553,18 +661,20 @@
 
     if (videoEl) playObserver.observe(videoEl);
     mounted = true;
-    if (posterLayer) requestAnimationFrame(checkLayerFit);
+    verifierCalque();
 
     motionQuery.addEventListener?.("change", onMotionChange);
     mobileMedia?.addEventListener?.("change", onBreakpointChange);
     document.addEventListener("visibilitychange", onVisibility);
     window.addEventListener("pageshow", onPageShow);
+    window.addEventListener("focus", onFocus);
     window.addEventListener("resize", onResize, { passive: true });
     window.addEventListener("orientationchange", onResize, { passive: true });
     watchdog = window.setInterval(tick, 1200);
 
     return () => {
       mounted = false;
+      posterObserver?.disconnect();
       loadObserver.disconnect();
       playObserver.disconnect();
       disarmGesture();
@@ -572,6 +682,8 @@
       mobileMedia?.removeEventListener?.("change", onBreakpointChange);
       document.removeEventListener("visibilitychange", onVisibility);
       window.removeEventListener("pageshow", onPageShow);
+      window.removeEventListener("focus", onFocus);
+      clearRelances();
       window.removeEventListener("resize", onResize);
       window.removeEventListener("orientationchange", onResize);
       clearTimeout(resizeTimer);
@@ -583,7 +695,7 @@
 <!-- svelte-ignore a11y-media-has-caption (aucune piste audio : rien à sous-titrer) -->
 <video
   bind:this={videoEl}
-  poster={mobilePoster ? undefined : poster}
+  poster={posterAttr}
   autoplay
   muted
   loop
@@ -604,7 +716,7 @@
   on:timeupdate={onTimeUpdate}
   on:error={handleError}
 ></video>
-{#if posterLayer && layerFits && layerPoster}
+{#if posterLayer && layerFits && layerPoster && posterPret}
   <span
     bind:this={layerEl}
     class="auto-video-poster"

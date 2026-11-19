@@ -193,7 +193,7 @@
     /* En haut, le pas de la série : la même valeur que le `gap` des deux cartes
        au-dessus. En bas, l'air du trio — le pendant de la marge posée sur
        `.action-cards` (voir le commentaire qui s'y trouve). */
-    padding: var(--site-inset) var(--site-inset) clamp(7rem, 15vh, 12rem);
+    padding: var(--site-inset) var(--site-inset) clamp(7rem, 15svh, 12rem);
     background: var(--bg-deep, #050709);
     color: #f4efe6;
   }

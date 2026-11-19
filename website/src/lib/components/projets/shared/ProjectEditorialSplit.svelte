@@ -53,7 +53,7 @@
     /* Le haut manquait (2026-09-03) : le titre du bloc — « La demande »,
        « L'emblème »… — venait se coller au bord de sa bande, sans respiration.
        La valeur suit le rythme du bas, en plus court. */
-    padding: clamp(3rem, 7vh, 5.5rem) var(--project-side-padding, 1.25rem) 6.5rem;
+    padding: clamp(3rem, 7svh, 5.5rem) var(--project-side-padding, 1.25rem) 6.5rem;
     background: transparent;
     color: var(--project-surface-ink, #121212);
   }
@@ -115,7 +115,7 @@
     .editorial-split {
       grid-template-columns: 1fr;
       gap: 1.1rem;
-      padding: clamp(2rem, 5vh, 3.2rem) var(--project-side-padding, 0.8rem) 4rem;
+      padding: clamp(2rem, 5svh, 3.2rem) var(--project-side-padding, 0.8rem) 4rem;
     }
 
     /* Sur mobile le média garde le cadre qu'on lui a donné en desktop, qui est

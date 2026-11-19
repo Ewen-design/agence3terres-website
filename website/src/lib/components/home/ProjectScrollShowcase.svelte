@@ -197,7 +197,7 @@
             <img src={slide.images[0]} alt="" loading="lazy" decoding="async" draggable="false" />
           </div>
         {:else}
-          <!-- Une seule image ~200vh par projet -->
+          <!-- Une seule image ~200svh par projet -->
           <div class="ps__solo">
             <img src={slide.images[0]} alt="" loading="lazy" decoding="async" draggable="false" />
           </div>
@@ -286,8 +286,8 @@
     width: 100%;
     background: #000;
     z-index: 2;
-    /* Hauteur de l'image unique par projet (~200vh) */
-    --solo-h: 200vh;
+    /* Hauteur de l'image unique par projet (~200svh) */
+    --solo-h: 200svh;
     /* Marges & arrondi */
     --side-gap: 0.5rem;
     --proj-gap: 1.6rem;
@@ -331,7 +331,7 @@
   .ps__full {
     position: relative;
     width: 100%;
-    height: 100vh;
+    height: 100svh;
     height: 100lvh;
     overflow: hidden;
   }
@@ -368,7 +368,7 @@
     top: 0;
     /* 100lvh (grand viewport) : l'UI couvre TOUJOURS le bas, même quand la barre
        Safari se rétracte → plus de "trou" sous le dégradé. */
-    height: 100vh;
+    height: 100svh;
     height: 100lvh;
     overflow: hidden;
     isolation: isolate;
@@ -379,7 +379,7 @@
     top: 0;
     left: 0;
     right: 0;
-    height: 36vh;
+    height: 36svh;
     pointer-events: none;
     background: linear-gradient(to bottom, rgba(0, 0, 0, 0.42) 0%, rgba(0, 0, 0, 0) 100%);
   }
@@ -391,7 +391,7 @@
     bottom: calc(-1 * var(--bar-inset));
     left: 0;
     right: 0;
-    height: calc(56vh + var(--bar-inset));
+    height: calc(56svh + var(--bar-inset));
     pointer-events: none;
     background: linear-gradient(
       to top,
@@ -650,7 +650,7 @@
     .ps__info {
       left: 1.25rem;
       right: 1.25rem;
-      top: clamp(6rem, 16vh, 8.5rem);
+      top: clamp(6rem, 16svh, 8.5rem);
       bottom: auto;
     }
     .ps__caption { max-width: 26rem; }
@@ -728,10 +728,10 @@
      info block, shrink the title + its margin, and pull the top/bottom
      darkening gradients back so they don't swallow the short viewport. */
   @media (pointer: coarse) and (orientation: landscape) and (max-height: 600px) {
-    .ps__grad-bottom { height: calc(34vh + var(--bar-inset)); }
-    .ps__grad-top { height: 24vh; }
+    .ps__grad-bottom { height: calc(34svh + var(--bar-inset)); }
+    .ps__grad-top { height: 24svh; }
 
-    .ps__info { top: clamp(3.5rem, 9vh, 5.5rem); }
+    .ps__info { top: clamp(3.5rem, 9svh, 5.5rem); }
 
     .ps__mtitle {
       font-size: clamp(1.7rem, 6.5vw, 2.6rem);

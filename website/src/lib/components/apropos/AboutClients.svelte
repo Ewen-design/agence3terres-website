@@ -207,13 +207,13 @@
   .clients__col {
     display: flex;
     flex-direction: column;
-    gap: clamp(2.5rem, 8vh, 5rem);
+    gap: clamp(2.5rem, 8svh, 5rem);
   }
 
   .clients__say {
     display: flex;
     flex-direction: column;
-    gap: clamp(1.2rem, 3vh, 2rem);
+    gap: clamp(1.2rem, 3svh, 2rem);
   }
 
   .clients__title {
@@ -290,8 +290,8 @@
       min-width: 0;
       /* Le texte respire loin des bords du cadre voisin ; le bas reste au ras
          de la marge de section, où le logo doit tomber. */
-      padding: clamp(2rem, 7vh, 5.5rem) clamp(1rem, 3vw, 4rem)
-        clamp(1.5rem, 4vh, 3rem) 0;
+      padding: clamp(2rem, 7svh, 5.5rem) clamp(1rem, 3vw, 4rem)
+        clamp(1.5rem, 4svh, 3rem) 0;
     }
   }
 
@@ -300,8 +300,8 @@
     .clients {
       display: flex;
       flex-direction: column;
-      gap: clamp(2rem, 5vh, 3rem);
-      padding: clamp(3rem, 9vh, 5rem) var(--site-inset) clamp(2.5rem, 7vh, 4rem);
+      gap: clamp(2rem, 5svh, 3rem);
+      padding: clamp(3rem, 9svh, 5rem) var(--site-inset) clamp(2.5rem, 7svh, 4rem);
     }
 
     .clients__media {
@@ -310,7 +310,7 @@
     }
 
     .clients__col {
-      gap: clamp(1.8rem, 5vh, 2.6rem);
+      gap: clamp(1.8rem, 5svh, 2.6rem);
     }
 
     .clients__brand {

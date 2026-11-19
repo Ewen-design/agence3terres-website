@@ -70,7 +70,7 @@
   /* ── Étage figé (hauteur = distance de scroll pendant laquelle le texte est figé) ── */
   .open__stage {
     position: relative;
-    height: 300vh;
+    height: 300svh;
   }
 
   /* ── Couche des visuels flottants (au-dessus du texte) ── */
@@ -225,7 +225,7 @@
   .open__sticky {
     position: sticky;
     top: 0;
-    height: 100vh;
+    height: 100svh;
     height: 100svh;
     display: flex;
     align-items: center;
@@ -240,7 +240,7 @@
     top: 50%;
     transform: translate(-50%, -50%);
     width: min(820px, 96vw);
-    height: 74vh;
+    height: 74svh;
     background: radial-gradient(
       58% 46% at 50% 50%,
       rgba(0, 0, 0, 0.82) 0%,
@@ -267,14 +267,14 @@
   .open__muted { color: rgba(244, 239, 230, 0.6); }
 
   @media (max-width: 900px) {
-    .open__stage { height: 250vh; }
+    .open__stage { height: 250svh; }
 
     .open__text {
       width: min(540px, 86%);
       font-size: clamp(1.5rem, 6.6vw, 2rem);
     }
 
-    .open__scrim { height: 70vh; }
+    .open__scrim { height: 70svh; }
 
     .open__pos-colors { top: 7%; right: 4vw; }
     .open__pos-phone { top: 26%; left: 4vw; }
@@ -285,7 +285,7 @@
 
   /* ── Mobile : visuels petits, calés dans les coins, faible chevauchement ── */
   @media (max-width: 640px) {
-    .open__stage { height: 230vh; }
+    .open__stage { height: 230svh; }
 
     .open__text { width: 84%; }
 
@@ -319,6 +319,6 @@
   }
 
   @media (pointer: coarse) and (orientation: landscape) and (max-height: 600px) {
-    .open__scrim { height: 40vh; }
+    .open__scrim { height: 40svh; }
   }
 </style>

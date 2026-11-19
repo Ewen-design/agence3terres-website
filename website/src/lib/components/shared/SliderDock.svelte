@@ -12,7 +12,7 @@
   export let loop = false;      // boucler ou s'arrêter (→ bouton « rejouer »)
   export let label = "diapositives";
   // true : dock épinglé (grandes sections). false : dock en flux, simplement
-  // sous le slider (sections courtes → évite le conteneur 100lvh trop haut).
+  // sous le slider (sections courtes → évite le conteneur 100svh trop haut).
   export let sticky = true;
   // Force le mode « flux » sur mobile (où une section pleine hauteur laisserait
   // trop de vide), tout en gardant l'épinglage sur desktop.
@@ -131,7 +131,7 @@
 
 <style>
   /* Le dock est ancré au bas d'un conteneur ÉPINGLÉ PAR LE HAUT (sticky top:0,
-     hauteur 100lvh) : c'est stable (le haut du viewport ne bouge pas quand la
+     hauteur 100svh) : c'est stable (le haut du viewport ne bouge pas quand la
      barre Safari du bas se rétracte), contrairement à `sticky bottom`. L'overlay
      absolu couvre la section (qui doit être `position: relative`) sans affecter
      sa mise en page. */
@@ -144,8 +144,8 @@
   .sd-sticky {
     position: sticky;
     top: 0;
-    height: 100vh;
-    height: 100lvh;
+    height: 100svh;
+    height: 100svh;
     pointer-events: none;
   }
   .sd-anchor {
@@ -160,7 +160,7 @@
   }
 
   /* Mode « en flux » (sections courtes, ex. MediaSlider) : dock simplement posé
-     sous le slider, centré, sans épinglage 100lvh → stable vs barre Safari. */
+     sous le slider, centré, sans épinglage 100svh → stable vs barre Safari. */
   .sd-overlay--flow {
     position: static;
     z-index: auto;
@@ -327,5 +327,13 @@
     .sd__pill, .sd__pp { opacity: 1; }
     .sd.is-in .sd__pill, .sd.is-in .sd__pp { animation: none; opacity: 1; }
     .sd__dot { transition: background 0.3s ease; }
+  }
+
+  /* Défilement interne (écran tactile, `$lib/defileur.js`) : le conteneur de
+     l'élément collant a son PROPRE calque — sans lui, Safari iOS fait trembler
+     le collant dans le bloc qui défile, voire fige le défilement (mesuré au
+     simulateur iOS 27, 2026-11-19 ; voir app.css, « Les collants »). */
+  :global(html.defilement-interne) .sd-overlay {
+    transform: translateZ(0);
   }
 </style>

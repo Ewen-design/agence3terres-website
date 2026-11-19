@@ -106,6 +106,108 @@ async function boutonMenu(page) {
   await page.locator(".header-nav-btn.more").first().click({ timeout: 3000, force: true });
 }
 
+/** Un VRAI glissé de doigt. Chromium : événements tactiles du protocole, le
+ *  défilement part sur le compositeur comme sur un téléphone. WebKit (pas de
+ *  geste tactile sous Playwright) : touchstart / touchmove synthétiques, puis
+ *  le défilement que le système ferait si le touchmove n'est pas annulé.
+ *  Rend `false` si la page a refusé le geste (touchmove annulé). */
+async function glisserDoigt(page, engine, dy, { x = 195, y = 600, duree = 160 } = {}) {
+  if (engine === "chromium") {
+    const cdp = await page.context().newCDPSession(page);
+    const y0 = await page.evaluate(() => scrollY);
+    await cdp.send("Input.dispatchTouchEvent", { type: "touchStart", touchPoints: [{ x, y }] });
+    const pas = 8;
+    for (let i = 1; i <= pas; i++) {
+      await cdp.send("Input.dispatchTouchEvent", { type: "touchMove", touchPoints: [{ x, y: y - (dy * i) / pas }] });
+      await attendre(duree / pas);
+    }
+    await cdp.send("Input.dispatchTouchEvent", { type: "touchEnd", touchPoints: [] });
+    await cdp.detach().catch(() => {});
+    await attendre(60);
+    return Math.abs((await page.evaluate(() => scrollY)) - y0) > 5;
+  }
+  return page.evaluate(
+    ({ x, y, dy }) => {
+      const cible = document.elementFromPoint(x, y) || document.body;
+      let t;
+      try {
+        t = new Touch({ identifier: Date.now(), target: cible, clientX: x, clientY: y });
+      } catch {
+        t = null;
+      }
+      const ev = (type, liste) =>
+        t
+          ? new TouchEvent(type, { touches: liste, targetTouches: liste, changedTouches: [t], bubbles: true, cancelable: true })
+          : new Event(type, { bubbles: true, cancelable: true });
+      cible.dispatchEvent(ev("touchstart", [t]));
+      const libre = cible.dispatchEvent(ev("touchmove", [t]));
+      if (libre) window.scrollBy(0, dy);
+      cible.dispatchEvent(ev("touchend", []));
+      return libre;
+    },
+    { x, y, dy }
+  );
+}
+
+/** Attend que la nouvelle page soit à l'écran, carte encore en train de
+ *  revenir (voile levé, `.page-stage` encore transformée). */
+async function attendreRetourCarte(page, titre) {
+  // Le contenu, pas l'URL : SvelteKit change l'URL dès le clic, la page ne
+  // change à l'écran qu'une fois le recul fini (voir la mémoire du projet).
+  await page.waitForFunction(
+    (titre) => {
+      const st = document.querySelector(".page-stage");
+      return document.title.includes(titre) && !document.querySelector(".page-fade.is-on") && !!st?.style.transform;
+    },
+    titre,
+    { timeout: 8000, polling: "raf" }
+  );
+}
+
+/** Surveille, image par image, la page qui défile ALORS que la carte est
+ *  encore là (séance de transition en cours) : le bug filmé par le client. */
+async function surveillerCarte(page) {
+  await page.evaluate(() => {
+    const y0 = scrollY;
+    const s = (window.__surv = { pire: 0, images: 0, plateA: null, t0: performance.now(), rangeSous: null });
+    // La carte est là tant qu'il y a une découpe ou une réduction ; une page
+    // « aplatie » (transform neutre, sans découpe) attendant d'être rangée au
+    // calme est déjà une page à plat.
+    const carteLa = (st) => !!st && (!!st.style.clipPath || /scale\((?!1\))/.test(st.style.transform));
+    // Le RANGEMENT (transform retiré) ne doit jamais tomber doigt posé ni en
+    // plein défilement : c'est là que Safari décale ses éléments fixes.
+    let dernierDefil = -1e9;
+    let touche = false;
+    addEventListener("scroll", () => (dernierDefil = performance.now()), { passive: true, capture: true });
+    addEventListener("touchstart", () => (touche = true), { passive: true, capture: true });
+    addEventListener("touchend", (e) => !e.touches?.length && (touche = false), { passive: true, capture: true });
+    let avaitTransform = true;
+    const step = () => {
+      const st = document.querySelector(".page-stage");
+      const carte = carteLa(st);
+      const d = Math.abs(scrollY - y0);
+      if (carte && d > 30) s.pire = Math.max(s.pire, d);
+      if (!carte && s.plateA === null) s.plateA = performance.now() - s.t0;
+      const tf = st && getComputedStyle(st).transform !== "none";
+      if (avaitTransform && !tf && s.rangeSous === null) {
+        s.rangeSous = { touche, ecart: Math.round(performance.now() - dernierDefil) };
+      }
+      avaitTransform = tf;
+      if (++s.images < 150) requestAnimationFrame(step);
+    };
+    requestAnimationFrame(step);
+  });
+}
+
+/** Le rangement de la page tombé sous le doigt ou en plein défilement. */
+function rangeSousLeDoigt(s) {
+  const r = s?.rangeSous;
+  if (!r) return null;
+  if (r.touche) return "page rangée (transform retiré) doigt posé";
+  if (r.ecart < 120) return `page rangée en plein défilement (${r.ecart} ms après le dernier)`;
+  return null;
+}
+
 /** Mène le pied de page « projet suivant » jusqu'à l'état voulu. */
 async function mener(page, tactile, classe) {
   await page.evaluate(() => {
@@ -469,6 +571,322 @@ const SCENARIOS = [
     }
   },
   {
+    // Vidéo du client (2026-11-19) : logo touché depuis /travail, défilement
+    // au doigt dès que la home apparaît — la page défilait AVEC sa carte.
+    nom: "logo puis défilement au doigt aussitôt la page apparue",
+    // Suppose la carte de transition ou la vidéo : sans objet en mouvement réduit.
+    anime: true,
+    mobile: true,
+    async jouer(page, { engine, anomalies }) {
+      await ouvrir(page, "/travail");
+      await page.locator(".mobile-logo").first().click({ timeout: 3000, force: true });
+      await attendreRetourCarte(page, "Née pour créer");
+      await surveillerCarte(page);
+      await glisserDoigt(page, engine, 420);
+      const yGeste = await page.evaluate(() => scrollY);
+      await attendre(700);
+      const s = await page.evaluate(() => ({ ...window.__surv, y: scrollY }));
+      if (s.pire > 0) anomalies.push(`la page a défilé de ${Math.round(s.pire)} px DANS sa carte`);
+      if (s.plateA === null || s.plateA > 120) anomalies.push(`carte rendue à plat en ${s.plateA === null ? "∞" : Math.round(s.plateA)} ms après le toucher`);
+      if (yGeste > 100 && s.y < yGeste * 0.5) anomalies.push(`ramené en haut après le geste (y ${Math.round(yGeste)} → ${Math.round(s.y)})`);
+      const r = rangeSousLeDoigt(s);
+      if (r) anomalies.push(r);
+      return ["/"];
+    }
+  },
+  {
+    nom: "molette aussitôt la page apparue",
+    // Suppose la carte de transition ou la vidéo : sans objet en mouvement réduit.
+    anime: true,
+    bureau: true,
+    async jouer(page, { anomalies }) {
+      await ouvrir(page, "/travail");
+      await page.locator(".site-prism-mark").first().click({ timeout: 3000, force: true });
+      await attendreRetourCarte(page, "Née pour créer");
+      await surveillerCarte(page);
+      await page.mouse.move(700, 500);
+      await page.mouse.wheel(0, 500);
+      await attendre(120);
+      await page.mouse.wheel(0, 400);
+      await attendre(800);
+      const s = await page.evaluate(() => ({ ...window.__surv, y: scrollY }));
+      if (s.plateA === null || s.plateA > 450) anomalies.push(`carte rendue à plat en ${s.plateA === null ? "∞" : Math.round(s.plateA)} ms après la molette`);
+      if (s.y < 200) anomalies.push(`la molette n'a pas fait défiler la nouvelle page (y ${Math.round(s.y)})`);
+      return ["/"];
+    }
+  },
+  {
+    nom: "doigt qui glisse pendant le départ de la page",
+    mobile: true,
+    async jouer(page, { engine, anomalies }) {
+      await ouvrir(page, "/");
+      await page.evaluate(() => window.scrollTo(0, innerHeight * 2));
+      await attendre(400);
+      await cliquerLien(page, "/travail", true);
+      await attendre(120);
+      const y0 = await page.evaluate(() => scrollY);
+      const libre = await glisserDoigt(page, engine, 500);
+      const y1 = await page.evaluate(() => scrollY);
+      if (libre && Math.abs(y1 - y0) > 40 && (await page.evaluate(() => location.pathname === "/"))) {
+        anomalies.push(`l'ancienne page a défilé pendant son départ (${Math.round(y1 - y0)} px)`);
+      }
+      return ["/travail"];
+    }
+  },
+  {
+    nom: "menu refermé puis défilement aussitôt",
+    async jouer(page, { engine, tactile, anomalies }) {
+      await ouvrir(page, "/apropos");
+      await page.evaluate(() => window.scrollTo(0, innerHeight * 1.2));
+      await attendre(400);
+      await boutonMenu(page);
+      await attendre(1100);
+      await boutonMenu(page);
+      await attendre(90);
+      await surveillerCarte(page);
+      if (tactile) await glisserDoigt(page, engine, 380);
+      else await page.mouse.wheel(0, 500);
+      await attendre(600);
+      const s = await page.evaluate(() => window.__surv);
+      if (tactile && s.pire > 0) anomalies.push(`la page a défilé de ${Math.round(s.pire)} px DANS sa carte (menu qui se referme)`);
+      const r = tactile ? rangeSousLeDoigt(s) : null;
+      if (r) anomalies.push(r);
+      if (s.plateA === null || s.plateA > (tactile ? 120 : 450)) anomalies.push(`carte rendue à plat en ${s.plateA === null ? "∞" : Math.round(s.plateA)} ms`);
+      return ["/apropos"];
+    }
+  },
+  {
+    nom: "page rendue au toucher, menu ouvert aussitôt",
+    // Suppose la carte de transition ou la vidéo : sans objet en mouvement réduit.
+    anime: true,
+    async jouer(page, { engine, tactile, anomalies }) {
+      await ouvrir(page, "/travail");
+      await page.locator(tactile ? ".mobile-logo" : ".site-prism-mark").first().click({ timeout: 3000, force: true });
+      await attendreRetourCarte(page, "Née pour créer");
+      if (tactile) await glisserDoigt(page, engine, 200);
+      else await page.mouse.wheel(0, 300);
+      await attendre(250);
+      await boutonMenu(page).catch(() => {});
+      await attendre(900);
+      const verrou = await page.evaluate(() => ({
+        menu: !!document.querySelector(".fs-menu.is-open"),
+        overflow: getComputedStyle(document.documentElement).overflowY
+      }));
+      if (verrou.menu && verrou.overflow !== "hidden") anomalies.push("menu ouvert mais la page n'est plus verrouillée (verrou levé par la navigation)");
+      return ["/"];
+    }
+  },
+  {
+    nom: "lien touché pendant le retour de la carte",
+    // Suppose la carte de transition ou la vidéo : sans objet en mouvement réduit.
+    anime: true,
+    async jouer(page, { tactile }) {
+      await ouvrir(page, "/");
+      await cliquerLien(page, "/travail", tactile);
+      await attendreRetourCarte(page, "Travail et projets");
+      await cliquerLien(page, "/projet8", tactile).catch(() => {});
+      return ["/travail", "/projet8"];
+    }
+  },
+  {
+    nom: "onglet caché / montré en rafale (vidéo du hero)",
+    // Suppose la carte de transition ou la vidéo : sans objet en mouvement réduit.
+    anime: true,
+    async jouer(page, { anomalies }) {
+      await ouvrir(page, "/");
+      await page.waitForFunction(() => document.querySelector(".hero video")?.currentTime > 0.5, null, { timeout: 15000 }).catch(() => {});
+      await page.evaluate(async () => {
+        let cache = false;
+        Object.defineProperty(document, "hidden", { configurable: true, get: () => cache });
+        Object.defineProperty(document, "visibilityState", { configurable: true, get: () => (cache ? "hidden" : "visible") });
+        const pause = (ms) => new Promise((r) => setTimeout(r, ms));
+        for (const ms of [40, 900, 15, 2600, 60, 300, 2100, 10, 20, 2200]) {
+          cache = !cache;
+          document.dispatchEvent(new Event("visibilitychange"));
+          await pause(ms);
+        }
+        cache = false;
+        document.dispatchEvent(new Event("visibilitychange"));
+        window.dispatchEvent(new Event("focus"));
+      });
+      await attendre(1200);
+      const v = await page.evaluate(async () => {
+        const el = document.querySelector(".hero video");
+        if (!el) return null;
+        const t0 = el.currentTime;
+        await new Promise((r) => setTimeout(r, 600));
+        return { paused: el.paused, avance: el.currentTime - t0 };
+      });
+      if (v && (v.paused || v.avance < 0.2)) anomalies.push(`vidéo du hero arrêtée après la rafale (pause ${v.paused}, +${v.avance.toFixed(2)} s)`);
+      return ["/"];
+    }
+  },
+  {
+    nom: "touches de défilement pendant toute la transition",
+    bureau: true,
+    async jouer(page, { tactile }) {
+      await ouvrir(page, "/");
+      await cliquerLien(page, "/travail", tactile);
+      for (let i = 0; i < 24; i++) {
+        await page.keyboard.press(["Space", "PageDown", "ArrowDown", "End", "Home", "PageUp"][i % 6]).catch(() => {});
+        await attendre(70);
+      }
+      return ["/travail"];
+    }
+  },
+  {
+    nom: "témoignage ouvert puis retour du navigateur",
+    async jouer(page) {
+      await ouvrir(page, "/travail");
+      await page.goto(BASE + "/projet4", { waitUntil: "load" });
+      await finIntro(page);
+      await attendre(500);
+      const ok = await page.evaluate(() => {
+        const b = document.querySelector(".pquote__more");
+        if (!b) return false;
+        b.scrollIntoView({ block: "center" });
+        return true;
+      });
+      if (!ok) return ["/projet4"];
+      await attendre(800);
+      await page.locator(".pquote__more").first().click({ timeout: 3000, force: true }).catch(() => {});
+      await attendre(700);
+      await page.goBack().catch(() => {});
+      await attendre(1500);
+      return ["/travail", "/projet4"];
+    }
+  },
+  {
+    nom: "menu ouvert puis retour du navigateur",
+    async jouer(page, { tactile }) {
+      await ouvrir(page, "/");
+      await cliquerLien(page, "/travail", tactile);
+      await attendre(2600);
+      await boutonMenu(page);
+      await attendre(500);
+      await page.goBack().catch(() => {});
+      await attendre(300);
+      await boutonMenu(page).catch(() => {});
+      return ["/", "/travail"];
+    }
+  },
+  {
+    nom: "menu ouvert, fenêtre passée en téléphone puis revenue",
+    bureau: true,
+    async jouer(page, { conf }) {
+      await ouvrir(page, "/services");
+      await boutonMenu(page);
+      await attendre(400);
+      await page.setViewportSize({ width: 390, height: 800 });
+      await attendre(500);
+      await page.setViewportSize(conf.viewport);
+      await attendre(400);
+      return ["/services"];
+    }
+  },
+  {
+    nom: "Échap et menu en rafale pendant la transition",
+    async jouer(page, { tactile }) {
+      await ouvrir(page, "/");
+      await cliquerLien(page, "/travail", tactile);
+      for (let i = 0; i < 10; i++) {
+        await page.keyboard.press("Escape").catch(() => {});
+        if (i % 3 === 0) await boutonMenu(page).catch(() => {});
+        await attendre(110);
+      }
+      return ["/travail"];
+    }
+  },
+  {
+    nom: "vidéo du hero après un aller-retour",
+    // Suppose la carte de transition ou la vidéo : sans objet en mouvement réduit.
+    anime: true,
+    async jouer(page, { tactile, anomalies }) {
+      await ouvrir(page, "/");
+      await cliquerLien(page, "/travail", tactile);
+      await attendre(2600);
+      await page.goBack().catch(() => {});
+      await attendre(2500);
+      // Le retour arrière rend la position du clic (plus bas dans la home) :
+      // on remonte voir le hero, comme le ferait le lecteur.
+      const yRetour = await page.evaluate(() => scrollY);
+      await page.evaluate(() => window.scrollTo(0, 0));
+      await attendre(900);
+      const v = await page.evaluate(async () => {
+        const el = document.querySelector(".hero video");
+        if (!el) return null;
+        const t0 = el.currentTime;
+        await new Promise((r) => setTimeout(r, 700));
+        return { paused: el.paused, avance: el.currentTime - t0 };
+      });
+      if (!v) anomalies.push("pas de vidéo dans le hero au retour");
+      else if (v.paused || v.avance < 0.25) anomalies.push(`vidéo du hero arrêtée au retour (pause ${v.paused}, +${v.avance.toFixed(2)} s, retour à y ${Math.round(yRetour)})`);
+      return ["/"];
+    }
+  },
+  {
+    nom: "trois cartes projet touchées à la chaîne",
+    async jouer(page, { tactile }) {
+      await ouvrir(page, "/travail");
+      for (const href of ["/projet9", "/projet8", "/projet4"]) {
+        await cliquerLien(page, href, tactile).catch(() => {});
+        await attendre(140);
+      }
+      return ["/projet9", "/projet8", "/projet4", "/travail"];
+    }
+  },
+  {
+    nom: "redimensionnements en rafale sur une page à blocs collants",
+    bureau: true,
+    async jouer(page, { conf }) {
+      await ouvrir(page, "/apropos");
+      await page.evaluate(() => window.scrollTo(0, innerHeight * 2.4));
+      await attendre(400);
+      for (const [w, h] of [[1200, 800], [880, 700], [1440, 900], [700, 900], [1100, 650], [conf.viewport.width, conf.viewport.height]]) {
+        await page.setViewportSize({ width: w, height: h });
+        await page.mouse.wheel(0, 260);
+        await attendre(90);
+      }
+      return ["/apropos"];
+    }
+  },
+  {
+    nom: "téléphone tourné pendant la transition",
+    mobile: true,
+    async jouer(page) {
+      await ouvrir(page, "/");
+      await cliquerLien(page, "/travail", true);
+      await attendre(250);
+      await page.setViewportSize({ width: 844, height: 390 });
+      await attendre(500);
+      await page.setViewportSize({ width: 390, height: 844 });
+      return ["/travail"];
+    }
+  },
+  {
+    nom: "retour arrière vers le milieu d'une séquence collée",
+    async jouer(page, { tactile }) {
+      await ouvrir(page, "/apropos");
+      await page.evaluate(() => window.scrollTo(0, innerHeight * 3.2));
+      await attendre(700);
+      await page.evaluate(() => {
+        const a = [...document.querySelectorAll('a[href="/contact"], a[href="/travail"], a[href="/"]')].find((x) => {
+          const r = x.getBoundingClientRect();
+          return r.width > 0 && !x.closest(".fs-menu");
+        });
+        a?.click();
+      });
+      await attendre(2600);
+      await page.goBack().catch(() => {});
+      await attendre(1200);
+      for (let i = 0; i < 6; i++) {
+        await defiler(page, tactile, i % 2 ? -350 : 500);
+        await attendre(60);
+      }
+      return ["/apropos"];
+    }
+  },
+  {
     nom: "téléphone tourné en pleine page",
     mobile: true,
     async jouer(page) {
@@ -489,6 +907,9 @@ const SCENARIOS = [
 async function contexte(engine, device) {
   const conf = { ...APPAREILS[device] };
   if (engine === "firefox") delete conf.isMobile;
+  // `--reduit 1` : tout le parcours en « mouvement réduit » (aucune
+  // transition animée, aucun lissage — d'autres chemins de code).
+  if (ARGS.reduit) conf.reducedMotion = "reduce";
   const browser = await MOTEURS[engine].launch();
   const tactile = !!conf.hasTouch;
   const res = { engine, device, scenarios: [] };
@@ -497,14 +918,17 @@ async function contexte(engine, device) {
     if (FILTRE && !FILTRE.has(n)) continue;
     if (sc.bureau && tactile) continue;
     if (sc.mobile && !tactile) continue;
+    if (sc.anime && ARGS.reduit) continue;
     const ctx = await browser.newContext(conf);
     const page = await ctx.newPage();
     const erreurs = [];
     page.on("pageerror", (e) => erreurs.push(e.message.slice(0, 160)));
     let anomalies = [];
     try {
-      const attendus = await sc.jouer(page, { tactile, conf, ctx });
-      anomalies = await sante(page, attendus, tactile);
+      // Les scénarios peuvent relever eux-mêmes ce qu'ils voient EN COURS de
+      // geste (`anomalies`), avant le bilan de fin.
+      const attendus = await sc.jouer(page, { tactile, conf, ctx, engine, anomalies });
+      anomalies.push(...(await sante(page, attendus, tactile)));
     } catch (e) {
       anomalies.push(`scénario interrompu : ${e.message.split("\n")[0]}`);
     }

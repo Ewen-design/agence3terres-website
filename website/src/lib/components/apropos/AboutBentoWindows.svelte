@@ -7,7 +7,7 @@
   // ───────────────────────────────────────────────────────────────────────────
   //  AboutBentoWindows
   //
-  //  Une bannière plein écran (100vh) PUIS une grille de cartes, aux mêmes
+  //  Une bannière plein écran (100svh) PUIS une grille de cartes, aux mêmes
   //  marges et aux mêmes arrondis que le reste de la page. Tout ce bloc est
   //  percé dans UNE SEULE image posée derrière : la bannière en montre le
   //  haut, les cartes « fenêtre » en montrent le bas, et d'un trou à l'autre
@@ -222,7 +222,7 @@
     width: 100%;
     background: var(--bt-bg);
     color: var(--bt-ink);
-    padding: clamp(5rem, 13vh, 11rem) var(--bt-inset) clamp(9rem, 21vh, 19rem);
+    padding: clamp(5rem, 13svh, 11rem) var(--bt-inset) clamp(9rem, 21svh, 19rem);
     overflow-x: clip;
   }
 
@@ -230,9 +230,9 @@
      phrase d'ouverture en encre pleine et la suite à 50 %. */
   .bento__lead {
     /* Même écart que le titre du hero au-dessus du slider : sa marge basse
-       (4vh) plus le padding haut de la section suivante — repris tel quel pour
+       (4svh) plus le padding haut de la section suivante — repris tel quel pour
        que les deux titres soient posés pareil au-dessus de leur bloc. */
-    margin: 0 auto calc(4vh + clamp(4.5rem, 11vh, 9rem));
+    margin: 0 auto calc(4svh + clamp(4.5rem, 11svh, 9rem));
     width: 45rem;
     max-width: 100%;
     font-family: var(--site-font);
@@ -258,7 +258,7 @@
 
     position: relative;
     display: grid;
-    gap: clamp(2rem, 5vh, 4.5rem);
+    gap: clamp(2rem, 5svh, 4.5rem);
   }
 
   /* ── Bannière plein écran ───────────────────────────────────────────────── */
@@ -295,7 +295,7 @@
        sinon la bordure irait, elle, jusqu'au bord. */
     left: clamp(1.4rem, 3vw, 3rem);
     right: clamp(1.4rem, 3vw, 3rem);
-    bottom: clamp(2.5rem, 9vh, 7rem);
+    bottom: clamp(2.5rem, 9svh, 7rem);
     border-top: 1px solid rgba(255, 255, 255, 0.34);
     padding: clamp(1.3rem, 2.4vw, 2.4rem) 0 0;
     display: grid;
@@ -332,7 +332,7 @@
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: var(--bt-gap);
-    height: min(88vh, 940px);
+    height: min(88svh, 940px);
   }
 
   .bento__col {
@@ -619,7 +619,7 @@
   /* ── Mobile : une colonne, l'image continue d'une carte à l'autre ───────── */
   @media (max-width: 760px) {
     .bento {
-      padding: clamp(3rem, 8vh, 5rem) 1rem clamp(6rem, 14vh, 10rem);
+      padding: clamp(3rem, 8svh, 5rem) 1rem clamp(6rem, 14svh, 10rem);
     }
 
     .bento__grid {
@@ -634,7 +634,7 @@
     .bento__banner-foot {
       grid-template-columns: minmax(0, 1fr);
       gap: clamp(0.9rem, 3vw, 1.4rem);
-      bottom: clamp(2rem, 7vh, 4rem);
+      bottom: clamp(2rem, 7svh, 4rem);
       left: 1.1rem;
       right: 1.1rem;
     }

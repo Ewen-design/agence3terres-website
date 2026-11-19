@@ -342,7 +342,7 @@
   .bfs__sticky {
     position: sticky;
     top: 0;
-    height: 100vh;
+    height: 100svh;
     height: 100lvh;
     overflow: hidden;
     isolation: isolate;
@@ -353,7 +353,7 @@
      viewport heights) — mobile keeps the shorter, perfect length. The JS reads
      this real height, so the two never go out of sync. */
   .bfs__spacer {
-    height: calc((var(--slide-count) - 1) * 110vh);
+    height: calc((var(--slide-count) - 1) * 110svh);
     height: calc((var(--slide-count) - 1) * 110lvh);
   }
 
@@ -421,7 +421,7 @@
   /* ── Bottom bar ─────────────────────────────────────────────────────── */
   .bfs__bottom {
     position: absolute; bottom: 0; left: 0; right: 0;
-    height: calc(clamp(17rem, 42vh, 32rem) + var(--bar-inset));
+    height: calc(clamp(17rem, 42svh, 32rem) + var(--bar-inset));
     z-index: 2;
     pointer-events: none;
   }
@@ -609,18 +609,18 @@
 
   @media (max-width: 900px) {
     .bfs__spacer {
-      height: calc((var(--slide-count) - 1) * 95vh);
+      height: calc((var(--slide-count) - 1) * 95svh);
       height: calc((var(--slide-count) - 1) * 95lvh);
     }
-    .bfs__titles { padding: clamp(5rem, 14vh, 7rem) 1.25rem 0; }
+    .bfs__titles { padding: clamp(5rem, 14svh, 7rem) 1.25rem 0; }
     .bfs__title {
-      top: clamp(5rem, 14vh, 7rem); left: 1.25rem;
+      top: clamp(5rem, 14svh, 7rem); left: 1.25rem;
       font-size: clamp(2.6rem, 12vw, 4.6rem); max-width: 100%;
     }
-    .bfs__captions { bottom: calc(var(--bar-inset) + clamp(3.5rem, 9vh, 5.5rem)); left: 1.25rem; }
+    .bfs__captions { bottom: calc(var(--bar-inset) + clamp(3.5rem, 9svh, 5.5rem)); left: 1.25rem; }
     .bfs__caption-line > span { font-size: clamp(.95rem, 3.8vw, 1.1rem); }
     .bfs__btn { height: 36px; font-size: .84rem; padding: 0 1.2rem; }
-    .bfs__arrow-cue { right: 1.25rem; bottom: calc(var(--bar-inset) + clamp(3.5rem, 9vh, 5.5rem)); }
+    .bfs__arrow-cue { right: 1.25rem; bottom: calc(var(--bar-inset) + clamp(3.5rem, 9svh, 5.5rem)); }
   }
 
   @media (max-width: 480px) {
@@ -635,9 +635,9 @@
   }
 
   @media (pointer: coarse) and (orientation: landscape) and (max-height: 600px) {
-    .bfs__bottom { height: calc(clamp(6.5rem, 18vh, 10rem) + var(--bar-inset)); }
+    .bfs__bottom { height: calc(clamp(6.5rem, 18svh, 10rem) + var(--bar-inset)); }
     .bfs__title { top: clamp(3rem, 7vw, 4.5rem); }
-    .bfs__captions { bottom: calc(var(--bar-inset) + clamp(1.6rem, 4vh, 2.6rem)); }
-    .bfs__arrow-cue { bottom: calc(var(--bar-inset) + clamp(1.6rem, 4vh, 2.6rem)); }
+    .bfs__captions { bottom: calc(var(--bar-inset) + clamp(1.6rem, 4svh, 2.6rem)); }
+    .bfs__arrow-cue { bottom: calc(var(--bar-inset) + clamp(1.6rem, 4svh, 2.6rem)); }
   }
 </style>

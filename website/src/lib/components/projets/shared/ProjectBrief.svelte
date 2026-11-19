@@ -35,7 +35,7 @@
   .project-brief {
     width: min(1400px, 92%);
     margin: 0 auto;
-    padding: clamp(4rem, 9vh, 9rem) 0 clamp(5rem, 11vh, 11rem);
+    padding: clamp(4rem, 9svh, 9rem) 0 clamp(5rem, 11svh, 11rem);
     color: var(--project-surface-ink, #f4efe6);
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -90,7 +90,7 @@
     margin: 0;
     overflow: hidden;
     border-radius: var(--project-media-radius, 22px);
-    height: clamp(26rem, 60vh, 50rem);
+    height: clamp(26rem, 60svh, 50rem);
     background: var(--project-surface-card, #121212);
   }
 
@@ -104,7 +104,7 @@
 
   .project-brief--single .project-brief__figure--a {
     grid-column: 1 / -1;
-    height: clamp(30rem, 78vh, 62rem);
+    height: clamp(30rem, 78svh, 62rem);
   }
 
   .project-brief__figure img {
@@ -118,7 +118,7 @@
     .project-brief {
       width: min(94%, 760px);
       grid-template-columns: 1fr;
-      padding: clamp(3rem, 7vh, 5rem) 0 clamp(3.5rem, 8vh, 6rem);
+      padding: clamp(3rem, 7svh, 5rem) 0 clamp(3.5rem, 8svh, 6rem);
     }
 
 
@@ -138,12 +138,12 @@
     .project-brief__figure,
     .project-brief--single .project-brief__figure--a {
       grid-column: 1 / -1;
-      height: clamp(22rem, 52vh, 34rem);
+      height: clamp(22rem, 52svh, 34rem);
     }
   }
 
   @media (pointer: coarse) and (orientation: landscape) and (max-height: 600px) {
-    .project-brief__figure { height: clamp(14rem, 62vh, 22rem); }
-    .project-brief--single .project-brief__figure--a { height: clamp(15rem, 68vh, 24rem); }
+    .project-brief__figure { height: clamp(14rem, 62svh, 22rem); }
+    .project-brief--single .project-brief__figure--a { height: clamp(15rem, 68svh, 24rem); }
   }
 </style>

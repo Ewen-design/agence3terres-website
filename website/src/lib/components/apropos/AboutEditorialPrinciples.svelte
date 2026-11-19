@@ -432,7 +432,7 @@
     .principles-mobile {
       display: block;
       padding-left: 1rem;
-      min-height: 75vh;
+      min-height: 75svh;
       position: relative;
     }
 
@@ -441,7 +441,7 @@
       gap: 0.9rem;
       overflow-x: auto;
       overflow-y: visible;
-      min-height: 75vh;
+      min-height: 75svh;
       align-items: stretch;
       padding: 0 1rem 0.45rem 0;
       scroll-snap-type: x mandatory;
@@ -505,7 +505,7 @@
     .principle-mobile-card {
       flex: 0 0 82vw;
       min-width: 82vw;
-      min-height: 75vh;
+      min-height: 75svh;
       scroll-snap-align: start;
       scroll-snap-stop: always;
       padding: 1rem 0.15rem 0.2rem 0;

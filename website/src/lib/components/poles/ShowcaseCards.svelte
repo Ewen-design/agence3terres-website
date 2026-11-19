@@ -87,7 +87,7 @@
     position: relative;
     display: block;
     /* Même hauteur que les cartes de la galerie d'accueil. */
-    height: min(86vh, 920px);
+    height: min(86svh, 920px);
     width: 100%;
     padding: 0;
     border: 0;
@@ -307,7 +307,7 @@
   @media (max-width: 900px) {
     .sc-grid { grid-template-columns: 1fr; gap: 1rem; }
     /* Même hauteur que les cartes mobile de la galerie d'accueil. */
-    .pole-card { height: min(72vh, 660px); }
+    .pole-card { height: min(72svh, 660px); }
     .pc-title-flip { font-size: clamp(1.5rem, 6.2vw, 2.1rem); }
     .pc-tags { max-width: 86%; gap: .45rem; }
     .pc-tag {
@@ -327,6 +327,6 @@
   }
 
   @media (pointer: coarse) and (orientation: landscape) and (max-height: 600px) {
-    .pole-card { height: min(78vh, 460px); }
+    .pole-card { height: min(78svh, 460px); }
   }
 </style>

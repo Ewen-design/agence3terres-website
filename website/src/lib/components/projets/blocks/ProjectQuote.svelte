@@ -314,7 +314,7 @@
     display: grid;
     place-items: center;
     min-height: 100svh;
-    padding: clamp(5rem, 12vh, 9rem) var(--project-side-padding, var(--site-inset));
+    padding: clamp(5rem, 12svh, 9rem) var(--project-side-padding, var(--site-inset));
     color: var(--project-surface-ink, #f4efe6);
     overflow-x: clip;
   }
@@ -359,7 +359,7 @@
     flex-direction: column;
     align-items: center;
     gap: 0.3rem;
-    margin-top: clamp(2rem, 5vh, 3.25rem);
+    margin-top: clamp(2rem, 5svh, 3.25rem);
     font-family: var(--site-font);
     font-size: clamp(0.95rem, 1.1vw, 1.1rem);
     line-height: 1.4;
@@ -375,7 +375,7 @@
 
   /* Le surtitre : le gabarit de la signature, en gris. */
   .pquote__label {
-    margin: 0 0 clamp(1.4rem, 3.5vh, 2.25rem);
+    margin: 0 0 clamp(1.4rem, 3.5svh, 2.25rem);
     font-family: var(--site-font);
     font-size: clamp(0.95rem, 1.1vw, 1.1rem);
     line-height: 1.4;
@@ -395,7 +395,7 @@
     place-items: center;
     width: clamp(3.15rem, 4vw, 3.9rem);
     aspect-ratio: 1;
-    margin-top: clamp(2.25rem, 5.5vh, 3.5rem);
+    margin-top: clamp(2.25rem, 5.5svh, 3.5rem);
     padding: 0;
     border: 0;
     border-radius: 10px;
@@ -476,7 +476,7 @@
 
   @media (max-width: 900px) {
     .pquote {
-      padding: clamp(4rem, 10vh, 6rem) var(--project-side-padding, 1rem);
+      padding: clamp(4rem, 10svh, 6rem) var(--project-side-padding, 1rem);
     }
 
     /* Le verre mobile du site, comme `.hero-cta`. */

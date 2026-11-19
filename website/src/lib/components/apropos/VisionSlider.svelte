@@ -258,7 +258,7 @@
     position: relative;
     width: 100%;
     background: var(--bg-deep, #000);
-    padding: clamp(6rem, 15vh, 12rem) var(--site-inset) clamp(5.5rem, 13vh, 11rem);
+    padding: clamp(6rem, 15svh, 12rem) var(--site-inset) clamp(5.5rem, 13svh, 11rem);
     overflow-x: clip;
     touch-action: pan-y;
   }
@@ -270,9 +270,9 @@
     align-items: center;
     justify-content: center;
     /* Le cadre épouse son contenu : sa hauteur ne dépend plus de celle de
-       l'écran (140vh avant), et rien ne peut se retrouver rogné en haut ou en
+       l'écran (140svh avant), et rien ne peut se retrouver rogné en haut ou en
        bas. */
-    padding: clamp(3rem, 7vh, 5.5rem) 0;
+    padding: clamp(3rem, 7svh, 5.5rem) 0;
     border-radius: 22px;
     overflow: hidden;
     background: var(--bg-deep, #050709);
@@ -459,12 +459,12 @@
 
   @media (max-width: 768px) {
     .vision-section {
-      padding: clamp(4.5rem, 12vh, 8rem) 1rem clamp(4rem, 10vh, 7rem);
+      padding: clamp(4.5rem, 12svh, 8rem) 1rem clamp(4rem, 10svh, 7rem);
     }
 
     .vision-frame {
       border-radius: 18px;
-      padding: clamp(2.2rem, 5vh, 3.4rem) 0;
+      padding: clamp(2.2rem, 5svh, 3.4rem) 0;
     }
 
     .card {

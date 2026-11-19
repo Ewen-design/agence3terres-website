@@ -117,7 +117,7 @@
   .about-editorial-single-showcase {
     position: relative;
     width: 100%;
-    min-height: max(220vh, var(--about-editorial-single-showcase-media-min-height, 32rem));
+    min-height: max(220svh, var(--about-editorial-single-showcase-media-min-height, 32rem));
     background: var(--ase-bg, var(--bg-deep, #000));
     color: var(--ase-ink, #f5f1e8);
     overflow: clip;
@@ -126,7 +126,7 @@
   .about-editorial-single-showcase__media {
     position: absolute;
     inset: 0 0 auto;
-    height: 150vh;
+    height: 150svh;
     margin: 0;
     overflow: hidden;
     /* Match the section/page background exactly (was var(--bg-deep, #050505), a hair lighter):
@@ -168,7 +168,7 @@
   .about-editorial-single-showcase__gradient {
     position: absolute;
     inset: auto 0 0;
-    height: 56vh;
+    height: 56svh;
     background: linear-gradient(
       to top,
       var(--ase-bg, var(--bg-deep, #000)) 0%,
@@ -182,9 +182,9 @@
     position: absolute;
     left: 0;
     right: 0;
-    top: 150vh;              /* the media bottom (desktop) */
-    height: 8vh;
-    margin-top: -4vh;        /* straddle the edge: 4vh above → 4vh below */
+    top: 150svh;              /* the media bottom (desktop) */
+    height: 8svh;
+    margin-top: -4svh;        /* straddle the edge: 4svh above → 4svh below */
     background: var(--ase-bg, var(--bg-deep, #000));
     z-index: 0;              /* over the media, under the content */
     pointer-events: none;
@@ -197,7 +197,7 @@
     padding: clamp(1rem, 2vw, 1.8rem);
     display: grid;
     grid-template-columns: minmax(0, 1fr) minmax(320px, 460px) minmax(0, 1.05fr);
-    grid-template-rows: 100vh auto 40vh;
+    grid-template-rows: 100svh auto 40svh;
     align-items: start;
     gap: clamp(1.4rem, 4vw, 4.5rem);
   }
@@ -230,7 +230,7 @@
     grid-row: 2;
     justify-self: start;
     align-self: start;
-    padding-top: clamp(8rem, 14vh, 12rem);
+    padding-top: clamp(8rem, 14svh, 12rem);
     margin-left: clamp(-8.75rem, -6.2vw, -4.4rem);
   }
 
@@ -386,7 +386,7 @@
     overflow: hidden;
     margin: 0;
     background: var(--bg-raised, #0b0b0b);
-    margin-top: clamp(31rem, 48vh, 40rem);
+    margin-top: clamp(31rem, 48svh, 40rem);
     margin-left: clamp(-24rem, -21vw, -12rem);
   }
 
@@ -400,7 +400,7 @@
   @media (max-width: 900px) {
     .about-editorial-single-showcase__content {
       grid-template-columns: 1fr;
-      grid-template-rows: 100vh auto 34vh;
+      grid-template-rows: 100svh auto 34svh;
       padding: 1rem 0.8rem;
       box-sizing: border-box;
     }
@@ -441,19 +441,19 @@
 
   @media (max-width: 640px) {
     .about-editorial-single-showcase {
-      min-height: max(194vh, var(--about-editorial-single-showcase-media-min-height, 32rem));
+      min-height: max(194svh, var(--about-editorial-single-showcase-media-min-height, 32rem));
     }
 
     .about-editorial-single-showcase__media {
-      height: 138vh;
+      height: 138svh;
     }
 
     .about-editorial-single-showcase__floor {
-      top: 138vh;
+      top: 138svh;
     }
 
     .about-editorial-single-showcase__gradient {
-      height: 52vh;
+      height: 52svh;
       background: linear-gradient(
         to top,
         var(--ase-bg, var(--bg-deep, #000)) 0%,
@@ -463,7 +463,7 @@
     }
 
     .about-editorial-single-showcase__content {
-      grid-template-rows: 100vh auto 32vh;
+      grid-template-rows: 100svh auto 32svh;
       gap: 0;
       padding: 1rem 0.8rem 0;
     }
@@ -476,7 +476,7 @@
       grid-row: 2;
       align-self: start;
       padding-top: 0;
-      margin-top: -2vh;
+      margin-top: -2svh;
       margin-left: 0;
       position: relative;
       z-index: 2;

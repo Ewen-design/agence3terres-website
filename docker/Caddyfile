@@ -82,12 +82,37 @@
 	# pour que Safari accepte de démarrer la lecture.
 	# Note : `encode` ne compresse que les types texte par défaut — les .mp4
 	# passent donc en clair, ce qui est voulu (le gzip casserait le Range).
-	@videos path /videos/*
+	@videos {
+		path /videos/*
+		not query v=*
+	}
 	header @videos Cache-Control "public, no-cache"
 
+	# 2026-11-19 : une vidéo appelée AVEC son jeton `?v=` (le reel du hero de
+	# la home, voir `videoSources.js`) change d'adresse à chaque réencodage :
+	# elle peut rester en cache sans revalidation. Avant, chaque retour sur la
+	# home redemandait au serveur (à travers Pangolin) chacune des requêtes
+	# Range de la vidéo avant de la relancer.
+	@videosVersion {
+		path /videos/*
+		query v=*
+	}
+	header @videosVersion Cache-Control "public, max-age=31536000, immutable"
+
 	# HTML — never cache (ensures users get fresh SPA shell)
-	@html path /
+	# 2026-11-19 : `path /` ne visait QUE la home. Les autres pages (/travail,
+	# /projet9/, /200.html…) partaient sans Cache-Control, avec un
+	# Last-Modified : le navigateur pouvait les garder en cache « au jugé »
+	# (10 % de leur âge). Après une mise en ligne, une page gardée appelait des
+	# fichiers /_app/immutable/ qui n'existent plus → page sans styles ni
+	# script. Toute adresse SANS extension (une route) et tout .html sont donc
+	# servis frais.
+	@html {
+		not path_regexp \.[A-Za-z0-9]+$
+	}
 	header @html Cache-Control "no-cache, no-store, must-revalidate"
+	@htmlFile path *.html
+	header @htmlFile Cache-Control "no-cache, no-store, must-revalidate"
 
 	# ── Block hidden files ──────────────────────────────────────
 	@hidden path /.*

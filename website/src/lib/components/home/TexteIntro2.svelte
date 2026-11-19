@@ -71,12 +71,12 @@
 <section
   class="reveal-section"
   bind:this={section}
-  style={`--section-height:${sectionHeight}vh;`}
+  style={`--section-height:${sectionHeight}svh;`}
 >
   <div class="stage">
     <div
       class="frame"
-      style={`width:${frameWidth}vw; height:${frameHeight}vh;`}
+      style={`width:${frameWidth}vw; height:${frameHeight}svh;`}
     >
       <img
         src={src}

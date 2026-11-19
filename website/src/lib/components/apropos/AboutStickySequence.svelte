@@ -204,7 +204,12 @@
         <div class="seq__phrase" aria-live="polite">
           {#key active}
             {#if current}
-              <p use:reveal>{@html current.text}</p>
+              <!-- La phrase arrive d'un bloc, plus ligne après ligne (demande
+                   client du 2026-11-19) : 4 ms entre deux mots au lieu de 38 —
+                   40 mots partent en 0,16 s, à l'œil tous ensemble, mais leurs
+                   calques naissent quelques-uns par image (tous dans la même,
+                   WebKit en saute une — voir `app.css`, `.reveal-word.is-on`). -->
+              <p use:reveal={{ stagger: 4 }}>{@html current.text}</p>
             {/if}
           {/key}
         </div>
@@ -242,7 +247,7 @@
 
     width: 100%;
     background: var(--bg-deep, #000);
-    padding: clamp(4.5rem, 11vh, 9rem) 0 clamp(5.5rem, 13vh, 11rem);
+    padding: clamp(4.5rem, 11svh, 9rem) 0 clamp(5.5rem, 13svh, 11rem);
   }
 
   /* La piste : un écran d'entrée pour la scène, puis un tour par slide. */
@@ -368,7 +373,7 @@
     top: 50%;
     right: clamp(1rem, 2.2vw, 2.2rem);
     width: 1px;
-    height: clamp(240px, 40vh, 420px);
+    height: clamp(240px, 40svh, 420px);
     opacity: 0;
     visibility: hidden;
     transform: translate3d(0, calc(-50% + 10px), 0);
@@ -452,7 +457,7 @@
     .seq {
       --seq-inset: 1rem;
       --seq-radius: 18px;
-      padding: clamp(3.5rem, 9vh, 6rem) 0 clamp(4rem, 10vh, 7rem);
+      padding: clamp(3.5rem, 9svh, 6rem) 0 clamp(4rem, 10svh, 7rem);
     }
 
     .seq__shade {
@@ -467,7 +472,7 @@
     }
 
     .seq__phrase {
-      top: clamp(4.5rem, 11vh, 7rem);
+      top: clamp(4.5rem, 11svh, 7rem);
       right: 1rem;
       left: 1rem;
       width: auto;
@@ -481,8 +486,8 @@
     .seq__marks {
       top: auto;
       right: 1rem;
-      bottom: clamp(1.6rem, 4.5vh, 2.8rem);
-      height: clamp(150px, 22vh, 210px);
+      bottom: clamp(1.6rem, 4.5svh, 2.8rem);
+      height: clamp(150px, 22svh, 210px);
       transform: translate3d(0, 10px, 0);
     }
 
@@ -537,5 +542,13 @@
     .seq__img {
       transform: none;
     }
+  }
+
+  /* Défilement interne (écran tactile, `$lib/defileur.js`) : le conteneur de
+     l'élément collant a son PROPRE calque — sans lui, Safari iOS fait trembler
+     le collant dans le bloc qui défile, voire fige le défilement (mesuré au
+     simulateur iOS 27, 2026-11-19 ; voir app.css, « Les collants »). */
+  :global(html.defilement-interne) .seq__track {
+    transform: translateZ(0);
   }
 </style>

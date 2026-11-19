@@ -381,7 +381,7 @@
     left: 0;
     right: 0;
     bottom: 0;
-    height: 22vh;
+    height: 22svh;
     height: 22svh;
     background: linear-gradient(
       to top,
@@ -508,7 +508,7 @@
     position: relative;
     z-index: 3;
     background: transparent;
-    padding: 12vh 0 18vh;
+    padding: 12svh 0 18svh;
   }
 
   /* Le texte est centré sur la page : la petite image passe dessous, centrée
@@ -646,7 +646,7 @@
     }
 
     .after-section {
-      padding: 0 0 28vh;
+      padding: 0 0 28svh;
       background: #000;
     }
 
@@ -739,5 +739,13 @@
 
   @media (pointer: coarse) and (orientation: landscape) and (max-height: 600px) {
     .hero-scroll-label { font-size: clamp(2rem, 5vw, 3rem); }
+  }
+
+  /* Défilement interne (écran tactile, `$lib/defileur.js`) : le conteneur de
+     l'élément collant a son PROPRE calque — sans lui, Safari iOS fait trembler
+     le collant dans le bloc qui défile, voire fige le défilement (mesuré au
+     simulateur iOS 27, 2026-11-19 ; voir app.css, « Les collants »). */
+  :global(html.defilement-interne) .hero-stage {
+    transform: translateZ(0);
   }
 </style>

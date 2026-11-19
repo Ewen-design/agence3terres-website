@@ -51,7 +51,7 @@
     box-sizing: border-box;
     width: 100%;
     background: var(--bg-deep, #000);
-    padding: clamp(3rem, 7vh, 6rem) var(--site-inset) clamp(4rem, 9vh, 8rem);
+    padding: clamp(3rem, 7svh, 6rem) var(--site-inset) clamp(4rem, 9svh, 8rem);
     overflow-x: clip;
   }
 
@@ -256,7 +256,7 @@
 
   @media (max-width: 900px) {
     .cblock {
-      padding: clamp(2.4rem, 6vh, 4rem) 1rem clamp(3rem, 8vh, 6rem);
+      padding: clamp(2.4rem, 6svh, 4rem) 1rem clamp(3rem, 8svh, 6rem);
     }
 
     .cblock__frame {

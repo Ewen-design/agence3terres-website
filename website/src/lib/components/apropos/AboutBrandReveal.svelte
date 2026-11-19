@@ -77,14 +77,14 @@
        par-dessous. Bien moins d'air en bas que dans le bloc remplacé : l'image se termine
        elle-même sur un noir plein sur toute sa largeur, elle fournit déjà la
        respiration que ce padding devait créer. */
-    padding: clamp(5rem, 13vh, 11rem) var(--site-inset) clamp(4.5rem, 10vh, 9rem);
+    padding: clamp(5rem, 13svh, 11rem) var(--site-inset) clamp(4.5rem, 10svh, 9rem);
     overflow-x: clip;
   }
 
   /* Le gabarit d'accroche du site, repris tel quel de l'ancien bloc : centré,
      45 rem, la première phrase en encre pleine et la suite à 50 %. */
   .reveal-block__lead {
-    margin: 0 auto calc(4vh + clamp(4.5rem, 11vh, 9rem));
+    margin: 0 auto calc(4svh + clamp(4.5rem, 11svh, 9rem));
     width: 45rem;
     max-width: 100%;
     font-family: var(--site-font);
@@ -158,7 +158,7 @@
   /* ── Écrans étroits ─────────────────────────────────────────────────────── */
   @media (max-width: 900px) {
     .reveal-block {
-      padding: clamp(3.5rem, 9vh, 6rem) 1rem clamp(3rem, 8vh, 5rem);
+      padding: clamp(3.5rem, 9svh, 6rem) 1rem clamp(3rem, 8svh, 5rem);
     }
 
     /* En portrait, la main occupe presque tout le cadre : la promesse ne tient

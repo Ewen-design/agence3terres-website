@@ -24,7 +24,7 @@
   slides={projectSlides}
   variant="project"
   zoneHeight="33svh"
-  itemHeightDesktop="53vh"
+  itemHeightDesktop="53svh"
   itemHeightMobile="48svh"
   on:slideractivechange={(event) => dispatch("slideractivechange", event.detail)}
 />

@@ -813,7 +813,7 @@
     width: 100%;
     margin: 0 auto;
     /* Le texte d'intro est juste au-dessus : on ne rajoute pas d'air ici. */
-    padding: clamp(1rem, 2vh, 2rem) 0 clamp(5rem, 8vh, 8rem);
+    padding: clamp(1rem, 2svh, 2rem) 0 clamp(5rem, 8svh, 8rem);
     position: relative;
   }
 
@@ -960,7 +960,7 @@
   .desktop-card {
     flex: 0 0 46vw;
     width: 46vw;
-    height: min(86vh, 920px);
+    height: min(86svh, 920px);
     scroll-snap-align: start;
     scroll-snap-stop: always;
   }
@@ -1305,7 +1305,7 @@
     .mobile-card {
       flex: 0 0 clamp(300px,88vw,440px);
       width: clamp(300px,88vw,440px);
-      height: min(72vh, 660px);
+      height: min(72svh, 660px);
       scroll-snap-align: center;
       scroll-snap-stop: always;
     }
@@ -1355,7 +1355,7 @@
     .mobile-card {
       flex-basis: clamp(270px,90vw,380px);
       width: clamp(270px,90vw,380px);
-      height: min(74vh, 620px);
+      height: min(74svh, 620px);
     }
 
     .pc-title-flip { font-size: clamp(1.5rem, 7vw, 2.05rem); }
@@ -1371,7 +1371,7 @@
   }
 
   /* Landscape proportion tuning on top of the mobile rail (cards + spacing are
-     portrait-tuned: 72vh cards and 8rem padding are too tall/loose for a short
+     portrait-tuned: 72svh cards and 8rem padding are too tall/loose for a short
      wide viewport). Fit the card to the viewport height and let ~2 cards show. */
   @media (pointer: coarse) and (orientation: landscape) and (max-height: 600px) {
     .gallery { padding: 0 0 3rem 0; }

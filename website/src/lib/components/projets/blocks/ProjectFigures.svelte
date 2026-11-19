@@ -81,7 +81,7 @@
   .figures__card {
     display: flex;
     flex-direction: column;
-    min-height: clamp(16rem, 34vh, 22rem);
+    min-height: clamp(16rem, 34svh, 22rem);
     padding: clamp(1.3rem, 2.4vw, 2.1rem);
     border-radius: var(--project-media-radius, 22px);
     background: var(--project-surface-card, #0a0e12);
@@ -98,7 +98,7 @@
   }
 
   .figures__figure {
-    margin: clamp(1.3rem, 4vh, 2.6rem) 0 auto;
+    margin: clamp(1.3rem, 4svh, 2.6rem) 0 auto;
     font-family: var(--site-font);
     font-weight: var(--site-weight);
     font-size: clamp(2.8rem, 1.5rem + 4vw, 5.2rem);
@@ -109,7 +109,7 @@
   }
 
   .figures__text {
-    margin: clamp(1.6rem, 5vh, 3rem) 0 0;
+    margin: clamp(1.6rem, 5svh, 3rem) 0 0;
     max-width: 24ch;
     font-family: var(--site-font);
     font-size: var(--project-body-size, 1rem);

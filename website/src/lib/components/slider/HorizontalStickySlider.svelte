@@ -442,7 +442,7 @@
     top: 0;
     /* Fixed LARGE viewport height: always fills the screen even when the
        Safari URL bar retracts, and never resizes (content stays put). */
-    height: 100vh;
+    height: 100svh;
     height: 100lvh;
     overflow: hidden;
     isolation: isolate;
@@ -450,7 +450,7 @@
   }
 
   .hss__spacer {
-    height: calc((var(--slide-count) - 1) * 100vh);
+    height: calc((var(--slide-count) - 1) * 100svh);
     height: calc((var(--slide-count) - 1) * 100lvh);
   }
 
@@ -525,7 +525,7 @@
     /* Gradient reaches the TRUE bottom (lvh) so no hole appears when the
        Safari URL bar retracts; captions are lifted separately below. */
     position: absolute; bottom: 0; left: 0; right: 0;
-    height: calc(clamp(14rem, 34vh, 26rem) + var(--bar-inset));
+    height: calc(clamp(14rem, 34svh, 26rem) + var(--bar-inset));
     z-index: 2;
     pointer-events: none;
   }
@@ -648,14 +648,14 @@
 
   @media (max-width: 900px) {
     .hss__panel {
-      padding: clamp(5rem, 14vh, 7rem) 1.25rem 0;
+      padding: clamp(5rem, 14svh, 7rem) 1.25rem 0;
     }
     .hss__title {
       font-size: clamp(2.6rem, 12vw, 4.6rem);
       max-width: 100%;
     }
     .hss__captions {
-      bottom: calc(var(--bar-inset) + clamp(3.5rem, 9vh, 5.5rem));
+      bottom: calc(var(--bar-inset) + clamp(3.5rem, 9svh, 5.5rem));
       left: 1.25rem;
     }
     .hss__caption-line > span {
@@ -668,7 +668,7 @@
     }
     .hss__arrow-cue {
       right: 1.25rem;
-      bottom: calc(var(--bar-inset) + clamp(3.5rem, 9vh, 5.5rem));
+      bottom: calc(var(--bar-inset) + clamp(3.5rem, 9svh, 5.5rem));
     }
   }
 
@@ -685,7 +685,7 @@
   }
 
   @media (pointer: coarse) and (orientation: landscape) and (max-height: 600px) {
-    .hss__bottom { height: calc(clamp(7rem, 18vh, 11rem) + var(--bar-inset)); }
+    .hss__bottom { height: calc(clamp(7rem, 18svh, 11rem) + var(--bar-inset)); }
     .hss__panel { padding-top: clamp(3.5rem, 7vw, 5rem); }
   }
 </style>

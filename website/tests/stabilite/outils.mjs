@@ -23,8 +23,12 @@ export async function etatGlobal(page) {
     return {
       path: location.pathname,
       y: Math.round(scrollY),
-      htmlOverflow: getComputedStyle(html).overflowY,
-      bodyOverflow: getComputedStyle(document.body).overflowY,
+      // Défilement interne (écran tactile) : le document est toujours en
+      // `overflow: hidden` par construction ; le verrou se lit sur le bloc.
+      htmlOverflow: html.classList.contains("defilement-interne")
+        ? getComputedStyle(document.querySelector(".defileur")).overflowY
+        : getComputedStyle(html).overflowY,
+      bodyOverflow: html.classList.contains("defilement-interne") ? "auto" : getComputedStyle(document.body).overflowY,
       introActive: html.classList.contains("site-intro-active"),
       menuOuvert,
       pageOpacity: csPw ? +csPw.opacity : null,

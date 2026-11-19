@@ -69,7 +69,7 @@
   const hsliderSlides = [
     {
       title: "Harmonia",
-      description: "Médecine esthétique,\nidentité et site.",
+      description: "Médecine esthétique,\nsite et charte.",
       // Le mockup sur l'eau : paysage dans le bloc large du bureau, portrait
       // entier dans le bloc haut du téléphone.
       images: ["/images/harmonia-mockup-large.webp"],
@@ -78,13 +78,13 @@
     },
     {
       title: "Lybra",
-      description: "Identité de marque,\ncolibri et charte.",
+      description: "Logo et charte,\nle colibri redessiné.",
       images: ["/images/lybra-cartes.webp", "/images/lybra-macbook.webp", "/images/lybra-affichage.webp"],
       href: "/projet8"
     },
     {
       title: "Ludosphères",
-      description: "Site d'artiste pour\noeuvres peintes.",
+      description: "Site d'artiste et\ngalerie en 3D.",
       images: ["/images/ipad-ludo.webp", "/images/ludo-site-desktop.webp", "/images/ludo-drapeau.webp"],
       href: "/projet4"
     },

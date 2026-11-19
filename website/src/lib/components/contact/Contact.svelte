@@ -204,7 +204,7 @@
     flex-direction: column;
     align-items: flex-start;
     gap: clamp(1.6rem, 3vw, 2.6rem);
-    min-height: min(66lvh, 760px);
+    min-height: min(66svh, 760px);
     justify-content: flex-end;
     max-width: min(52rem, 90vw);
     padding-bottom: clamp(1rem, 2.4vw, 2.2rem);

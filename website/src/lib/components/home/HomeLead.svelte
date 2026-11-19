@@ -59,12 +59,12 @@
   /* Peu d'air en dessous : le paquet de cartes arrive juste derrière, et un
      grand vide entre les deux donnait l'impression d'un défilement mort. Peu
      d'air au-dessus non plus depuis que le bloc au mockup s'est glissé entre le
-     hero et cette phrase — les 18vh d'origine creusaient un trou. */
+     hero et cette phrase — les 18svh d'origine creusaient un trou. */
   .lead-section {
     position: relative;
     z-index: 3;
     background: var(--bg-deep, #000);
-    padding: 11vh 0 8vh;
+    padding: 11svh 0 8svh;
   }
 
   .lead-grid {
@@ -127,7 +127,7 @@
 
   @media (max-width: 900px) {
     .lead-section {
-      padding: 9vh 0 8vh;
+      padding: 9svh 0 8svh;
     }
   }
 

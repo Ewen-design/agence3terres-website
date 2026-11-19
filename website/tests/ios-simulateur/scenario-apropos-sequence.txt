@@ -1,0 +1,40 @@
+wait 1.5
+swipe 0.5 0.80 0.40 1500
+wait 0.6
+swipe 0.5 0.70 0.45 500
+wait 0.3
+swipe 0.5 0.70 0.45 500
+wait 0.3
+swipe 0.5 0.70 0.45 500
+wait 0.3
+swipe 0.5 0.70 0.45 500
+wait 0.3
+swipe 0.5 0.70 0.45 500
+wait 0.3
+swipe 0.5 0.70 0.45 500
+wait 0.3
+swipe 0.5 0.70 0.45 500
+wait 0.3
+swipe 0.5 0.70 0.45 500
+wait 0.3
+swipe 0.5 0.70 0.45 500
+wait 0.3
+swipe 0.5 0.70 0.45 500
+wait 0.3
+swipe 0.5 0.70 0.45 500
+wait 0.3
+swipe 0.5 0.70 0.45 500
+wait 0.3
+swipe 0.5 0.70 0.45 500
+wait 0.3
+swipe 0.5 0.70 0.45 500
+wait 0.3
+swipe 0.5 0.70 0.45 500
+wait 0.3
+swipe 0.5 0.70 0.45 500
+wait 0.3
+swipe 0.5 0.70 0.45 500
+wait 0.3
+swipe 0.5 0.70 0.45 500
+wait 0.3
+wait 1

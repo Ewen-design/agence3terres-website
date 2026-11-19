@@ -304,11 +304,15 @@
   }
 
   // La découpe et les voiles suivent le transform RÉEL de la carte,
-  // image par image : une seule horloge pour tout.
+  // image par image : une seule horloge pour tout. La fenêtre aussi est relue
+  // à chaque image : un défilement lissé (Lenis) pose sa position dans une
+  // image où `scroll` n'est pas encore arrivé, et la découpe restait d'une
+  // image en retard sur la page — son bord tremblait.
   function track() {
     cancelAnimationFrame(trackRaf);
     const step = () => {
-      if (!mode || !stage) return;
+      if (!mode || !stage || aplati) return;
+      if (geo && window.scrollY - docTop(stage) !== geo.y && measure()) writeGeometry();
       render(cardProgress());
       trackRaf = requestAnimationFrame(step);
     };
@@ -348,6 +352,175 @@
     }
   }
 
+  /* ── Le lecteur qui défile PENDANT la transition (2026-11-19) ────────────
+   *  Vidéo du client (iPhone) : clic sur le logo depuis /travail, puis
+   *  défilement aussitôt la home apparue, carte encore en train de revenir.
+   *  La page défilait AVEC sa carte : le bas de la carte remontait, le fond du
+   *  menu apparaissait dessous, puis la découpe s'ouvrait sur un autre endroit
+   *  de la page. La découpe est en coordonnées du document : c'est le script
+   *  qui la recale sur la fenêtre (`onScroll`). Mais sur écran tactile le
+   *  défilement se fait HORS du fil principal (compositeur) : la page part
+   *  tout de suite, le recalage arrive des images plus tard — ou pas du tout
+   *  tant que la nouvelle page se monte. Aucun recalage ne peut suivre.
+   *
+   *  Deux règles, donc :
+   *  - tant que l'ancienne page recule et que le voile couvre l'écran, le
+   *    toucher ne fait pas défiler (rien à voir, et une inertie lancée là
+   *    continuait sous la remise en haut de la nouvelle page — le déclencheur
+   *    connu des éléments fixes qui « descendent » sur iPhone) ;
+   *  - dès que le lecteur touche, tourne la molette ou appuie sur une touche
+   *    de défilement pendant le RETOUR de la carte (transition, ou menu qui se
+   *    referme), la carte est rendue à plat tout de suite : il veut la page,
+   *    on la lui donne. Au toucher, d'un coup (le défilement part avant la
+   *    moindre image) ; à la molette, en 0,2 s (la molette passe par le fil
+   *    principal, la découpe suit image par image). */
+  const SCROLL_KEYS = new Set([" ", "PageDown", "PageUp", "End", "Home", "ArrowDown", "ArrowUp"]);
+  const RETOUR_PRESSE_S = 0.2;
+  let toucherBloque = false;
+
+  function onTouchMoveCadre(event) {
+    if (event.cancelable) event.preventDefault();
+  }
+
+  function bloquerToucher(on) {
+    if (on === toucherBloque) return;
+    toucherBloque = on;
+    if (on) document.addEventListener("touchmove", onTouchMoveCadre, { passive: false });
+    else document.removeEventListener("touchmove", onTouchMoveCadre);
+  }
+
+  // Le voile disparaît sans son fondu de 0,45 s : rendu à plat, il couvrirait
+  // tout l'écran pendant qu'il s'efface.
+  function leverVoileNet() {
+    if (!veiled) return;
+    if (fadeEl) fadeEl.style.transition = "none";
+    veiled = false;
+    requestAnimationFrame(() =>
+      requestAnimationFrame(() => {
+        if (fadeEl && !veiled) fadeEl.style.transition = "";
+      })
+    );
+  }
+
+  function presserRetour(instant) {
+    if (mode === "frame" && pagePhase === "in") {
+      // L'attente de l'image d'ouverture et le retour programmé sont caducs.
+      pageInToken++;
+      for (const t of pageTimers) clearTimeout(t);
+      pageTimers = [];
+      leverVoileNet();
+    } else if (!(mode === "menu" && !opened)) {
+      return;
+    }
+    clearTimeout(finishTimer);
+    if (instant || cardProgress() < 0.02) {
+      terminerAuCalme();
+      return;
+    }
+    moveCard(false, { duration: RETOUR_PRESSE_S, ease: EASE_TURN });
+    track();
+    finishTimer = setTimeout(terminerAuCalme, RETOUR_PRESSE_S * 1000 + 150);
+  }
+
+  /* ── Rendre la page SANS rien changer sous un défilement (2026-11-19) ────
+   *  Deuxième retour du client : « quand on change de page et qu'on défile
+   *  trop vite avant la fin de l'animation, le header se déplace » (iPhone).
+   *  Rendre la page, c'est retirer le `transform` de `.page-stage` : ses
+   *  éléments `position: fixed` (le pied de page, le préchauffage du slider
+   *  projets de la home…) redeviennent alors des éléments fixes de la
+   *  fenêtre, et un `resize` synthétique fait tout remesurer. Fait au moment
+   *  où le doigt lance la page, c'est un changement de l'arbre des calques
+   *  fixes PENDANT un défilement sur le compositeur : le terrain du bug de
+   *  Safari qui fait glisser tous les fixes à la fois (voir
+   *  `$lib/fixedResync.js`).
+   *  Sur écran tactile, si le lecteur touche ou défile, la carte est donc
+   *  APLATIE (transform neutre, plus de découpe ni de voile : à l'écran, la
+   *  page) et le vrai rangement attend le calme — doigt levé, page immobile
+   *  250 ms (8 s au plus). Puis recalage forcé des fixes, comme toujours. */
+  let aplati = false;
+  let calmeTimer = 0;
+  let toucheEnCours = false;
+  let dernierDefilement = 0;
+  const CALME_MS = 250;
+  const CALME_MAX_MS = 8000;
+
+  function onToucheDebut() {
+    toucheEnCours = true;
+  }
+
+  function onToucheFin(event) {
+    if (!event.touches?.length) toucheEnCours = false;
+  }
+
+  const agite = () => toucheEnCours || performance.now() - dernierDefilement < CALME_MS;
+
+  function aplatir() {
+    aplati = true;
+    stopTrack();
+    cancelAnimationFrame(geometryRaf);
+    cancelAnimationFrame(startRaf);
+    startRaf = 0;
+    clearTimeout(finishTimer);
+    for (const t of pageTimers) clearTimeout(t);
+    pageTimers = [];
+    pageInToken++;
+    bloquerToucher(false);
+    unlockScroll();
+    stopReveal();
+    if (stage) {
+      stage.style.transition = "none";
+      // Un transform NEUTRE, pas d'absence de transform (voir plus haut).
+      stage.style.transform = "translate3d(0px, 0px, 0px)";
+      stage.style.clipPath = "";
+    }
+    if (fadeEl) fadeEl.style.clipPath = "";
+    if (veilEl) veilEl.style.clipPath = "";
+    leverVoileNet();
+    // Le menu (ou son fond) ne doit pas réapparaître dans un rebond de
+    // défilement en haut de page.
+    backdrop = false;
+    visible = false;
+    revealed = false;
+  }
+
+  function terminerAuCalme() {
+    const tactile = window.matchMedia?.("(pointer: coarse)").matches ?? false;
+    if (!mode || !tactile || (!aplati && !agite())) {
+      finishSession();
+      return;
+    }
+    if (!aplati) aplatir();
+    const debut = performance.now();
+    const verifier = () => {
+      calmeTimer = 0;
+      if (!aplati) return;
+      if (agite() && performance.now() - debut < CALME_MAX_MS) {
+        calmeTimer = setTimeout(verifier, 120);
+        return;
+      }
+      finishSession();
+    };
+    clearTimeout(calmeTimer);
+    calmeTimer = setTimeout(verifier, 120);
+  }
+
+  function onGesteLecteur(event) {
+    if (!mode || aplati) return;
+    if (event.type === "keydown" && !SCROLL_KEYS.has(event.key)) return;
+    if (mode === "menu") {
+      // Menu qui se referme : un TOUCHER sur le header est un geste pour lui
+      // (son bouton rouvre la carte d'où elle est). La molette, elle, fait
+      // défiler la page même passée au-dessus du header ; et un doigt posé sur
+      // le bandeau du menu aussi (le menu est fixe, c'est le document qui
+      // défile) — ses liens ne répondent plus une fois le menu refermé.
+      if (opened) return;
+      if (event.type === "touchstart" && event.target?.closest?.("header, .site-prism-mark")) return;
+    } else if (pagePhase !== "in") {
+      return;
+    }
+    presserRetour(event.type === "touchstart");
+  }
+
   // Le layout lève tous les verrous quand l'onglet redevient visible : menu
   // toujours ouvert, on remet le nôtre.
   function onVisibilityChange() {
@@ -370,6 +543,8 @@
   // Une barre de défilement tirée, une inertie qui finit sa course : la
   // découpe suit la fenêtre, sans transition.
   function onScroll() {
+    dernierDefilement = performance.now();
+    if (aplati) return;
     cancelAnimationFrame(geometryRaf);
     geometryRaf = requestAnimationFrame(() => {
       if (!mode || !measure()) return;
@@ -379,11 +554,14 @@
   }
 
   function onResize() {
+    if (aplati) return;
     cancelAnimationFrame(geometryRaf);
     geometryRaf = requestAnimationFrame(() => {
       if (!mode) return;
+      // Menu qui se referme et barre d'outils qui bouge (le lecteur défile
+      // déjà) : rangé au calme, pas sous son doigt.
       if (mode === "menu" && !opened) {
-        finishSession();
+        terminerAuCalme();
         return;
       }
       readConfig();
@@ -399,13 +577,13 @@
   // la fin tardive d'un RECUL arrivée pendant le retour ne doit pas rendre la
   // page d'un coup (c'était le recul qui « sautait » au lieu de glisser).
   function onTransitionEnd(event) {
-    if (event.target !== stage || event.propertyName !== "transform") return;
+    if (event.target !== stage || event.propertyName !== "transform" || aplati) return;
     if (mode === "menu") {
       if (lastTarget && opened) {
         stopTrack();
         render(1);
       } else if (!lastTarget && !opened) {
-        finishSession();
+        terminerAuCalme();
       }
     } else if (mode === "frame") {
       if (lastTarget && pagePhase === "out") {
@@ -413,7 +591,7 @@
         render(1);
         onOutCardDone?.();
       } else if (!lastTarget && pagePhase === "in") {
-        finishSession();
+        terminerAuCalme();
       } else if (!lastTarget && pagePhase === "card") {
         stopTrack();
         render(0);
@@ -427,6 +605,12 @@
     window.addEventListener("keydown", onKeyDown);
     window.addEventListener("scroll", onScroll, { passive: true });
     window.addEventListener("resize", onResize, { passive: true });
+    window.addEventListener("touchstart", onToucheDebut, { passive: true, capture: true });
+    window.addEventListener("touchend", onToucheFin, { passive: true, capture: true });
+    window.addEventListener("touchcancel", onToucheFin, { passive: true, capture: true });
+    window.addEventListener("touchstart", onGesteLecteur, { passive: true });
+    window.addEventListener("wheel", onGesteLecteur, { passive: true });
+    window.addEventListener("keydown", onGesteLecteur);
     stage?.addEventListener("transitionend", onTransitionEnd);
   }
 
@@ -435,6 +619,12 @@
     window.removeEventListener("keydown", onKeyDown);
     window.removeEventListener("scroll", onScroll);
     window.removeEventListener("resize", onResize);
+    window.removeEventListener("touchstart", onToucheDebut, { capture: true });
+    window.removeEventListener("touchend", onToucheFin, { capture: true });
+    window.removeEventListener("touchcancel", onToucheFin, { capture: true });
+    window.removeEventListener("touchstart", onGesteLecteur);
+    window.removeEventListener("wheel", onGesteLecteur);
+    window.removeEventListener("keydown", onGesteLecteur);
     for (const el of document.querySelectorAll(".page-stage")) {
       el.removeEventListener("transitionend", onTransitionEnd);
     }
@@ -481,6 +671,7 @@
   // la séance, et au démontage même si rien n'était en cours.
   function releasePage() {
     unlockScroll();
+    bloquerToucher(false);
     clearTimeout(finishTimer);
     stopReveal();
     cancelAnimationFrame(startRaf);
@@ -506,6 +697,10 @@
   }
 
   function finishSession() {
+    aplati = false;
+    clearTimeout(calmeTimer);
+    calmeTimer = 0;
+    toucheEnCours = false;
     releasePage();
     stage = null;
     geo = null;
@@ -624,6 +819,9 @@
   }
 
   function show() {
+    // Une page rendue mais pas encore rangée (voir `aplatir`) : on range
+    // d'abord, le menu part d'une page à plat.
+    if (aplati) finishSession();
     if (opened) return;
     // Une transition de page est en cours : le menu attendra.
     if (mode === "frame") {
@@ -677,12 +875,20 @@
     moveCard(false, { duration, ease: full ? EASE_CARD : EASE_TURN });
     track();
     // Filet si `transitionend` ne vient pas (onglet en arrière-plan…).
-    finishTimer = setTimeout(finishSession, duration * 1000 + 200);
+    finishTimer = setTimeout(terminerAuCalme, duration * 1000 + 200);
   }
 
   $effect(() => {
     const wanted = open;
     untrack(() => (wanted ? show() : hide()));
+  });
+
+  // Défilement interne (écran tactile, `$lib/defileur.js`) : le bloc qui
+  // défile couvre tout l'écran, et la page qui recule n'emporte pas sa boîte
+  // — il interceptait les touchers destinés aux liens du menu, dessous. Menu à
+  // l'écran, il laisse passer (la carte a son propre capteur, qui referme).
+  $effect(() => {
+    document.documentElement.classList.toggle("menu-visible", visible);
   });
 
   /* ── La transition de page (geste « cadre ») ── */
@@ -701,6 +907,7 @@
     const reprise = mode === "frame";
     if (!reprise && !beginSession("frame")) return null;
     pagePhase = "out";
+    bloquerToucher(true);
     navigatedUnder = true;
     for (const t of pageTimers) clearTimeout(t);
     pageTimers = [];
@@ -776,13 +983,16 @@
     premierEcranPret({ timeout: PAGE_IN_WAIT_MS }).then(() => {
       if (jeton !== pageInToken || mode !== "frame" || pagePhase !== "in") return;
       veiled = false;
+      // La page se montre : elle redevient la sienne (un toucher, désormais,
+      // rend la carte à plat — voir `presserRetour`).
+      bloquerToucher(false);
       later(() => {
         const p = cardProgress();
         const backMs = frame.back * 1000 * Math.max(0.35, p);
         moveCard(false, { duration: backMs / 1000, ease: EASE_CARD });
         track();
         // Filet seulement : c'est la fin RÉELLE du retour qui rend la page.
-        finishTimer = setTimeout(finishSession, backMs + 400);
+        finishTimer = setTimeout(terminerAuCalme, backMs + 400);
       }, FADE_OUT_MS * 0.5);
     });
   }
@@ -797,6 +1007,7 @@
    *  Voir `$lib/pageCard.js`. */
 
   function coverPage() {
+    if (aplati) finishSession();
     if (mode || !rootEl || reducedMotion()) return null;
     const out = startPageOut();
     if (!out) return null;
@@ -852,9 +1063,11 @@
   }
 
   function uncoverPage(onCovered) {
+    if (aplati) finishSession();
     if (mode || !rootEl || reducedMotion()) return false;
     if (!beginSession("frame")) return false;
     pagePhase = "card";
+    bloquerToucher(true);
     // La carte à plat, voilée SOUS le panneau : rien ne change à l'écran.
     render(0);
     veiled = true;
@@ -890,6 +1103,9 @@
     // Une transition annoncée puis annulée ne doit pas servir à la suivante.
     vtAttendue = false;
     if (!nav.to || nav.willUnload || nav.to.url.origin !== window.location.origin) return;
+    // Une page rendue pas encore rangée : rangée maintenant (le lecteur vient
+    // de toucher un lien, il ne défile plus).
+    if (aplati) finishSession();
     if (nav.from && samePath(nav.from.url, nav.to.url)) return;
     // Liens du menu, pied de page « projet suivant » : leur geste à eux.
     if (isSilentNavigationPending()) return;
@@ -990,6 +1206,8 @@
 
   afterNavigate(() => {
     outPromise = null;
+    // Page rendue en attente de rangement : aucune découpe à reposer.
+    if (aplati) return;
     if (mode === "frame") {
       runPageIn();
       return;
@@ -1003,11 +1221,16 @@
       stage.addEventListener("transitionend", onTransitionEnd);
     }
     // Changement de page venu d'ailleurs que du menu (le logo) : le voile se
-    // lève et la carte remonte sur la nouvelle page.
-    if (opened && !navigating) {
+    // lève et la carte remonte sur la nouvelle page. Le voile se lève AUSSI si
+    // le menu a été refermé entre-temps (2026-11-19, batterie chaos : menu
+    // ouvert, lien touché, Échap avant l'arrivée) — sinon il restait posé sur
+    // la carte pour toute la séance, et un menu rouvert montrait une carte noire.
+    if (!navigating) {
       veiled = false;
-      setTimeout(() => (open = false), 120);
-      return;
+      if (opened) {
+        setTimeout(() => (open = false), 120);
+        return;
+      }
     }
     // `navigate()` vient de lever les verrous : menu encore ouvert, on remet
     // le nôtre jusqu'à ce que la carte remonte.
@@ -1213,7 +1436,7 @@
     align-items: center;
     justify-content: center;
     /* Sous le bouton du header (1rem + 40 px). */
-    padding: calc(1rem + 40px + clamp(0.75rem, 2vh, 1.5rem)) var(--menu-gutter) clamp(1rem, 3vh, 2rem);
+    padding: calc(1rem + 40px + clamp(0.75rem, 2svh, 1.5rem)) var(--menu-gutter) clamp(1rem, 3svh, 2rem);
     pointer-events: none;
   }
 
@@ -1278,7 +1501,7 @@
 
   .menu-socials {
     --social-size: clamp(3.2rem, 4vw, 4.1rem);
-    --social-gap: clamp(0.75rem, 2.2vh, 1.4rem);
+    --social-gap: clamp(0.75rem, 2.2svh, 1.4rem);
     position: absolute;
     z-index: 4;
     right: var(--menu-gutter);

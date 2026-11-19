@@ -530,7 +530,7 @@
     display: block;
     width: 100%;
     margin: 0 auto;
-    padding: clamp(5.8rem, 9vh, 7rem) 0 clamp(2.2rem, 5vh, 3.4rem);
+    padding: clamp(5.8rem, 9svh, 7rem) 0 clamp(2.2rem, 5svh, 3.4rem);
     position: relative;
   }
 
@@ -583,7 +583,7 @@
   .desktop-image {
     position: relative;
     aspect-ratio: 1.72 / 1;
-    min-height: min(78vh, 860px);
+    min-height: min(78svh, 860px);
     overflow: hidden;
     background: var(--project-showcase-card-bg, #080808);
     border-radius: 14px;
@@ -718,7 +718,7 @@
 
   .desktop-nav-btn {
     position: absolute;
-    top: calc(clamp(5.8rem, 9vh, 7rem) + min(78vh, 860px) * 0.5);
+    top: calc(clamp(5.8rem, 9svh, 7rem) + min(78svh, 860px) * 0.5);
     width: 3.8rem;
     height: 3.8rem;
     display: inline-flex;

@@ -27,8 +27,8 @@ export const PROJETS = [
     slug: "projet9",
     title: "Harmonia",
     category: "Centre de médecine esthétique",
-    lead: "Une identité médicale, et un site qui la porte.",
-    tags: "Identité visuelle, site web, direction artistique",
+    lead: "Le site et la charte d'un centre de médecine esthétique.",
+    tags: "Site web, charte graphique",
     annee: "2026",
     hero: {
       // Le mockup sur l'eau livré par le client : paysage 16:10 sur grand
@@ -43,8 +43,8 @@ export const PROJETS = [
     slug: "projet8",
     title: "Lybra",
     category: "Identité de marque",
-    lead: "Un colibri modernisé pour porter l'envol de leurs clients.",
-    tags: "Logo, identité visuelle, charte graphique",
+    lead: "Un colibri redessiné, et la charte qui va avec.",
+    tags: "Logo, charte graphique",
     annee: "2025",
     hero: {
       image: "/images/lybra-affichage.webp",
@@ -57,14 +57,15 @@ export const PROJETS = [
     slug: "projet4",
     title: "Ludosphères",
     category: "Site d'artiste",
-    lead: "Un site sobre pour laisser respirer les œuvres.",
-    tags: "Identité visuelle, site web, direction artistique",
+    lead: "Le site d'un peintre, sa galerie en 3D et sa marque.",
+    tags: "Site web, galerie 3D, logo, charte graphique",
     annee: "2026",
     hero: {
       // Le hero est une VIDÉO (2026-11-18) : ses posters sont le photogramme 0
       // de chaque rendition, l'image exacte sur laquelle la page s'ouvre.
+      // `?v=` = le jeton `HERO_MOBILE` de `Projet4.svelte`.
       image: "/videos/ludo-hero-poster.webp",
-      mobileImage: "/videos/ludo-hero-mobile-poster.webp"
+      mobileImage: "/videos/ludo-hero-mobile-poster.webp?v=2"
     },
     vignette: "/images/ludo-tablette.webp",
     listed: true
@@ -73,7 +74,7 @@ export const PROJETS = [
     slug: "projet3",
     title: "Moovy",
     category: "Plateforme web",
-    lead: "Une recommandation de films simple, directe et personnelle.",
+    lead: "Trouver le film de ce soir en quelques questions.",
     tags: "UX design, UI design, site web",
     annee: "2025",
     hero: {
@@ -103,18 +104,18 @@ export const PROJETS = [
     slug: "projet1",
     title: "Serein Design",
     category: "Objet de bureau",
-    lead: "Un objet qui n'affiche que ce qui compte.",
-    tags: "Identité visuelle, site web, direction artistique",
+    lead: "La marque et le site d'un objet de bureau.",
+    tags: "Logo, charte graphique, site web",
     annee: "2026",
     hero: {
-      // Le hero est une VIDÉO (le téléphone sur le fond studio rouge) :
+      // Le hero est une VIDÉO (les plans Serein du reel, sur noir studio) :
       // ses posters sont le photogramme 0 de chaque rendu. `?v=` = le jeton
       // de `Projet1.svelte`, à changer avec lui.
-      image: "/videos/serein-hero-poster.webp?v=2",
-      mobileImage: "/videos/serein-hero-mobile-poster.webp?v=2"
+      image: "/videos/serein-hero-poster.webp?v=3",
+      mobileImage: "/videos/serein-hero-mobile-poster.webp?v=3"
     },
-    // L'objet de face, de nuit : sombre, portrait, sujet centré.
-    vignette: "/images/serein-vignette.webp",
+    // L'affiche de la marque (2026-11-19, demande d'Ewen), en 3:4.
+    vignette: "/images/serein-affiche-vignette.webp",
     listed: true
   }
 ];

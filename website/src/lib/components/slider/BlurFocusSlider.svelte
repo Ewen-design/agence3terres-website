@@ -356,15 +356,15 @@
     width: 100%;
     background: #050b14;
     --bar-inset: 0px;
-    --bar-inset: calc(100lvh - 100svh);
+    --bar-inset: calc(100svh - 100svh);
   }
 
   /* ── Sticky panel ───────────────────────────────────────────────────── */
   .bfs__sticky {
     position: sticky;
     top: 0;
-    height: 100vh;
-    height: 100lvh;
+    height: 100svh;
+    height: 100svh;
     overflow: hidden;
     isolation: isolate;
     background: #050b14;
@@ -374,8 +374,8 @@
      viewport heights) — mobile keeps the shorter, perfect length. The JS reads
      this real height, so the two never go out of sync. */
   .bfs__spacer {
-    height: calc((var(--slide-count) - 1) * 110vh);
-    height: calc((var(--slide-count) - 1) * 110lvh);
+    height: calc((var(--slide-count) - 1) * 110svh);
+    height: calc((var(--slide-count) - 1) * 110svh);
   }
 
   /* ── Backgrounds ────────────────────────────────────────────────────── */
@@ -453,7 +453,7 @@
   /* ── Bottom: glass dock ─────────────────────────────────────────────── */
   .bfs__bottom {
     position: absolute; bottom: 0; left: 0; right: 0;
-    height: calc(clamp(11rem, 28vh, 20rem) + var(--bar-inset));
+    height: calc(clamp(11rem, 28svh, 20rem) + var(--bar-inset));
     z-index: 2;
     pointer-events: none;
     display: flex;
@@ -630,11 +630,11 @@
 
   @media (max-width: 900px) {
     .bfs__spacer {
-      height: calc((var(--slide-count) - 1) * 95vh);
-      height: calc((var(--slide-count) - 1) * 95lvh);
+      height: calc((var(--slide-count) - 1) * 95svh);
+      height: calc((var(--slide-count) - 1) * 95svh);
     }
     .bfs__head {
-      top: clamp(5rem, 14vh, 7rem); left: 1.25rem; right: 1.25rem;
+      top: clamp(5rem, 14svh, 7rem); left: 1.25rem; right: 1.25rem;
     }
     .bfs__title {
       font-size: clamp(2.6rem, 12vw, 4.6rem); max-width: 100%;
@@ -661,8 +661,16 @@
   }
 
   @media (pointer: coarse) and (orientation: landscape) and (max-height: 600px) {
-    .bfs__bottom { height: calc(clamp(6rem, 16vh, 9rem) + var(--bar-inset)); }
+    .bfs__bottom { height: calc(clamp(6rem, 16svh, 9rem) + var(--bar-inset)); }
     /* raise title (caption + arrow are static children of .bfs__head and follow it) */
     .bfs__head { top: clamp(3rem, 7vw, 4.5rem); }
+  }
+
+  /* Défilement interne (écran tactile, `$lib/defileur.js`) : le conteneur de
+     l'élément collant a son PROPRE calque — sans lui, Safari iOS fait trembler
+     le collant dans le bloc qui défile, voire fige le défilement (mesuré au
+     simulateur iOS 27, 2026-11-19 ; voir app.css, « Les collants »). */
+  :global(html.defilement-interne) .bfs {
+    transform: translateZ(0);
   }
 </style>

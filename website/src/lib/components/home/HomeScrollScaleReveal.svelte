@@ -173,7 +173,7 @@
 <section
   class="home-scroll-reveal"
   bind:this={sectionEl}
-  style={`--section-height:${sectionHeight}vh;`}
+  style={`--section-height:${sectionHeight}svh;`}
   aria-label={alt}
 >
   <div class="home-scroll-reveal__inner">

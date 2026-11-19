@@ -200,7 +200,7 @@
   .sticky {
     position: sticky;
     top: 0;
-    height: 100vh;
+    height: 100svh;
     height: 100svh;
     overflow: hidden;
     background: #050b14;
@@ -298,7 +298,7 @@
   }
 
   .slide {
-    min-height: 100vh;
+    min-height: 100svh;
     min-height: 100svh;
     display: flex;
     align-items: center;
@@ -307,7 +307,7 @@
   }
 
   .scroll-spacer {
-    height: 80vh;
+    height: 80svh;
   }
 
   .content {
@@ -420,5 +420,13 @@
       max-width: 15rem;
       color: rgba(255,255,255,.82);
     }
+  }
+
+  /* Défilement interne (écran tactile, `$lib/defileur.js`) : le conteneur de
+     l'élément collant a son PROPRE calque — sans lui, Safari iOS fait trembler
+     le collant dans le bloc qui défile, voire fige le défilement (mesuré au
+     simulateur iOS 27, 2026-11-19 ; voir app.css, « Les collants »). */
+  :global(html.defilement-interne) .slider {
+    transform: translateZ(0);
   }
 </style>

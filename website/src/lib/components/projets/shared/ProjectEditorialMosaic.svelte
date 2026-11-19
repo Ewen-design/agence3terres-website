@@ -88,7 +88,7 @@
   }
 
   .project-editorial-mosaic__grid {
-    --mosaic-tile-height: min(98vh, 76rem);
+    --mosaic-tile-height: min(98svh, 76rem);
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: clamp(0.45rem, 0.8vw, 0.7rem);
@@ -163,6 +163,6 @@
   }
 
   @media (pointer: coarse) and (orientation: landscape) and (max-height: 600px) {
-    .project-editorial-mosaic__grid { --mosaic-tile-height: min(78vh, 30rem); }
+    .project-editorial-mosaic__grid { --mosaic-tile-height: min(78svh, 30rem); }
   }
 </style>

@@ -70,7 +70,7 @@
     color: var(--project-surface-ink, #121212);
     /* Même correction que sur les deux autres blocs éditoriaux : sans marge
        haute, le bloc se colle au bord de sa bande quand il l'ouvre. */
-    padding: clamp(3rem, 7vh, 5.5rem) var(--project-side-padding, 1.25rem) 6.5rem;
+    padding: clamp(3rem, 7svh, 5.5rem) var(--project-side-padding, 1.25rem) 6.5rem;
   }
 
   .editorial-mobile-showcase__media-grid {
@@ -80,6 +80,11 @@
   }
 
   .editorial-mobile-showcase__media {
+    /* Le repère du calque d'affiche d'AutoVideo (`inset: 0`) : sans lui, le
+       calque s'accrochait à toute la page projet une fois l'arrivée du bloc
+       finie — l'affiche, étirée sur 9 830 px, se voyait pixelisée derrière la
+       citation (iPhone, vidéo qui ne joue pas). */
+    position: relative;
     margin: 4rem 0 0;
     height: var(--editorial-mobile-showcase-media-min-height, 32rem);
     overflow: hidden;
@@ -136,7 +141,7 @@
 
   @media (max-width: 900px) {
     .editorial-mobile-showcase {
-      padding: clamp(2rem, 5vh, 3.2rem) var(--project-side-padding, 0.8rem) 4rem;
+      padding: clamp(2rem, 5svh, 3.2rem) var(--project-side-padding, 0.8rem) 4rem;
     }
 
     .editorial-mobile-showcase__media-grid,

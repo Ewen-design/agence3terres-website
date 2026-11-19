@@ -23,6 +23,7 @@
   import { installDesktopWheelDamping } from "$lib/desktopWheelDamping.js";
   import { installBlurButtonWipe } from "$lib/blurButtonWipe.js";
   import { installFixedResync } from "$lib/fixedResync.js";
+  import { installerDefileur } from "$lib/defileur.js";
   import {
     installerDefilementLisse,
     synchroniserDefilementLisse,
@@ -105,7 +106,7 @@
     "/projet1": {
       title: "Serein Design | Projet Agence 3 Terres",
       description:
-        "Identité visuelle, site web et direction artistique de Carousel, l'objet de bureau de Serein Design : découvrez le projet par Agence 3 Terres.",
+        "Logo, charte graphique et site web de Serein Design, la marque de Carousel, un objet de bureau : découvrez le projet par Agence 3 Terres.",
       imageAlt: "Projet Serein Design par Agence 3 Terres"
     },
     "/projet3": {
@@ -117,7 +118,7 @@
     "/projet4": {
       title: "Ludosphères | Projet Agence 3 Terres",
       description:
-        "Identité visuelle, site d'artiste et direction artistique : découvrez le projet Ludosphères par Agence 3 Terres.",
+        "Site d'artiste, galerie en 3D, logo et charte graphique : découvrez le projet Ludosphères par Agence 3 Terres.",
       imageAlt: "Projet Ludosphères par Agence 3 Terres"
     },
     "/projet6": {
@@ -129,13 +130,13 @@
     "/projet9": {
       title: "Centre Harmonia | Projet Agence 3 Terres",
       description:
-        "Identité visuelle, site web et direction artistique : découvrez le Centre Harmonia, médecine esthétique et capillaire à Paris, par Agence 3 Terres.",
+        "Refonte du site et charte graphique du Centre Harmonia, médecine esthétique et capillaire : découvrez le projet par Agence 3 Terres.",
       imageAlt: "Projet Centre Harmonia par Agence 3 Terres"
     },
     "/projet8": {
       title: "Lybra | Projet Agence 3 Terres",
       description:
-        "Logo, identité visuelle et charte graphique: découvrez la modernisation de la marque Lybra par Agence 3 Terres.",
+        "Logo et charte graphique : découvrez la modernisation du colibri de Lybra par Agence 3 Terres.",
       imageAlt: "Projet Lybra par Agence 3 Terres"
     }
   };
@@ -469,6 +470,9 @@
       if (destroyed) return;
 
       checkMobile();
+      // Déjà fait par hooks.client.js quand la page est prérendue ; ici pour
+      // la coquille 200.html (page inconnue), montée sans HTML préalable.
+      installerDefileur();
       initScrollEngine();
       updateScrollEngineViewport();
       removeTouchFlipListener = installTouchFlipAnimation();
@@ -640,7 +644,10 @@
   </a>
 
   <div class="ios-top-mask" aria-hidden="true"></div>
-  <div class="ios-bottom-mask" aria-hidden="true"></div>
+  <!-- Plus de cache noir en BAS depuis le 2026-11-19 (voir le style de
+       `.ios-top-mask`) : sa hauteur suivait la zone sûre du bas, que Safari
+       fait varier d'une trentaine de pixels à chaque repli de sa barre — un
+       bloc noir qui s'ajoutait en bas de l'écran en défilant vite. -->
 
   <Header />
   <SiteIntroLoader />
@@ -650,16 +657,23 @@
        page. C'est ce bloc qui recule en carte quand le menu s'ouvre
        (FullscreenMenu, « menu sous la page ») : le menu est posé dessous.
        Au repos il n'a ni transform ni contexte d'empilement. -->
-  <div class="page-stage">
-    <div class="page-wrapper" bind:this={pageWrapper}>
-      <slot />
-    </div>
+  <!-- `.defileur` : sur écran tactile, LE bloc qui défile (le document, lui,
+       ne bouge plus — voir app.css et `$lib/defileur.js`). Sur bureau, ses
+       deux enveloppes sont transparentes (`display: contents`). -->
+  <div class="defileur">
+    <div class="defileur-contenu">
+      <div class="page-stage">
+        <div class="page-wrapper" bind:this={pageWrapper}>
+          <slot />
+        </div>
 
-    {#if isProjectPage}
-      <ProjectNextFooter project={nextProject} />
-    {:else if !hideFooter}
-      <Footer />
-    {/if}
+        {#if isProjectPage}
+          <ProjectNextFooter project={nextProject} />
+        {:else if !hideFooter}
+          <Footer />
+        {/if}
+      </div>
+    </div>
   </div>
 
   <div class="route-transition-layer" bind:this={transitionLayer} aria-hidden="true"></div>
@@ -675,8 +689,7 @@
     background: var(--bg-deep, #000);
   }
 
-  .ios-top-mask,
-  .ios-bottom-mask {
+  .ios-top-mask {
     display: none;
   }
 
@@ -812,8 +825,8 @@
     /* Solid black cap over the top safe-area (status bar / dynamic island).
        On the widened-notch iPhones the browser exposes this strip over the
        page when the toolbar collapses, and full-bleed animations don't paint
-       into it → a visible gap. This bar always fills it. The `+8px` bleed (like
-       the bottom mask) kills any subpixel seam during scroll/animation.
+       into it → a visible gap. This bar always fills it. (Historique : une
+       marge de 8 px, comme l'ancien cache du bas, retiré depuis.)
        z-index sits ABOVE page content but BELOW the header (600000) so the
        mobile menu control stays visible and tappable over the bar. */
     /* 2026-10-20 : le cache part de 120 px AU-DESSUS de l'écran et s'arrête
@@ -823,29 +836,38 @@
        décalait ses éléments fixes de quelques pixels (voir
        `$lib/fixedResync.js`). Décalé, il ne fait plus que prolonger le noir
        de la barre d'état. */
+    /* 2026-11-19 : deux captures du client (iPhone, Safari) — une BANDE noire
+       de 88 px sous la barre d'état, header descendu d'autant, puis un liseré
+       noir d'un pixel au même endroit. C'était ce cache : Safari avait décalé
+       ses éléments fixes (le bug WebKit de `$lib/fixedResync.js`), et sa
+       marge de 120 px, hors champ au repos, descendait dans l'écran. Dans
+       Safari la zone sûre vaut 0 : il n'y a RIEN à cacher. Sa taille est donc
+       maintenant proportionnelle à la zone sûre — nulle dans Safari, où plus
+       aucun décalage ne peut le faire voir ; ailleurs (zone sûre de 47 px), la
+       même marge qu'avant, ~3 fois la zone au-dessus de l'écran. */
     .ios-top-mask {
       position: fixed;
       left: 0;
       right: 0;
-      top: -120px;
+      top: calc(env(safe-area-inset-top, 0px) * -3);
       display: block;
-      height: calc(env(safe-area-inset-top, 0px) + 120px);
+      height: calc(env(safe-area-inset-top, 0px) * 4);
       background: var(--bg-deep, #000);
       pointer-events: none;
       z-index: 500000;
     }
 
-    .ios-bottom-mask {
-      position: fixed;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      display: block;
-      height: calc(env(safe-area-inset-bottom, 0px) + 6px);
-      background: var(--bg-deep, #000);
-      pointer-events: none;
-      z-index: 999999;
-    }
+    /* Le cache du BAS a été retiré le 2026-11-19 (second retour client : « en
+       défilant vite, un flash noir dans le bas de l'écran, comme un bloc qui
+       s'ajoute »). Mesuré sur les captures de son iPhone : un aplat de 64 px
+       en bas de chaque page, sous la barre d'adresse — zone sûre du bas
+       (~58 px dans Safari, barre compacte) + 6 px. Or Safari fait varier
+       cette zone d'une trentaine de pixels à chaque repli ou dépli de sa
+       barre : le cache grandissait et rétrécissait d'un coup en plein
+       défilement. Il ne couvrait plus rien d'utile : `html` et `body` sont
+       déjà du même noir (`app.css`), un trou sous la barre a la même couleur.
+       Sans lui, la page passe sous la barre d'adresse flottante, comme partout
+       ailleurs dans Safari. */
   }
 
   @media (max-width: 900px) {
@@ -872,8 +894,7 @@
      the user sees at the bottom on Safari). Landscape has no top/bottom unsafe
      strip to cover, so drop both masks entirely here. */
   @media (pointer: coarse) and (orientation: landscape) and (max-height: 600px) {
-    .ios-top-mask,
-    .ios-bottom-mask {
+    .ios-top-mask {
       display: none !important;
     }
   }

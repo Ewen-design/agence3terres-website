@@ -63,7 +63,7 @@
     min-height: 0;
   }
   .studio-showcase :global(.about-editorial-single-showcase__content) {
-    grid-template-rows: 100vh auto 16vh;
+    grid-template-rows: 100svh auto 16svh;
     min-height: 0;
   }
 
@@ -71,10 +71,10 @@
      décalé, un peu plus bas, sur 2 colonnes. ──────────────────────────────── */
   @media (min-width: 901px) {
     .studio-showcase :global(.about-editorial-single-showcase__media) {
-      height: 168vh;
+      height: 168svh;
     }
     .studio-showcase :global(.about-editorial-single-showcase__floor) {
-      top: 168vh;
+      top: 168svh;
     }
     .studio-showcase :global(.about-editorial-single-showcase__media img) {
       object-position: right center;
@@ -83,7 +83,7 @@
       grid-column: 1 / 3;
       justify-self: start;
       margin-left: clamp(3rem, 8vw, 9rem);
-      padding-top: clamp(16rem, 26vh, 24rem);
+      padding-top: clamp(16rem, 26svh, 24rem);
     }
     .studio-showcase :global(.about-editorial-single-showcase__text) {
       max-width: 27ch;
@@ -93,7 +93,7 @@
   /* Mobile : l'image (contain) est courte → on remonte le texte pour combler. */
   @media (max-width: 900px) {
     .studio-showcase :global(.about-editorial-single-showcase__text-block) {
-      margin-top: -56vh;
+      margin-top: -56svh;
     }
   }
 </style>

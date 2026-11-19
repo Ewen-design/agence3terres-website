@@ -41,14 +41,25 @@ const railChecked = new WeakSet();
  *  `.reveal-word.is-on`) : un mot reçoit sa classe — donc son animation et
  *  son calque — à SON heure, au lieu que tous les reçoivent dans la même
  *  image avec un délai. */
+/** L'écart entre deux mots : `stagger` (ms) s'il est donné, la cadence de la
+ *  home sinon. Un petit écart (4 ms) fait arriver un texte d'un bloc à l'œil
+ *  (2026-11-19, séquence Reflet / Création / Ambition d'/apropos : « plus une
+ *  ligne à la fois mais tout en même temps »). Éviter 0 sur un long texte :
+ *  tous ses calques naîtraient dans la même image. */
+function ecartMots(node) {
+  const v = node.dataset.revealStagger;
+  return v !== undefined && v !== "" && Number.isFinite(+v) ? Math.max(0, +v) : WORD_STAGGER;
+}
+
 function lancerMots(node) {
   const mots = node.querySelectorAll(".reveal-word");
   if (!mots.length) return;
   const delai = parseFloat(node.style.getPropertyValue("--reveal-delay")) || 0;
+  const ecart = ecartMots(node);
   const depart = performance.now() + delai;
   let i = 0;
   const pas = (t) => {
-    while (i < mots.length && t >= depart + i * WORD_STAGGER) mots[i++].classList.add("is-on");
+    while (i < mots.length && t >= depart + i * ecart) mots[i++].classList.add("is-on");
     if (i < mots.length) requestAnimationFrame(pas);
   };
   requestAnimationFrame(pas);
@@ -75,7 +86,7 @@ function revealNode(node) {
     // valeurs normales — sa couleur héritée comprise, qui suit donc les
     // changements de thème des pages projet.
     if (words) node.classList.add("reveal--settled");
-  }, 1300 + words * WORD_STAGGER);
+  }, 1300 + words * ecartMots(node));
 }
 
 /*  ── Les éléments hors champ SUR LE CÔTÉ (2026-11-18) ──────────────────────
@@ -240,6 +251,7 @@ export function reveal(node, options = {}) {
   // redessine dans celle du dessous, recalé au pixel — un léger glissement,
   // une fois le texte posé, qu'on lit comme un texte qui « se replace ».
   if (options.keepLayer) node.dataset.revealKeepLayer = "";
+  if (options.stagger !== undefined) node.dataset.revealStagger = String(options.stagger);
 
   const wantsWords = options.words ?? isTextContent(node);
   if (wantsWords) {

@@ -147,7 +147,7 @@
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    padding: clamp(3.2rem, 8vh, 6rem) 0 max(clamp(1.6rem, 3.5vw, 2.6rem), var(--safe-bottom-offset));
+    padding: clamp(3.2rem, 8svh, 6rem) 0 max(clamp(1.6rem, 3.5vw, 2.6rem), var(--safe-bottom-offset));
     color: #f5f1e8;
   }
 

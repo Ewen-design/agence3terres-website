@@ -89,7 +89,13 @@ function ajusterSizes(img) {
  *  simplement, sans animation : personne ne la regardait. */
 const sousLesYeux = new WeakSet();
 let regard = null;
+const regardees = new Set();
+function oublierRegard(img) {
+  regard?.unobserve(img);
+  regardees.delete(img);
+}
 function observerRegard(img) {
+  regardees.add(img);
   if (!regard) {
     regard = new IntersectionObserver((entries) => {
       for (const e of entries) {
@@ -108,13 +114,27 @@ function preparerArrivee(img) {
   const fini = () => {
     img.removeEventListener("load", charge);
     img.removeEventListener("error", fini);
-    regard?.unobserve(img);
+    oublierRegard(img);
     if (sousLesYeux.has(img)) img.dataset.arrivee = "ok";
     else delete img.dataset.arrivee;
   };
+  // Filet (2026-11-19) : l'image reste TRANSPARENTE tant que `decode()` n'a pas
+  // répondu, et Safari peut laisser cette promesse en suspens (grande image,
+  // mémoire tendue, image retirée puis remise dans la page) — elle restait
+  // alors vide pour toujours. Passé ce délai, elle s'affiche quand même :
+  // décodée au moment de la peindre, comme avant ce module.
+  let filet = 0;
+  const finiUneFois = () => {
+    if (!filet) return;
+    clearTimeout(filet);
+    filet = 0;
+    fini();
+  };
   const charge = () => {
-    if (typeof img.decode === "function") img.decode().then(fini, fini);
-    else fini();
+    if (filet) return;
+    filet = setTimeout(finiUneFois, 1200);
+    if (typeof img.decode === "function") img.decode().then(finiUneFois, finiUneFois);
+    else finiUneFois();
   };
   img.addEventListener("load", charge);
   img.addEventListener("error", fini);
@@ -132,6 +152,14 @@ export function installLazyAhead() {
   /** cible observée → images qu'elle porte (l'image elle-même, ou son rail) */
   const groups = new Map();
 
+  /*  Une file d'attente (4 images d'avance à la fois, priorité basse) a été
+   *  essayée le 2026-11-19 puis RETIRÉE : aucun gain mesuré (Chromium charge
+   *  lui-même ses images différées très tôt ; WebKit à 2,4 Mb/s ne montrait
+   *  pas de trou), et en freinant le préchargement elle faisait arriver plus
+   *  d'images SOUS LES YEUX pendant le défilement — chacune avec son fondu,
+   *  c'est-à-dire un calque créé puis détruit par WebKit en plein défilement
+   *  (Safari bureau, voir plus bas `regard`). Le vrai voleur de débit était
+   *  ailleurs : les affiches des vidéos (voir AutoVideo). */
   const load = (img) => {
     if (img.getAttribute("loading") === "lazy") img.setAttribute("loading", "eager");
   };
@@ -187,6 +215,7 @@ export function installLazyAhead() {
 
   const scan = () => {
     // Les cibles d'une page quittée ne croiseront plus jamais la fenêtre.
+    for (const img of regardees) if (!img.isConnected) oublierRegard(img);
     for (const target of groups.keys()) {
       if (!target.isConnected) {
         io.unobserve(target);

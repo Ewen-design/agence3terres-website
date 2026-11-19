@@ -130,7 +130,7 @@
     width: 100%;
     background: var(--vl-bg);
     color: var(--vl-ink);
-    padding: clamp(4.5rem, 11vh, 9rem) var(--vl-inset) clamp(5.5rem, 13vh, 11rem);
+    padding: clamp(4.5rem, 11svh, 9rem) var(--vl-inset) clamp(5.5rem, 13svh, 11rem);
     overflow-x: clip;
   }
 
@@ -144,7 +144,7 @@
   /* ── Le bloc ────────────────────────────────────────────────────────────── */
   .values__panel {
     position: relative;
-    height: min(78vh, 860px);
+    height: min(78svh, 860px);
     border-radius: var(--vl-radius);
     overflow: hidden;
     background: var(--vl-panel);
@@ -227,7 +227,7 @@
     display: grid;
     place-items: center start;
     min-height: 0;
-    padding: 0 clamp(0.5rem, 2vw, 2.6rem) clamp(1rem, 3vh, 2.5rem);
+    padding: 0 clamp(0.5rem, 2vw, 2.6rem) clamp(1rem, 3svh, 2.5rem);
   }
 
   .values__slot {
@@ -330,7 +330,7 @@
   /* ── Mobile : le bloc, puis les noms en dessous ─────────────────────────── */
   @media (max-width: 900px) {
     .values {
-      padding: clamp(3.5rem, 9vh, 6rem) 1rem clamp(4rem, 10vh, 7rem);
+      padding: clamp(3.5rem, 9svh, 6rem) 1rem clamp(4rem, 10svh, 7rem);
     }
 
     .values__inner {
@@ -339,7 +339,7 @@
     }
 
     .values__panel {
-      height: min(72vh, 620px);
+      height: min(72svh, 620px);
       border-radius: 18px;
     }
 

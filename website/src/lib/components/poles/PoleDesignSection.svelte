@@ -62,35 +62,35 @@
     min-height: 0;
   }
   .design-showcase :global(.about-editorial-single-showcase__content) {
-    grid-template-rows: 100vh auto 16vh;
+    grid-template-rows: 100svh auto 16svh;
     min-height: 0;
   }
 
   /* Mobile : texte du showcase design légèrement descendu. */
   @media (max-width: 900px) {
     .design-showcase :global(.about-editorial-single-showcase__text-block) {
-      margin-top: 5vh;
+      margin-top: 5svh;
     }
   }
 
-  /* ── Desktop : la photo (200vh) occupe toute la 1ʳᵉ rangée ; le texte passe
+  /* ── Desktop : la photo (200svh) occupe toute la 1ʳᵉ rangée ; le texte passe
      juste en dessous, à gauche, avec un léger chevauchement. ──────────────── */
   @media (min-width: 901px) {
     .design-showcase :global(.about-editorial-single-showcase__media) {
-      height: 200vh;
+      height: 200svh;
     }
     .design-showcase :global(.about-editorial-single-showcase__floor) {
-      top: 200vh;
+      top: 200svh;
     }
     .design-showcase :global(.about-editorial-single-showcase__content) {
-      grid-template-rows: 200vh auto 16vh;
+      grid-template-rows: 200svh auto 16svh;
     }
     .design-showcase :global(.about-editorial-single-showcase__text-block) {
       grid-column: 1 / -1;
       justify-self: start;
       margin-left: clamp(1.5rem, 5.5vw, 5.5rem);
       padding-top: 0;
-      margin-top: -38vh;
+      margin-top: -38svh;
     }
     .design-showcase :global(.about-editorial-single-showcase__text) {
       max-width: 32ch;

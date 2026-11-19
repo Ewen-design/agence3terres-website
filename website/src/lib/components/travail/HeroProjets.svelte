@@ -408,7 +408,7 @@
     left: 0;
     right: 0;
     bottom: 0;
-    height: 22vh;
+    height: 22svh;
     height: 22svh;
     background: linear-gradient(
       to top,
@@ -550,7 +550,7 @@
     position: relative;
     z-index: 3;
     background: transparent;
-    padding: 12vh 0 18vh;
+    padding: 12svh 0 18svh;
   }
 
   .after-grid {
@@ -690,7 +690,7 @@
     }
 
     .after-section {
-      padding: 0 0 28vh;
+      padding: 0 0 28svh;
       background: var(--bg-deep, #000);
     }
 

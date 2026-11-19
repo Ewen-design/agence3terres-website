@@ -54,7 +54,7 @@
     width: 100%;
     background: var(--bg-deep, #050709);
     color: #f4efe6;
-    padding: clamp(3.5rem, 9vh, 7rem) var(--site-inset) clamp(3rem, 8vh, 6.5rem);
+    padding: clamp(3.5rem, 9svh, 7rem) var(--site-inset) clamp(3rem, 8svh, 6.5rem);
     overflow-x: clip;
   }
 
@@ -62,7 +62,7 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: clamp(2.6rem, 6vh, 4.6rem);
+    gap: clamp(2.6rem, 6svh, 4.6rem);
   }
 
   /* Même gabarit que la phrase d'accroche du bloc suivant. */
@@ -109,11 +109,11 @@
 
   @media (max-width: 900px) {
     .hstmt {
-      padding: clamp(3rem, 8vh, 5rem) 1rem clamp(2.5rem, 7vh, 5rem);
+      padding: clamp(3rem, 8svh, 5rem) 1rem clamp(2.5rem, 7svh, 5rem);
     }
 
     .hstmt__inner {
-      gap: clamp(2rem, 4.4vh, 3rem);
+      gap: clamp(2rem, 4.4svh, 3rem);
     }
   }
 </style>

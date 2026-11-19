@@ -71,6 +71,7 @@ export function installerDefilementLisse() {
     virtualScroll: ({ deltaX, deltaY }) => Math.abs(deltaY) >= Math.abs(deltaX)
   });
   window.lenis = lenis;
+  if (positionsEntieres()) avancerAuPixelPres(lenis.animate);
 
   // Le moteur de défilement du site lit la position dans la MÊME image que
   // celle où Lenis la pose, et ne la lisse plus par-dessus.
@@ -79,6 +80,52 @@ export function installerDefilementLisse() {
 
   synchroniserDefilementLisse();
   return lenis;
+}
+
+// ── Safari : la position de défilement est un nombre ENTIER (2026-11-19) ──
+//  Mesuré dans le vrai Safari du client : Lenis demande 47,9 puis 54,41…,
+//  Safari pose 47 puis 54 (arrondi vers le bas). En pleine glissade ça ne se
+//  voit pas ; dans le ralenti de fin de geste, où Lenis avance de moins d'un
+//  pixel par image, la page avançait par à-coups — 1, 0, 1, 0, 0, 1, 0, 0, 0,
+//  1 px — pendant un quart de seconde : la saccade « pas partout » de Safari,
+//  que Firefox (positions fractionnaires) n'a pas. Les effets du moteur de
+//  défilement, calés sur la position de Lenis, décalaient en plus d'une
+//  fraction de pixel par rapport à la page.
+//  Sur ces navigateurs, Lenis avance donc au pixel près : même courbe, des
+//  pas entiers, et jamais une image immobile avant l'arrivée (au moins 1 px
+//  par image dans le ralenti). Firefox et Chrome gardent Lenis tel quel.
+function positionsEntieres() {
+  const boite = document.createElement("div");
+  boite.style.cssText =
+    "position:absolute;top:0;left:-9999px;width:10px;height:10px;overflow:scroll;visibility:hidden";
+  boite.appendChild(document.createElement("div")).style.height = "100px";
+  document.body.appendChild(boite);
+  boite.scrollTop = 10.5;
+  const entier = boite.scrollTop === 10;
+  boite.remove();
+  return entier;
+}
+
+function avancerAuPixelPres(animation) {
+  const avancerDeBase = animation.advance.bind(animation);
+  animation.advance = function (deltaTime) {
+    // Les défilements à durée (ancres, `scrollTo` avec `duration`) : inchangés.
+    if (!this.isRunning || !this.lerp || (this.duration && this.easing)) {
+      return avancerDeBase(deltaTime);
+    }
+    const depart = Math.round(this.value);
+    const reste = this.to - depart;
+    let pas = Math.round(reste * (1 - Math.exp(-this.lerp * 60 * deltaTime)));
+    if (pas === 0) pas = Math.sign(reste);
+    if (Math.abs(reste) < 1 || Math.abs(pas) >= Math.abs(reste)) {
+      this.value = this.to;
+      this.stop();
+      this.onUpdate?.(this.value, true);
+      return;
+    }
+    this.value = depart + pas;
+    this.onUpdate?.(this.value, false);
+  };
 }
 
 /** Met Lenis en pause ou le relance selon l'état de la page. À appeler quand

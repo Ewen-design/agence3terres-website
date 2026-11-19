@@ -78,7 +78,9 @@
    *  Le cadrage par carte vaut pour les deux mises en page : `fit` et
    *  `position` (grand écran), que `mobileFit` et `mobilePosition` remplacent
    *  sur téléphone quand le même point de cadrage ne tient plus — le cadre y
-   *  est presque carré, mais pas au même format. */
+   *  est presque carré, mais pas au même format. Et `mobileImage` (2026-11-19)
+   *  remplace l'image sur téléphone quand aucun point de cadrage ne suffit :
+   *  un appareil en paysage dont la carte plein écran ne garderait qu'un bout. */
   export let title = "";
   export let background = "";
   export let continu = false;
@@ -217,7 +219,7 @@
               class="fcards__img"
               style:object-fit={card.mobileFit ?? card.fit ?? "cover"}
               style:object-position={card.mobilePosition ?? card.position ?? "center"}
-              src={card.image}
+              src={card.mobileImage ?? card.image}
               alt={card.alt}
               loading="lazy"
               decoding="async"
@@ -713,5 +715,14 @@
     .fcards__card + .fcards__card {
       margin-top: clamp(0.55rem, 0.8vw, 0.85rem);
     }
+  }
+
+  /* Défilement interne (écran tactile, `$lib/defileur.js`) : le conteneur de
+     l'élément collant a son PROPRE calque — sans lui, Safari iOS fait trembler
+     le collant dans le bloc qui défile, voire fige le défilement (mesuré au
+     simulateur iOS 27, 2026-11-19 ; voir app.css, « Les collants »). */
+  :global(html.defilement-interne) .fcards__track,
+  :global(html.defilement-interne) .fcards__desk {
+    transform: translateZ(0);
   }
 </style>

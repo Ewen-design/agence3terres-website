@@ -1,5 +1,10 @@
 <script>
-  // ── Lybra — identité de marque ────────────────────────────────────────────
+  // ── Lybra — le logo et la charte graphique ────────────────────────────────
+  //  Réécrite le 2026-11-19 : le travail se limitait au LOGO (le colibri,
+  //  modernisé) et à la CHARTE (couleurs, polices, règles) — pas de site. Les
+  //  faits viennent du récapitulatif livré au client (`Lybra Media/logos/
+  //  recap.pdf`) ; les textes ne décrivent plus les photos.
+  //
   //  La page suit la trame commune aux pages projet : le hero, une accroche
   //  posée sur une grande image, « notre rôle » en volets à visuel collant,
   //  l'intention sur la bande sombre, la marque déclinée en onglets, ce qui a
@@ -43,17 +48,17 @@
       { label: "Localisation", value: "France" },
       {
         label: "Services",
-        value: ["Logo", "Identité visuelle", "Charte graphique"]
+        value: ["Logo", "Charte graphique"]
       }
     ]}
-    ctaLabel="Visiter le site"
+    ctaLabel="Découvrir Lybra"
     ctaHref="https://lybrasystems.com"
     ctaExternal={true}
   />
 
   <div class="project-theme-band">
     <ProjectEditoBadge
-      text="<span class='hl'>La marque avait déjà son colibri, mais un colibri daté.</span> Il fallait le moderniser sans le trahir, et lui donner tout ce qui lui manquait autour."
+      text="<span class='hl'>Lybra Systems avait déjà un colibri pour logo, mais il avait vieilli.</span> Le client voulait garder l'oiseau et le remettre au goût du jour. Nous l'avons redessiné, puis nous avons écrit la charte qui va autour : les couleurs, les polices et leurs règles."
       image="/images/lybra-sac.webp"
       mobileImage="/images/lybra-sac-mobile.webp"
       alt="Un sac de voyage bleu Lybra, porté à bout de bras dans le ciel"
@@ -64,11 +69,11 @@
     <ProjectFlaps
       continu
       background="var(--project-surface-bg, var(--bg-deep, #050709))"
-      title="Quatre chantiers, <br />un seul système."
+      title="Un logo,<br />puis sa charte."
       cards={[
         {
-          title: "Un emblème modernisé",
-          text: "Le colibri de la marque a été entièrement redessiné : des formes plus nettes, un geste plus franc, et une <span class='hl'>lisibilité tenue</span> jusqu'aux très petites tailles.",
+          title: "Le colibri, redessiné",
+          text: "Même oiseau, nouveau dessin. Moins de traits, des courbes plus franches, et <span class='hl'>un colibri qui reste lisible en tout petit</span>, sur une photo de profil comme en favicon.",
           // L'enseigne lumineuse en cube (2026-10-10, mockup du client). Le
           // cadre va de 1,06:1 (bureau) à 0,48:1 (tablette verticale) : le
           // fichier est HAUT (2000×3250), resserré autour du cube et de sa
@@ -80,8 +85,8 @@
           alt: "L'enseigne lumineuse en cube de Lybra, le colibri et le nom, de nuit"
         },
         {
-          title: "Une identité complète",
-          text: "Palette, contrastes, associations de couleurs et règles de composition : un <span class='hl'>système cohérent</span> de la carte de visite à l'affichage grand format.",
+          title: "Quatre couleurs",
+          text: "Un bleu nuit qui domine, un bleu ciel en appui, un blanc légèrement bleuté pour respirer. <span class='hl'>Le vert reste un accent</span> : il ne dépasse jamais la surface des bleus, c'est ce qui le garde visible.",
           // Le livre ouvert montre le système en vrai : bleu en couverture,
           // vert en pleine page, le colibri en blanc.
           image: "/images/lybra-livre.webp",
@@ -89,15 +94,15 @@
           alt: "Un livre carré Lybra ouvert entre deux mains : pages bleue et verte"
         },
         {
-          title: "Une charte livrée",
-          text: "Versions monochromes, fonds autorisés, déclinaisons documentées et fichiers <span class='hl'>prêts à l'emploi</span> en SVG, PNG et WebP.",
+          title: "Une règle pour le dégradé",
+          text: "Il va toujours du haut vers le blanc. <span class='hl'>Le haut porte la marque, le bas reçoit le texte</span>, l'image ou le bouton. C'est le fond prévu pour les posts et les carrousels.",
           image: "/images/lybra-sachet.webp",
           position: "42% 50%",
           alt: "Un sac en dégradé bleu frappé du colibri, porté dans la rue"
         },
         {
-          title: "Une marque en main",
-          text: "Cartes gravées, coffret, papeterie : l'emblème quitte l'écran et garde exactement la <span class='hl'>même tenue</span> sur la matière.",
+          title: "Deux polices",
+          text: "Rethink Sans pour tous les textes, des titres aux sous-titres vidéo : elle est libre, donc utilisable partout. <span class='hl'>Trust est réservée au nom</span>, dessiné à côté de l'oiseau, et aux grands titres.",
           image: "/images/lybra-cartes.webp",
           alt: "Cartes de visite Lybra"
         }
@@ -107,11 +112,11 @@
 
   <div class="project-theme-band theme-deep">
     <ProjectEditorialStatement
-      text="<span class='hl'>Un colibri en plein envol.</span> Comme l'élan que la marque donne à ses clients : de la liberté, de la confiance, et une proximité qui ne se perd jamais en route."
+      text="<span class='hl'>Lybra Systems prend en main la prospection de ses clients, du ciblage jusqu'au rendez-vous.</span> Un métier où il faut être rapide et précis, d'où le colibri. Il fallait seulement qu'il en ait l'air."
     />
 
     <ProjectImageTabs
-      title="Un seul emblème —<br /><span class='dim'>autant de fonds qu'il en faut.</span>"
+      title="Pour le logo, une règle :<br /><span class='dim'>le fond décide de sa couleur.</span>"
       // Les trois planches de fond sont en 16/9 : elles remplissent le cadre de
       // bureau sans perdre un pixel. Sur téléphone (cadre 4/3), les deux à
       // fond UNI restent entières (`contain`) et leur aplat, relevé au pixel,
@@ -150,7 +155,7 @@
           alt: "Affichage Lybra grand format"
         }
       ]}
-      note="Chaque teinte a sa version du logo et ses fonds autorisés. Le <span class='hl'>choix ne se discute plus</span> : il est écrit dans la charte."
+      note="Bleu nuit sur fond clair, blanc sur les deux bleus. <span class='hl'>On prend toujours la version qui contraste le plus</span>, et les versions noire et verte restent pour les cas techniques."
     />
   </div>
 
@@ -159,19 +164,19 @@
       title="La charte, en clair."
       items={[
         {
-          label: "Teintes",
-          figure: "3",
-          text: "Un bleu nuit pour la <span class='hl'>confiance</span>, un bleu ciel pour l'envol, un vert pour la croissance."
+          label: "Couleurs",
+          figure: "4",
+          text: "Bleu nuit #003C6F, bleu ciel #35A7FF, vert #92CE6D et blanc #F1F9FF, avec leurs valeurs pour l'écran et pour l'impression."
+        },
+        {
+          label: "Polices",
+          figure: "2",
+          text: "Rethink Sans pour les contenus, Trust pour le nom. Si Trust manque, Rethink Sans en ExtraBold la remplace."
         },
         {
           label: "Déclinaisons",
-          figure: "8",
-          text: "Emblème seul ou accompagné du nom, en blanc, bleu nuit, bleu ciel ou vert — chaque combinaison nommée et documentée."
-        },
-        {
-          label: "Formats",
-          figure: "3",
-          text: "SVG, PNG et WebP, avec les fonds autorisés et les versions monochromes."
+          figure: "4",
+          text: "Bleu nuit ou bleu ciel sur fond clair, blanc sur l'un ou l'autre bleu. Un bicolore en plus, gardé pour les grands formats."
         }
       ]}
     />
@@ -179,7 +184,7 @@
 
   <div class="project-theme-band theme-deep">
     <ProjectEditorialMosaic
-      text="<span class='hl'>Une marque qui tient à l'écran</span>, sur le papier et en pleine rue."
+      text="<span class='hl'>Avant la livraison, la charte a été essayée</span> sur écran, en vidéo et sur le papier, pour vérifier que le colibri tenait partout."
       feature={{ src: "/images/lybra-macbook.webp", alt: "Identité Lybra appliquée sur un écran" }}
       items={[
         {
@@ -201,7 +206,7 @@
       tint="#36a7ff"
       primary={{
         label: "En ligne",
-        title: "Voir la marque là où elle travaille.",
+        title: "Lybra Systems, en ligne.",
         href: "https://lybrasystems.com",
         external: true,
         // Le fichier est en 16/9 : laissé ENTIER dans l'écran, avec sa propre
@@ -210,7 +215,7 @@
       }}
       secondary={{
         label: "Parlons-en",
-        title: "Votre marque mérite la même tenue.",
+        title: "Un logo qui a vieilli ? Parlons-en.",
         href: "/contact"
       }}
     />

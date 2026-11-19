@@ -346,7 +346,7 @@
   .footer-content {
     position: relative;
     z-index: 2;
-    min-height: 100lvh;
+    min-height: 100svh;
     display: flex;
     flex-direction: column;
     justify-content: flex-end;
@@ -364,7 +364,7 @@
   }
 
   .hero-block {
-    min-height: min(74lvh, 860px);
+    min-height: min(74svh, 860px);
     display: flex;
     align-items: end;
     gap: clamp(1.4rem, 4vw, 4rem);
@@ -582,10 +582,10 @@
 
     .footer {
       inset: auto 0 auto 0;
-      top: 30lvh;
+      top: 30svh;
       bottom: auto;
-      height: 70lvh;
-      min-height: 70lvh;
+      height: 70svh;
+      min-height: 70svh;
     }
 
     .footer-bg {
@@ -593,13 +593,13 @@
     }
 
     .footer-content {
-      height: 70lvh;
-      min-height: 70lvh;
+      height: 70svh;
+      min-height: 70svh;
       padding-bottom: max(clamp(2.1rem, 6.8vw, 2.7rem), env(safe-area-inset-bottom, 0px));
     }
 
     .hero-block {
-      min-height: calc(70lvh - clamp(5.5rem, 10vw, 7rem));
+      min-height: calc(70svh - clamp(5.5rem, 10vw, 7rem));
       align-items: end;
     }
 

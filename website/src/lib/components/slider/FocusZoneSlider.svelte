@@ -4,7 +4,7 @@
 
   export let slides = [];
   export let zoneHeight = "34svh";
-  export let itemHeightDesktop = "58vh";
+  export let itemHeightDesktop = "58svh";
   export let itemHeightMobile = "56svh";
   export let slideLinks = [];
   export let variant = "default";
@@ -277,7 +277,7 @@
     --number-color: rgba(245, 241, 232, 0.96);
     --left-gutter: clamp(2rem, 7vw, 7rem);
     --right-gutter: clamp(1.6rem, 4vw, 4.6rem);
-    --content-center-shift: -3.4vh;
+    --content-center-shift: -3.4svh;
     --content-center-shift-mobile: -2.2svh;
     position: relative;
     background: #000;
@@ -287,7 +287,7 @@
   .focus-zone-slider__sticky {
     position: sticky;
     top: 0;
-    height: 100vh;
+    height: 100svh;
     overflow: clip;
   }
 
@@ -429,22 +429,22 @@
   .focus-zone-slider__track {
     position: relative;
     z-index: 5;
-    margin-top: -100vh;
+    margin-top: -100svh;
     padding-left: var(--left-gutter);
     padding-right: clamp(7rem, 16vw, 20rem);
     pointer-events: none;
   }
 
   .focus-zone-slider__spacer {
-    height: calc(50vh - (var(--item-height-desktop) * 0.5));
+    height: calc(50svh - (var(--item-height-desktop) * 0.5));
   }
 
   .focus-zone-slider__spacer--top {
-    height: max(0px, calc(50vh - (var(--item-height-desktop) * 0.5) + 12vh));
+    height: max(0px, calc(50svh - (var(--item-height-desktop) * 0.5) + 12svh));
   }
 
   .focus-zone-slider__spacer--bottom {
-    height: max(0px, calc(50vh - (var(--item-height-desktop) * 0.5) + 10vh));
+    height: max(0px, calc(50svh - (var(--item-height-desktop) * 0.5) + 10svh));
   }
 
   .focus-zone-slider__item {
@@ -768,5 +768,13 @@
       opacity: 1;
       transform: translate3d(0, 0, 0);
     }
+  }
+
+  /* Défilement interne (écran tactile, `$lib/defileur.js`) : le conteneur de
+     l'élément collant a son PROPRE calque — sans lui, Safari iOS fait trembler
+     le collant dans le bloc qui défile, voire fige le défilement (mesuré au
+     simulateur iOS 27, 2026-11-19 ; voir app.css, « Les collants »). */
+  :global(html.defilement-interne) .focus-zone-slider {
+    transform: translateZ(0);
   }
 </style>

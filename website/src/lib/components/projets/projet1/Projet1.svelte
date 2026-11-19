@@ -1,13 +1,14 @@
 <script>
-  // ── Serein Design — la marque et le site de Carousel, un objet de bureau ──
-  //  Même trame que les autres pages projet (refaite le 2026-10-20 ; c'était
-  //  la page la plus courte, faute de visuels). Les textes reprennent ce que
-  //  dit serein-design.fr, ramené à l'essentiel.
+  // ── Serein Design — l'identité et le site de Carousel, un objet de bureau ──
+  //  Même trame que les autres pages projet. Réécrite le 2026-11-19 : ce que
+  //  nous avons fait (le logo, la charte graphique, le site) passe devant, et
+  //  l'objet n'est présenté qu'en quelques lignes. Les textes ne décrivent plus
+  //  les photos : ce sont les photos qui illustrent le texte. La charte vient
+  //  du brandbook (`serein design/DA/Serein Design — Brandbook.pdf`).
   //
   //  Les médias :
-  //   • vidéos — `media-source/encode-serein.sh` : quatre mockups livrés SANS
-  //     FOND, posés sur un fond studio (dégradé linéaire #60151c →
-  //     #0d0906) ; les mêmes masters fournissent deux plans au reel de la home ;
+  //   • vidéos — `media-source/encode-serein.sh` : depuis le 2026-11-19, les
+  //     nouveaux plans Serein du reel de la home (le hero, le duo d'ouverture) ;
   //   • images — `media-source/serein-visuels.py` : les mockups de la marque
   //     (`serein design/logo sd/`) et les photographies de l'objet
   //     (`visuels/new/`, converties de Display P3 en sRGB).
@@ -23,22 +24,23 @@
   import ProjectFlaps from "$lib/components/home/HomeFeatureCards.svelte";
   import ProjectImageTabs from "$lib/components/projets/blocks/ProjectImageTabs.svelte";
   import ProjectFigures from "$lib/components/projets/blocks/ProjectFigures.svelte";
-  import ProjectCaptionCards from "$lib/components/projets/blocks/ProjectCaptionCards.svelte";
   import ProjectActionDuo from "$lib/components/projets/blocks/ProjectActionDuo.svelte";
   import ProjectQuote from "$lib/components/projets/blocks/ProjectQuote.svelte";
 
   import { videoSources, videoPoster } from "$lib/components/shared/media/videoSources.js";
 
-  // Jeton de cache des vidéos Serein : elles ont été réencodées SOUS LE MÊME
-  // NOM le 2026-10-20 (nouveau fond studio rouge). Sans lui, une navigation
-  // interne ressert l'ancien poster. À changer à chaque passage de
+  // Jeton de cache des vidéos Serein : elles sont réencodées SOUS LE MÊME NOM
+  // (le 2026-10-20, puis le 2026-11-19 avec les plans du reel). Sans lui, une
+  // navigation interne ressert l'ancien poster. À changer à chaque passage de
   // `encode-serein.sh` — et dans `projets.js` (posters du hero) aussi.
-  const V = { version: "2" };
+  const V = { version: "3" };
 </script>
 
 <ProjectThemePage>
-  <!-- Le téléphone qui pivote sur le fond studio : beaucoup d'air autour de
-       l'appareil, le titre se pose sur le fond et jamais sur l'écran. -->
+  <!-- Bureau : le téléphone de trois quarts puis le haut de son écran, le
+       grand titre posé à gauche sur le noir studio. Téléphone : le duo d'abord
+       (le titre, en bas, tombe sur la table sombre), puis la main qui retourne
+       l'écran. Le détail est dans `encode-serein.sh`. -->
   <ProjectHeroProjetsStyle
     title="Serein Design"
     image={videoPoster("serein-hero", V)}
@@ -52,7 +54,7 @@
       { label: "Localisation", value: "France" },
       {
         label: "Services",
-        value: ["Identité visuelle", "Site web", "Direction artistique"]
+        value: ["Logo", "Charte graphique", "Site web"]
       }
     ]}
     ctaLabel="Visiter le site"
@@ -61,16 +63,16 @@
   />
 
   <div class="project-theme-band">
-    <!-- Gros plan sur le hero du site, l'écran de l'objet déjà retourné (le
-         geste de la main est laissé au reel de la home, voir encode-serein.sh).
-         Le rendu portrait est recadré en 4/5, le format du cadre sous 900 px. -->
+    <!-- Bureau : le duo du reel, le téléphone devant le portable. Téléphone
+         (cadre 4/5 sous 900 px) : le haut du téléphone, le site qui défile.
+         Les deux bouclés par un fondu sur eux-mêmes. -->
     <ProjectEditoBadge
-      text="<span class='hl'>Carousel est un objet de bureau qui n'affiche que les données qu'on a choisies.</span> Pas de fil, pas de notification : un panneau de LED, un socle en noyer, et une marque qui devait dire le calme avant la technique."
+      text="<span class='hl'>Serein Design lance Carousel, un objet de bureau qui n'affiche que ce qu'on a choisi d'y voir.</span> Nous avons créé l'identité complète de la marque, du logo à la charte graphique, puis le site qui présente l'objet avant sa campagne Kickstarter."
       video={videoSources("serein-objet", V)}
       mobileVideo={videoSources("serein-objet-mobile", V)}
       poster={videoPoster("serein-objet", V)}
       mobilePoster={videoPoster("serein-objet-mobile", V)}
-      alt="Le site Serein Design sur un iPhone : « The data you care about, on a desk object. »"
+      alt="Le site Serein Design sur un iPhone posé devant un MacBook : « The data you care about, on a desk object. »"
       aspect="1.78"
       mobileAspect="0.8"
     />
@@ -78,11 +80,11 @@
     <ProjectFlaps
       continu
       background="var(--project-surface-bg, var(--bg-deep, #050709))"
-      title="Une marque, un site,<br />un objet."
+      title="Une identité complète,<br />puis le site."
       cards={[
         {
-          title: "Un monogramme",
-          text: "Les lettres <span class='hl'>s, e, d, e</span> tracées d'un seul fil, qui se croise et revient sur lui-même : le calme du nom, dessiné.",
+          title: "Le logo",
+          text: "Un logotype en minuscules et un symbole qui pose « se » sur « de ». <span class='hl'>Les deux partagent les mêmes courbes</span> : le symbole prend le relais là où le nom ne tient pas, en favicon ou en photo de profil.",
           // Le monogramme à plat sur son aplat (#60151c, relevé au pixel) :
           // sur téléphone, `contain` le montre entier et l'aplat prolonge
           // le fond sans raccord visible.
@@ -92,24 +94,24 @@
           alt: "Le monogramme Serein Design, en crème sur bordeaux"
         },
         {
-          title: "Un site qui parle objet",
-          text: "« The data you care about, on a desk object. » La page s'ouvre sur l'objet allumé, et le texte <span class='hl'>s'efface</span> devant lui.",
-          // Recadré autour du téléphone (5:6) : ~75 % de la hauteur du volet
-          // en bureau, ~60 % de la largeur sur téléphone.
-          image: "/images/serein-telephone-bois.webp",
-          alt: "Le site Serein Design sur un iPhone posé sur une table en bois, dans un rai de lumière"
-        },
-        {
-          title: "Une marque à l'affiche",
-          text: "Bordeaux profond, crème, bois : la marque <span class='hl'>quitte l'écran</span> et tient au mur comme sur le bureau.",
+          title: "La charte graphique",
+          text: "Un bordeaux profond, un crème et un brun presque noir. Chillax pour les titres, Switzer pour le texte : <span class='hl'>des titres doux, des textes sobres</span>.",
           // Toute la toile : l'affiche (x 0,37-0,63) tient du cadre presque
           // carré du bureau au plein écran du téléphone.
           image: "/images/serein-affiche.webp",
           alt: "Une affiche Serein Design encadrée sur un mur en bois, un passant au premier plan"
         },
         {
-          title: "L'objet, au centre",
-          text: "Socle en noyer massif, coque en aluminium anodisé, écran de 64 × 32 LED : chaque image montre l'objet <span class='hl'>tel qu'il est</span>.",
+          title: "Le site",
+          text: "Une seule page, en anglais pour la campagne. Elle suit les questions qu'on se pose avant d'acheter : <span class='hl'>ce que c'est, ce que ça affiche, ce qu'il y a dedans et quand ça arrive</span>.",
+          // Recadré autour du téléphone (5:6) : ~75 % de la hauteur du volet
+          // en bureau, ~60 % de la largeur sur téléphone.
+          image: "/images/serein-telephone-bois.webp",
+          alt: "Le site Serein Design sur un iPhone posé sur une table en bois, dans un rai de lumière"
+        },
+        {
+          title: "L'objet d'abord",
+          text: "C'est la dernière règle de la charte, et celle qui compte le plus. <span class='hl'>Le décor accompagne l'objet sans passer devant</span> : fonds sombres, lumière franche, et le panneau allumé au centre.",
           image: "/images/serein-objectif.webp",
           alt: "Carousel allumé sur une table : l'objectif « Redbull, 1,80 € » en pixels"
         }
@@ -119,13 +121,13 @@
 
   <div class="project-theme-band theme-deep">
     <ProjectEditorialStatement
-      text="<span class='hl'>Le calme comme fonction.</span> Un objet qui n'affiche que ce qu'on a choisi, et une marque assez discrète pour lui laisser toute la place."
+      text="<span class='hl'>Une modernité chaleureuse, une présence calme dans l'espace de vie.</span> C'est la phrase qui ouvre la charte. Carousel est un objet électronique, mais il vit sur un bureau ou dans un salon, et sa marque devait s'y sentir chez elle."
     />
 
-    <!-- Les photographies de l'objet, une par usage : chacune en 16/10 pour
-         le bureau et en 4/5 pour le téléphone. -->
+    <!-- L'objet, en quelques lignes : trois écrans, une photo par usage, en
+         16/10 pour le bureau et en 4/5 pour le téléphone. -->
     <ProjectImageTabs
-      title="Un seul écran,<br /><span class='dim'>ce qu'on choisit d'y voir.</span>"
+      title="Carousel, en deux mots :<br /><span class='dim'>un écran et une molette.</span>"
       aspect="16 / 10"
       mobileAspect="4 / 5"
       tabs={[
@@ -148,59 +150,30 @@
           alt: "Le panneau compte ce qui est gagné à la seconde : 0,0091 € par seconde"
         }
       ]}
-      note="Neuf applications, <span class='hl'>une seule molette</span> : on la tourne pour changer d'écran, on appuie pour valider. Aucun menu."
+      note="Un panneau de LED sur un socle en noyer, neuf applications au choix. <span class='hl'>On tourne la molette pour changer d'écran</span>, on appuie pour valider, et c'est tout."
     />
   </div>
 
   <div class="project-theme-band">
+    <!-- L'inventaire de ce qui a été livré (règle des pages projet : jamais de
+         performance commerciale, invérifiable). -->
     <ProjectFigures
-      title="L'objet, en clair."
+      title="Ce que nous avons livré."
       items={[
         {
-          label: "Panneau",
-          figure: "64 × 32",
-          text: "LED adressables, et <span class='hl'>rien d'autre</span> à l'écran."
+          label: "Versions du logo",
+          figure: "3",
+          text: "Le logotype complet, le symbole carré et une version horizontale pour les formats allongés."
         },
         {
-          label: "Applications",
-          figure: "9",
-          text: "Horloge, météo, Pomodoro, Spotify, marchés, tâches Notion… et le jeu de la vie."
+          label: "Typographies",
+          figure: "2",
+          text: "Chillax pour les titres, avec ses arrondis, et Switzer pour le texte courant."
         },
         {
-          label: "Fait en France",
-          figure: "78 %",
-          text: "Le noyer et l'anodisation confiés à des fournisseurs voisins de l'atelier."
-        }
-      ]}
-    />
-  </div>
-
-  <div class="project-theme-band">
-    <!-- Les trois principes de serein-design.fr, sur trois photos de la même
-         série (même lumière, même table). -->
-    <ProjectCaptionCards
-      titleMain="Fait pour durer,"
-      titleMuted="pas pour être remplacé."
-      cards={[
-        {
-          title: "Réparable",
-          text: "Un tournevis Torx et un fer à souder suffisent ; les pièces détachées sont vendues sur le site.",
-          image: "/images/serein-reparable.webp",
-          position: "47% 50%",
-          alt: "Carousel sur une table, l'écran basculé à la verticale"
-        },
-        {
-          title: "Sans compte",
-          text: "Au premier démarrage, un QR code connecte le Wi-Fi. Pas d'application, pas de cloud.",
-          image: "/images/serein-sans-compte.webp",
-          position: "47% 50%",
-          alt: "Carousel allumé dans un bureau de nuit"
-        },
-        {
-          title: "Durable",
-          text: "Mises à jour par USB-C, et des fichiers confiés à la communauté si la campagne le permet.",
-          image: "/images/serein-durable.webp",
-          alt: "Carousel en contre-plongée, la lampe allumée au-dessus de l'écran"
+          label: "Parties du site",
+          figure: "5",
+          text: "L'objet, ses applications, ses principes, sa fiche technique et le calendrier de la campagne."
         }
       ]}
     />
@@ -208,7 +181,7 @@
 
   <div class="project-theme-band theme-deep">
     <ProjectEditorialMosaic
-      text="<span class='hl'>Une marque qui se tient,</span> en volume comme à l'écran."
+      text="<span class='hl'>Le symbole a aussi sa version en volume</span>, rendue en 3D pour les visuels de la marque, à côté des photos de l'objet."
       feature={{
         // Le site sur l'ordinateur, posé sur un arc de bois (x 0,11-0,82).
         src: "/images/serein-ordinateur.webp",
@@ -234,7 +207,7 @@
       tint="#60151c"
       primary={{
         label: "En ligne",
-        title: "Découvrir Carousel tel qu'on le rencontre.",
+        title: "Voir le site de Carousel.",
         href: "https://serein-design.fr",
         external: true,
         // Capture du site sur iPhone (2026-10-20), au format de l'écran.
@@ -242,7 +215,7 @@
       }}
       secondary={{
         label: "Parlons-en",
-        title: "Votre objet mérite la même tenue.",
+        title: "Un produit à lancer ? Parlons de sa marque.",
         href: "/contact"
       }}
     />
