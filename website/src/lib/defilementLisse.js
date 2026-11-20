@@ -141,12 +141,14 @@ function positionsEntieres() {
 }
 
 //  ⚠️ Et si la page n'est plus là où Lenis l'a posée à l'image d'avant
-//  (2026-11-20), c'est que quelqu'un d'autre l'a bougée — le défilement natif
-//  de Safari, qui a pris la main (voir `virtualScroll`), ou un saut voulu.
-//  Lenis l'ADOPTE et s'arrête au lieu de la ramener de force : sinon les deux
-//  se renvoyaient la page d'une image à l'autre (film du client : ±20 px,
-//  header compris, sur les cartes « Accompagnement / Parlons-en »). Exact
-//  ici puisque Lenis ne pose que des positions entières.
+//  (2026-11-20), c'est que Safari l'a déplacée : l'ANCRAGE du défilement
+//  (vérifié : un bloc au-dessus de l'écran qui grandit de 120 px fait passer
+//  `scrollY` de 5 000 à 5 120, pour que le contenu visible ne bouge pas), ou
+//  son propre défilement. Lenis DÉCALE alors sa course d'autant et continue
+//  sa glissade. Ramener la page de force donnait des allers-retours (film du
+//  client, header compris) ; s'arrêter net donnait un frein, toujours au
+//  même endroit (« entre Trois pôles et le bloc du dessous »). Exact ici
+//  puisque Lenis ne pose que des positions entières.
 function avancerAuPixelPres(animation, instance) {
   const avancerDeBase = animation.advance.bind(animation);
   animation.advance = function (deltaTime) {
@@ -155,20 +157,22 @@ function avancerAuPixelPres(animation, instance) {
       return avancerDeBase(deltaTime);
     }
     const reel = window.scrollY;
-    if (instance.isScrolling === "smooth" && Math.abs(reel - Math.round(this.value)) > 1) {
+    const decalage = reel - Math.round(this.value);
+    if (instance.isScrolling === "smooth" && Math.abs(decalage) > 1) {
       if (diag) {
         diag.reprises++;
         const centre = document.elementFromPoint(innerWidth / 2, innerHeight / 2);
         const bloc = centre?.closest(".page-wrapper > *, section");
         (window.__reprises ??= []).push({
-          posee: Math.round(this.value),
-          reelle: reel,
+          decalage,
           hauteur: document.documentElement.scrollHeight,
           bloc: bloc ? String(bloc.className).split(" ")[0] : "?"
         });
       }
-      instance.reset();
-      return;
+      this.value += decalage;
+      this.to += decalage;
+      instance.targetScroll += decalage;
+      instance.animatedScroll += decalage;
     }
     const depart = Math.round(this.value);
     const reste = this.to - depart;
