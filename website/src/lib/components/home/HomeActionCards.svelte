@@ -123,7 +123,6 @@
     isolation: isolate;
     overflow: visible;
     transform: rotate(-5deg);
-    transition: transform 650ms cubic-bezier(0.22, 0.61, 0.36, 1);
   }
 
   /* L'ombre est portée par une silhouette arrondie indépendante du bitmap :
@@ -292,10 +291,6 @@
     .action-card:hover .action-card__plus::after {
       opacity: 1;
     }
-
-    .action-card--support:hover .action-card__phone {
-      transform: translateX(8px) rotate(-3deg);
-    }
   }
 
   @media (max-width: 760px) {
@@ -335,15 +330,10 @@
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .action-card__phone,
     .action-card__plus,
     .action-card__plus::before,
     .action-card__plus::after {
       transition: none;
-    }
-
-    .action-card--support:hover .action-card__phone {
-      transform: rotate(-5deg);
     }
   }
 </style>

@@ -45,6 +45,10 @@ export function installerDefilementLisse() {
   const bureau = window.matchMedia("(hover: hover) and (pointer: fine)").matches;
   const reduit = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   if (!bureau || reduit) return null;
+  // `?defilement=natif` : pas de lissage du tout, pour comparer au vrai pavé
+  // tactile (2026-11-20 — sur Safari, le défilement natif du pavé ne se bat
+  // jamais avec rien ; Lenis, lui, peut se faire reprendre la page).
+  if (/[?&]defilement=natif\b/.test(location.search)) return null;
 
   lenis = new Lenis({
     lerp: 0.2,
