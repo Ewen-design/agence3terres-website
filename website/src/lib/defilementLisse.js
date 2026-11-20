@@ -85,7 +85,18 @@ export function installerDefilementLisse() {
         return false;
       }
       if (diag && event && event.type === "wheel") diag.crans++;
-      return Math.abs(deltaY) >= Math.abs(deltaX);
+      if (Math.abs(deltaY) >= Math.abs(deltaX)) return true;
+      // Plus horizontal que vertical : laissé au natif (rails, carrousels,
+      // geste « retour » de Safari)… SAUF en pleine glissade de Lenis
+      // (2026-11-20) : c'est alors un geste vertical au pavé tactile qui
+      // dérive un instant de côté, et le laisser partir faisait défiler
+      // Safari LUI-MÊME, verticalement, sous Lenis (« reprises » du
+      // diagnostic au passage des blocs).
+      if (lenis && lenis.isScrolling === "smooth" && deltaY !== 0) {
+        if (diag) diag.derives = (diag.derives ?? 0) + 1;
+        return true;
+      }
+      return false;
     }
   });
   window.lenis = lenis;
@@ -141,7 +152,17 @@ function avancerAuPixelPres(animation, instance) {
     }
     const reel = window.scrollY;
     if (instance.isScrolling === "smooth" && Math.abs(reel - Math.round(this.value)) > 1) {
-      if (diag) diag.reprises++;
+      if (diag) {
+        diag.reprises++;
+        const centre = document.elementFromPoint(innerWidth / 2, innerHeight / 2);
+        const bloc = centre?.closest(".page-wrapper > *, section");
+        (window.__reprises ??= []).push({
+          posee: Math.round(this.value),
+          reelle: reel,
+          hauteur: document.documentElement.scrollHeight,
+          bloc: bloc ? String(bloc.className).split(" ")[0] : "?"
+        });
+      }
       instance.reset();
       return;
     }
@@ -172,7 +193,7 @@ function afficherDiagnostic() {
     "position:fixed;left:12px;bottom:12px;z-index:2147483647;padding:8px 10px;border-radius:8px;background:rgba(0,0,0,.78);color:#fff;font:12px/1.4 ui-monospace,monospace;pointer-events:none";
   document.body.appendChild(boite);
   const ecrire = () => {
-    boite.textContent = `crans ${diag.crans} · non annulables ${diag.nonAnnulables} · reprises ${diag.reprises}`;
+    boite.textContent = `crans ${diag.crans} · dérives gardées ${diag.derives ?? 0} · non annulables ${diag.nonAnnulables} · reprises ${diag.reprises}`;
     window.setTimeout(ecrire, 250);
   };
   ecrire();

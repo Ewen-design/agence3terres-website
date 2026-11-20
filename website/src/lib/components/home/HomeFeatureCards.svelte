@@ -91,8 +91,38 @@
   let itemEls = [];
   let observer;
 
+  /*  ── Les visuels préparés UN PAR UN (2026-11-20) ──────────────────────────
+   *  Film d'écran du client (Safari bureau, premier passage rapide) : à
+   *  l'entrée du bloc, la page s'arrêtait trois images puis sautait de ~270
+   *  px, le cadre arrivant vide. Les quatre visuels empilés portent chacun
+   *  leur couche (voir `.fcards__shot`) : Safari les dessinait TOUS dans la
+   *  même image — quatre images plein cadre, ~50 Mo de mémoire graphique.
+   *  Seul le premier est donc prêt d'emblée ; les autres le deviennent un
+   *  par un, ~1/5 s d'écart, dès que le bloc approche — bien avant le
+   *  premier changement de volet. Un volet devenu courant avant son tour est
+   *  préparé sur-le-champ (`|| i === active`). Au second passage, tout est
+   *  déjà là, comme avant. */
+  let prets = 1;
+  let stageEl;
+  let prepaTimer = 0;
+
   onMount(() => {
     if (!browser) return;
+
+    const preparerSuivant = () => {
+      if (prets >= cards.length) return;
+      prets += 1;
+      prepaTimer = window.setTimeout(() => requestAnimationFrame(preparerSuivant), 200);
+    };
+    const approche = new IntersectionObserver(
+      (entries) => {
+        if (!entries.some((e) => e.isIntersecting)) return;
+        approche.disconnect();
+        prepaTimer = window.setTimeout(() => requestAnimationFrame(preparerSuivant), 250);
+      },
+      { rootMargin: "0px 0px 60% 0px" }
+    );
+    if (stageEl) approche.observe(stageEl);
 
     // La bande de décision : les 10 % de hauteur au MILIEU de l'écran. Un volet
     // devient courant quand il la traverse. Prendre le viewport entier ferait
@@ -110,7 +140,11 @@
     );
 
     for (const el of itemEls) if (el) observer.observe(el);
-    return () => observer?.disconnect();
+    return () => {
+      observer?.disconnect();
+      approche.disconnect();
+      clearTimeout(prepaTimer);
+    };
   });
 </script>
 
@@ -128,7 +162,7 @@
 
   <!-- ── Grand écran : le visuel collant, puis la liste ────────────────────── -->
   <div class="fcards__desk">
-    <div class="fcards__stage">
+    <div class="fcards__stage" bind:this={stageEl}>
       <!-- L'arrivée du visuel (2026-10-09) est portée par cette enveloppe, et
            SURTOUT PAS par le cadre : celui-ci est collant, et une couche ou un
            filtre posés sur une boîte `sticky` la font trembler dans Safari
@@ -139,6 +173,7 @@
         <div
           class="fcards__shot"
           class:is-on={i === active}
+          class:is-pret={i < prets || i === active}
           style={card.bg ? `background:${card.bg};` : undefined}
         >
           {#if card.video}
@@ -426,6 +461,12 @@
 
     .fcards__shot.is-on {
       opacity: 1;
+    }
+
+    /* Pas encore préparé (voir `prets` dans le script) : ni dessin ni couche. */
+    .fcards__shot:not(.is-pret) {
+      visibility: hidden;
+      transform: none;
     }
 
     /* La vidéo du digital est DÉTOURÉE : au rendu, l'appareil sort déjà par la
