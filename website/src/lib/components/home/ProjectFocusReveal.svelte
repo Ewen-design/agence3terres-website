@@ -47,6 +47,19 @@
   let sectionEl;
   let io;
 
+  /*  ── Les fonds demandés UN PAR UN (2026-11-20) ────────────────────────────
+   *  Les six fonds sont empilés (seul celui de la diapositive active se
+   *  voit), et `lazyAhead` les faisait tous partir ensemble, deux écrans et
+   *  demi avant le bloc : cinq grandes images téléchargées puis décodées dans
+   *  la même image, pile pendant qu'on passe « Trois pôles » — mesuré dans
+   *  Safari (48 ms d'arrêt à cet endroit) et vu sur les films du client. Le
+   *  fond actif part comme avant ; les autres n'ont leur `src` qu'à l'approche
+   *  du bloc (un écran), un par un, ~1/4 s d'écart. Une diapositive choisie
+   *  avant son tour reçoit le sien sur-le-champ (`|| i === activeIndex`). */
+  let fondsPrets = 1;
+  let fondsTimer = 0;
+  let approcheFonds;
+
   const atEnd = () => N > 1 && activeIndex >= N - 1;
 
   // Bouton PERSISTANT : un seul élément dont le lien/label change réactivement au
@@ -178,6 +191,21 @@
     blurWarmTimer = auCalme(() => (blurWarm = false), { apres: 9000 });
 
     if (sectionEl) {
+      const fondSuivant = () => {
+        if (fondsPrets >= N) return;
+        fondsPrets += 1;
+        fondsTimer = window.setTimeout(() => requestAnimationFrame(fondSuivant), 250);
+      };
+      approcheFonds = new IntersectionObserver(
+        (entries) => {
+          if (!entries.some((e) => e.isIntersecting)) return;
+          approcheFonds.disconnect();
+          fondsTimer = window.setTimeout(() => requestAnimationFrame(fondSuivant), 150);
+        },
+        { rootMargin: "0px 0px 100% 0px" }
+      );
+      approcheFonds.observe(sectionEl);
+
       sectionEl.addEventListener("touchstart", onTouchStart, { passive: true });
       sectionEl.addEventListener("touchmove", onTouchMove, { passive: true });
       sectionEl.addEventListener("touchend", onTouchEnd, { passive: true });
@@ -207,6 +235,8 @@
     }
     window.removeEventListener("keydown", onKeydown);
     io?.disconnect();
+    approcheFonds?.disconnect();
+    clearTimeout(fondsTimer);
   });
 </script>
 
@@ -308,7 +338,7 @@
               <img
                 class="fr__bg-img"
                 class:is-shown={activeIndex === i}
-                src={slide.images[0]}
+                src={i < fondsPrets || i === activeIndex ? slide.images[0] : undefined}
                 alt=""
                 loading="lazy"
                 decoding="async"
