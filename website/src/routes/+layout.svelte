@@ -24,6 +24,7 @@
   import { installBlurButtonWipe } from "$lib/blurButtonWipe.js";
   import { installFixedResync } from "$lib/fixedResync.js";
   import { installerDefileur } from "$lib/defileur.js";
+  import { installerSurvolAuRepos } from "$lib/survolAuRepos.js";
   import {
     installerDefilementLisse,
     synchroniserDefilementLisse,
@@ -49,6 +50,7 @@
   let removeTouchFlipListener;
   let removeBlurButtonWipe;
   let removeFixedResync;
+  let removeSurvolAuRepos;
   let projectTheme = null;
   let removeProjectThemeListener;
   let pipDockVisible = false;
@@ -478,6 +480,7 @@
       removeTouchFlipListener = installTouchFlipAnimation();
       removeBlurButtonWipe = installBlurButtonWipe();
       removeFixedResync = installFixedResync();
+      removeSurvolAuRepos = installerSurvolAuRepos();
 
       // Le défilement lissé sur grand écran (Lenis) — voir le module. Il
       // remplace l'ancien amortisseur de molette, resté éteint.
@@ -580,6 +583,7 @@
       removeTouchFlipListener?.();
       removeBlurButtonWipe?.();
       removeFixedResync?.();
+      removeSurvolAuRepos?.();
       removeProjectThemeListener?.();
       projectTheme = null;
 
