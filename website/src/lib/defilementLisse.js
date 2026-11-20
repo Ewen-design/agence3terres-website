@@ -68,10 +68,29 @@ export function installerDefilementLisse() {
     // passait sur ces grandes cartes — et une glissade de Lenis en cours se
     // battait alors avec le natif : arrêts et ralentissements. Le vertical
     // est à Lenis partout ; l'horizontal reste natif (règle ci-dessus).
-    virtualScroll: ({ deltaX, deltaY }) => Math.abs(deltaY) >= Math.abs(deltaX)
+    virtualScroll: ({ deltaX, deltaY, event }) => {
+      // ── Safari a déjà défilé lui-même (2026-11-20) ──
+      //  Film d'écran du client (Safari bureau, premier passage rapide sur la
+      //  home) : la page sautait de ~20 px en avant puis en arrière d'une
+      //  image à l'autre, header compris. Safari attend que la page dise si
+      //  elle bloque la molette ; si elle tarde (premier passage : images,
+      //  arrivées de textes), il défile LUI-MÊME et la suite du geste arrive
+      //  non annulable (`cancelable: false`). Lenis, qui ne le vérifie pas,
+      //  continuait d'imposer sa position : deux défilements qui se battaient.
+      //  Un tel geste est laissé au natif ; Lenis lâche sa glissade et se
+      //  recale sur la position réelle (il suit ensuite le natif).
+      if (event && event.type === "wheel" && !event.cancelable) {
+        if (diag) diag.nonAnnulables++;
+        if (lenis && lenis.isScrolling === "smooth") lenis.reset();
+        return false;
+      }
+      if (diag && event && event.type === "wheel") diag.crans++;
+      return Math.abs(deltaY) >= Math.abs(deltaX);
+    }
   });
   window.lenis = lenis;
-  if (positionsEntieres()) avancerAuPixelPres(lenis.animate);
+  if (positionsEntieres()) avancerAuPixelPres(lenis.animate, lenis);
+  if (/[?&]diag-molette\b/.test(location.search)) afficherDiagnostic();
 
   // Le moteur de défilement du site lit la position dans la MÊME image que
   // celle où Lenis la pose, et ne la lisse plus par-dessus.
@@ -106,12 +125,25 @@ function positionsEntieres() {
   return entier;
 }
 
-function avancerAuPixelPres(animation) {
+//  ⚠️ Et si la page n'est plus là où Lenis l'a posée à l'image d'avant
+//  (2026-11-20), c'est que quelqu'un d'autre l'a bougée — le défilement natif
+//  de Safari, qui a pris la main (voir `virtualScroll`), ou un saut voulu.
+//  Lenis l'ADOPTE et s'arrête au lieu de la ramener de force : sinon les deux
+//  se renvoyaient la page d'une image à l'autre (film du client : ±20 px,
+//  header compris, sur les cartes « Accompagnement / Parlons-en »). Exact
+//  ici puisque Lenis ne pose que des positions entières.
+function avancerAuPixelPres(animation, instance) {
   const avancerDeBase = animation.advance.bind(animation);
   animation.advance = function (deltaTime) {
     // Les défilements à durée (ancres, `scrollTo` avec `duration`) : inchangés.
     if (!this.isRunning || !this.lerp || (this.duration && this.easing)) {
       return avancerDeBase(deltaTime);
+    }
+    const reel = window.scrollY;
+    if (instance.isScrolling === "smooth" && Math.abs(reel - Math.round(this.value)) > 1) {
+      if (diag) diag.reprises++;
+      instance.reset();
+      return;
     }
     const depart = Math.round(this.value);
     const reste = this.to - depart;
@@ -126,6 +158,24 @@ function avancerAuPixelPres(animation) {
     this.value = depart + pas;
     this.onUpdate?.(this.value, false);
   };
+}
+
+// ── Diagnostic (`?diag-molette` dans l'adresse) ──
+//  Compte, en bas à gauche de l'écran, les crans de molette, ceux que Safari a
+//  rendus non annulables (il défilait déjà lui-même) et les reprises (page
+//  bougée par un autre que Lenis). Pour vérifier au vrai pavé tactile.
+let diag = null;
+function afficherDiagnostic() {
+  diag = { crans: 0, nonAnnulables: 0, reprises: 0 };
+  const boite = document.createElement("div");
+  boite.style.cssText =
+    "position:fixed;left:12px;bottom:12px;z-index:2147483647;padding:8px 10px;border-radius:8px;background:rgba(0,0,0,.78);color:#fff;font:12px/1.4 ui-monospace,monospace;pointer-events:none";
+  document.body.appendChild(boite);
+  const ecrire = () => {
+    boite.textContent = `crans ${diag.crans} · non annulables ${diag.nonAnnulables} · reprises ${diag.reprises}`;
+    window.setTimeout(ecrire, 250);
+  };
+  ecrire();
 }
 
 /** Met Lenis en pause ou le relance selon l'état de la page. À appeler quand
