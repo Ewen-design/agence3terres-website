@@ -30,3 +30,19 @@ export function srcset(src) {
 /** Dimensions intrinsèques : réservent la place de l'image avant son arrivée. */
 export const w = (src) => entree(src)?.w;
 export const h = (src) => entree(src)?.h;
+
+/** La variante à utiliser pour une largeur donnée, en pixels réels — pour une
+ *  image posée en FOND CSS, qui n'a pas de `srcset` (2026-11-20 : le pied de
+ *  page de /services décodait 4 000 × 2 666 px, 43 Mo, au moment de se
+ *  montrer). La plus petite qui couvre la largeur, sinon la plus grande. */
+export function variantePour(src, largeur) {
+  const e = entree(src);
+  if (!e) return src;
+  const jeton = src.includes("?") ? `?${src.split("?")[1]}` : "";
+  const tailles = [...e.v];
+  if (e.w <= ORIGINAL_MAX) tailles.push(e.w);
+  tailles.sort((a, b) => a - b);
+  const w = tailles.find((t) => t >= largeur) ?? tailles[tailles.length - 1];
+  if (w === undefined || w === e.w) return src;
+  return `${nomVariante(src.split("?")[0], w)}${jeton}`;
+}

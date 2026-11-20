@@ -72,7 +72,28 @@
     isVisible = false;
   }
 
+  /*  ── Pas de bulle « VOIR » / carrousel pendant le défilement (2026-11-20) ──
+   *  Curseur posé, les cartes qui défilent dessous envoyaient des
+   *  `pointerover` : la bulle (floutée) apparaissait et disparaissait en
+   *  pleine glissade — visible sur le film du client, sur « Trois pôles », et
+   *  chaque apparition coûtait une image. Elle ne réagit plus qu'à un VRAI
+   *  mouvement de la souris (Safari envoie aussi des `pointermove` immobiles
+   *  quand la page défile), et la page qui défile la range. */
+  let dernierVraiMouvement = -1e9;
+  const vraiMouvement = (event) => event.movementX || event.movementY;
+
+  function onScrollRange() {
+    if (isVisible) isVisible = false;
+  }
+
   function move(event) {
+    if (vraiMouvement(event)) {
+      const avant = dernierVraiMouvement;
+      dernierVraiMouvement = performance.now();
+      // Première vraie reprise après un défilement : l'état suit ce qui est
+      // sous la souris.
+      if (performance.now() - avant > 150) syncStateFromTarget(event.target);
+    }
     if (mode === "carousel") {
       targetX = event.clientX - 30;
       targetY = event.clientY - 30;
@@ -83,10 +104,16 @@
   }
 
   function handlePointerOver(event) {
+    if (performance.now() - dernierVraiMouvement > 150) return;
     syncStateFromTarget(event.target);
   }
 
   function handlePointerOut(event) {
+    // Sortie due au défilement : on range, sans rien rallumer.
+    if (performance.now() - dernierVraiMouvement > 150) {
+      isVisible = false;
+      return;
+    }
     const nextTarget = event.relatedTarget;
     if (nextTarget instanceof Element) {
       syncStateFromTarget(nextTarget);
@@ -106,6 +133,7 @@
 
   function addListeners() {
     window.addEventListener("pointermove", move, { passive: true });
+    window.addEventListener("scroll", onScrollRange, { passive: true });
     document.addEventListener("pointerover", handlePointerOver, { passive: true });
     document.addEventListener("pointerout", handlePointerOut, { passive: true });
     window.addEventListener("mouseleave", hide);
@@ -116,6 +144,7 @@
 
   function removeListeners() {
     window.removeEventListener("pointermove", move);
+    window.removeEventListener("scroll", onScrollRange);
     document.removeEventListener("pointerover", handlePointerOver);
     document.removeEventListener("pointerout", handlePointerOut);
     window.removeEventListener("mouseleave", hide);

@@ -103,8 +103,12 @@
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
-    background-image: linear-gradient(155deg, color-mix(in srgb, var(--deg-1) 100%, transparent) 0%, color-mix(in srgb, color-mix(in oklab, var(--deg-3) 35%, var(--deg-1)) 100%, transparent) 50%, color-mix(in srgb, var(--deg-1) 100%, transparent) 100%), url(/degrades/arete-1.webp), url(/degrades/arete-2.webp);
-    background-blend-mode: hue, normal, normal;
+    /*  Précalculé (2026-11-20, `npm run degrades`) : la fusion `hue` de deux
+     *  images et d'un dégradé se calculait pixel par pixel, sur le processeur,
+     *  au premier affichage — l'à-coup à l'entrée de « Trois pôles » sur la
+     *  home (mesuré dans Safari : 4 passages sur 4, 0 sans ce fond). Source :
+     *  les déclarations d'origine, gardées dans `scripts/cuire-degrades.mjs`. */
+    background-image: url(/degrades/arete-cuit.webp);
   }
 
   /*  « Dunes » — FeralUI gradient studio — « Dunes »
@@ -119,8 +123,12 @@
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
-    background-image: linear-gradient(155deg, color-mix(in srgb, var(--deg-1) 100%, transparent) 0%, color-mix(in srgb, color-mix(in oklab, var(--deg-3) 35%, var(--deg-1)) 100%, transparent) 50%, color-mix(in srgb, var(--deg-1) 100%, transparent) 100%), url(/degrades/dunes-1.webp), url(/degrades/dunes-2.webp);
-    background-blend-mode: hue, normal, normal;
+    /*  Précalculé (2026-11-20, `npm run degrades`) : la fusion `hue` de deux
+     *  images et d'un dégradé se calculait pixel par pixel, sur le processeur,
+     *  au premier affichage — l'à-coup à l'entrée de « Trois pôles » sur la
+     *  home (mesuré dans Safari : 4 passages sur 4, 0 sans ce fond). Source :
+     *  les déclarations d'origine, gardées dans `scripts/cuire-degrades.mjs`. */
+    background-image: url(/degrades/dunes-cuit.webp);
   }
 
   /*  « Ellipses » — FeralUI gradient studio — « Ellipses »
@@ -135,8 +143,12 @@
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
-    background-image: linear-gradient(155deg, color-mix(in srgb, var(--deg-1) 100%, transparent) 0%, color-mix(in srgb, color-mix(in oklab, var(--deg-3) 35%, var(--deg-1)) 100%, transparent) 50%, color-mix(in srgb, var(--deg-1) 100%, transparent) 100%), url(/degrades/ellipses-1.webp), url(/degrades/ellipses-2.webp);
-    background-blend-mode: hue, normal, normal;
+    /*  Précalculé (2026-11-20, `npm run degrades`) : la fusion `hue` de deux
+     *  images et d'un dégradé se calculait pixel par pixel, sur le processeur,
+     *  au premier affichage — l'à-coup à l'entrée de « Trois pôles » sur la
+     *  home (mesuré dans Safari : 4 passages sur 4, 0 sans ce fond). Source :
+     *  les déclarations d'origine, gardées dans `scripts/cuire-degrades.mjs`. */
+    background-image: url(/degrades/ellipses-cuit.webp);
   }
 
   @media (prefers-reduced-motion: reduce) {

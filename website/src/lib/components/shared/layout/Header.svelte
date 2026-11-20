@@ -200,8 +200,12 @@
     if (dots[1]) { dots[1].style.opacity = "0"; dots[1].style.transform = "scale(0)"; }
     if (dots[2]) dots[2].style.transform = "translateX(-6px) scale(1.6)";
 
+    // La page se remet à défiler : le reflet s'arrête net (voir `scheduleTour`).
+    const yDepart = window.scrollY;
+
     function animFrame(now) {
-      const t = Math.min((now - start) / duration, 1);
+      const coupe = Math.abs(window.scrollY - yDepart) > 2;
+      const t = coupe ? 1 : Math.min((now - start) / duration, 1);
       const ease = t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
       btn.style.setProperty("--mx", `${fromX + (toX - fromX) * ease}px`);
 
@@ -222,9 +226,19 @@
     tourRaf = requestAnimationFrame(animFrame);
   }
 
+  /*  Le reflet qui parcourt le bouton toutes les 3 à 6 s ne part que PAGE
+   *  IMMOBILE (2026-11-20). Il est animé image par image (`--mx`, deux
+   *  dégradés masqués dont un flouté, redessinés à chaque image) : lancé en
+   *  plein défilement, il coûtait 25 à 30 ms à son démarrage — mesuré dans
+   *  Safari, n'importe où sur le site, au hasard de son horloge. */
+  let tourCalme = null;
   function scheduleTour() {
     clearTimeout(tourTimer);
-    tourTimer = setTimeout(startTour, 3000 + Math.random() * 3000);
+    tourCalme?.();
+    tourCalme?.();
+    tourTimer = setTimeout(() => {
+      tourCalme = auCalme(startTour, { calme: 600 });
+    }, 3000 + Math.random() * 3000);
   }
 
   function handleLogoClick() {

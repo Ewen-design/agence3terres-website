@@ -6,6 +6,7 @@
     "preview": "vite preview",
     "test:stabilite": "node tests/stabilite/battery.mjs",
     "images": "node scripts/images-responsives.mjs",
+    "degrades": "node scripts/cuire-degrades.mjs",
     "test:chaos": "node tests/stabilite/chaos.mjs",
     "test:fluidite": "node tests/stabilite/fluidite.mjs"
   },

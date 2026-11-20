@@ -34,9 +34,12 @@ const SORTIE = join(PUBLIC, "images", "_r");
 const MANIFESTE = join(RACINE, "src", "lib", "images", "variantes.json");
 
 /** Largeurs produites. 1280 couvre un téléphone en pleine largeur (390 × 3),
- *  2880 un écran de 1440 px en Retina. Rien au-delà : au-delà, c'est de la
+ *  2880 un écran de 1440 px en Retina. 2400 (2026-11-20) : une image en
+ *  `cover` dans un grand cadre demande ~2 250 px en Retina ; sans ce palier,
+ *  le navigateur prenait l'original de 3 000 px — 27 Mo décodés au lieu de 17,
+ *  au premier passage, sur les cartes et les fonds du slider de la home. Rien au-delà : au-delà, c'est de la
  *  mémoire décodée sans aucun gain visible. */
-const ECHELLE = [640, 960, 1280, 1920, 2880];
+const ECHELLE = [640, 960, 1280, 1920, 2400, 2880];
 /** Une variante doit être franchement plus petite que l'original. */
 const MARGE = 0.9;
 const QUALITE = "82";

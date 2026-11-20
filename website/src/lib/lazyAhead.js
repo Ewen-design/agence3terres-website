@@ -197,10 +197,77 @@ export function installLazyAhead() {
     return img;
   };
 
+  /*  ── Le chargement AU CALME (2026-11-20, bureau) ──────────────────────────
+   *  Plainte qui revenait (films d'écran du client, Safari bureau) : des
+   *  à-coups « au premier passage, avec le chargement », toujours aux mêmes
+   *  blocs, et plus rien au second. Au premier passage, chaque image se
+   *  télécharge, se décode et part à la carte graphique PENDANT qu'on défile.
+   *  Les sites de référence (estrela.studio) font l'inverse : tout est chargé
+   *  avant le premier geste.
+   *  Ici, dès la page chargée — l'intro est encore à l'écran, rien ne défile —
+   *  les images différées partent DANS L'ORDRE DE LA PAGE, deux à la fois,
+   *  chacune attendue jusqu'à son décodage. Dès que la page défile, la file
+   *  s'arrête (les images en route finissent) et ne reprend que la page
+   *  immobile depuis 300 ms : le travail se fait pendant qu'on lit, pas
+   *  pendant qu'on glisse. L'avance de 2,5 écrans ci-dessus reste le filet de
+   *  qui descend sans s'arrêter. Pas sur écran tactile (jugé parfait ; et la
+   *  mémoire d'un téléphone ne garderait pas toutes ces images décodées). */
+  const file = [];
+  let dernierDefilement = 0;
+  let enRoute = 0;
+  let fileMinuterie = 0;
+  const auCalme = () => performance.now() - dernierDefilement > 300;
+  const prete = (img) =>
+    img.complete && img.naturalWidth > 0
+      ? (img.decode?.() ?? Promise.resolve()).catch(() => {})
+      : new Promise((ok) => {
+          const fin = () => ok();
+          img.addEventListener("load", () => (img.decode?.() ?? Promise.resolve()).then(fin, fin), { once: true });
+          img.addEventListener("error", fin, { once: true });
+          setTimeout(fin, 2500);
+        });
+  const avancerFile = () => {
+    clearTimeout(fileMinuterie);
+    fileMinuterie = 0;
+    if (!fileActive) return;
+    if (!auCalme()) {
+      fileMinuterie = window.setTimeout(avancerFile, 320);
+      return;
+    }
+    while (enRoute < 2 && file.length) {
+      const img = file.shift();
+      if (!img.isConnected || img.getAttribute("loading") !== "lazy") continue;
+      // Sans boîte (`display: none`, autre mise en page) : jamais demandée.
+      if (!img.getClientRects().length) continue;
+      if (!img.getAttribute("src") && !img.getAttribute("srcset")) continue;
+      enRoute++;
+      load(img);
+      prete(img).then(() => {
+        enRoute--;
+        avancerFile();
+      });
+    }
+  };
+  let fileActive = false;
+  const bureau = window.matchMedia("(hover: hover) and (pointer: fine)").matches;
+  if (bureau) {
+    window.addEventListener("scroll", () => (dernierDefilement = performance.now()), { passive: true, capture: true });
+    const demarrer = () => {
+      fileActive = true;
+      avancerFile();
+    };
+    if (document.readyState === "complete") window.setTimeout(demarrer, 200);
+    else window.addEventListener("load", () => window.setTimeout(demarrer, 200), { once: true });
+  }
+
   const register = (img) => {
     if (seen.has(img)) return;
     seen.add(img);
     if (img.complete && img.naturalWidth > 0) return;
+    if (bureau) {
+      file.push(img);
+      if (fileActive && !fileMinuterie && enRoute < 2) window.setTimeout(avancerFile, 0);
+    }
     preparerArrivee(img);
     const target = clipTarget(img);
     ajusterSizes(img);

@@ -3,6 +3,7 @@
   import { browser } from "$app/environment";
   import { page } from "$app/stores";
   import { reveal } from "$lib/actions/reveal.js";
+  import { variantePour } from "$lib/images/responsive.js";
   import SiteGradient from "$lib/components/shared/SiteGradient.svelte";
   import {
     registerRead,
@@ -78,6 +79,26 @@
    *  zéro à chaque page : la suivante a sa propre image et sa propre course. */
   let fondPret = false;
   $: if (pathname) fondPret = false;
+
+  /*  ── La photo à la bonne taille, décodée d'avance (2026-11-20) ────────────
+   *  En fond CSS, elle n'avait pas de variantes : /services décodait 4 000 ×
+   *  2 666 px (43 Mo). Et Safari ne la décodait qu'au réveil du pied de page,
+   *  en plein défilement — 45 à 75 ms d'arrêt mesurés (rien sans la photo).
+   *  Elle prend maintenant la variante à la largeur de l'écran, et elle est
+   *  décodée dès qu'elle part (`fondPret`), deux écrans et demi avant. */
+  let fondUrl = "";
+  let fondDecode = null;
+  $: fondUrl = browser
+    ? variantePour(footerImage, Math.round(window.innerWidth * Math.min(window.devicePixelRatio || 1, 2) * 1.03))
+    : footerImage;
+  $: if (browser && fondPret && fondUrl && fondDecode?.dataset.url !== fondUrl) {
+    const img = new Image();
+    img.dataset.url = fondUrl;
+    img.decoding = "async";
+    img.src = fondUrl;
+    img.decode?.().catch(() => {});
+    fondDecode = img;
+  }
 
   /*  ── En sommeil loin du bas de page (2026-11-18) ──────────────────────────
    *  Le pied de page est `fixed`, posé en permanence SOUS la page. Même à
@@ -199,7 +220,7 @@
       <SiteGradient nom={footerGradient} />
     </div>
   {:else}
-    <div class="footer-bg" style={fondPret ? `background-image: url('${footerImage}')` : undefined}></div>
+    <div class="footer-bg" style={fondPret ? `background-image: url('${fondUrl}')` : undefined}></div>
   {/if}
   <div class="footer-overlay" class:is-grad={Boolean(footerGradient)}></div>
 

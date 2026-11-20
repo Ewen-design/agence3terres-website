@@ -1,7 +1,6 @@
 <script>
   import { onMount } from "svelte";
   import { browser } from "$app/environment";
-  import { reveal } from "$lib/actions/reveal.js";
   import {
     registerParallax,
     unregisterParallax,
@@ -69,6 +68,18 @@
   let needMeasure = true;
   let course = 1;
 
+  /*  ── Les images préparées UNE PAR UNE (2026-11-20) ────────────────────────
+   *  Les trois images du cadre sont empilées. Masquées (`visibility: hidden`)
+   *  tant qu'elles ne servaient pas, Safari ne les dessinait qu'à leur
+   *  première apparition : 46 à 57 ms d'arrêt à chaque changement de volet,
+   *  en plein défilement (mesuré ; 0 en cachant les images). Elles sont
+   *  maintenant préparées une par une dès que la séquence approche, puis
+   *  gardées PRESQUE invisibles (opacité 0,001, comme les visuels des cartes
+   *  de la home) : changer de volet n'est plus qu'un fondu entre images déjà
+   *  dessinées. */
+  let prets = 1;
+  let prepaTimer = 0;
+
   let open = false;
   let openApplied = false;
   let progress = 0;
@@ -78,7 +89,6 @@
   const clamp = (v, min = 0, max = 1) => Math.max(min, Math.min(max, v));
 
   $: count = Math.max(slides.length, 1);
-  $: current = active >= 0 ? slides[Math.min(active, slides.length - 1)] : null;
   // La première image est déjà là pendant l'entrée, avant son nom.
   $: shown = Math.max(active, 0);
 
@@ -148,10 +158,18 @@
       forceScrollEngineUpdate();
     };
 
+    const preparerSuivante = () => {
+      if (prets >= slides.length) return;
+      prets += 1;
+      prepaTimer = window.setTimeout(() => requestAnimationFrame(preparerSuivante), 250);
+    };
     const io = new IntersectionObserver(
       ([entry]) => {
         near = entry.isIntersecting;
         scheduleMeasure();
+        if (near && prets === 1 && !prepaTimer) {
+          prepaTimer = window.setTimeout(() => requestAnimationFrame(preparerSuivante), 250);
+        }
       },
       { rootMargin: "100% 0px 100% 0px" }
     );
@@ -167,6 +185,7 @@
 
     return () => {
       io.disconnect();
+      clearTimeout(prepaTimer);
       ro?.disconnect();
       unregisterParallax(handleRead);
       unregisterWrite(handleWrite);
@@ -187,6 +206,7 @@
           <img
             class="seq__img"
             class:is-shown={i === shown}
+            class:is-pret={i < prets || i === shown}
             src={slide.image}
             alt={i === shown ? slide.alt : ""}
             loading={i === 0 ? "eager" : "lazy"}
@@ -202,16 +222,17 @@
            s'ouvre et se referme autour d'eux sans qu'ils bougent. -->
       <div class="seq__content">
         <div class="seq__phrase" aria-live="polite">
-          {#key active}
-            {#if current}
-              <!-- La phrase arrive d'un bloc, plus ligne après ligne (demande
-                   client du 2026-11-19) : 4 ms entre deux mots au lieu de 38 —
-                   40 mots partent en 0,16 s, à l'œil tous ensemble, mais leurs
-                   calques naissent quelques-uns par image (tous dans la même,
-                   WebKit en saute une — voir `app.css`, `.reveal-word.is-on`). -->
-              <p use:reveal={{ stagger: 4 }}>{@html current.text}</p>
-            {/if}
-          {/key}
+          <!-- ── Les trois phrases POSÉES d'avance (2026-11-20) ──
+               Avant : à chaque changement de volet, l'ancienne phrase était
+               détruite, la nouvelle créée puis découpée en mots, chaque mot
+               avec sa propre animation — 46 à 52 ms d'arrêt mesurés dans
+               Safari, à chaque volet, en plein défilement. Elles sont
+               maintenant toutes là, superposées ; changer de volet ne fait
+               qu'un fondu : la phrase sort du flou d'un bloc (l'arrivée « tout
+               en même temps » demandée le 2026-11-19), l'autre s'efface. -->
+          {#each slides as slide, i (slide.image)}
+            <p class="seq__texte" class:is-on={i === active} aria-hidden={i !== active}>{@html slide.text}</p>
+          {/each}
         </div>
 
         <nav class="seq__marks" aria-label="Choisir un volet">
@@ -292,26 +313,26 @@
     height: 100%;
     display: block;
     object-fit: cover;
-    opacity: 0;
-    visibility: hidden;
+    /* 0,001 et pas 0 : dessinée une fois pour toutes, et jamais un calque à
+       opacité nulle dans un bloc collant (voir le script, `prets`). */
+    opacity: 0.001;
     transform: scale(1.05);
     backface-visibility: hidden;
     transition:
       opacity 0.9s ease,
-      transform 1.4s cubic-bezier(0.22, 0.61, 0.36, 1),
-      visibility 0s linear 0.9s;
+      transform 1.4s cubic-bezier(0.22, 0.61, 0.36, 1);
     will-change: opacity, transform;
+  }
+
+  /* Pas encore préparée : ni dessin ni calque. */
+  .seq__img:not(.is-pret) {
+    visibility: hidden;
   }
 
   .seq__img.is-shown {
     z-index: 1;
     opacity: 1;
-    visibility: visible;
     transform: scale(1);
-    transition:
-      opacity 0.9s ease,
-      transform 1.4s cubic-bezier(0.22, 0.61, 0.36, 1),
-      visibility 0s linear 0s;
   }
 
   /* Le voile : une base légère, plus dense du côté de la phrase, et un peu
@@ -349,7 +370,15 @@
     transform: translateY(-50%);
   }
 
+  /* Les phrases superposées dans une même case : la boîte prend la hauteur de
+     la plus longue, et chacune s'y centre — comme quand elle était seule. */
+  .seq__phrase {
+    display: grid;
+  }
+
   .seq__phrase p {
+    grid-area: 1 / 1;
+    align-self: center;
     margin: 0;
     font-family: var(--site-font);
     font-size: clamp(1.375rem, 2.6vw, 2.25rem);
@@ -358,6 +387,41 @@
     letter-spacing: -0.02em;
     color: var(--seq-muted);
     text-wrap: pretty;
+  }
+
+  /* Éteinte : invisible ET masquée après son fondu (pas de calque à opacité
+     nulle dans un bloc collant — voir la mémoire du projet, Safari ≤ 18.1). */
+  .seq__texte {
+    opacity: 0;
+    visibility: hidden;
+    filter: blur(10px);
+    transform: translate3d(0, 0.24em, 0);
+    transition:
+      opacity 0.22s ease,
+      filter 0.22s ease,
+      transform 0.22s ease,
+      visibility 0s linear 0.22s;
+  }
+
+  .seq__texte.is-on {
+    opacity: 1;
+    visibility: visible;
+    filter: blur(0);
+    transform: translate3d(0, 0, 0);
+    transition:
+      opacity 0.6s ease,
+      filter 0.85s cubic-bezier(0.22, 0.61, 0.36, 1),
+      transform 0.85s cubic-bezier(0.22, 0.61, 0.36, 1),
+      visibility 0s;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .seq__texte,
+    .seq__texte.is-on {
+      filter: none;
+      transform: none;
+      transition: opacity 0.2s ease, visibility 0s;
+    }
   }
 
   .seq__phrase :global(.hl) {
@@ -480,6 +544,8 @@
     }
 
     .seq__phrase p {
+      /* Téléphone : la phrase part du haut de sa place, comme avant. */
+      align-self: start;
       font-size: clamp(1.3rem, 5.4vw, 1.9rem);
     }
 
