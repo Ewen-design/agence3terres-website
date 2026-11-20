@@ -1,28 +1,6 @@
 # Caddyfile — static SPA serving for agence3terres
 # Caddy listens on :80 by default; TLS is handled by your reverse proxy (Pangolin)
-:80 {
-	# Serve static files from /srv
-	root * /srv
-
-	# Routing — known routes: serve the exact prerendered page, then fall back to
-	# the SPA shell (200.html) for any unknown client-side route.
-	#   /services/  → /services/index.html
-	#   /projet7/   → /projet7/index.html
-	# Serving the exact prerendered file (instead of always the shell) keeps each
-	# page's <head>/meta correct. The /200.html fallback is served with a 200 OK
-	# status so the client router can render +error.svelte.
-	#
-	# NOTE: this is a deliberate "soft 200" — unknown URLs return 200, not a real
-	# 404. We previously tried returning a real 404 (via handle_errors serving
-	# 200.html), but the upstream Pangolin reverse proxy intercepts any 404 from
-	# this origin and replaces the body with its own generic error page, so our
-	# +error.svelte never reached the browser. Serving 200.html at 200 keeps our
-	# own designed error page. To restore a real 404 status, Pangolin must be
-	# configured to NOT intercept upstream error responses.
-	try_files {path} {path}/index.html {path}.html /200.html
-	file_server
-
-	# ── Security headers ────────────────────────────────────────
+(entetes-securite) {
 	header {
 		# Prevent clickjacking
 		X-Frame-Options "SAMEORIGIN"
@@ -54,6 +32,43 @@
 		# Remove server identity header
 		-Server
 	}
+}
+
+:80 {
+	# Serve static files from /srv
+	root * /srv
+
+	# Routing — known routes: serve the exact prerendered page.
+	#   /services/  → /services/index.html
+	#   /projet7/   → /projet7/index.html
+	# Serving the exact prerendered file (instead of always the shell) keeps each
+	# page's <head>/meta correct.
+	#
+	# 2026-11-20 — une adresse INCONNUE répond enfin 404 (contrôle « Gardien » :
+	# « une page inexistante répond tout va bien »). Elle reçoit toujours le
+	# shell /200.html, dont le routeur affiche notre +error.svelte (noindex),
+	# mais avec le bon code. Avant, ce shell partait en 200 : un « soft 404 »
+	# choisi parce que Pangolin, devant ce serveur, remplaçait le corps de toute
+	# réponse 404 par sa page d'erreur générique. Si c'est toujours le cas, une
+	# adresse inconnue affichera la page de Pangolin au lieu de la nôtre : régler
+	# Pangolin pour qu'il laisse passer les erreurs du serveur, ou revenir à
+	# `try_files … /200.html` (en retirant le bloc handle_errors ci-dessous).
+	try_files {path} {path}/index.html {path}.html
+	file_server
+
+	handle_errors 404 {
+		import entetes-securite
+		header Cache-Control "no-cache, no-store, must-revalidate"
+		encode gzip zstd
+		rewrite * /200.html
+		file_server {
+			status 404
+		}
+	}
+
+	# ── Security headers ── (snippet `entetes-securite`, en tête de fichier :
+	# repris par handle_errors, sinon la page 404 partait sans eux).
+	import entetes-securite
 
 	# ── Caching ─────────────────────────────────────────────────
 	# Content-hashed assets (JS/CSS bundles from Vite) — immutable, long cache.

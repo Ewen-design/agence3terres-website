@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://agence3terres.com/sitemap.xml
+Sitemap: https://agence3terres.fr/sitemap.xml
