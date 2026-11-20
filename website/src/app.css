@@ -1172,8 +1172,3 @@ html.lenis body {
 .lenis.lenis-smooth [data-lenis-prevent] {
   overscroll-behavior: contain;
 }
-
-/* Pas de survol pendant que la page défile (bureau) — voir `$lib/survolAuRepos.js`. */
-html.survol-suspendu .page-stage {
-  pointer-events: none;
-}
