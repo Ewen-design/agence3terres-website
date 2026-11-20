@@ -1,5 +1,6 @@
 <script>
   import { onMount, onDestroy } from "svelte";
+  import { auCalme } from "$lib/auCalme.js";
   import { browser } from "$app/environment";
   import AutoVideo from "$lib/components/shared/media/AutoVideo.svelte";
 
@@ -172,7 +173,9 @@
 
     // Préchauffage du flou des boutons (retiré après ~9 s).
     requestAnimationFrame(() => requestAnimationFrame(() => (blurWarm = true)));
-    blurWarmTimer = setTimeout(() => (blurWarm = false), 9000);
+    // Retiré page IMMOBILE (voir `$lib/auCalme.js`) : en plein défilement, ce
+    // retrait d'un calque fixe dérangeait Safari au premier passage.
+    blurWarmTimer = auCalme(() => (blurWarm = false), { apres: 9000 });
 
     if (sectionEl) {
       sectionEl.addEventListener("touchstart", onTouchStart, { passive: true });
@@ -196,7 +199,7 @@
   onDestroy(() => {
     if (!browser) return;
     pauseAuto();
-    clearTimeout(blurWarmTimer);
+    blurWarmTimer?.();
     if (sectionEl) {
       sectionEl.removeEventListener("touchstart", onTouchStart);
       sectionEl.removeEventListener("touchmove", onTouchMove);

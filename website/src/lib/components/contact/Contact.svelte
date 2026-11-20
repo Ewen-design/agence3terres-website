@@ -1,5 +1,6 @@
 <script>
   import { onMount } from "svelte";
+  import { auCalme } from "$lib/auCalme.js";
   import { browser } from "$app/environment";
   import { reveal } from "$lib/actions/reveal.js";
 
@@ -18,7 +19,7 @@
     if (!browser) return;
 
     requestAnimationFrame(() => requestAnimationFrame(() => (blurWarm = true)));
-    blurWarmTimer = setTimeout(() => (blurWarm = false), 9000);
+    blurWarmTimer = auCalme(() => (blurWarm = false), { apres: 9000 });
 
     const reduce = window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches;
     if (reduce) {
@@ -47,7 +48,7 @@
 
     return () => {
       clearTimeout(fallbackTimer);
-      clearTimeout(blurWarmTimer);
+      blurWarmTimer?.();
       window.removeEventListener("preloader:content-reveal", onReveal);
       window.removeEventListener("preloader:done", onReveal);
     };

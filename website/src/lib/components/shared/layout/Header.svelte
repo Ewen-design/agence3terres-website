@@ -1,5 +1,6 @@
 <script>
   import { onMount, onDestroy, tick } from "svelte";
+  import { auCalme } from "$lib/auCalme.js";
   import { browser } from "$app/environment";
   import { page } from "$app/stores";
   import FullscreenMenu from "./FullscreenMenu.svelte";
@@ -364,10 +365,13 @@
       startHeaderIntro();
     }, hasActivePreloader() ? 8000 : 1800);
 
-    blurWarmCleanup = setTimeout(() => {
-      if (destroyed) return;
-      blurWarm = false;
-    }, 10000);
+    blurWarmCleanup = auCalme(
+      () => {
+        if (destroyed) return;
+        blurWarm = false;
+      },
+      { apres: 10000 }
+    );
 
     window.addEventListener("resize", scheduleThemeSectionsRefresh, { passive: true });
 
@@ -392,7 +396,7 @@
     clearTimeout(headerIntroFallback);
     clearTimeout(headerIntroCleanup);
     clearTimeout(headerIntroDelay);
-    clearTimeout(blurWarmCleanup);
+    blurWarmCleanup?.();
     clearTimeout(tenuTimer);
     cancelAnimationFrame(tourRaf);
     cancelAnimationFrame(refreshSectionsRaf);

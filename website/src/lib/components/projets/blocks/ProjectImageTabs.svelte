@@ -25,6 +25,7 @@
   //  l'arrivée. Ne pas sortir les onglets de la scène.
   // ───────────────────────────────────────────────────────────────────────────
   import { onMount } from "svelte";
+  import { auCalme } from "$lib/auCalme.js";
   import { browser } from "$app/environment";
   import { reveal, revealBlock } from "$lib/actions/reveal.js";
 
@@ -81,8 +82,8 @@
   onMount(() => {
     if (!browser) return;
     blurWarm = true;
-    warmTimer = setTimeout(() => (blurWarm = false), 10000);
-    return () => clearTimeout(warmTimer);
+    warmTimer = auCalme(() => (blurWarm = false), { apres: 10000 });
+    return () => warmTimer();
   });
 </script>
 
