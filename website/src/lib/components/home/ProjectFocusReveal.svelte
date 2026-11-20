@@ -352,6 +352,33 @@
       <!-- Dégradé de coin : juste ce qu'il faut pour poser le texte. -->
       <div class="fr__corner" aria-hidden="true"></div>
 
+      <!-- ── Le logo de la marque, coin haut gauche (2026-11-20) ──
+           Repris du bloc « Nos clients », retiré de la home le même jour (à la
+           demande du client) : le logo bascule EN MÊME TEMPS que le visuel —
+           « voilà la marque, voilà ce qu'on a fait pour elle ». Logos blancs
+           sans fond (`/images/logos-clients/`), échelle réglée un par un
+           (`logoScale`). Une diapositive sans logo laisse le coin vide. -->
+      {#if slides.some((s) => s.logo)}
+        <div class="fr__brand" class:is-vide={!slides[activeIndex]?.logo} aria-hidden="true">
+          <div class="fr__logos">
+            {#each slides as slide, i}
+              {#if slide.logo}
+                <img
+                  class="fr__logo"
+                  class:is-on={i === activeIndex}
+                  style:--logo-scale={slide.logoScale ?? 1}
+                  src={slide.logo}
+                  alt=""
+                  loading="lazy"
+                  decoding="async"
+                  draggable="false"
+                />
+              {/if}
+            {/each}
+          </div>
+        </div>
+      {/if}
+
       <!-- Petit texte + bouton, dans le coin bas gauche du bloc. -->
       <div class="fr__focus">
         <div class="fr__copy">
@@ -567,6 +594,81 @@
       rgba(var(--shade-rgb, 0, 0, 0), 0.18) 46%,
       rgba(var(--shade-rgb, 0, 0, 0), 0) 72%
     );
+  }
+
+  /* ── Logo de la marque, coin haut gauche ────────────────────────────────
+     Un voile de coin sous le logo : les visuels n'ont pas le même haut (l'eau
+     claire d'Harmonia, les cartes Lybra) et un logo blanc posé nu s'y perdrait.
+     Le voile s'éteint avec le logo (diapositive sans marque). */
+  .fr__brand {
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 3;
+    padding: clamp(1.2rem, 2.2vw, 2.3rem);
+    pointer-events: none;
+  }
+
+  .fr__brand::before {
+    content: "";
+    position: absolute;
+    inset: 0 -60% -80% 0;
+    z-index: -1;
+    background: radial-gradient(
+      120% 120% at 0% 0%,
+      rgba(var(--shade-rgb, 0, 0, 0), 0.55),
+      rgba(var(--shade-rgb, 0, 0, 0), 0) 70%
+    );
+    transition: opacity var(--fr-dur-img) var(--fr-ease-soft);
+  }
+
+  .fr__brand.is-vide::before {
+    opacity: 0;
+  }
+
+  /* La boîte des logos : une hauteur imposée, tous les logos empilés dedans.
+     `--logo-h` les règle ensemble ; `--logo-scale` (par logo) les écarts de
+     forme — un mot large, un monogramme carré, une lettre. */
+  .fr__logos {
+    --logo-h: clamp(1.6rem, 2.6vw, 2.5rem);
+    position: relative;
+    height: var(--logo-h);
+    width: min(14rem, 46vw);
+  }
+
+  .fr__logo {
+    position: absolute;
+    left: 0;
+    top: 50%;
+    max-width: 100%;
+    max-height: calc(var(--logo-h) * var(--logo-scale, 1));
+    width: auto;
+    height: auto;
+    opacity: 0;
+    transform: translateY(-50%);
+    transition: opacity var(--fr-dur-img) var(--fr-ease-soft);
+  }
+
+  .fr__logo.is-on {
+    opacity: 0.94;
+  }
+
+  @media (max-width: 900px) {
+    .fr__brand {
+      padding: clamp(1rem, 4vw, 1.4rem);
+    }
+
+    .fr__logos {
+      --logo-h: 1.5rem;
+      width: min(11rem, 52vw);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .fr__logo,
+    .fr__brand::before {
+      transition: none;
+    }
   }
 
   /* ── Petit texte + bouton, coin bas gauche ──────────────────────────────── */

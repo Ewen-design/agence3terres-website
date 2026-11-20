@@ -151,15 +151,18 @@ async function glisserDoigt(page, engine, dy, { x = 195, y = 600, duree = 160 } 
 
 /** Attend que la nouvelle page soit à l'écran, carte encore en train de
  *  revenir (voile levé, `.page-stage` encore transformée). */
-async function attendreRetourCarte(page, titre) {
+async function attendreRetourCarte(page, titre, selecteur = null) {
   // Le contenu, pas l'URL : SvelteKit change l'URL dès le clic, la page ne
   // change à l'écran qu'une fois le recul fini (voir la mémoire du projet).
+  // `selecteur` : un élément propre à la page d'arrivée, quand son titre ne la
+  // distingue pas (les pages pôles portent le titre de la home).
   await page.waitForFunction(
-    (titre) => {
+    ([titre, selecteur]) => {
       const st = document.querySelector(".page-stage");
-      return document.title.includes(titre) && !document.querySelector(".page-fade.is-on") && !!st?.style.transform;
+      const arrivee = selecteur ? !!document.querySelector(selecteur) : document.title.includes(titre);
+      return arrivee && !document.querySelector(".page-fade.is-on") && !!st?.style.transform;
     },
-    titre,
+    [titre, selecteur],
     { timeout: 8000, polling: "raf" }
   );
 }
@@ -311,6 +314,11 @@ async function sante(page, attendus, tactile) {
 
 /* ── Les scénarios ──────────────────────────────────────────────────────── */
 
+/*  Le lien suivi DEPUIS L'ACCUEIL (2026-11-20) : la carte « Nos clients », qui
+ *  menait à /travail, a été retirée de la home ; une carte de « Trois pôles »
+ *  déclenche la même transition. */
+const DEPUIS_ACCUEIL = "/services/digital";
+
 const SCENARIOS = [
   {
     nom: "double clic sur une carte projet",
@@ -324,10 +332,10 @@ const SCENARIOS = [
     nom: "deux liens d'affilée (80 ms)",
     async jouer(page, { tactile }) {
       await ouvrir(page, "/");
-      await cliquerLien(page, "/travail", tactile);
+      await cliquerLien(page, DEPUIS_ACCUEIL, tactile);
       await attendre(80);
       await cliquerLien(page, "/contact", tactile).catch(() => {});
-      return ["/travail", "/contact", "/"];
+      return [DEPUIS_ACCUEIL, "/contact", "/"];
     }
   },
   {
@@ -344,15 +352,15 @@ const SCENARIOS = [
     nom: "rafale retour / avance",
     async jouer(page, { tactile }) {
       await ouvrir(page, "/");
-      await cliquerLien(page, "/travail", tactile);
+      await cliquerLien(page, DEPUIS_ACCUEIL, tactile);
       await attendre(2600);
-      await cliquerLien(page, "/projet9", tactile);
+      await cliquerLien(page, "/projet3", tactile);
       await attendre(2600);
       for (const sens of ["back", "forward", "back", "back", "forward", "back"]) {
         await (sens === "back" ? page.goBack() : page.goForward()).catch(() => {});
         await attendre(110);
       }
-      return ["/", "/travail", "/projet9"];
+      return ["/", DEPUIS_ACCUEIL, "/projet3"];
     }
   },
   {
@@ -385,12 +393,12 @@ const SCENARIOS = [
     nom: "défilement pendant la transition",
     async jouer(page, { tactile }) {
       await ouvrir(page, "/");
-      await cliquerLien(page, "/travail", tactile);
+      await cliquerLien(page, DEPUIS_ACCUEIL, tactile);
       for (let i = 0; i < 14; i++) {
         await defiler(page, tactile, i % 2 ? -300 : 500);
         await attendre(45);
       }
-      return ["/travail"];
+      return [DEPUIS_ACCUEIL];
     }
   },
   {
@@ -519,10 +527,10 @@ const SCENARIOS = [
     async jouer(page, { tactile, ctx }) {
       await ouvrir(page, "/");
       await ctx.route(/\/_app\/immutable\/nodes\/.*\.js/, (r) => r.abort());
-      await cliquerLien(page, "/travail", tactile);
+      await cliquerLien(page, DEPUIS_ACCUEIL, tactile);
       await attendre(2500);
       await ctx.unroute(/\/_app\/immutable\/nodes\/.*\.js/);
-      return ["/", "/travail"];
+      return ["/", DEPUIS_ACCUEIL];
     }
   },
   {
@@ -622,7 +630,7 @@ const SCENARIOS = [
       await ouvrir(page, "/");
       await page.evaluate(() => window.scrollTo(0, innerHeight * 2));
       await attendre(400);
-      await cliquerLien(page, "/travail", true);
+      await cliquerLien(page, DEPUIS_ACCUEIL, true);
       await attendre(120);
       const y0 = await page.evaluate(() => scrollY);
       const libre = await glisserDoigt(page, engine, 500);
@@ -630,7 +638,7 @@ const SCENARIOS = [
       if (libre && Math.abs(y1 - y0) > 40 && (await page.evaluate(() => location.pathname === "/"))) {
         anomalies.push(`l'ancienne page a défilé pendant son départ (${Math.round(y1 - y0)} px)`);
       }
-      return ["/travail"];
+      return [DEPUIS_ACCUEIL];
     }
   },
   {
@@ -682,10 +690,10 @@ const SCENARIOS = [
     anime: true,
     async jouer(page, { tactile }) {
       await ouvrir(page, "/");
-      await cliquerLien(page, "/travail", tactile);
-      await attendreRetourCarte(page, "Travail et projets");
-      await cliquerLien(page, "/projet8", tactile).catch(() => {});
-      return ["/travail", "/projet8"];
+      await cliquerLien(page, DEPUIS_ACCUEIL, tactile);
+      await attendreRetourCarte(page, null, 'a[href="/projet6"], a[href="/projet6/"]');
+      await cliquerLien(page, "/projet6", tactile).catch(() => {});
+      return [DEPUIS_ACCUEIL, "/projet6"];
     }
   },
   {
@@ -726,12 +734,12 @@ const SCENARIOS = [
     bureau: true,
     async jouer(page, { tactile }) {
       await ouvrir(page, "/");
-      await cliquerLien(page, "/travail", tactile);
+      await cliquerLien(page, DEPUIS_ACCUEIL, tactile);
       for (let i = 0; i < 24; i++) {
         await page.keyboard.press(["Space", "PageDown", "ArrowDown", "End", "Home", "PageUp"][i % 6]).catch(() => {});
         await attendre(70);
       }
-      return ["/travail"];
+      return [DEPUIS_ACCUEIL];
     }
   },
   {
@@ -760,14 +768,14 @@ const SCENARIOS = [
     nom: "menu ouvert puis retour du navigateur",
     async jouer(page, { tactile }) {
       await ouvrir(page, "/");
-      await cliquerLien(page, "/travail", tactile);
+      await cliquerLien(page, DEPUIS_ACCUEIL, tactile);
       await attendre(2600);
       await boutonMenu(page);
       await attendre(500);
       await page.goBack().catch(() => {});
       await attendre(300);
       await boutonMenu(page).catch(() => {});
-      return ["/", "/travail"];
+      return ["/", DEPUIS_ACCUEIL];
     }
   },
   {
@@ -788,13 +796,13 @@ const SCENARIOS = [
     nom: "Échap et menu en rafale pendant la transition",
     async jouer(page, { tactile }) {
       await ouvrir(page, "/");
-      await cliquerLien(page, "/travail", tactile);
+      await cliquerLien(page, DEPUIS_ACCUEIL, tactile);
       for (let i = 0; i < 10; i++) {
         await page.keyboard.press("Escape").catch(() => {});
         if (i % 3 === 0) await boutonMenu(page).catch(() => {});
         await attendre(110);
       }
-      return ["/travail"];
+      return [DEPUIS_ACCUEIL];
     }
   },
   {
@@ -803,7 +811,7 @@ const SCENARIOS = [
     anime: true,
     async jouer(page, { tactile, anomalies }) {
       await ouvrir(page, "/");
-      await cliquerLien(page, "/travail", tactile);
+      await cliquerLien(page, DEPUIS_ACCUEIL, tactile);
       await attendre(2600);
       await page.goBack().catch(() => {});
       await attendre(2500);
@@ -855,12 +863,12 @@ const SCENARIOS = [
     mobile: true,
     async jouer(page) {
       await ouvrir(page, "/");
-      await cliquerLien(page, "/travail", true);
+      await cliquerLien(page, DEPUIS_ACCUEIL, true);
       await attendre(250);
       await page.setViewportSize({ width: 844, height: 390 });
       await attendre(500);
       await page.setViewportSize({ width: 390, height: 844 });
-      return ["/travail"];
+      return [DEPUIS_ACCUEIL];
     }
   },
   {

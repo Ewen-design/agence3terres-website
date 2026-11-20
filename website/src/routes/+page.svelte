@@ -8,8 +8,6 @@
   import HomeStatement from "$lib/components/home/HomeStatement.svelte";
   import HomeLead from "$lib/components/home/HomeLead.svelte";
   import HomeFeatureCards from "$lib/components/home/HomeFeatureCards.svelte";
-  import HomeActionCards from "$lib/components/home/HomeActionCards.svelte";
-  import HomeClients from "$lib/components/home/HomeClients.svelte";
   import IntroSlider from "$lib/components/home/IntroSlider.svelte";
   import FaqAccordion from "$lib/components/home/FaqAccordion.svelte";
   import ContactBlock from "$lib/components/home/ContactBlock.svelte";
@@ -69,6 +67,8 @@
   const hsliderSlides = [
     {
       title: "Harmonia",
+      logo: "/images/logos-clients/harmonia.webp",
+      logoScale: 1,
       description: "Médecine esthétique,\nsite et charte.",
       // Le mockup sur l'eau : paysage dans le bloc large du bureau, portrait
       // entier dans le bloc haut du téléphone.
@@ -78,18 +78,24 @@
     },
     {
       title: "Lybra",
+      logo: "/images/logos-clients/lybra.svg",
+      logoScale: 1,
       description: "Logo et charte,\nle colibri redessiné.",
       images: ["/images/lybra-cartes.webp", "/images/lybra-macbook.webp", "/images/lybra-affichage.webp"],
       href: "/projet8"
     },
     {
       title: "Ludosphères",
+      logo: "/images/logos-clients/ludospheres.svg",
+      logoScale: 0.62,
       description: "Site d'artiste et\ngalerie en 3D.",
       images: ["/images/ipad-ludo.webp", "/images/ludo-site-desktop.webp", "/images/ludo-drapeau.webp"],
       href: "/projet4"
     },
     {
       title: "Moovy",
+      logo: "/images/logos-clients/moovy.webp",
+      logoScale: 0.78,
       description: "Recommandation de films\nselon ses envies.",
       images: ["/images/moovy-phone.webp", "/images/tel_moovy2.webp", "/images/moovy_recherche.webp"],
       // Fond animé : le plan « parcours » de la page projet, remonté au cadre
@@ -125,8 +131,6 @@
   layout="grid"
   introLead="Trois pôles spécialisés. <span class='dim'>Une même direction artistique.</span>"
 />
-<HomeActionCards />
-<HomeClients />
 
 <IntroSlider />
 <ProjectFocusReveal slides={hsliderSlides} />

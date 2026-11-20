@@ -689,8 +689,11 @@
       font-size: 1.05rem;
     }
 
+    /* Le titre CENTRÉ dans l'espace vide, entre le bas du hero et la grille des
+       projets (2026-11-20, retour client) : avant, 40 px au-dessus et 186 en
+       dessous. Même marge des deux côtés, portée par la section seule. */
     .after-section {
-      padding: 0 0 28svh;
+      padding: clamp(5rem, 14svh, 8rem) 0;
       background: var(--bg-deep, #000);
     }
 
@@ -742,7 +745,7 @@
     }
 
     .after-text h2 {
-      margin-top: clamp(2.5rem, 9vw, 4rem);
+      margin-top: 0;
     }
 
     .after-image {

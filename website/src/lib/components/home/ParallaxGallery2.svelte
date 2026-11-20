@@ -164,7 +164,19 @@
 
     runPlusGlowLap(card.querySelector(".pc-plus"));
 
-    window.setTimeout(() => navigate(targetHref), CLICK_NAV_DELAY);
+    // Le doigt qui glisse juste après le toucher (2026-11-20, batterie
+    // « visiteur anormal ») : pendant l'effet de la carte, la transition n'est
+    // pas encore partie et la page n'était pas verrouillée — l'ancienne page
+    // défilait de 500 px avant de partir d'ailleurs. Le défilement au doigt est
+    // bloqué dès le toucher, jusqu'au départ (la transition prend le relais).
+    const bloquer = (e) => {
+      if (e.cancelable) e.preventDefault();
+    };
+    window.addEventListener("touchmove", bloquer, { passive: false, capture: true });
+    window.setTimeout(() => {
+      navigate(targetHref);
+      window.setTimeout(() => window.removeEventListener("touchmove", bloquer, { capture: true }), 120);
+    }, CLICK_NAV_DELAY);
   }
 
   // Fait parcourir au point de glow (piloté par --mx/--my, comme au survol) tout

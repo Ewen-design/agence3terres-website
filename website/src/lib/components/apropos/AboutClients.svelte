@@ -181,11 +181,23 @@
     overflow-x: clip;
   }
 
+  /*  ── Des calques PERMANENTS (2026-11-20, iPhone) ──────────────────────────
+   *  Client : « un bout du logo d'Harmonia même quand on est aux autres », et
+   *  des images qui « se coupent de 1 ou 2 px » à chaque bascule. Une image en
+   *  fondu passe dans un calque à part, posé au demi-pixel ; le fondu fini,
+   *  elle est redessinée dans la page, arrondie autrement — le bord bougeait
+   *  d'un pixel, et l'affiche d'Harmonia (en dessous, avec son nom en grand)
+   *  dépassait en liseré. Le cadre, chaque image et chaque logo gardent donc
+   *  leur calque en permanence, au même endroit : même géométrie pour toutes,
+   *  rien ne dépasse plus dessous. Pas de `visibility: hidden` sur une image
+   *  éteinte : son calque serait libéré, et redessiné à chaque retour (toutes
+   *  les deux secondes). */
   .clients__media {
     position: relative;
     border-radius: var(--project-media-radius, 22px);
     overflow: hidden;
     background: var(--bg-raised, #0a0e12);
+    transform: translateZ(0);
   }
 
   .clients__shot {
@@ -195,6 +207,8 @@
     height: 100%;
     object-fit: cover;
     opacity: 0;
+    will-change: opacity;
+    backface-visibility: hidden;
     /* Un fondu long : la bascule tombe toutes les deux secondes, un fondu court
        se lirait comme un clignotement. */
     transition: opacity 760ms cubic-bezier(0.4, 0, 0.2, 1);
@@ -259,7 +273,8 @@
     width: auto;
     height: auto;
     opacity: 0;
-    transform: translateY(-50%);
+    transform: translate3d(0, -50%, 0);
+    will-change: opacity;
     transition: opacity 620ms cubic-bezier(0.4, 0, 0.2, 1);
   }
 

@@ -80,6 +80,26 @@
         "Sites web, identité visuelle, direction artistique et expérience digitale: Agence 3 Terres structure des présences de marque nettes et premium.",
       imageAlt: "Services digitaux et direction artistique Agence 3 Terres"
     },
+    // Les trois pôles (2026-11-20) : sans entrée ici, ils prenaient le titre
+    // et la description de la home — trois copies de l'accueil pour Google.
+    "/services/digital": {
+      title: "3 Terres Digital | Agence 3 Terres",
+      description:
+        "Sites web, applications et développement sur mesure : le pôle digital d'Agence 3 Terres conçoit des expériences nettes et performantes.",
+      imageAlt: "3 Terres Digital, le pôle web d'Agence 3 Terres"
+    },
+    "/services/design": {
+      title: "3 Terres Design | Agence 3 Terres",
+      description:
+        "Logo, charte graphique, typographie et stratégie de marque : le pôle design d'Agence 3 Terres construit des identités qui durent.",
+      imageAlt: "3 Terres Design, le pôle identité d'Agence 3 Terres"
+    },
+    "/services/studio": {
+      title: "3 Terres Studio | Agence 3 Terres",
+      description:
+        "Photo, vidéo, réseaux sociaux et événements : le pôle studio d'Agence 3 Terres donne une image à votre marque.",
+      imageAlt: "3 Terres Studio, le pôle image d'Agence 3 Terres"
+    },
     "/travail": {
       title: "Travail et projets | Agence 3 Terres",
       description:
