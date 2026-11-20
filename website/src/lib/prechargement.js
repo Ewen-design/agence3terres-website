@@ -124,7 +124,28 @@ export function installPrechargement() {
    *  le payait). On ne retient que les survols précédés d'un vrai mouvement
    *  de la souris. */
   let dernierMouvement = -1e9;
-  document.addEventListener("pointermove", () => (dernierMouvement = performance.now()), { passive: true });
+  // ⚠️ Un mouvement IMMOBILE ne compte pas (2026-11-20) : Safari envoie de
+  // faux `pointermove` / `mousemove`, de déplacement nul, quand la page défile
+  // sous le curseur — c'est justement le cas à écarter.
+  const bouge = (e) => e.movementX || e.movementY;
+  document.addEventListener("pointermove", (e) => bouge(e) && (dernierMouvement = performance.now()), { passive: true });
+
+  /*  Le préchargement de SvelteKit (`data-sveltekit-preload-data="hover"`)
+   *  part 20 ms après n'importe quel `mousemove` au-dessus d'un lien — faux
+   *  mouvements compris. Film d'écran du client (Safari bureau, curseur posé,
+   *  défilement au pavé) : la page s'arrêtait une image, plusieurs fois de
+   *  suite, pile sur les blocs faits de liens (cartes « Trois pôles »,
+   *  « Accompagnement / Parlons-en », « Nos clients », slider des projets) —
+   *  chacun téléchargeait et exécutait le code de sa page en pleine glissade.
+   *  Ces faux mouvements sont arrêtés ici, en capture, avant SvelteKit ; un
+   *  vrai mouvement de souris précharge toujours. */
+  window.addEventListener(
+    "mousemove",
+    (e) => {
+      if (!bouge(e)) e.stopPropagation();
+    },
+    { capture: true, passive: true }
+  );
   const viser = (event, delai) => {
     const lien = event.target instanceof Element ? event.target.closest("a[href]") : null;
     const route = routeDe(lien);
