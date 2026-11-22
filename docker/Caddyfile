@@ -44,27 +44,25 @@
 	# Serving the exact prerendered file (instead of always the shell) keeps each
 	# page's <head>/meta correct.
 	#
-	# 2026-11-20 — une adresse INCONNUE répond enfin 404 (contrôle « Gardien » :
-	# « une page inexistante répond tout va bien »). Elle reçoit toujours le
-	# shell /200.html, dont le routeur affiche notre +error.svelte (noindex),
-	# mais avec le bon code. Avant, ce shell partait en 200 : un « soft 404 »
-	# choisi parce que Pangolin, devant ce serveur, remplaçait le corps de toute
-	# réponse 404 par sa page d'erreur générique. Si c'est toujours le cas, une
-	# adresse inconnue affichera la page de Pangolin au lieu de la nôtre : régler
-	# Pangolin pour qu'il laisse passer les erreurs du serveur, ou revenir à
-	# `try_files … /200.html` (en retirant le bloc handle_errors ci-dessous).
-	try_files {path} {path}/index.html {path}.html
+	# ── Adresse INCONNUE : notre page d'erreur, en 200 + noindex ────────────
+	# 2026-11-20 : essai d'un vrai 404 (contrôle « Gardien »). En ligne (vu le
+	# 2026-11-22), le Traefik de Pangolin, devant ce serveur, porte un
+	# middleware `errors` branché sur `tarampampam/error-pages` : toute réponse
+	# en erreur y est REMPLACÉE par une page générique (« 404 Introuvable /
+	# Votre client / Réseau / Serveur web »), et notre +error.svelte ne
+	# s'affiche plus. Retour au shell /200.html en 200 — mais marqué
+	# `X-Robots-Tag: noindex` (en plus du noindex de la page) : Google ne
+	# l'indexe pas.
+	# Pour un vrai 404 ET notre page : retirer ce middleware `errors` pour ce
+	# site dans la configuration Traefik de Pangolin (ou le limiter à 500-599),
+	# puis remplacer la ligne `try_files` ci-dessous par
+	#   try_files {path} {path}/index.html {path}.html
+	# et rétablir le bloc `handle_errors 404 { … rewrite * /200.html …
+	# file_server { status 404 } }` (historique git, commit 0b7af16).
+	@inconnue not file {path} {path}/index.html {path}.html
+	header @inconnue X-Robots-Tag "noindex"
+	try_files {path} {path}/index.html {path}.html /200.html
 	file_server
-
-	handle_errors 404 {
-		import entetes-securite
-		header Cache-Control "no-cache, no-store, must-revalidate"
-		encode gzip zstd
-		rewrite * /200.html
-		file_server {
-			status 404
-		}
-	}
 
 	# ── Security headers ── (snippet `entetes-securite`, en tête de fichier :
 	# repris par handle_errors, sinon la page 404 partait sans eux).
